@@ -30,14 +30,35 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />, // Home
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: 'Darshan',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="temple-hindu" color={color} />, // Darshan
+        }}
+      />
+      <Tabs.Screen
+        name="special-puja"
+        options={{
+          title: 'Puja',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="puja" color={color} />, // Puja
+        }}
+      />
+      <Tabs.Screen
+        name="otp"
+        options={{
+          title: 'Yatra',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="yatra" color={color} />, // Yatra
+        }}
+      />
+      <Tabs.Screen
+        name="audio-video"
+        options={{
+          title: 'Audio Video',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="video" color={color} />, // Audio Video
         }}
       />
     </Tabs>
