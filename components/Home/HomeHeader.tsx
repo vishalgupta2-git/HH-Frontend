@@ -8,7 +8,7 @@ import { Modal, Platform, Pressable, StatusBar, StyleSheet, Text, TextInput, Tou
 const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
 const TOP_PADDING = (Platform.OS === 'android' ? statusBarHeight : 0) + 24;
 
-export default function HomeHeader({ searchPlaceholder, extraContent }: { searchPlaceholder?: string, extraContent?: ReactNode }) {
+export default function HomeHeader({ searchPlaceholder, extraContent, showDailyPujaButton = true }: { searchPlaceholder?: string, extraContent?: ReactNode, showDailyPujaButton?: boolean }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [userName, setUserName] = useState('');
@@ -21,9 +21,17 @@ export default function HomeHeader({ searchPlaceholder, extraContent }: { search
           const user = JSON.parse(data);
           setUserName(user.name || '');
         } catch {}
+      } else {
+        setUserName('');
       }
     });
   }, [modalVisible]);
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('user');
+    setUserName('');
+    setModalVisible(false);
+  };
 
   return (
     <View style={styles.headerContainer}>
@@ -65,9 +73,11 @@ export default function HomeHeader({ searchPlaceholder, extraContent }: { search
             <Feather name="mic" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.dailyPujaButton}>
-          <Text style={styles.dailyPujaButtonText}>Start Your Daily Puja</Text>
-        </TouchableOpacity>
+        {showDailyPujaButton && (
+          <TouchableOpacity style={styles.dailyPujaButton}>
+            <Text style={styles.dailyPujaButtonText}>Start Your Daily Puja</Text>
+          </TouchableOpacity>
+        )}
       </View>
       {/* Extra content below search bar */}
       {extraContent && <View style={{ width: '100%', alignItems: 'center' }}>{extraContent}</View>}
@@ -81,20 +91,28 @@ export default function HomeHeader({ searchPlaceholder, extraContent }: { search
         <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
           <View style={styles.modalContent}>
             {userName ? (
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FF6A00', marginBottom: 12 }}>{userName}</Text>
-            ) : null}
-            <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/login'); }}>
-              <Text style={styles.modalText}>Login</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/signup'); }}>
-              <Text style={styles.modalText}>Sign-Up</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={() => setModalVisible(false)}>
-              <Text style={styles.modalText}>Profile</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={() => setModalVisible(false)}>
-              <Text style={styles.modalText}>Mudras</Text>
-            </TouchableOpacity>
+              <>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FF6A00', marginBottom: 12 }}>{userName}</Text>
+                <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/profile'); }}>
+                  <Text style={styles.modalText}>Profile</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/mudras'); }}>
+                  <Text style={styles.modalText}>Mudras</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalOption} onPress={handleLogout}>
+                  <Text style={styles.modalText}>Logout</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/login'); }}>
+                  <Text style={styles.modalText}>Login</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/signup'); }}>
+                  <Text style={styles.modalText}>Sign-Up</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </Pressable>
       </Modal>

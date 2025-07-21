@@ -1,89 +1,74 @@
+// Make sure to run: npx expo install react-native-svg expo-svg-uri
+import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
-
-const { width } = Dimensions.get('window');
-const CARD_TOP = 250;
-const CARD_MARGIN_TOP = -40;
-
-export const screenOptions = { headerShown: false };
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+// import Arch from '../../components/temple/Arch';
 
 export default function TempleScreen() {
   return (
     <View style={styles.container}>
+      <HomeHeader showDailyPujaButton={false} />
       <LinearGradient
-        colors={["#FFA040", "#FF6A00"]}
-        style={styles.header}
+        colors={['#FF6A00', '#A259FF', '#3B006A']}
+        style={styles.gradientBg}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
+        end={{ x: 0, y: 1 }}
       >
-        <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>Hindu Heritage</Text>
-        <Image
-          source={require('@/assets/images/temple illustration.png')}
-          style={styles.temple}
-        />
+        <View style={styles.content}>
+          {/* <Arch width={260} height={260} style={styles.archImage} /> */}
+          <Text style={styles.motivation}>
+            Maintain your spirituality by creating{"\n"}a virtual temple with a virtual deity.
+          </Text>
+          <TouchableOpacity style={styles.createBtn}>
+            <Text style={styles.createBtnText}>Create temple</Text>
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
-      <View style={styles.card}>
-        <Text style={styles.text}>Temple (coming soon...)</Text>
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  container: { flex: 1, backgroundColor: '#fff' },
+  gradientBg: { flex: 1, paddingTop: 0 },
+  content: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  header: {
-    height: CARD_TOP,
-    width: '100%',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 0,
-    position: 'relative',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 40,
   },
-  logo: {
-    width: Math.min(width * 1.125 * 0.8, width),
-    height: undefined,
-    aspectRatio: 1,
-    marginTop: -60,
-    marginBottom: 8,
+  archImage: {
+    marginBottom: 32,
+    marginTop: 32,
   },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+  motivation: {
     color: '#fff',
-    marginBottom: 8,
-    letterSpacing: 1,
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 32,
+    fontWeight: '500',
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
-  temple: {
-    position: 'absolute',
-    width: width * 1.5 * 0.8,
-    height: 120 * 0.8,
-    left: width * -0.25 * 0.8,
-    bottom: CARD_TOP + CARD_MARGIN_TOP - 120 - 60,
-    resizeMode: 'contain',
-  },
-  card: {
+  createBtn: {
     backgroundColor: '#fff',
-    borderRadius: 20,
-    marginHorizontal: 12,
-    marginTop: CARD_MARGIN_TOP,
-    padding: 24,
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    alignSelf: 'center',
+    marginTop: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
+    shadowRadius: 4,
+    elevation: 2,
   },
-  text: {
-    fontSize: 24,
+  createBtnText: {
+    color: '#FF6A00',
     fontWeight: 'bold',
-    color: '#FF9800',
-    textAlign: 'center',
+    fontSize: 16,
   },
 }); 

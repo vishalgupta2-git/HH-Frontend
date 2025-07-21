@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -6,28 +7,36 @@ import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View 
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
-  const [phone, setPhone] = useState('');
-  const [phoneError, setPhoneError] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [name, setName] = useState('');
   const router = useRouter();
 
-  const handlePhoneChange = (text: string) => {
-    const numbersOnly = text.replace(/[^0-9]/g, '');
-    setPhone(numbersOnly);
-    if (numbersOnly.length < 7) {
-      setPhoneError('Enter a valid phone number');
+  const validateEmail = (email: string) =>
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/.test(email);
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    if (text.length > 0 && !validateEmail(text)) {
+      setEmailError('Enter a valid email address');
     } else {
-      setPhoneError('');
+      setEmailError('');
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     let valid = true;
-    if (phone.length < 7) {
-      setPhoneError('Enter a valid phone number');
+    if (!validateEmail(email)) {
+      setEmailError('Enter a valid email address');
       valid = false;
     }
     if (!valid) return;
-    router.push('/otp');
+    try {
+      await axios.post('http://192.168.1.5:3000/api/send-otp', { email });
+      router.push({ pathname: '/otp', params: { email, name } });
+    } catch (err) {
+      setEmailError('Failed to send OTP. Please try again.');
+    }
   };
 
   return (
@@ -47,23 +56,18 @@ export default function LoginScreen() {
       </LinearGradient>
       <View style={styles.card}>
         <Text style={styles.title}>Login to Your Account</Text>
-        <View style={styles.phoneRow}>
-          <View style={styles.countryCodeBox}>
-            <Text style={styles.countryCode}>+91</Text>
-          </View>
-          <TextInput
-            style={styles.phoneInput}
-            placeholder="Enter Your Phone No"
-            placeholderTextColor="#888"
-            value={phone}
-            onChangeText={handlePhoneChange}
-            keyboardType="phone-pad"
-            maxLength={10}
-          />
-        </View>
-        {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Your Email"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={handleEmailChange}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>Send OTP</Text>
         </TouchableOpacity>
         <Text style={styles.loginText}>
           Don't have an account?{' '}

@@ -1,7 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
@@ -19,21 +20,49 @@ const rashiOptions = [
 
 export const options = { headerShown: false };
 
-export default function SignUpScreen() {
+export default function ProfileScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [nameError, setNameError] = useState('');
-  const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [gender, setGender] = useState('');
   const [dob, setDob] = useState<Date | null>(null);
   const [showDateTime, setShowDateTime] = useState(false);
   const [placeOfBirth, setPlaceOfBirth] = useState('');
   const [rashi, setRashi] = useState('');
-  const router = useRouter();
   const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
   const [rashiDropdownOpen, setRashiDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Load user data from AsyncStorage and fetch latest from backend
+    (async () => {
+      const userStr = await AsyncStorage.getItem('user');
+      let emailToFetch = '';
+      if (userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setEmail(user.email || '');
+          emailToFetch = user.email || '';
+        } catch {}
+      }
+      if (emailToFetch) {
+        try {
+          const res = await axios.get(`http://192.168.1.5:3000/api/user?email=${encodeURIComponent(emailToFetch)}`);
+          const user = res.data.user;
+          setName(user.name || '');
+          setPhone(user.phone || '');
+          setGender(user.gender || '');
+          setDob(user.dob ? new Date(user.dob) : null);
+          setPlaceOfBirth(user.placeOfBirth || '');
+          setRashi(user.rashi || '');
+        } catch {}
+      }
+      setLoading(false);
+    })();
+  }, []);
 
   const handleNameChange = (text: string) => {
     const trimmed = text.replace(/^\s+|\s+$/g, '');
@@ -42,15 +71,6 @@ export default function SignUpScreen() {
       setNameError('Name must be at least 3 characters');
     } else {
       setNameError('');
-    }
-  };
-
-  const handleEmailChange = (text: string) => {
-    setEmail(text);
-    if (text.length > 0 && !validateEmail(text)) {
-      setEmailError('Enter a valid email address');
-    } else {
-      setEmailError('');
     }
   };
 
@@ -64,40 +84,39 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleCreateAccount = async () => {
+  const handleSave = async () => {
     let valid = true;
     if (name.trim().length < 3) {
       setNameError('Name must be at least 3 characters');
       valid = false;
     }
-    if (!validateEmail(email)) {
-      setEmailError('Enter a valid email address');
+    if (phone && phone.length < 7) {
+      setPhoneError('Enter a valid phone number');
       valid = false;
     }
     if (!valid) return;
     try {
-      const signupRes = await axios.post('http://192.168.1.5:3000/api/signup', {
+      // Save to backend (implement endpoint as needed)
+      await axios.post('http://192.168.1.5:3000/api/update-profile', {
         name,
         email,
+        phone,
         gender,
         dob: dob ? dob.toISOString() : '',
         placeOfBirth,
         rashi,
       });
-      if (signupRes.data && signupRes.data.error === 'Email already registered.') {
-        setEmailError('Email already registered. Please login or use another email.');
-        return;
-      }
-      await axios.post('http://192.168.1.5:3000/api/send-otp', { email });
-      router.push({ pathname: '/otp', params: { email, name } });
+      // Save to AsyncStorage
+      await AsyncStorage.setItem('user', JSON.stringify({
+        name, email, phone, gender, dob, placeOfBirth, rashi
+      }));
+      Alert.alert('Success', 'Profile updated successfully!');
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.error === 'Email already registered.') {
-        setEmailError('Email already registered. Please login or use another email.');
-      } else {
-        Alert.alert('Error', 'Failed to create account or send OTP. Please try again.');
-      }
+      Alert.alert('Error', 'Failed to update profile.');
     }
   };
+
+  if (loading) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>Loading...</Text></View>;
 
   return (
     <View style={styles.container}>
@@ -115,7 +134,6 @@ export default function SignUpScreen() {
           />
         </LinearGradient>
       </View>
-      {/* Single card with all fields, scrollable content inside */}
       <View style={[styles.card, { marginTop: CARD_TOP + CARD_MARGIN_TOP, marginBottom: 12, zIndex: 2, flex: 1 }]}> 
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
           <Text style={styles.sectionLabel}>Mandatory Fields</Text>
@@ -128,15 +146,12 @@ export default function SignUpScreen() {
           />
           {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
           <TextInput
-            style={styles.input}
-            placeholder="Enter E-mail ID"
+            style={[styles.input, { backgroundColor: '#EEE', color: '#AAA' }]}
+            placeholder="E-mail ID"
             placeholderTextColor="#888"
             value={email}
-            onChangeText={handleEmailChange}
-            keyboardType="email-address"
-            autoCapitalize="none"
+            editable={false}
           />
-          {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
           <View style={styles.phoneRow}>
             <View style={styles.countryCodeBox}>
               <Text style={styles.countryCode}>+91</Text>
@@ -153,7 +168,6 @@ export default function SignUpScreen() {
           </View>
           {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
           <Text style={styles.sectionLabel}>Optional Fields</Text>
-          {/* Gender and Rashi Dropdowns on the same line, no labels */}
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
             <TouchableOpacity
               style={[styles.dropdown, { flex: 1 }]}
@@ -206,7 +220,8 @@ export default function SignUpScreen() {
               </View>
             </TouchableWithoutFeedback>
           </Modal>
-          {/* Date-Time Picker (combined, no label) */}
+          {/* Date-Time Picker (with label) */}
+          <Text style={{ fontSize: 16, color: '#222', fontWeight: 'bold', marginBottom: 4, marginLeft: 2 }}>Date/Time of Birth</Text>
           <TouchableOpacity style={styles.inputRow} onPress={() => setShowDateTime(true)}>
             <Text style={styles.dropdownText}>{dob ? dob.toLocaleString() : 'Select Date & Time of Birth (optional)'}</Text>
           </TouchableOpacity>
@@ -218,7 +233,6 @@ export default function SignUpScreen() {
             onConfirm={(date) => { setDob(date); setShowDateTime(false); }}
             onCancel={() => setShowDateTime(false)}
           />
-          {/* Place of Birth */}
           <TextInput
             style={styles.input}
             placeholder="Place of Birth (optional)"
@@ -226,13 +240,9 @@ export default function SignUpScreen() {
             value={placeOfBirth}
             onChangeText={setPlaceOfBirth}
           />
-          <TouchableOpacity style={styles.button} onPress={handleCreateAccount}>
-            <Text style={styles.buttonText}>Create Account</Text>
+          <TouchableOpacity style={styles.button} onPress={handleSave}>
+            <Text style={styles.buttonText}>Save</Text>
           </TouchableOpacity>
-          <Text style={styles.loginText}>
-            Already have an account?{' '}
-            <Text style={styles.loginLink} onPress={() => router.replace('/auth/login')}>Login</Text>
-          </Text>
         </ScrollView>
       </View>
     </View>

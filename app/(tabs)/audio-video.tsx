@@ -136,7 +136,7 @@ export default function AudioVideoScreen() {
 
   return (
     <View style={styles.container}>
-      <HomeHeader searchPlaceholder="Search for Music" extraContent={iconRowAndDropdown} />
+      <HomeHeader searchPlaceholder="Search for Music" extraContent={iconRowAndDropdown} showDailyPujaButton={false} />
       {/* Media List */}
       <ScrollView style={styles.content}>
         <Text style={styles.sectionHeader}>Audio/Video Library</Text>
