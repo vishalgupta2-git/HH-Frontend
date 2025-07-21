@@ -28,7 +28,21 @@ export default function HomeIconGrid() {
             activeOpacity={0.8}
             onPress={() => {
               if (item.label === 'Special Day Puja') {
-                router.push('/(tabs)/special-puja');
+                router.push('/screens/special-puja');
+              } else if (item.label === 'Donation') {
+                router.push('/screens/donation');
+              } else if (item.label === 'Temple') {
+                router.push('/screens/temple');
+              } else if (item.label === 'Puja') {
+                router.push('/screens/puja');
+              } else if (item.label === 'Astrology') {
+                router.push('/screens/astrology');
+              } else if (item.label === 'Virtual Darshan') {
+                router.push('/screens/virtual-darshan');
+              } else if (item.label === 'Puja Guidance') {
+                router.push('/screens/puja-guidance');
+              } else if (item.label === 'Professional Puja') {
+                router.push('/screens/professional-puja');
               }
             }}
           >

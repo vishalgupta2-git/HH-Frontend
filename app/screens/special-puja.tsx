@@ -1,4 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
+import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -53,13 +54,24 @@ export default function SpecialPujaScreen() {
     setModalVisible(true);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!name.trim() || phone.length < 7) {
       Alert.alert('Please enter a valid name and phone number.');
       return;
     }
-    setModalVisible(false);
-    setConfirmVisible(true);
+    try {
+      await axios.post('http://192.168.1.5:3000/api/special-puja', {
+        name,
+        phone,
+        date,
+        slot,
+        pujaType: options[selected].label,
+      });
+      setModalVisible(false);
+      setConfirmVisible(true);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to save booking. Please try again.');
+    }
   };
 
   return (

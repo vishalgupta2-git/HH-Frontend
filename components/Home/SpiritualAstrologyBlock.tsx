@@ -1,5 +1,6 @@
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // import ReferralConnectBlock, { SocialRow } from './ReferralConnectBlock';
 
 const spiritualItems = [
@@ -20,6 +21,7 @@ const astrologyItems = [
 const tileWidth = (Dimensions.get('window').width - 48) / 2;
 
 export default function SpiritualAstrologyBlock() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       {/* Spiritual Information Section */}
@@ -29,10 +31,15 @@ export default function SpiritualAstrologyBlock() {
       </View>
       <View style={styles.spiritualRow}>
         {spiritualItems.map((item) => (
-          <View key={item.label} style={styles.spiritualItem}>
+          <TouchableOpacity
+            key={item.label}
+            style={styles.spiritualItem}
+            activeOpacity={0.8}
+            onPress={() => router.push(`/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`)}
+          >
             <Image source={item.image} style={styles.spiritualImage} />
             <Text style={styles.spiritualLabel}>{item.label}</Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
       {/* Astrology Services Section */}
@@ -42,13 +49,15 @@ export default function SpiritualAstrologyBlock() {
       </View>
       <View style={styles.astrologyGrid}>
         {astrologyItems.map((item, idx) => (
-          <View
+          <TouchableOpacity
             key={item.label}
             style={[styles.astrologyTile, idx === 4 ? styles.fullWidthTile : null]}
+            activeOpacity={0.8}
+            onPress={() => router.push(`/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`)}
           >
             <Image source={item.image} style={styles.astrologyIcon} />
             <Text style={styles.astrologyLabel}>{item.label}</Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
       {/* ReferralConnectBlock and SocialRow removed from here */}

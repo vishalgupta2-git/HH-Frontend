@@ -63,10 +63,10 @@ export default function HomeHeader({ searchPlaceholder, extraContent }: { search
       >
         <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
           <View style={styles.modalContent}>
-            <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/login'); }}>
+            <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/login'); }}>
               <Text style={styles.modalText}>Login</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/signup'); }}>
+            <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/signup'); }}>
               <Text style={styles.modalText}>Sign-Up</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.modalOption} onPress={() => setModalVisible(false)}>

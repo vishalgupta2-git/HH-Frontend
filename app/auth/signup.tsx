@@ -1,14 +1,21 @@
+import DateTimePicker from '@react-native-community/datetimepicker';
+import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-function validateEmail(email) {
-  // Standard email regex
+function validateEmail(email: string) {
   return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/.test(email);
 }
+
+const genderOptions = ['Male', 'Female', 'Other'];
+const rashiOptions = [
+  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+];
 
 export default function SignUpScreen() {
   const [name, setName] = useState('');
@@ -17,9 +24,18 @@ export default function SignUpScreen() {
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [gender, setGender] = useState('');
+  const [dob, setDob] = useState<Date | null>(null);
+  const [showDob, setShowDob] = useState(false);
+  const [placeOfBirth, setPlaceOfBirth] = useState('');
+  const [timeOfBirth, setTimeOfBirth] = useState('');
+  const [showTime, setShowTime] = useState(false);
+  const [rashi, setRashi] = useState('');
   const router = useRouter();
+  const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
+  const [rashiDropdownOpen, setRashiDropdownOpen] = useState(false);
 
-  const handleNameChange = (text) => {
+  const handleNameChange = (text: string) => {
     const trimmed = text.replace(/^\s+|\s+$/g, '');
     setName(trimmed);
     if (trimmed.length < 3) {
@@ -29,7 +45,7 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleEmailChange = (text) => {
+  const handleEmailChange = (text: string) => {
     setEmail(text);
     if (text.length > 0 && !validateEmail(text)) {
       setEmailError('Enter a valid email address');
@@ -38,8 +54,7 @@ export default function SignUpScreen() {
     }
   };
 
-  const handlePhoneChange = (text) => {
-    // Allow only numbers
+  const handlePhoneChange = (text: string) => {
     const numbersOnly = text.replace(/[^0-9]/g, '');
     setPhone(numbersOnly);
     if (numbersOnly.length < 7) {
@@ -49,8 +64,7 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleCreateAccount = () => {
-    // Validate all fields
+  const handleCreateAccount = async () => {
     let valid = true;
     if (name.trim().length < 3) {
       setNameError('Name must be at least 3 characters');
@@ -65,7 +79,21 @@ export default function SignUpScreen() {
       valid = false;
     }
     if (!valid) return;
-    router.push('/otp');
+    try {
+      await axios.post('http://192.168.1.5:3000/api/signup', {
+        name,
+        email,
+        phone,
+        gender,
+        dob: dob ? dob.toISOString() : '',
+        placeOfBirth,
+        timeOfBirth,
+        rashi,
+      });
+      router.push('/otp');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to create account. Please try again.');
+    }
   };
 
   return (
@@ -118,12 +146,101 @@ export default function SignUpScreen() {
           />
         </View>
         {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
+        {/* Gender Dropdown */}
+        <View style={styles.inputRow}>
+          <Text style={styles.inputLabel}>Gender:</Text>
+          <TouchableOpacity
+            style={styles.dropdown}
+            onPress={() => setGenderDropdownOpen(true)}
+          >
+            <Text style={styles.dropdownText}>{gender || 'Select Gender (optional)'}</Text>
+          </TouchableOpacity>
+        </View>
+        <Modal
+          visible={genderDropdownOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setGenderDropdownOpen(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setGenderDropdownOpen(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalDropdownList}>
+                {genderOptions.map(option => (
+                  <TouchableOpacity key={option} onPress={() => { setGender(option); setGenderDropdownOpen(false); }}>
+                    <Text style={styles.dropdownText}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+        {/* Date of Birth Picker */}
+        <TouchableOpacity style={styles.inputRow} onPress={() => setShowDob(true)}>
+          <Text style={styles.inputLabel}>Date of Birth:</Text>
+          <Text style={styles.dropdownText}>{dob ? dob.toLocaleDateString() : 'Select Date (optional)'}</Text>
+        </TouchableOpacity>
+        {showDob && (
+          <DateTimePicker
+            value={dob || new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            maximumDate={new Date()}
+            onChange={(_, d) => {
+              setShowDob(false);
+              if (d) setDob(d);
+            }}
+          />
+        )}
+        {/* Place of Birth */}
+        <TextInput
+          style={styles.input}
+          placeholder="Place of Birth (optional)"
+          placeholderTextColor="#888"
+          value={placeOfBirth}
+          onChangeText={setPlaceOfBirth}
+        />
+        {/* Time of Birth */}
+        <TextInput
+          style={styles.input}
+          placeholder="Time of Birth (optional, e.g. 14:30)"
+          placeholderTextColor="#888"
+          value={timeOfBirth}
+          onChangeText={setTimeOfBirth}
+        />
+        {/* Rashi Dropdown */}
+        <View style={styles.inputRow}>
+          <Text style={styles.inputLabel}>Rashi:</Text>
+          <TouchableOpacity
+            style={styles.dropdown}
+            onPress={() => setRashiDropdownOpen(true)}
+          >
+            <Text style={styles.dropdownText}>{rashi || 'Select Rashi (optional)'}</Text>
+          </TouchableOpacity>
+        </View>
+        <Modal
+          visible={rashiDropdownOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setRashiDropdownOpen(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setRashiDropdownOpen(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalDropdownList}>
+                {rashiOptions.map(option => (
+                  <TouchableOpacity key={option} onPress={() => { setRashi(option); setRashiDropdownOpen(false); }}>
+                    <Text style={styles.dropdownText}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
         <TouchableOpacity style={styles.button} onPress={handleCreateAccount}>
           <Text style={styles.buttonText}>Create Account</Text>
         </TouchableOpacity>
         <Text style={styles.loginText}>
           Already have an account?{' '}
-          <Text style={styles.loginLink} onPress={() => router.replace('login')}>Login</Text>
+          <Text style={styles.loginLink} onPress={() => router.replace('/auth/login')}>Login</Text>
         </Text>
       </View>
     </View>
@@ -255,4 +372,64 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   errorText: { color: '#FF6A00', fontSize: 13, marginBottom: 6, marginLeft: 2 },
+  inputRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  inputLabel: {
+    fontSize: 16,
+    color: '#222',
+    fontWeight: 'bold',
+  },
+  dropdown: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    backgroundColor: '#FAFAFA',
+    flex: 1,
+  },
+  dropdownText: {
+    fontSize: 16,
+    color: '#222',
+  },
+  dropdownList: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    zIndex: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalDropdownList: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#DDD',
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    minWidth: 180,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
 }); 

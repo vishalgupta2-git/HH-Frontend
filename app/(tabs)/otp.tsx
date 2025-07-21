@@ -2,12 +2,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { Alert, Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
 export default function OTPScreen() {
   const [otp, setOtp] = useState(['', '', '', '']);
+  const [successModal, setSuccessModal] = useState(false);
   const inputs = [useRef(null), useRef(null), useRef(null), useRef(null)];
   const router = useRouter();
 
@@ -33,7 +34,11 @@ export default function OTPScreen() {
 
   const handleVerify = () => {
     if (otp.every((digit) => digit.length === 1)) {
-      Alert.alert('Success', 'OTP Verified!');
+      setSuccessModal(true);
+      setTimeout(() => {
+        setSuccessModal(false);
+        router.replace('/(tabs)');
+      }, 3000);
     } else {
       Alert.alert('Error', 'Please enter the 4-digit OTP.');
     }
@@ -89,6 +94,19 @@ export default function OTPScreen() {
           <Text style={styles.resendText}>Resend OTP</Text>
         </TouchableOpacity>
       </View>
+      {/* Success Modal */}
+      <Modal
+        visible={successModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSuccessModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModalCard}>
+            <Text style={styles.successText}>OTP Verified! Redirecting to Home...</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -200,5 +218,29 @@ const styles = StyleSheet.create({
     color: '#FF9800',
     fontWeight: 'bold',
     fontSize: 15,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  successModalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  successText: {
+    fontSize: 18,
+    color: '#FF9800',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 }); 
