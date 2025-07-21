@@ -1,16 +1,20 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { Alert, Dimensions, Image, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
 export default function OTPScreen() {
   const [otp, setOtp] = useState(['', '', '', '']);
-  const [successModal, setSuccessModal] = useState(false);
+  const [status, setStatus] = useState<'success' | 'error' | ''>('');
+  const [statusMsg, setStatusMsg] = useState('');
   const inputs = [useRef(null), useRef(null), useRef(null), useRef(null)];
   const router = useRouter();
+  const { email, name } = useLocalSearchParams();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -32,15 +36,29 @@ export default function OTPScreen() {
     }
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (otp.every((digit) => digit.length === 1)) {
-      setSuccessModal(true);
-      setTimeout(() => {
-        setSuccessModal(false);
-        router.replace('/(tabs)');
-      }, 3000);
+      try {
+        await axios.post('http://192.168.1.5:3000/api/verify-otp', {
+          email,
+          otp: otp.join(''),
+        });
+        // Save user info to AsyncStorage for login state
+        await AsyncStorage.setItem('user', JSON.stringify({ name, email }));
+        setStatus('success');
+        setStatusMsg('OTP Verified! Redirecting to Home...');
+        setTimeout(() => {
+          setStatus('');
+          setStatusMsg('');
+          router.replace('/(tabs)');
+        }, 2000);
+      } catch (err) {
+        setStatus('error');
+        setStatusMsg('Invalid OTP. Please try again.');
+      }
     } else {
-      Alert.alert('Error', 'Please enter the 4-digit OTP.');
+      setStatus('error');
+      setStatusMsg('Please enter the 4-digit OTP.');
     }
   };
 
@@ -87,6 +105,9 @@ export default function OTPScreen() {
             />
           ))}
         </View>
+        {statusMsg ? (
+          <Text style={[styles.statusMsg, status === 'success' ? styles.statusSuccess : styles.statusError]}>{statusMsg}</Text>
+        ) : null}
         <TouchableOpacity style={styles.button} onPress={handleVerify}>
           <Text style={styles.buttonText}>Verify</Text>
         </TouchableOpacity>
@@ -94,19 +115,6 @@ export default function OTPScreen() {
           <Text style={styles.resendText}>Resend OTP</Text>
         </TouchableOpacity>
       </View>
-      {/* Success Modal */}
-      <Modal
-        visible={successModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setSuccessModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.successModalCard}>
-            <Text style={styles.successText}>OTP Verified! Redirecting to Home...</Text>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -242,5 +250,18 @@ const styles = StyleSheet.create({
     color: '#FF9800',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  statusMsg: {
+    fontSize: 16,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  statusSuccess: {
+    color: '#2e7d32',
+    fontWeight: 'bold',
+  },
+  statusError: {
+    color: '#d32f2f',
+    fontWeight: 'bold',
   },
 }); 

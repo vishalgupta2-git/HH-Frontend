@@ -74,25 +74,21 @@ export default function SignUpScreen() {
       setEmailError('Enter a valid email address');
       valid = false;
     }
-    if (phone.length < 7) {
-      setPhoneError('Enter a valid phone number');
-      valid = false;
-    }
     if (!valid) return;
     try {
       await axios.post('http://192.168.1.5:3000/api/signup', {
         name,
         email,
-        phone,
         gender,
         dob: dob ? dob.toISOString() : '',
         placeOfBirth,
         timeOfBirth,
         rashi,
       });
-      router.push('/otp');
+      await axios.post('http://192.168.1.5:3000/api/send-otp', { email });
+      router.push({ pathname: '/otp', params: { email, name } });
     } catch (err) {
-      Alert.alert('Error', 'Failed to create account. Please try again.');
+      Alert.alert('Error', 'Failed to create account or send OTP. Please try again.');
     }
   };
 

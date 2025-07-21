@@ -1,4 +1,5 @@
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { ReactNode, useState } from 'react';
@@ -10,7 +11,20 @@ const TOP_PADDING = (Platform.OS === 'android' ? statusBarHeight : 0) + 24;
 export default function HomeHeader({ searchPlaceholder, extraContent }: { searchPlaceholder?: string, extraContent?: ReactNode }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState('');
+  const [userName, setUserName] = useState('');
   const router = useRouter();
+
+  React.useEffect(() => {
+    AsyncStorage.getItem('user').then(data => {
+      if (data) {
+        try {
+          const user = JSON.parse(data);
+          setUserName(user.name || '');
+        } catch {}
+      }
+    });
+  }, [modalVisible]);
+
   return (
     <View style={styles.headerContainer}>
       <LinearGradient
@@ -51,6 +65,9 @@ export default function HomeHeader({ searchPlaceholder, extraContent }: { search
             <Feather name="mic" size={20} color="#fff" />
           </TouchableOpacity>
         </View>
+        <TouchableOpacity style={styles.dailyPujaButton}>
+          <Text style={styles.dailyPujaButtonText}>Start Your Daily Puja</Text>
+        </TouchableOpacity>
       </View>
       {/* Extra content below search bar */}
       {extraContent && <View style={{ width: '100%', alignItems: 'center' }}>{extraContent}</View>}
@@ -63,6 +80,9 @@ export default function HomeHeader({ searchPlaceholder, extraContent }: { search
       >
         <Pressable style={styles.modalOverlay} onPress={() => setModalVisible(false)}>
           <View style={styles.modalContent}>
+            {userName ? (
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FF6A00', marginBottom: 12 }}>{userName}</Text>
+            ) : null}
             <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/login'); }}>
               <Text style={styles.modalText}>Login</Text>
             </TouchableOpacity>
