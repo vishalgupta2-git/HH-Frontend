@@ -1,22 +1,69 @@
 // Make sure to run: npx expo install react-native-svg expo-svg-uri
-import HomeHeader from '@/components/Home/HomeHeader';
-import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-// import Arch from '../../components/temple/Arch';
+import { Dimensions, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
+
+export const options = { headerShown: false };
+
+const { width: screenWidth } = Dimensions.get('window');
+
+function ArchSVG(props: { width?: number; height?: number; style?: any }) {
+  return (
+    <Svg
+      width={props.width || screenWidth}
+      height={props.height || (screenWidth * 195) / 393}
+      viewBox="0 0 393 195"
+      fill="none"
+      style={props.style}
+    >
+      <Path
+        d="M196.41 50.5308C196.41 50.5308 191.28 93.7515 124.46 91.3237C124.46 91.3237 83.9203 87.722 89.6775 122.405C89.6775 122.405 35.5653 117.176 33.0297 177.151C33.0297 177.151 4.09425 175.444 1.02173 195H-120V0H361.73H513V195H391.799C391.799 195 392.754 176.858 359.791 177.151C359.791 177.151 361.223 121.712 303.143 122.352C303.143 122.352 311.496 95.1389 273.731 91.4838C273.701 91.4838 213.503 101.035 196.41 50.5308Z"
+        fill="url(#archGradient)"
+      />
+      <Defs>
+        <SvgLinearGradient id="archGradient" x1="196.5" y1="29.2058" x2="196.5" y2="151.717" gradientUnits="userSpaceOnUse">
+          <Stop stopColor="#FFAE51" />
+          <Stop offset="0.9888" stopColor="#E87C00" />
+        </SvgLinearGradient>
+      </Defs>
+    </Svg>
+  );
+}
 
 export default function TempleScreen() {
   return (
     <View style={styles.container}>
-      <HomeHeader showDailyPujaButton={false} />
-      <LinearGradient
-        colors={['#FF6A00', '#A259FF', '#3B006A']}
-        style={styles.gradientBg}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+      <ImageBackground
+        source={require('@/assets/images/temple/Temple-bg.png')}
+        style={styles.bgImage}
+        resizeMode="cover"
       >
+        {/* Bells: left and right, 60px from each side, in front of bg but behind arch */}
+        <Image
+          source={require('@/assets/images/temple/GoldenBell.png')}
+          style={styles.bellLeft}
+          resizeMode="contain"
+        />
+        <Image
+          source={require('@/assets/images/temple/GoldenBell.png')}
+          style={styles.bellRight}
+          resizeMode="contain"
+        />
+        {/* Glow.png at 200px from top, behind arch */}
+        <Image
+          source={require('@/assets/images/temple/Glow.png')}
+          style={styles.glow}
+          resizeMode="contain"
+        />
+        {/* Arch on top of Glow */}
+        <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
+        {/* TempleStar.png at ~600px from top, in front of bg */}
+        <Image
+          source={require('@/assets/images/temple/TempleStar.png')}
+          style={styles.templeStar}
+          resizeMode="contain"
+        />
         <View style={styles.content}>
-          {/* <Arch width={260} height={260} style={styles.archImage} /> */}
           <Text style={styles.motivation}>
             Maintain your spirituality by creating{"\n"}a virtual temple with a virtual deity.
           </Text>
@@ -24,24 +71,46 @@ export default function TempleScreen() {
             <Text style={styles.createBtnText}>Create temple</Text>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
+      </ImageBackground>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  gradientBg: { flex: 1, paddingTop: 0 },
+  bgImage: { flex: 1, width: '100%', height: '100%' },
+  glow: {
+    position: 'absolute',
+    top: 200,
+    left: 0,
+    right: 0,
+    width: '100%',
+    height: 120,
+    zIndex: 1,
+    alignSelf: 'center',
+  },
+  archImage: {
+    marginBottom: 0,
+    marginTop: 0,
+    alignSelf: 'center',
+    zIndex: 2,
+  },
+  templeStar: {
+    position: 'absolute',
+    top: 300,
+    left: '2%',
+    width: '96%',
+    height: undefined,
+    aspectRatio: 1,
+    zIndex: 3,
+    alignSelf: 'center',
+  },
   content: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
     paddingBottom: 40,
-  },
-  archImage: {
-    marginBottom: 32,
-    marginTop: 32,
   },
   motivation: {
     color: '#fff',
@@ -70,5 +139,21 @@ const styles = StyleSheet.create({
     color: '#FF6A00',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  bellLeft: {
+    position: 'absolute',
+    top: 40,
+    left: 60,
+    width: 48,
+    height: 90,
+    zIndex: 1,
+  },
+  bellRight: {
+    position: 'absolute',
+    top: 40,
+    right: 60,
+    width: 48,
+    height: 90,
+    zIndex: 1,
   },
 }); 
