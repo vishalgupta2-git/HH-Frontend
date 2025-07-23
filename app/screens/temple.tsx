@@ -63,6 +63,12 @@ export default function TempleScreen() {
           style={styles.templeStar}
           resizeMode="contain"
         />
+        {/* Temple1.png below arch, above motivational text */}
+        <Image
+          source={require('@/assets/images/temple/Temple1.png')}
+          style={styles.temple1}
+          resizeMode="contain"
+        />
         <View style={styles.content}>
           <Text style={styles.motivation}>
             Maintain your spirituality by creating{"\n"}a virtual temple with a virtual deity.
@@ -97,13 +103,22 @@ const styles = StyleSheet.create({
   },
   templeStar: {
     position: 'absolute',
-    top: 300,
+    top: 100, // was 120
     left: '2%',
     width: '96%',
     height: undefined,
     aspectRatio: 1,
     zIndex: 3,
     alignSelf: 'center',
+  },
+  temple1: {
+    width: screenWidth * 1.15,
+    height: undefined,
+    aspectRatio: 1.2,
+    alignSelf: 'center',
+    marginTop: 30, // was 20
+    marginBottom: 16,
+    zIndex: 4,
   },
   content: {
     flex: 1,
@@ -142,18 +157,18 @@ const styles = StyleSheet.create({
   },
   bellLeft: {
     position: 'absolute',
-    top: 40,
-    left: 60,
-    width: 48,
-    height: 90,
+    top: 95,
+    left: 40, // was 60
+    width: 62.4,
+    height: 117,
     zIndex: 1,
   },
   bellRight: {
     position: 'absolute',
-    top: 40,
-    right: 60,
-    width: 48,
-    height: 90,
+    top: 95,
+    right: 40, // was 60
+    width: 62.4,
+    height: 117,
     zIndex: 1,
   },
 }); 
