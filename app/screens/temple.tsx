@@ -1,4 +1,5 @@
 // Make sure to run: npx expo install react-native-svg expo-svg-uri
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
@@ -31,6 +32,7 @@ function ArchSVG(props: { width?: number; height?: number; style?: any }) {
 }
 
 export default function TempleScreen() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -57,7 +59,7 @@ export default function TempleScreen() {
         />
         {/* Arch on top of Glow */}
         <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
-        {/* TempleStar.png at ~600px from top, in front of bg */}
+        {/* TempleStar.png at ~100px from top, in front of bg */}
         <Image
           source={require('@/assets/images/temple/TempleStar.png')}
           style={styles.templeStar}
@@ -73,7 +75,7 @@ export default function TempleScreen() {
           <Text style={styles.motivation}>
             Maintain your spirituality by creating{"\n"}a virtual temple with a virtual deity.
           </Text>
-          <TouchableOpacity style={styles.createBtn}>
+          <TouchableOpacity style={styles.createBtn} onPress={() => router.push('/screens/create-temple')}>
             <Text style={styles.createBtnText}>Create temple</Text>
           </TouchableOpacity>
         </View>

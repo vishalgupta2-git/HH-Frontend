@@ -7,7 +7,7 @@ import { Alert, Dimensions, Image, Modal, Platform, StyleSheet, Text, TextInput,
 
 const { width } = Dimensions.get('window');
 
-const options = [
+const specialPujaOptions = [
   {
     label: 'Birthdays & Anniversaries',
     icon: require('@/assets/images/icons/special puja icons/birthdays-anniversaries.png'),
@@ -33,6 +33,8 @@ const options = [
     icon: require('@/assets/images/icons/special puja icons/first-date-proposals.png'),
   },
 ];
+
+export const options = { headerShown: false };
 
 const timeSlots = [
   '8:00-10:00 AM', '10:00-12:00 PM', '12:00-2:00 PM', '2:00-4:00 PM',
@@ -65,7 +67,7 @@ export default function SpecialPujaScreen() {
         phone,
         date,
         slot,
-        pujaType: options[selected].label,
+        pujaType: specialPujaOptions[selected].label,
       });
       setModalVisible(false);
       setConfirmVisible(true);
@@ -92,7 +94,7 @@ export default function SpecialPujaScreen() {
       <View style={styles.card}>
         <Text style={styles.title}>Special Puja For</Text>
         <View style={styles.grid}>
-          {options.map((item, idx) => (
+          {specialPujaOptions.map((item, idx) => (
             <TouchableOpacity
               key={item.label}
               style={[styles.tile, selected === idx && styles.tileSelected]}
@@ -126,7 +128,7 @@ export default function SpecialPujaScreen() {
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>
-              Thanks for requesting {options[selected].label}, please enter the following to let us contact you
+              Thanks for requesting {specialPujaOptions[selected].label}, please enter the following to let us contact you
             </Text>
             <TextInput
               style={styles.modalInput}
@@ -188,7 +190,7 @@ export default function SpecialPujaScreen() {
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
             <Text style={styles.modalTitle}>
-              We have received your request for {options[selected].label} and will contact you on {date.toLocaleDateString()} between {slot}
+              We have received your request for {specialPujaOptions[selected].label} and will contact you on {date.toLocaleDateString()} between {slot}
             </Text>
             <TouchableOpacity style={styles.modalConfirmBtn} onPress={() => setConfirmVisible(false)}>
               <Text style={styles.modalConfirmText}>OK</Text>

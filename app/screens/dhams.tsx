@@ -6,7 +6,7 @@ const { width } = Dimensions.get('window');
 const CARD_TOP = 250;
 const CARD_MARGIN_TOP = -40;
 
-export const screenOptions = { headerShown: false };
+export const options = { headerShown: false };
 
 export default function DhamsScreen() {
   return (
