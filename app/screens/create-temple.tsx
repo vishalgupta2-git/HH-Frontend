@@ -1,7 +1,9 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
-import { Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
@@ -88,18 +90,11 @@ const deityList = [
 ];
 
 // Helper for draggable/scalable deity overlay
-type DraggableDeityProps = {
-  source: any;
-  initialX: number;
-  initialY: number;
-  initialScale?: number;
-};
-
-const DraggableDeity: React.FC<DraggableDeityProps> = ({ source, initialX, initialY, initialScale = 1 }) => {
+const DraggableDeity: React.FC<{ source?: any; emoji?: string; initialX: number; initialY: number }> = ({ source, emoji, initialX, initialY }) => {
   const translateX = useSharedValue(initialX);
   const translateY = useSharedValue(initialY);
-  const scale = useSharedValue(initialScale);
-  const lastScale = useSharedValue(initialScale);
+  const scale = useSharedValue(1);
+  const lastScale = useSharedValue(1);
 
   const panHandler = useAnimatedGestureHandler({
     onStart: (_: any, ctx: any) => {
@@ -139,7 +134,13 @@ const DraggableDeity: React.FC<DraggableDeityProps> = ({ source, initialX, initi
       <Animated.View style={style}>
         <PinchGestureHandler onGestureEvent={pinchHandler}>
           <Animated.View>
-            <Image source={source} style={{ width: 72, height: 72 }} resizeMode="contain" />
+            {source ? (
+              <Image source={source} style={{ width: 72, height: 72 }} resizeMode="contain" />
+            ) : (
+              <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FF6A00' }}>
+                <Text style={{ fontSize: 40 }}>{emoji}</Text>
+              </View>
+            )}
           </Animated.View>
         </PinchGestureHandler>
       </Animated.View>
@@ -147,12 +148,63 @@ const DraggableDeity: React.FC<DraggableDeityProps> = ({ source, initialX, initi
   );
 };
 
+// Helper to compute luminance and pick label color
+function getLabelColor(gradient: string[]): string {
+  // Simple average luminance of first color
+  function hexToRgb(hex: string) {
+    const h = hex.replace('#', '');
+    return [
+      parseInt(h.substring(0, 2), 16),
+      parseInt(h.substring(2, 4), 16),
+      parseInt(h.substring(4, 6), 16),
+    ];
+  }
+  const rgb = hexToRgb(gradient[0]);
+  // Perceived luminance formula
+  const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+  return luminance > 0.6 ? '#222' : '#fff';
+}
+
+const TEMPLE_CONFIG_KEY = 'templeConfig';
+const SELECTED_DEITIES_KEY = 'selectedDeities';
+
 export default function CreateTempleScreen() {
+  const router = useRouter();
   const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'lights'>(null);
-  const [selectedStyle, setSelectedStyle] = useState<string>(templeStyles[0].id); // Temple1 by default
+  // State initializers
+  const [selectedStyle, setSelectedStyle] = useState<string>(templeStyles[0].id);
   const [bgGradient, setBgGradient] = useState(gradientPresets[0]);
   const [selectedDeity, setSelectedDeity] = useState([deityList[0].key]);
   const [deityError, setDeityError] = useState('');
+
+  // Load config on mount
+  useEffect(() => {
+    (async () => {
+      const configStr = await AsyncStorage.getItem(TEMPLE_CONFIG_KEY);
+      if (configStr) {
+        try {
+          const config = JSON.parse(configStr);
+          if (config.selectedStyle) setSelectedStyle(config.selectedStyle);
+          if (config.bgGradient) setBgGradient(config.bgGradient);
+          if (config.selectedDeity) setSelectedDeity(config.selectedDeity);
+        } catch {}
+      }
+    })();
+  }, []);
+  // Save config on change
+  useEffect(() => {
+    AsyncStorage.setItem(
+      TEMPLE_CONFIG_KEY,
+      JSON.stringify({ selectedStyle, bgGradient, selectedDeity })
+    );
+  }, [selectedStyle, bgGradient, selectedDeity]);
+
+  // Save selectedDeity for next screen
+  useEffect(() => {
+    AsyncStorage.setItem(SELECTED_DEITIES_KEY, JSON.stringify(selectedDeity));
+  }, [selectedDeity]);
+
+  const labelColor = getLabelColor(bgGradient);
 
   return (
     <View style={styles.container}>
@@ -176,42 +228,55 @@ export default function CreateTempleScreen() {
       />
       {/* Arch on top */}
       <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
-      <View style={styles.content}>
-        {/* Deity overlays in front of temple */}
+      <ScrollView contentContainerStyle={{ alignItems: 'center', marginTop: 75, paddingBottom: 40 }}>
         {/* Temple image chosen by user */}
         <Image
           source={templeStyles.find(t => t.id === selectedStyle)?.image}
-          style={styles.mainTempleImage}
+          style={
+            selectedStyle === 'temple2'
+              ? [styles.mainTempleImage, { width: styles.mainTempleImage.width * 1.3, marginTop: (styles.mainTempleImage.marginTop || 0) + 75, marginBottom: 0 }]
+            : selectedStyle === 'temple1'
+              ? [styles.mainTempleImage, { width: styles.mainTempleImage.width * 1.2, marginTop: (styles.mainTempleImage.marginTop || 0) + 75, marginBottom: 0 }]
+              : [styles.mainTempleImage, { marginTop: (styles.mainTempleImage.marginTop || 0) + 75, marginBottom: 0 }]
+          }
           resizeMode="contain"
         />
-        {/* Circular buttons row */}
-        <View style={styles.buttonRow}>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.circleButton} onPress={() => setModal('temple')}>
-              <Image source={require('@/assets/images/temple/Temple1.png')} style={styles.circleButtonImage} resizeMode="contain" />
-            </TouchableOpacity>
-            <Text style={styles.buttonFooter}>Temple</Text>
+        {/* Move only the icon row and button up by 75px */}
+        <View style={{ alignItems: 'center', marginTop: -60 }}>
+          <View style={styles.buttonRow}>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.circleButton} onPress={() => setModal('temple')}>
+                <Image source={require('@/assets/images/temple/Temple1.png')} style={styles.circleButtonImage} resizeMode="contain" />
+              </TouchableOpacity>
+              <Text style={[styles.buttonFooter, { color: labelColor }]}>Temple</Text>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.circleButton} onPress={() => setModal('deities')}>
+                <Image source={require('@/assets/images/temple/Ganesha1.png')} style={styles.circleButtonImage} resizeMode="contain" />
+              </TouchableOpacity>
+              <Text style={[styles.buttonFooter, { color: labelColor }]}>Deities</Text>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.circleButton} onPress={() => setModal('background')}>
+                <LinearGradient colors={bgGradient as any} style={styles.gradientCircle} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+              </TouchableOpacity>
+              <Text style={[styles.buttonFooter, { color: labelColor }]}>Background</Text>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.circleButton} onPress={() => setModal('lights')}>
+                <MaterialCommunityIcons name="lightbulb" size={40} color="#FF6A00" />
+              </TouchableOpacity>
+              <Text style={[styles.buttonFooter, { color: labelColor }]}>Lights</Text>
+            </View>
           </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.circleButton} onPress={() => setModal('deities')}>
-              <Image source={require('@/assets/images/temple/Ganesha1.png')} style={styles.circleButtonImage} resizeMode="contain" />
-            </TouchableOpacity>
-            <Text style={styles.buttonFooter}>Deities</Text>
-          </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.circleButton} onPress={() => setModal('background')}>
-              <LinearGradient colors={bgGradient as any} style={styles.gradientCircle} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
-            </TouchableOpacity>
-            <Text style={styles.buttonFooter}>Background</Text>
-          </View>
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.circleButton} onPress={() => setModal('lights')}>
-              <MaterialCommunityIcons name="lightbulb" size={40} color="#FF6A00" />
-            </TouchableOpacity>
-            <Text style={styles.buttonFooter}>Lights</Text>
-          </View>
+          <TouchableOpacity
+            style={{ marginTop: 32, backgroundColor: '#FF6A00', borderRadius: 24, paddingVertical: 14, paddingHorizontal: 40, alignSelf: 'center' }}
+            onPress={() => router.push('/screens/temple')}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 17 }}>Next</Text>
+          </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
       {/* Minimal Modal Implementation for Each Icon */}
       <Modal
         animationType="fade"
