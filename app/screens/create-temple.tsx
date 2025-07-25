@@ -73,6 +73,7 @@ const gradientPresets = [
 const deityList = [
   { key: 'ganesh', label: 'Ganesh Ji', icon: '🕉️' },
   { key: 'vishnu', label: 'Vishnu Ji', icon: '🙏' },
+  { key: 'krishna', label: 'Lord Krishna', icon: require('@/assets/images/temple/Krishna1.png') },
   { key: 'lakshmi', label: 'Lakshmi Mata', icon: '🌸' },
   { key: 'khatu', label: 'Khatu Shyam Ji', icon: '🛕' },
   { key: 'hanuman', label: 'Hanuman Ji', icon: '🐒' },
@@ -81,7 +82,7 @@ const deityList = [
   { key: 'darshan', label: 'Daily Divine Darshan', icon: '🔆' },
   { key: 'shanidev', label: 'Shanidev', icon: '🌑' },
   { key: 'ram', label: 'Shri Ram', icon: '🏹' },
-  { key: 'radha', label: 'Radha Krisna', icon: '🎶' },
+  { key: 'radha', label: 'Radha Krisna', icon: require('@/assets/images/temple/Krishna1.png') },
   { key: 'kali', label: 'Kali Mata', icon: '🌑' },
   { key: 'saraswati', label: 'Saraswati Mata', icon: '🎵' },
   { key: 'loknath', label: 'Loknath Baba', icon: '🧘' },
@@ -271,7 +272,7 @@ export default function CreateTempleScreen() {
           </View>
           <TouchableOpacity
             style={{ marginTop: 32, backgroundColor: '#FF6A00', borderRadius: 24, paddingVertical: 14, paddingHorizontal: 40, alignSelf: 'center' }}
-            onPress={() => router.push('/screens/temple')}
+            onPress={() => router.push('/screens/temple-preview')}
           >
             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 17 }}>Next</Text>
           </TouchableOpacity>
@@ -381,6 +382,8 @@ export default function CreateTempleScreen() {
                               <View style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
                                 <Image source={require('@/assets/images/temple/VishnuIcon.png')} style={{ width: 36, height: 36 }} resizeMode="cover" />
                               </View>
+                            ) : deity.key === 'krishna' ? (
+                              <Image source={require('@/assets/images/temple/Krishna1.png')} style={{ width: 36, height: 36, borderRadius: 18 }} resizeMode="contain" />
                             ) : (
                               <Text style={styles.deityIcon}>{deity.icon}</Text>
                             )}
