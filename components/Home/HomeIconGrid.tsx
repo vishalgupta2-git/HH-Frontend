@@ -1,9 +1,10 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const icons = [
-  { label: 'Temple', image: require('@/assets/images/icons/home page icons/temple.png') },
+  { label: 'My Virtual Temple', image: require('@/assets/images/icons/home page icons/temple.png') },
   { label: 'Puja', image: require('@/assets/images/icons/home page icons/puja.png') },
   { label: 'Donation', image: require('@/assets/images/icons/home page icons/charity.png') },
   { label: 'Astrology', image: require('@/assets/images/icons/home page icons/horoscope.png') },
@@ -26,13 +27,22 @@ export default function HomeIconGrid() {
             key={item.label}
             style={styles.tile}
             activeOpacity={0.8}
-            onPress={() => {
+            onPress={async () => {
               if (item.label === 'Special Day Puja') {
                 router.push('/screens/special-puja');
               } else if (item.label === 'Donation') {
                 router.push('/screens/donation');
-              } else if (item.label === 'Temple') {
-                router.push('/screens/temple');
+              } else if (item.label === 'My Virtual Temple') {
+                try {
+                  const config = await AsyncStorage.getItem('templeConfig');
+                  if (config) {
+                    router.push('/screens/create-temple');
+                  } else {
+                    router.push('/screens/temple');
+                  }
+                } catch (e) {
+                  router.push('/screens/temple');
+                }
               } else if (item.label === 'Puja') {
                 router.push('/screens/puja');
               } else if (item.label === 'Astrology') {
