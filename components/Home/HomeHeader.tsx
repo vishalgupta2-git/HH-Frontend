@@ -74,7 +74,7 @@ export default function HomeHeader({ searchPlaceholder, extraContent, showDailyP
           </TouchableOpacity>
         </View>
         {showDailyPujaButton && (
-          <TouchableOpacity style={styles.dailyPujaButton}>
+          <TouchableOpacity style={styles.dailyPujaButton} onPress={() => router.push('/screens/DailyPujaCustomTemple')}>
             <Text style={styles.dailyPujaButtonText}>Start Your Daily Puja</Text>
           </TouchableOpacity>
         )}

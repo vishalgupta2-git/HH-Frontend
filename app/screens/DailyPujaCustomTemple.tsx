@@ -74,9 +74,6 @@ const DraggableDeity: React.FC<{
   const translateY = useSharedValue(initialY);
   const scale = useSharedValue(initialScale);
   const lastScale = useSharedValue(initialScale);
-  const [showMenu, setShowMenu] = React.useState(false);
-  const [menuPos, setMenuPos] = React.useState({ x: 0, y: 0 });
-
   const panRef = React.useRef(null);
   const pinchRef = React.useRef(null);
   const longPressRef = React.useRef(null);
@@ -118,14 +115,11 @@ const DraggableDeity: React.FC<{
     zIndex: 10,
   }));
 
-  // Long press handler
   const handleLongPress = (event: any) => {
     if (event.nativeEvent.state === GestureState.ACTIVE) {
       if (onLongPress) onLongPress(true, event.nativeEvent.absoluteX, event.nativeEvent.absoluteY, (s) => { scale.value = s; }, scale.value);
     }
   };
-
-  // Remove local menu rendering
 
   return (
     <LongPressGestureHandler
@@ -155,17 +149,15 @@ const DraggableDeity: React.FC<{
   );
 };
 
-export default function TemplePreviewScreen() {
+export default function DailyPujaCustomTemple() {
   const [selectedDeity, setSelectedDeity] = useState<string[]>([]);
   const [selectedStyle, setSelectedStyle] = useState<string>('temple1');
   const [deityState, setDeityState] = useState<{ key: string; x: number; y: number; scale: number }[]>([]);
-  // Menu state
   const [menu, setMenu] = useState<{ key: string; x: number; y: number; setScale: (s: number) => void; currentScale: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [bgGradient, setBgGradient] = useState(["#8B5CF6", "#7C3AED", "#6D28D9"]);
   const router = useRouter();
 
-  // On mount, load and merge state
   useEffect(() => {
     (async () => {
       const deitiesStr = await AsyncStorage.getItem(SELECTED_DEITIES_KEY);
@@ -236,16 +228,6 @@ export default function TemplePreviewScreen() {
     });
   };
 
-  if (loading) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color="#FF6A00" />
-      </View>
-    );
-  }
-
-  console.log('temple-preview deityState:', deityState);
-
   const templeImage = templeStyles.find(t => t.id === selectedStyle)?.image;
 
   const handleSaveTemple = async () => {
@@ -270,16 +252,22 @@ export default function TemplePreviewScreen() {
     </View>
   );
 
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}> 
+        <ActivityIndicator size="large" color="#FF6A00" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {/* Background gradient */}
       <LinearGradient
         colors={bgGradient as any}
         style={StyleSheet.absoluteFill}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-      {/* Bells: left and right */}
       <Image
         source={require('@/assets/images/temple/GoldenBell.png')}
         style={styles.bellLeft}
@@ -290,7 +278,6 @@ export default function TemplePreviewScreen() {
         style={styles.bellRight}
         resizeMode="contain"
       />
-      {/* Arch on top */}
       <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
       <Image source={templeImage} style={styles.templeImage} resizeMode="contain" />
       <TouchableOpacity
@@ -304,12 +291,6 @@ export default function TemplePreviewScreen() {
         const x = state ? state.x : -60 + idx * 80;
         const y = state ? state.y : 0;
         const scale = state ? state.scale : 3;
-        const transform = [
-          { translateX: x },
-          { translateY: y },
-          { scale: scale },
-        ];
-        console.log('temple-preview', key, { x, y, scale, transform });
         if (key === 'ganesh') {
           return (
             <DraggableDeity
@@ -338,21 +319,7 @@ export default function TemplePreviewScreen() {
               onMoveOrScale={(x, y, scale) => updateDeityState(key, x, y, scale)}
             />
           );
-        } else if (key === 'krishna') {
-          return (
-            <DraggableDeity
-              key={key}
-              source={require('@/assets/images/temple/Krishna1.png')}
-              initialX={x}
-              initialY={y}
-              initialScale={scale}
-              onLongPress={(show, x, y, setScale, currentScale) => {
-                if (show) setMenu({ key, x, y, setScale, currentScale });
-              }}
-              onMoveOrScale={(x, y, scale) => updateDeityState(key, x, y, scale)}
-            />
-          );
-        } else if (key === 'radha') {
+        } else if (key === 'krishna' || key === 'radha') {
           return (
             <DraggableDeity
               key={key}
@@ -419,9 +386,8 @@ const styles = StyleSheet.create({
     aspectRatio: 1.2,
     marginBottom: 20,
   },
-  deityOverlay: {
+  deityImage: {
     position: 'absolute',
-    top: 180,
     width: 72,
     height: 72,
     zIndex: 10,
