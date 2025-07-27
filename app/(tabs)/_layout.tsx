@@ -48,7 +48,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="otp"
+        name="yatra"
         options={{
           title: 'Yatra',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="yatra" color={color} />, // Yatra

@@ -33,9 +33,14 @@ export default function LoginScreen() {
     if (!valid) return;
     try {
       await axios.post('http://192.168.1.5:3000/api/send-otp', { email });
-      router.push({ pathname: '/otp', params: { email, name } });
-    } catch (err) {
-      setEmailError('Failed to send OTP. Please try again.');
+      router.push({ pathname: '/auth/otp', params: { email, name, from: 'login' } });
+    } catch (err: any) {
+      if (err.response?.status === 429) {
+        // Lockout error
+        setEmailError(err.response?.data?.error || 'Too many failed attempts. Please try again in 30 minutes.');
+      } else {
+        setEmailError('Failed to send OTP. Please try again.');
+      }
     }
   };
 

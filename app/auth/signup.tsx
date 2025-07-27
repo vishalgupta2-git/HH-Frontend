@@ -36,11 +36,12 @@ export default function SignUpScreen() {
   const [rashiDropdownOpen, setRashiDropdownOpen] = useState(false);
 
   const handleNameChange = (text: string) => {
-    const trimmed = text.replace(/^\s+|\s+$/g, '');
-    setName(trimmed);
-    if (trimmed.length < 3) {
-      setNameError('Name must be at least 3 characters');
-    } else {
+    // Only trim leading spaces automatically, allow spaces between words
+    const trimmedLeading = text.replace(/^\s+/, '');
+    setName(trimmedLeading);
+    
+    // Clear error when user is typing
+    if (nameError) {
       setNameError('');
     }
   };
@@ -66,10 +67,14 @@ export default function SignUpScreen() {
 
   const handleCreateAccount = async () => {
     let valid = true;
-    if (name.trim().length < 3) {
+    
+    // Trim trailing spaces and check overall name validation on submit
+    const trimmedName = name.trim();
+    if (trimmedName.length < 3) {
       setNameError('Name must be at least 3 characters');
       valid = false;
     }
+    
     if (!validateEmail(email)) {
       setEmailError('Enter a valid email address');
       valid = false;
@@ -77,7 +82,7 @@ export default function SignUpScreen() {
     if (!valid) return;
     try {
       const signupRes = await axios.post('http://192.168.1.5:3000/api/signup', {
-        name,
+        name: trimmedName,
         email,
         gender,
         dob: dob ? dob.toISOString() : '',
@@ -85,14 +90,14 @@ export default function SignUpScreen() {
         rashi,
       });
       if (signupRes.data && signupRes.data.error === 'Email already registered.') {
-        setEmailError('Email already registered. Please login or use another email.');
+        setEmailError('An account already exists with this ID. Please go to login screen to access your account.');
         return;
       }
-      await axios.post('http://192.168.1.5:3000/api/send-otp', { email });
-      router.push({ pathname: '/otp', params: { email, name } });
-    } catch (err) {
+                      await axios.post('http://192.168.1.5:3000/api/send-otp', { email });
+        router.push({ pathname: '/auth/otp', params: { email, name: trimmedName, from: 'signup' } });
+    } catch (err: any) {
       if (err.response && err.response.data && err.response.data.error === 'Email already registered.') {
-        setEmailError('Email already registered. Please login or use another email.');
+        setEmailError('An account already exists with this ID. Please go to login screen to access your account.');
       } else {
         Alert.alert('Error', 'Failed to create account or send OTP. Please try again.');
       }
