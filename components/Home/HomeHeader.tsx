@@ -8,7 +8,7 @@ import { Modal, Platform, Pressable, StatusBar, StyleSheet, Text, TextInput, Tou
 const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
 const TOP_PADDING = (Platform.OS === 'android' ? statusBarHeight : 0) + 24;
 
-export default function HomeHeader({ searchPlaceholder, extraContent, showDailyPujaButton = true }: { searchPlaceholder?: string, extraContent?: ReactNode, showDailyPujaButton?: boolean }) {
+export default function HomeHeader({ searchPlaceholder, extraContent, showDailyPujaButton = true, onSearchChange }: { searchPlaceholder?: string, extraContent?: ReactNode, showDailyPujaButton?: boolean, onSearchChange?: (query: string) => void }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [userName, setUserName] = useState('');
@@ -67,7 +67,10 @@ export default function HomeHeader({ searchPlaceholder, extraContent, showDailyP
             placeholder={searchPlaceholder || "Search for ‘puja ‘"}
             placeholderTextColor="#fff"
             value={search}
-            onChangeText={setSearch}
+            onChangeText={(text) => {
+              setSearch(text);
+              onSearchChange?.(text);
+            }}
           />
           <TouchableOpacity style={styles.micButton}>
             <Feather name="mic" size={20} color="#fff" />

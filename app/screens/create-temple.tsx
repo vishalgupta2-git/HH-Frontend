@@ -3,10 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
+import axios from 'axios';
 
 export const options = { headerShown: false };
 
@@ -69,6 +70,117 @@ const gradientPresets = [
   ['#11998e', '#38ef7d'], // green
   ['#FF5F6D', '#FFC371'], // red-orange
 ];
+
+interface DeityData {
+  _id?: string;
+  'Deity': {
+    'Name': string;
+    'Statues': string[];
+  };
+  'Icon': string;
+}
+
+// Function to get local asset based on icon path - Dynamic mapping
+// Function to get image source from MongoDB data using static require calls
+const getImageSource = (imagePath: string) => {
+  console.log('Getting image source for:', imagePath);
+  
+  // Handle different possible path formats
+  let filename = '';
+  
+  if (imagePath.startsWith('assets/images/temple/')) {
+    filename = imagePath.replace('assets/images/temple/', '');
+  } else if (imagePath.startsWith('assets/temple/')) {
+    filename = imagePath.replace('assets/temple/', '');
+  } else if (imagePath.startsWith('temple/')) {
+    filename = imagePath.replace('temple/', '');
+  } else if (imagePath.includes('/')) {
+    // Extract filename from any path
+    filename = imagePath.split('/').pop() || '';
+  } else {
+    filename = imagePath;
+  }
+  
+  console.log('Extracted filename:', filename);
+  
+  // Map MongoDB paths to static require calls
+  switch (filename) {
+    case 'VishnuIcon.png':
+      console.log('✅ Mapping to VishnuIcon.png');
+      return require('@/assets/images/temple/VishnuIcon.png');
+    case 'Ganesha1.png':
+      console.log('✅ Mapping to Ganesha1.png');
+      return require('@/assets/images/temple/Ganesha1.png');
+    case 'Ganesha2.png':
+      console.log('✅ Mapping to Ganesha2.png');
+      return require('@/assets/images/temple/Ganesha2.png');
+    case 'Krishna1.png':
+      console.log('✅ Mapping to Krishna1.png');
+      return require('@/assets/images/temple/Krishna1.png');
+    case 'Krishna2.png':
+      console.log('✅ Mapping to Krishna2.png');
+      return require('@/assets/images/temple/Krishna2.png');
+    case 'Vishnu1.png':
+      console.log('✅ Mapping to Vishnu1.png');
+      return require('@/assets/images/temple/Vishnu1.png');
+    case 'Lakshmi1.png':
+      console.log('✅ Mapping to Lakshmi1.png');
+      return require('@/assets/images/temple/Lakshmi1.png');
+    case 'Saraswati1.png':
+      console.log('✅ Mapping to Saraswati1.png');
+      return require('@/assets/images/temple/Saraswati1.png');
+    case 'Durga1.png':
+      console.log('✅ Mapping to Durga1.png');
+      return require('@/assets/images/temple/Durga1.png');
+    case 'Durga2.png':
+      console.log('✅ Mapping to Durga2.png');
+      return require('@/assets/images/temple/Durga2.png');
+    case 'Brahma1.png':
+      console.log('✅ Mapping to Brahma1.png');
+      return require('@/assets/images/temple/Brahma1.png');
+    case 'Shiv2.png':
+      console.log('✅ Mapping to Shiv2.png');
+      return require('@/assets/images/temple/Shiv2.png');
+    case 'ShivParvati1.png':
+      console.log('✅ Mapping to ShivParvati1.png');
+      return require('@/assets/images/temple/ShivParvati1.png');
+    case 'Rama1.png':
+      console.log('✅ Mapping to Rama1.png');
+      return require('@/assets/images/temple/Rama1.png');
+    case 'Hanuman1.png':
+      console.log('✅ Mapping to Hanuman1.png');
+      return require('@/assets/images/temple/Hanuman1.png');
+    case 'Surya1.png':
+      console.log('✅ Mapping to Surya1.png');
+      return require('@/assets/images/temple/Surya1.png');
+    case 'Temple1.png':
+      console.log('✅ Mapping to Temple1.png');
+      return require('@/assets/images/temple/Temple1.png');
+    case 'Temple2.png':
+      console.log('✅ Mapping to Temple2.png');
+      return require('@/assets/images/temple/Temple2.png');
+    case 'Temple-bg.png':
+      console.log('✅ Mapping to Temple-bg.png');
+      return require('@/assets/images/temple/Temple-bg.png');
+    case 'TempleStar.png':
+      console.log('✅ Mapping to TempleStar.png');
+      return require('@/assets/images/temple/TempleStar.png');
+    case 'GoldenBell.png':
+      console.log('✅ Mapping to GoldenBell.png');
+      return require('@/assets/images/temple/GoldenBell.png');
+    case 'Glow.png':
+      console.log('✅ Mapping to Glow.png');
+      return require('@/assets/images/temple/Glow.png');
+    case 'arch.svg':
+      console.log('✅ Mapping to arch.svg');
+      return require('@/assets/images/temple/arch.svg');
+    default:
+      console.log('❌ Image not found in mapping, using fallback. Filename:', filename);
+      return require('@/assets/images/temple/Ganesha1.png');
+  }
+};
+
+
 
 const deityList = [
   { key: 'ganesh', label: 'Ganesh Ji', icon: '🕉️' },
@@ -171,12 +283,15 @@ const SELECTED_DEITIES_KEY = 'selectedDeities';
 
 export default function CreateTempleScreen() {
   const router = useRouter();
-  const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'lights'>(null);
+  const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'lights' | 'statues'>(null);
   // State initializers
   const [selectedStyle, setSelectedStyle] = useState<string>(templeStyles[0].id);
   const [bgGradient, setBgGradient] = useState(gradientPresets[0]);
-  const [selectedDeity, setSelectedDeity] = useState([deityList[0].key]);
+  const [selectedDeities, setSelectedDeities] = useState<{[deityId: string]: string}>({}); // deityId -> statueUrl
   const [deityError, setDeityError] = useState('');
+  const [deityData, setDeityData] = useState<DeityData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDeityForStatues, setSelectedDeityForStatues] = useState<DeityData | null>(null);
 
   // Load config on mount
   useEffect(() => {
@@ -187,23 +302,64 @@ export default function CreateTempleScreen() {
           const config = JSON.parse(configStr);
           if (config.selectedStyle) setSelectedStyle(config.selectedStyle);
           if (config.bgGradient) setBgGradient(config.bgGradient);
-          if (config.selectedDeity) setSelectedDeity(config.selectedDeity);
+          if (config.selectedDeities) setSelectedDeities(config.selectedDeities);
         } catch {}
       }
     })();
+  }, []);
+
+  // Fetch deity data from MongoDB
+  useEffect(() => {
+    const fetchDeityData = async () => {
+      try {
+        console.log('Fetching deity data from: http://192.168.1.5:3000/api/deity-statues');
+        const res = await axios.get('http://192.168.1.5:3000/api/deity-statues');
+        console.log('Fetched deity data:', res.data);
+        
+        // Log detailed statue information
+        res.data.forEach((deity: any, index: number) => {
+          console.log(`Deity ${index + 1}:`, {
+            name: deity.Deity?.Name,
+            icon: deity.Icon,
+            statues: deity.Deity?.Statues,
+            statuesType: typeof deity.Deity?.Statues,
+            statuesLength: deity.Deity?.Statues?.length,
+            isArray: Array.isArray(deity.Deity?.Statues)
+          });
+        });
+        
+        setDeityData(res.data);
+      } catch (e: any) {
+        console.error('Error fetching deity data:', e);
+        console.error('Error response:', e.response?.data);
+        console.error('Error status:', e.response?.status);
+        Alert.alert(
+          'Failed to fetch deity data', 
+          `Error: ${e.response?.data?.error || e.message || 'Unknown error'}`
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDeityData();
   }, []);
   // Save config on change
   useEffect(() => {
     AsyncStorage.setItem(
       TEMPLE_CONFIG_KEY,
-      JSON.stringify({ selectedStyle, bgGradient, selectedDeity })
+      JSON.stringify({ selectedStyle, bgGradient, selectedDeities })
     );
-  }, [selectedStyle, bgGradient, selectedDeity]);
+  }, [selectedStyle, bgGradient, selectedDeities]);
 
-  // Save selectedDeity for next screen
+  // Save selectedDeities for next screen
   useEffect(() => {
-    AsyncStorage.setItem(SELECTED_DEITIES_KEY, JSON.stringify(selectedDeity));
-  }, [selectedDeity]);
+    AsyncStorage.setItem(SELECTED_DEITIES_KEY, JSON.stringify(selectedDeities));
+  }, [selectedDeities]);
+
+  // Debug modal state
+  useEffect(() => {
+    console.log('Modal state changed:', modal, 'selectedDeityForStatues:', selectedDeityForStatues?.Deity?.Name);
+  }, [modal, selectedDeityForStatues]);
 
   const labelColor = getLabelColor(bgGradient);
 
@@ -349,63 +505,181 @@ export default function CreateTempleScreen() {
               ) : modal === 'deities' ? (
                 <View style={styles.modalContent}>
                   <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>Deities</Text>
-                    <TouchableOpacity 
-                      style={styles.closeButton}
-                      onPress={() => setModal(null)}
-                    >
-                      <Text style={styles.closeButtonText}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.deityGrid}>
-                    {deityList.map((deity) => {
-                      const isSelected = selectedDeity.includes(deity.key);
-                      return (
-                        <TouchableOpacity
-                          key={deity.key}
-                          style={styles.deityOption}
+                    <View>
+                      <Text style={styles.modalTitle}>Deities</Text>
+                      {Object.keys(selectedDeities).length > 0 && (
+                        <Text style={styles.selectionCounter}>
+                          {Object.keys(selectedDeities).length}/3 selected
+                        </Text>
+                      )}
+                    </View>
+                    <View style={styles.modalHeaderButtons}>
+                      {Object.keys(selectedDeities).length > 0 && (
+                        <TouchableOpacity 
+                          style={styles.clearAllButton}
                           onPress={() => {
-                            if (isSelected) {
-                              setSelectedDeity(selectedDeity.filter(k => k !== deity.key));
-                            } else if (selectedDeity.length < 3) {
-                              setSelectedDeity([...selectedDeity, deity.key]);
-                            } else {
-                              setDeityError('Only 3 deities allowed');
-                              setTimeout(() => setDeityError(''), 2000);
-                            }
+                            setSelectedDeities({});
+                            setDeityError('');
                           }}
                         >
-                          <View style={[styles.deityIconCircle, isSelected && styles.deityIconCircleSelected]}>
-                            {deity.key === 'ganesh' ? (
-                              <Image source={require('@/assets/images/temple/Ganesha1.png')} style={{ width: 36, height: 36, borderRadius: 18 }} resizeMode="contain" />
-                            ) : deity.key === 'vishnu' ? (
-                              <View style={{ width: 36, height: 36, borderRadius: 18, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' }}>
-                                <Image source={require('@/assets/images/temple/VishnuIcon.png')} style={{ width: 36, height: 36 }} resizeMode="cover" />
-                              </View>
-                            ) : deity.key === 'krishna' ? (
-                              <Image source={require('@/assets/images/temple/Krishna1.png')} style={{ width: 36, height: 36, borderRadius: 18 }} resizeMode="contain" />
-                            ) : (
-                              <Text style={styles.deityIcon}>{deity.icon}</Text>
-                            )}
-                            {isSelected && (
-                              <View style={styles.deityCheckmark}>
-                                <MaterialCommunityIcons name="check-circle" size={22} color="#FF6A00" />
-                              </View>
-                            )}
-                          </View>
-                          <Text style={styles.deityLabel}>{deity.label}</Text>
+                          <Text style={styles.clearAllButtonText}>Clear All</Text>
                         </TouchableOpacity>
-                      );
-                    })}
+                      )}
+                      <TouchableOpacity 
+                        style={styles.closeButton}
+                        onPress={() => setModal(null)}
+                      >
+                        <Text style={styles.closeButtonText}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
+                  {loading ? (
+                    <View style={styles.loadingContainer}>
+                      <Text style={styles.loadingText}>Loading deities...</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.deityGrid}>
+                      {deityData.map((deity) => {
+                        console.log('Rendering deity:', {
+                          id: deity._id,
+                          name: deity.Deity?.Name,
+                          icon: deity.Icon,
+                          statues: deity.Deity?.Statues?.length || 0
+                        });
+                        const isSelected = selectedDeities.hasOwnProperty(deity._id || '');
+                        const selectedStatueUrl = selectedDeities[deity._id || ''];
+                        return (
+                          <TouchableOpacity
+                            key={deity._id}
+                            style={styles.deityOption}
+                            onPress={() => {
+                              console.log('Deity clicked:', deity.Deity.Name, 'Statues:', deity.Deity.Statues);
+                              console.log('Statues type:', typeof deity.Deity.Statues, 'Is array:', Array.isArray(deity.Deity.Statues));
+                              
+                              if (isSelected) {
+                                // Remove this deity from selection
+                                const newSelectedDeities = { ...selectedDeities };
+                                delete newSelectedDeities[deity._id || ''];
+                                setSelectedDeities(newSelectedDeities);
+                              } else {
+                                // Check if we can add more deities (max 3)
+                                if (Object.keys(selectedDeities).length >= 3) {
+                                  setDeityError('Maximum 3 deities allowed');
+                                  setTimeout(() => setDeityError(''), 2000);
+                                  return;
+                                }
+                                
+                                // Handle different possible formats of Statues
+                                let statuesArray: string[] = [];
+                                if (Array.isArray(deity.Deity.Statues)) {
+                                  statuesArray = deity.Deity.Statues as string[];
+                                } else if (deity.Deity.Statues && typeof deity.Deity.Statues === 'object') {
+                                  // If it's an object, try to convert to array
+                                  statuesArray = Object.values(deity.Deity.Statues) as string[];
+                                }
+                                
+                                console.log('Processed statues array:', statuesArray);
+                                
+                                if (statuesArray.length > 0) {
+                                  console.log('Opening statues modal for:', deity.Deity.Name);
+                                  // Create a copy of deity with processed statues
+                                  const deityWithProcessedStatues = {
+                                    ...deity,
+                                    Deity: {
+                                      ...deity.Deity,
+                                      Statues: statuesArray
+                                    }
+                                  };
+                                  setSelectedDeityForStatues(deityWithProcessedStatues);
+                                  setModal('statues');
+                                } else {
+                                  console.log('No statues available for:', deity.Deity.Name);
+                                }
+                              }
+                            }}
+                          >
+                            <View style={[styles.deityIconCircle, isSelected && styles.deityIconCircleSelected]}>
+                              {deity.Icon ? (
+                                <Image 
+                                  source={getImageSource(deity.Icon)} 
+                                  style={{ width: 36, height: 36, borderRadius: 18 }} 
+                                  resizeMode="contain" 
+                                />
+                              ) : (
+                                <Text style={styles.deityIcon}>🕉️</Text>
+                              )}
+                              {isSelected && (
+                                <View style={styles.deityCheckmark}>
+                                  <MaterialCommunityIcons name="check-circle" size={22} color="#FF6A00" />
+                                </View>
+                              )}
+                            </View>
+                            <Text style={styles.deityLabel}>{deity.Deity.Name}</Text>
+                            {isSelected && selectedStatueUrl && (
+                              <Text style={styles.selectedStatueText}>✓ Idol Selected</Text>
+                            )}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
                   {deityError ? (
                     <Text style={styles.deityError}>{deityError}</Text>
                   ) : null}
                 </View>
+              ) : modal === 'statues' && selectedDeityForStatues ? (
+                <View style={styles.modalContent}>
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Choose {selectedDeityForStatues.Deity.Name} Idol</Text>
+                    <TouchableOpacity 
+                      style={styles.closeButton}
+                      onPress={() => {
+                        setModal('deities');
+                        setSelectedDeityForStatues(null);
+                      }}
+                    >
+                      <Text style={styles.closeButtonText}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView style={styles.statuesScrollView}>
+                    <View style={styles.statuesGrid}>
+                      {selectedDeityForStatues.Deity.Statues.map((statueUrl, index) => {
+                        console.log('Rendering statue:', { index, statueUrl });
+                        const isSelected = selectedDeities[selectedDeityForStatues._id || ''] === statueUrl;
+                        return (
+                          <TouchableOpacity
+                            key={index}
+                            style={[styles.statueItem, isSelected && styles.statueItemSelected]}
+                            onPress={() => {
+                              // Add this deity and statue to selection
+                              const newSelectedDeities = { ...selectedDeities };
+                              newSelectedDeities[selectedDeityForStatues._id || ''] = statueUrl;
+                              setSelectedDeities(newSelectedDeities);
+                              setModal('deities');
+                              setSelectedDeityForStatues(null);
+                            }}
+                          >
+                            <Image 
+                              source={getImageSource(statueUrl)} 
+                              style={styles.statueImage} 
+                              resizeMode="contain" 
+                            />
+                            <Text style={styles.statueLabel}>Statue {index + 1}</Text>
+                            {isSelected && (
+                              <View style={styles.statueCheckmark}>
+                                <MaterialCommunityIcons name="check-circle" size={24} color="#FF6A00" />
+                              </View>
+                            )}
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </ScrollView>
+                </View>
               ) : (
                 <View style={{ width: 240, height: 180, backgroundColor: 'white', borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>
-                    {modal === 'lights' && 'Lights Modal'}
+                    {modal === 'lights' && 'Coming Soon'}
                   </Text>
                   <TouchableOpacity onPress={() => setModal(null)} style={{ marginTop: 16, padding: 10, backgroundColor: '#FF6A00', borderRadius: 8 }}>
                     <Text style={{ color: 'white', fontWeight: 'bold' }}>Close</Text>
@@ -533,6 +807,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
+  modalHeaderButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  clearAllButton: {
+    backgroundColor: '#FF4444',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  clearAllButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  selectionCounter: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
+  },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -653,5 +948,72 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 12,
     fontWeight: 'bold',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  statuesButton: {
+    backgroundColor: '#FF6A00',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 4,
+  },
+  statuesButtonText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  statuesScrollView: {
+    maxHeight: 400,
+  },
+  statuesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 16,
+    paddingVertical: 16,
+  },
+  statueItem: {
+    alignItems: 'center',
+    width: '45%',
+  },
+  statueImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  statueLabel: {
+    fontSize: 12,
+    color: '#333',
+    textAlign: 'center',
+  },
+  statueItemSelected: {
+    borderWidth: 3,
+    borderColor: '#FF6A00',
+    borderRadius: 16,
+    padding: 4,
+  },
+  statueCheckmark: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+  },
+  selectedStatueText: {
+    fontSize: 10,
+    color: '#FF6A00',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 2,
   },
 }); 

@@ -29,7 +29,7 @@ const specialPujaOptions = [
     icon: require('@/assets/images/icons/special puja icons/death-anniversaries.png'),
   },
   {
-    label: 'Even first dates & proposals',
+    label: 'First date & proposals',
     icon: require('@/assets/images/icons/special puja icons/first-date-proposals.png'),
   },
 ];
@@ -85,7 +85,10 @@ export default function SpecialPujaScreen() {
         end={{ x: 1, y: 0 }}
       >
         <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>Hindu Heritage</Text>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitlePrefix}>Special Puja for </Text>
+          <Text style={styles.headerTitleBold}>"{specialPujaOptions[selected].label}"</Text>
+        </View>
         <Image
           source={require('@/assets/images/temple illustration.png')}
           style={styles.temple}
@@ -121,15 +124,17 @@ export default function SpecialPujaScreen() {
       </LinearGradient>
       {/* Modal for booking */}
       <Modal visible={modalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setModalVisible(false)}>
+          <TouchableOpacity style={styles.modalCard} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
             {/* X button */}
             <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>
-              Thanks for requesting {specialPujaOptions[selected].label}, please enter the following to let us contact you
-            </Text>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitlePrefix}>Thanks for requesting </Text>
+              <Text style={styles.modalTitleBold}>"{specialPujaOptions[selected].label}"</Text>
+              <Text style={styles.modalTitleSuffix}> please enter the following to let us contact you</Text>
+            </View>
             <TextInput
               style={styles.modalInput}
               placeholder="Full Name"
@@ -178,25 +183,27 @@ export default function SpecialPujaScreen() {
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
       {/* Confirmation Modal */}
       <Modal visible={confirmVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setConfirmVisible(false)}>
+          <TouchableOpacity style={styles.modalCard} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
             {/* X button */}
             <TouchableOpacity style={styles.closeButton} onPress={() => setConfirmVisible(false)}>
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
-            <Text style={styles.modalTitle}>
-              We have received your request for {specialPujaOptions[selected].label} and will contact you on {date.toLocaleDateString()} between {slot}
-            </Text>
+            <View style={styles.modalTitleContainer}>
+              <Text style={styles.modalTitlePrefix}>We have received your request for </Text>
+              <Text style={styles.modalTitleBold}>"{specialPujaOptions[selected].label}"</Text>
+              <Text style={styles.modalTitleSuffix}> and will contact you on {date.toLocaleDateString()} between {slot}</Text>
+            </View>
             <TouchableOpacity style={styles.modalConfirmBtn} onPress={() => setConfirmVisible(false)}>
               <Text style={styles.modalConfirmText}>OK</Text>
             </TouchableOpacity>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </View>
   );
@@ -226,11 +233,22 @@ const styles = StyleSheet.create({
     marginTop: -60,
     marginBottom: 8,
   },
-  headerTitle: {
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  headerTitlePrefix: {
+    fontSize: 28,
+    fontWeight: 'normal',
+    color: '#fff',
+    letterSpacing: 1,
+  },
+  headerTitleBold: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 8,
     letterSpacing: 1,
   },
   temple: {
@@ -343,11 +361,29 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  modalTitle: {
+  modalTitleContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  modalTitlePrefix: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    color: '#222',
+    textAlign: 'center',
+  },
+  modalTitleBold: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#222',
-    marginBottom: 18,
+    textAlign: 'center',
+  },
+  modalTitleSuffix: {
+    fontSize: 16,
+    fontWeight: 'normal',
+    color: '#222',
     textAlign: 'center',
   },
   modalInput: {
