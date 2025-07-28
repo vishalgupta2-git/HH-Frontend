@@ -332,27 +332,31 @@ export default function ProfessionalPujaScreen() {
         )}
       </ScrollView>
       
-      {/* YouTube Modal */}
+      {/* Puja Details Modal */}
       <Modal
-        animationType="slide"
         visible={modalVisible}
+        transparent
+        animationType="fade"
         onRequestClose={() => {
           setModalVisible(false);
           setCurrentPuja(null);
           setYoutubePlaying(false);
         }}
       >
-        <View style={styles.videoModalBackground}>
-          <TouchableOpacity
-            onPress={() => {
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => {
+          setModalVisible(false);
+          setCurrentPuja(null);
+          setYoutubePlaying(false);
+        }}>
+          <TouchableOpacity style={styles.modalCard} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+            {/* X button */}
+            <TouchableOpacity style={styles.closeButton} onPress={() => {
               setModalVisible(false);
               setCurrentPuja(null);
               setYoutubePlaying(false);
-            }}
-            style={styles.closeButton}
-          >
-            <MaterialCommunityIcons name="close" size={30} color="#fff" />
-          </TouchableOpacity>
+            }}>
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
           {currentPuja && (
             <ScrollView style={styles.modalContent}>
               <Text style={styles.modalTitle}>{safeString(currentPuja['Puja Name'] || 'Puja Name')}</Text>
@@ -405,7 +409,8 @@ export default function ProfessionalPujaScreen() {
               </TouchableOpacity>
             </ScrollView>
           )}
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
       
       {/* Booking Modal */}
@@ -639,9 +644,10 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: 40,
-    right: 20,
-    zIndex: 1,
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    padding: 6,
   },
   nonYouTubeContent: {
     flex: 1,
@@ -652,13 +658,13 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#222',
     textAlign: 'center',
     marginBottom: 16,
   },
   modalDescription: {
     fontSize: 16,
-    color: '#ccc',
+    color: '#666',
     textAlign: 'center',
     marginBottom: 16,
     lineHeight: 24,
@@ -670,18 +676,18 @@ const styles = StyleSheet.create({
               },
               modalDetail: {
                 fontSize: 16,
-                color: '#ccc',
+                color: '#666',
                 textAlign: 'center',
                 marginBottom: 12,
                 lineHeight: 24,
               },
               modalDetailLabel: {
                 fontWeight: 'bold',
-                color: '#fff',
+                color: '#222',
               },
   modalContent: {
-    flex: 1,
-    padding: 20,
+    width: '100%',
+    paddingTop: 20,
   },
   bookPujaButton: {
     backgroundColor: '#FF6A00',
@@ -707,7 +713,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     width: '90%',
-    alignItems: 'center',
+    maxHeight: '80%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
