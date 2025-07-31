@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState, useRef, useEffect } from 'react';
@@ -95,7 +96,7 @@ export default function OTPScreen() {
     
     try {
       console.log('Sending OTP verification request:', { email, otp: otpString });
-      const response = await axios.post('http://192.168.1.5:3000/api/verify-otp', {
+      const response = await axios.post(getEndpointUrl('VERIFY_OTP'), {
         email,
         otp: otpString,
         name
@@ -163,39 +164,23 @@ export default function OTPScreen() {
   const handleResendOTP = async () => {
     if (resendTimer > 0 || isLockedOut) return;
     
+    console.log('🔄 Resending OTP to:', email);
+    
     try {
-      await axios.post('http://192.168.1.5:3000/api/send-otp', { email });
+      const response = await axios.post(getEndpointUrl('SEND_OTP'), { email });
+      console.log('✅ Resend response:', response.data);
       setResendTimer(10);
       setMessage('OTP has been resent to your email');
       setMessageType('success');
     } catch (error: any) {
-      if (error.response?.status === 429) {
-        // Lockout error
-        const lockoutMessage = error.response?.data?.error || 'Too many failed attempts. Please try again later.';
-        console.log('🔒 Lockout detected during resend:', lockoutMessage);
-        setMessage(lockoutMessage);
-        setMessageType('error');
-        
-        // Set lockout state
-        setIsLockedOut(true);
-        if (error.response?.data?.lockoutUntil) {
-          setLockoutUntil(new Date(error.response.data.lockoutUntil));
-          console.log('🔒 Lockout until (resend):', error.response.data.lockoutUntil);
-        } else {
-          // Set 30 minutes from now if lockoutUntil not provided
-          const lockoutTime = new Date();
-          lockoutTime.setMinutes(lockoutTime.getMinutes() + 30);
-          setLockoutUntil(lockoutTime);
-          console.log('🔒 Set lockout until (resend):', lockoutTime);
-        }
-        
-        // Set timer to 30 minutes
-        setResendTimer(1800);
-        console.log('🔒 Set resend timer to 1800 seconds (resend)');
-      } else {
-        setMessage(error.response?.data?.message || 'Failed to resend OTP');
-        setMessageType('error');
-      }
+      console.error('❌ Resend error:', error);
+      console.error('❌ Resend error response:', error.response?.data);
+      console.error('❌ Resend error status:', error.response?.status);
+      
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to resend OTP';
+      console.error('❌ Resend error message:', errorMessage);
+      setMessage(errorMessage);
+      setMessageType('error');
     }
   };
 
@@ -275,17 +260,15 @@ export default function OTPScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* Resend section - always show text, but hide link during countdown or lockout */}
+        {/* Resend section - simple 30 second timer */}
         <View style={styles.resendContainer}>
           <Text style={styles.resendText}>
-            {isLockedOut 
-              ? `Account temporarily locked. Please try again in ${resendTimer} seconds`
-              : resendTimer > 0 
-                ? `Didn't receive the code? You can resend in ${resendTimer} seconds` 
-                : 'Didn\'t receive the code? '
+            {resendTimer > 0 
+              ? `Didn't receive the code? You can resend in ${resendTimer} seconds` 
+              : 'Didn\'t receive the code? '
             }
           </Text>
-          {resendTimer === 0 && !isLockedOut && (
+          {resendTimer === 0 && (
             <TouchableOpacity onPress={handleResendOTP}>
               <Text style={styles.resendLink}>Resend</Text>
             </TouchableOpacity>

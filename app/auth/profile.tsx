@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -50,15 +51,35 @@ export default function ProfileScreen() {
       }
       if (emailToFetch) {
         try {
-          const res = await axios.get(`http://192.168.1.5:3000/api/user?email=${encodeURIComponent(emailToFetch)}`);
+          const res = await axios.get(`${getEndpointUrl('USER')}?email=${encodeURIComponent(emailToFetch)}`);
           const user = res.data.user;
+          console.log('📱 Profile data received:', user);
+          console.log('📱 Date of birth field:', user.dob);
+          console.log('📱 Date of birth type:', typeof user.dob);
+          console.log('📱 All user fields:', Object.keys(user));
+          
           setName(user.name || '');
           setPhone(user.phone || '');
           setGender(user.gender || '');
-          setDob(user.dob ? new Date(user.dob) : null);
+          
+          // Handle date of birth with better debugging
+          const dobValue = user.dob || user.dateOfBirth;
+          if (dobValue) {
+            console.log('📱 Setting DOB from:', dobValue);
+            const dobDate = new Date(dobValue);
+            console.log('📱 Parsed DOB:', dobDate);
+            setDob(dobDate);
+          } else {
+            console.log('📱 No DOB found in user data');
+            console.log('📱 Available fields:', Object.keys(user));
+            setDob(null);
+          }
+          
           setPlaceOfBirth(user.placeOfBirth || '');
           setRashi(user.rashi || '');
-        } catch {}
+        } catch (error) {
+          console.error('❌ Error fetching user data:', error);
+        }
       }
       setLoading(false);
     })();
@@ -97,22 +118,40 @@ export default function ProfileScreen() {
     if (!valid) return;
     try {
       // Save to backend (implement endpoint as needed)
-      await axios.post('http://192.168.1.5:3000/api/update-profile', {
+      console.log('💾 Saving profile with DOB:', dob);
+      console.log('💾 Full request data:', {
         name,
         email,
         phone,
         gender,
-        dob: dob ? dob.toISOString() : '',
+        dob: dob ? dob.toISOString() : null,
         placeOfBirth,
         rashi,
       });
+      
+      const response = await axios.post(getEndpointUrl('UPDATE_PROFILE'), {
+        name,
+        email,
+        phone: phone || null, // Send null instead of empty string
+        gender: gender || null, // Send null instead of empty string
+        dob: dob ? dob.toISOString() : null, // Send null instead of empty string
+        placeOfBirth: placeOfBirth || null, // Send null instead of empty string
+        rashi: rashi || null, // Send null instead of empty string
+      });
+      
+      console.log('✅ Backend response:', response.data);
+      
       // Save to AsyncStorage
       await AsyncStorage.setItem('user', JSON.stringify({
         name, email, phone, gender, dob, placeOfBirth, rashi
       }));
       Alert.alert('Success', 'Profile updated successfully!');
-    } catch (err) {
-      Alert.alert('Error', 'Failed to update profile.');
+    } catch (err: any) {
+      console.error('❌ Error updating profile:', err);
+      console.error('❌ Error message:', err.message);
+      console.error('❌ Error response status:', err.response?.status);
+      console.error('❌ Error response data:', err.response?.data);
+      Alert.alert('Error', `Failed to update profile: ${err.response?.data?.error || err.message}`);
     }
   };
 

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -32,7 +33,7 @@ export default function LoginScreen() {
     }
     if (!valid) return;
     try {
-      await axios.post('http://192.168.1.5:3000/api/send-otp', { email });
+              await axios.post(getEndpointUrl('SEND_OTP'), { email });
       router.push({ pathname: '/auth/otp', params: { email, name, from: 'login' } });
     } catch (err: any) {
       if (err.response?.status === 429) {

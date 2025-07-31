@@ -1,9 +1,24 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
+import { getEndpointUrl } from '@/constants/ApiConfig';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
+
+interface MediaFile {
+  avld: string;
+  Type: string;
+  Classification: string;
+  VideoName: string;
+  Link: string;
+  Deity: string;
+  Language: string;
+  Artists: string;
+  Duration: string;
+  MediaType: string;
+  CreatedAt: string;
+}
 
 const deityList = [
   'Lord Agni',
@@ -24,8 +39,8 @@ const deityList = [
   'Goddess Saraswati',
 ];
 
-function extractYouTubeId(url) {
-  let videoId = null;
+function extractYouTubeId(url: string): string | null {
+  let videoId: string | null = null;
   const shortMatch = url.match(/youtu\.be\/([\w-]+)/);
   if (shortMatch) videoId = shortMatch[1];
   const watchMatch = url.match(/[?&]v=([\w-]+)/);
@@ -37,21 +52,42 @@ function extractYouTubeId(url) {
 
 export default function AudioVideoScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-  const [currentMedia, setCurrentMedia] = useState(null);
-  const [mediaFiles, setMediaFiles] = useState([]);
+  const [currentMedia, setCurrentMedia] = useState<MediaFile | null>(null);
+  const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [youtubePlaying, setYoutubePlaying] = useState(false);
-  const [selectedDeity, setSelectedDeity] = useState(null);
+  const [selectedDeity, setSelectedDeity] = useState<string | null>(null);
   const [deityDropdownOpen, setDeityDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedClassification, setSelectedClassification] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMedia = async () => {
       try {
-        const res = await axios.get('http://192.168.1.5:3000/api/media-files');
-        setMediaFiles(res.data);
-      } catch (e) {
-        Alert.alert('Failed to fetch media files');
+        const url = getEndpointUrl('MEDIA_FILES');
+        console.log('🔍 Fetching media files from:', url);
+        console.log('🔍 Full URL:', url);
+        
+        const res = await axios.get(url);
+        console.log('📱 Response status:', res.status);
+        console.log('📱 Response headers:', res.headers);
+        console.log('📱 Received media files:', res.data);
+        console.log('📱 Number of files:', res.data?.length || 0);
+        console.log('📱 Type of data:', typeof res.data);
+        console.log('📱 Is array?', Array.isArray(res.data));
+        
+        if (Array.isArray(res.data)) {
+          console.log('📱 First item sample:', res.data[0]);
+        }
+        
+        setMediaFiles(res.data || []);
+      } catch (e: any) {
+        console.error('❌ Error fetching media files:', e);
+        console.error('❌ Error message:', e.message);
+        console.error('❌ Error response status:', e.response?.status);
+        console.error('❌ Error response data:', e.response?.data);
+        console.error('❌ Error response headers:', e.response?.headers);
+        Alert.alert('Failed to fetch media files', e.response?.data?.error || e.message);
       } finally {
         setLoading(false);
       }
@@ -59,7 +95,7 @@ export default function AudioVideoScreen() {
     fetchMedia();
   }, []);
 
-  const handlePlay = (media) => {
+  const handlePlay = (media: MediaFile) => {
     setCurrentMedia(media);
     setModalVisible(true);
     if (media.Link && (media.Link.includes('youtube.com') || media.Link.includes('youtu.be'))) {
@@ -69,11 +105,31 @@ export default function AudioVideoScreen() {
 
   const iconRowAndDropdown = (
     <View style={styles.iconRowTight}>
-      <TouchableOpacity style={styles.iconButton}>
-        <MaterialCommunityIcons name="music" size={28} color="#FF6A00" />
+      <TouchableOpacity 
+        style={[
+          styles.iconButton,
+          selectedClassification === 'Audio' && styles.iconButtonSelected
+        ]}
+        onPress={() => setSelectedClassification(selectedClassification === 'Audio' ? null : 'Audio')}
+      >
+        <MaterialCommunityIcons 
+          name="music" 
+          size={28} 
+          color={selectedClassification === 'Audio' ? "#fff" : "#FF6A00"} 
+        />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.iconButton}>
-        <MaterialCommunityIcons name="video" size={28} color="#FF6A00" />
+      <TouchableOpacity 
+        style={[
+          styles.iconButton,
+          selectedClassification === 'Video' && styles.iconButtonSelected
+        ]}
+        onPress={() => setSelectedClassification(selectedClassification === 'Video' ? null : 'Video')}
+      >
+        <MaterialCommunityIcons 
+          name="video" 
+          size={28} 
+          color={selectedClassification === 'Video' ? "#fff" : "#FF6A00"} 
+        />
       </TouchableOpacity>
       <View style={styles.deityDropdownWrapper}>
         <TouchableOpacity
@@ -139,41 +195,48 @@ export default function AudioVideoScreen() {
       <HomeHeader searchPlaceholder="Search for Music" extraContent={iconRowAndDropdown} showDailyPujaButton={false} />
       {/* Media List */}
       <ScrollView style={styles.content}>
-        <Text style={styles.sectionHeader}>Audio/Video Library</Text>
-        {loading ? (
-          <Text>Loading...</Text>
-        ) : (
-          mediaFiles
-            .filter(media => !selectedDeity || media.Deity === selectedDeity)
-            .filter(media => {
-              if (!searchQuery.trim()) return true;
-              const q = searchQuery.trim().toLowerCase();
-              return (
-                (media.VideoName && media.VideoName.toLowerCase().includes(q)) ||
-                (media.Artists && media.Artists.toLowerCase().includes(q)) ||
-                (media.Deity && media.Deity.toLowerCase().includes(q))
-              );
-            })
-            .map((media, idx) => (
-              <TouchableOpacity
-                key={media.Link || idx}
-                style={{ marginBottom: 16, backgroundColor: '#fff', borderRadius: 8, padding: 10, elevation: 2 }}
-                onPress={() => handlePlay(media)}
-              >
-                <Text style={{ fontWeight: 'bold' }}>{media.VideoName || 'Untitled'}</Text>
-                <Text style={{ color: '#888' }}>
-                  {media.Type} | {media.Language}
-                  {media.Deity ? ` | ${media.Deity}` : ''}
-                </Text>
-                {(media.Duration || media.Artists) && (
-                  <Text style={{ color: '#555', fontSize: 13 }}>
-                    {media.Duration ? media.Duration : ''}
-                    {media.Duration && media.Artists ? ' | ' : ''}
-                    {media.Artists ? media.Artists : ''}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            ))
+         {loading ? (
+           <Text>Loading...</Text>
+         ) : (
+           <>
+             {mediaFiles.length === 0 && (
+               <Text style={{ color: '#999', textAlign: 'center', marginTop: 20 }}>
+                 No media files found. Please check the database.
+               </Text>
+             )}
+                                       {mediaFiles
+                .filter(media => !selectedDeity || media.Deity === selectedDeity)
+                .filter(media => !selectedClassification || media.Classification === selectedClassification)
+                .filter(media => {
+                  if (!searchQuery.trim()) return true;
+                  const q = searchQuery.trim().toLowerCase();
+                  return (
+                    (media.VideoName && media.VideoName.toLowerCase().includes(q)) ||
+                    (media.Artists && media.Artists.toLowerCase().includes(q)) ||
+                    (media.Deity && media.Deity.toLowerCase().includes(q))
+                  );
+                })
+               .map((media, idx) => (
+                 <TouchableOpacity
+                   key={media.Link || idx}
+                   style={{ marginBottom: 16, backgroundColor: '#fff', borderRadius: 8, padding: 10, elevation: 2 }}
+                   onPress={() => handlePlay(media)}
+                 >
+                   <Text style={{ fontWeight: 'bold' }}>{media.VideoName || 'Untitled'}</Text>
+                   <Text style={{ color: '#888' }}>
+                     {media.Type} | {media.Language}
+                     {media.Deity ? ` | ${media.Deity}` : ''}
+                   </Text>
+                   {(media.Duration || media.Artists) && (
+                     <Text style={{ color: '#555', fontSize: 13 }}>
+                       {media.Duration ? media.Duration : ''}
+                       {media.Duration && media.Artists ? ' | ' : ''}
+                       {media.Artists ? media.Artists : ''}
+                     </Text>
+                   )}
+                 </TouchableOpacity>
+               ))}
+          </>
         )}
       </ScrollView>
       {/* YouTube Modal */}
@@ -218,6 +281,14 @@ export default function AudioVideoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+  header: {
+    backgroundColor: '#fff',
+    paddingTop: 50,
+    paddingBottom: 15,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
   topContent: {
     backgroundColor: '#fff',
     paddingBottom: 0,
@@ -235,6 +306,9 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 30,
     marginHorizontal: 8,
+  },
+  iconButtonSelected: {
+    backgroundColor: '#FF6A00',
   },
   deityDropdownWrapper: {
     position: 'relative',

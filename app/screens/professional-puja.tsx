@@ -1,6 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
+import { getEndpointUrl } from '@/constants/ApiConfig';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -31,16 +32,15 @@ const timeSlots = [
 ];
 
 interface PujaData {
-  _id?: string;
-  'Puja Name'?: string;
-  'Puja ID'?: string;
-  Details?: string;
-  'Main Deity'?: string;
-  Purpose?: string;
-  Days?: number;
-  Hours?: number;
-  Price?: number;
-  Link?: string;
+  createdAt?: string;
+  pujaId?: string;
+  pujaName?: string;
+  mainDeity?: string;
+  purpose?: string;
+  days?: number;
+  hours?: number;
+  price?: number;
+  details?: string;
 }
 
 function extractYouTubeId(url: string): string | null {
@@ -89,7 +89,7 @@ export default function ProfessionalPujaScreen() {
   useEffect(() => {
     const fetchPujas = async () => {
       try {
-        const res = await axios.get('http://192.168.1.5:3000/api/professional-pujas');
+        const res = await axios.get(getEndpointUrl('PROFESSIONAL_PUJAS'));
         console.log('Fetched puja data:', res.data);
         // Filter out any items with null/undefined values that might cause rendering issues
         const filteredData = res.data.filter((puja: any) => puja && typeof puja === 'object');
@@ -104,17 +104,21 @@ export default function ProfessionalPujaScreen() {
     fetchPujas();
   }, []);
 
+  // Debug currentPuja changes
+  useEffect(() => {
+    console.log('currentPuja changed:', currentPuja);
+  }, [currentPuja]);
+
   const handlePlay = (puja: PujaData) => {
     console.log('handlePlay called with puja:', puja);
     console.log('Puja fields:', {
-      name: puja['Puja Name'],
-      deity: puja['Main Deity'],
-      purpose: puja.Purpose,
-      days: puja.Days,
-      hours: puja.Hours,
-      price: puja.Price,
-      details: puja.Details,
-      link: puja.Link
+      name: puja.pujaName,
+      deity: puja.mainDeity,
+      purpose: puja.purpose,
+      days: puja.days,
+      hours: puja.hours,
+      price: puja.price,
+      details: puja.details
     });
     
     // Validate puja object before setting
@@ -123,11 +127,14 @@ export default function ProfessionalPujaScreen() {
       return;
     }
     
+    console.log('Setting currentPuja to:', puja);
     setCurrentPuja(puja);
     setModalVisible(true);
-    if (puja.Link && (puja.Link.includes('youtube.com') || puja.Link.includes('youtu.be'))) {
-      setYoutubePlaying(true);
-    }
+    console.log('Modal should now be visible');
+    // Note: No Link field in Supabase data, so removing YouTube functionality
+    // if (puja.Link && (puja.Link.includes('youtube.com') || puja.Link.includes('youtu.be'))) {
+    //   setYoutubePlaying(true);
+    // }
   };
 
   const handleBookPuja = () => {
@@ -140,22 +147,36 @@ export default function ProfessionalPujaScreen() {
       Alert.alert('Please enter a valid name and phone number.');
       return;
     }
+    
+    if (!currentPuja?.pujaName) {
+      Alert.alert('Error', 'No puja selected. Please try again.');
+      return;
+    }
+    
+    const bookingData = {
+      name,
+      phone: parseInt(phone) || phone, // Convert to number if possible
+      date: date.toISOString(), // Convert Date to ISO string for backend
+      slot,
+      pujaName: currentPuja?.pujaName, // Send puja name instead of pujaType
+      pujaId: currentPuja?.pujaId,
+      price: currentPuja?.price,
+    };
+    
+    console.log('Sending booking data:', bookingData);
+    console.log('Current puja:', currentPuja);
+    
     try {
-      await axios.post('http://192.168.1.5:3000/api/professional-puja-booking', {
-        name,
-        phone,
-        date,
-        slot,
-        pujaType: currentPuja?.['Puja Name'],
-        pujaId: currentPuja?.['Puja ID'],
-        price: currentPuja?.Price,
-      });
+      const response = await axios.post(getEndpointUrl('PROFESSIONAL_PUJA_BOOKING'), bookingData);
+      console.log('Booking response:', response.data);
       setBookingModalVisible(false);
       setName('');
       setPhone('');
       Alert.alert('Success', 'Your puja booking request has been submitted successfully!');
-    } catch (err) {
-      Alert.alert('Error', 'Failed to save booking. Please try again.');
+    } catch (err: any) {
+      console.error('Booking error:', err);
+      console.error('Error response:', err.response?.data);
+      Alert.alert('Error', `Failed to save booking: ${err.response?.data?.error || err.message}`);
     }
   };
 
@@ -227,9 +248,9 @@ export default function ProfessionalPujaScreen() {
       return false;
     }
     
-    // Filter by deity (check both Deity and Main Deity fields)
+    // Filter by deity
     if (selectedDeity) {
-      const deity = safeString(puja['Main Deity'] || '');
+      const deity = safeString(puja.mainDeity || '');
       if (deity !== selectedDeity) {
         return false;
       }
@@ -239,13 +260,13 @@ export default function ProfessionalPujaScreen() {
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       return (
-        (puja['Puja Name'] && safeString(puja['Puja Name']).toLowerCase().includes(q)) ||
-        (puja.Details && safeString(puja.Details).toLowerCase().includes(q)) ||
-        (puja['Main Deity'] && safeString(puja['Main Deity']).toLowerCase().includes(q)) ||
-        (puja.Purpose && safeString(puja.Purpose).toLowerCase().includes(q)) ||
-        (typeof puja.Days === 'number' && safeString(puja.Days).toLowerCase().includes(q)) ||
-        (typeof puja.Hours === 'number' && safeString(puja.Hours).toLowerCase().includes(q)) ||
-        (typeof puja.Price === 'number' && safeString(puja.Price).toLowerCase().includes(q))
+        (puja.pujaName && safeString(puja.pujaName).toLowerCase().includes(q)) ||
+        (puja.details && safeString(puja.details).toLowerCase().includes(q)) ||
+        (puja.mainDeity && safeString(puja.mainDeity).toLowerCase().includes(q)) ||
+        (puja.purpose && safeString(puja.purpose).toLowerCase().includes(q)) ||
+        (typeof puja.days === 'number' && safeString(puja.days).toLowerCase().includes(q)) ||
+        (typeof puja.hours === 'number' && safeString(puja.hours).toLowerCase().includes(q)) ||
+        (typeof puja.price === 'number' && safeString(puja.price).toLowerCase().includes(q))
       );
     }
     
@@ -271,62 +292,62 @@ export default function ProfessionalPujaScreen() {
             }
             
             console.log('Rendering puja at index:', idx, {
-              name: puja['Puja Name'],
-              deity: puja['Main Deity'],
-              purpose: puja.Purpose,
-              days: puja.Days,
-              hours: puja.Hours,
-              price: puja.Price
+              name: puja.pujaName,
+              deity: puja.mainDeity,
+              purpose: puja.purpose,
+              days: puja.days,
+              hours: puja.hours,
+              price: puja.price
             });
             
             return (
               <TouchableOpacity
-                key={puja._id || idx}
+                key={puja.pujaId || idx}
                 style={styles.pujaCard}
                 onPress={() => handlePlay(puja)}
               >
-                             <View style={styles.pujaHeader}>
-                 <Text style={styles.pujaName}>{safeString(puja['Puja Name'] || 'Puja Name')}</Text>
-                 {puja['Puja ID'] && puja['Puja ID'] !== '' && (
-                   <View style={styles.typeBadge}>
-                     <Text style={styles.typeText}>{safeString(puja['Puja ID'])}</Text>
-                   </View>
-                 )}
-               </View>
-               
-                                         <View style={styles.pujaDetails}>
-                           {puja['Main Deity'] && puja['Main Deity'] !== '' && (
-                             <Text style={styles.pujaDetail}>
-                               <MaterialCommunityIcons name="account-group" size={16} color="#666" />
-                               {' '}{safeString(puja['Main Deity'])}
-                             </Text>
-                           )}
-                           {puja.Purpose && puja.Purpose !== '' && (
-                             <Text style={styles.pujaDetail}>
-                               <MaterialCommunityIcons name="target" size={16} color="#666" />
-                               {' '}{safeString(puja.Purpose)}
-                             </Text>
-                           )}
-                           {typeof puja.Days === 'number' && puja.Days > 0 && (
-                             <Text style={styles.pujaDetail}>
-                               <MaterialCommunityIcons name="calendar" size={16} color="#666" />
-                               {' '}{safeString(puja.Days)} days
-                             </Text>
-                           )}
-                           {typeof puja.Hours === 'number' && puja.Hours > 0 && (
-                             <Text style={styles.pujaDetail}>
-                               <MaterialCommunityIcons name="clock" size={16} color="#666" />
-                               {' '}{safeString(puja.Hours)} hours
-                             </Text>
-                           )}
-                           {typeof puja.Price === 'number' && puja.Price > 0 && (
-                             <Text style={styles.pujaDetail}>
-                               <MaterialCommunityIcons name="currency-inr" size={16} color="#FF6A00" />
-                               {' '}₹{safeString(puja.Price)}
-                             </Text>
-                           )}
-                         </View>
-                       </TouchableOpacity>
+                <View style={styles.pujaHeader}>
+                  <Text style={styles.pujaName}>{safeString(puja.pujaName || 'Puja Name')}</Text>
+                  {puja.pujaId && puja.pujaId !== '' && (
+                    <View style={styles.typeBadge}>
+                      <Text style={styles.typeText}>{safeString(puja.pujaId)}</Text>
+                    </View>
+                  )}
+                </View>
+                
+                <View style={styles.pujaDetails}>
+                  {puja.mainDeity && puja.mainDeity !== '' && (
+                    <Text style={styles.pujaDetail}>
+                      <MaterialCommunityIcons name="account-group" size={16} color="#666" />
+                      {' '}{safeString(puja.mainDeity)}
+                    </Text>
+                  )}
+                  {puja.purpose && puja.purpose !== '' && (
+                    <Text style={styles.pujaDetail}>
+                      <MaterialCommunityIcons name="target" size={16} color="#666" />
+                      {' '}{safeString(puja.purpose)}
+                    </Text>
+                  )}
+                  {typeof puja.days === 'number' && puja.days > 0 && (
+                    <Text style={styles.pujaDetail}>
+                      <MaterialCommunityIcons name="calendar" size={16} color="#666" />
+                      {' '}{safeString(puja.days)} days
+                    </Text>
+                  )}
+                  {typeof puja.hours === 'number' && puja.hours > 0 && (
+                    <Text style={styles.pujaDetail}>
+                      <MaterialCommunityIcons name="clock" size={16} color="#666" />
+                      {' '}{safeString(puja.hours)} hours
+                    </Text>
+                  )}
+                  {typeof puja.price === 'number' && puja.price > 0 && (
+                    <Text style={styles.pujaDetail}>
+                      <MaterialCommunityIcons name="currency-inr" size={16} color="#FF6A00" />
+                      {' '}₹{safeString(puja.price)}
+                    </Text>
+                  )}
+                </View>
+              </TouchableOpacity>
             );
           })
         )}
@@ -357,52 +378,53 @@ export default function ProfessionalPujaScreen() {
             }}>
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
-          {currentPuja && (
+                    {currentPuja && (
             <ScrollView style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{safeString(currentPuja['Puja Name'] || 'Puja Name')}</Text>
+              <Text style={styles.modalTitle}>{safeString(currentPuja.pujaName || 'Puja Name')}</Text>
               
-              {currentPuja.Details && currentPuja.Details !== '' && (
-                <Text style={styles.modalDescription}>{safeString(currentPuja.Details)}</Text>
+              {currentPuja.details && currentPuja.details !== '' && (
+                <Text style={styles.modalDescription}>{safeString(currentPuja.details)}</Text>
               )}
               
-              {currentPuja['Main Deity'] && currentPuja['Main Deity'] !== '' && (
+              {currentPuja.mainDeity && currentPuja.mainDeity !== '' && (
                 <Text style={styles.modalDetail}>
                   <Text style={styles.modalDetailLabel}>Main Deity: </Text>
-                  {safeString(currentPuja['Main Deity'])}
+                  {safeString(currentPuja.mainDeity)}
                 </Text>
               )}
               
-              {currentPuja.Purpose && currentPuja.Purpose !== '' && (
+              {currentPuja.purpose && currentPuja.purpose !== '' && (
                 <Text style={styles.modalDetail}>
                   <Text style={styles.modalDetailLabel}>Purpose: </Text>
-                  {safeString(currentPuja.Purpose)}
+                  {safeString(currentPuja.purpose)}
                 </Text>
               )}
               
-              {typeof currentPuja.Days === 'number' && currentPuja.Days > 0 && (
+              {typeof currentPuja.days === 'number' && currentPuja.days > 0 && (
                 <Text style={styles.modalDetail}>
                   <Text style={styles.modalDetailLabel}>Duration: </Text>
-                  {safeString(currentPuja.Days)} days
+                  {safeString(currentPuja.days)} days
                 </Text>
               )}
               
-              {typeof currentPuja.Hours === 'number' && currentPuja.Hours > 0 && (
+              {typeof currentPuja.hours === 'number' && currentPuja.hours > 0 && (
                 <Text style={styles.modalDetail}>
                   <Text style={styles.modalDetailLabel}>Hours: </Text>
-                  {safeString(currentPuja.Hours)} hours
+                  {safeString(currentPuja.hours)} hours
                 </Text>
               )}
               
-              {typeof currentPuja.Price === 'number' && currentPuja.Price > 0 && (
+              {typeof currentPuja.price === 'number' && currentPuja.price > 0 && (
                 <Text style={styles.modalDetail}>
                   <Text style={styles.modalDetailLabel}>Price: </Text>
-                  ₹{safeString(currentPuja.Price)}
+                  ₹{safeString(currentPuja.price)}
                 </Text>
               )}
               
-              {currentPuja.Link && currentPuja.Link !== '' && (
+              {/* Note: No Link field in Supabase data */}
+              {/* {currentPuja.Link && currentPuja.Link !== '' && (
                 <Text style={styles.modalLink}>Link: {safeString(currentPuja.Link)}</Text>
-              )}
+              )} */}
               
               <TouchableOpacity style={styles.bookPujaButton} onPress={handleBookPuja}>
                 <Text style={styles.bookPujaButtonText}>Book Puja</Text>
@@ -423,7 +445,7 @@ export default function ProfessionalPujaScreen() {
             </TouchableOpacity>
             <View style={styles.modalTitleContainer}>
               <Text style={styles.modalTitlePrefix}>Thanks for requesting </Text>
-              <Text style={styles.modalTitleBold}>"{currentPuja?.['Puja Name']}"</Text>
+              <Text style={styles.modalTitleBold}>"{currentPuja?.pujaName}"</Text>
               <Text style={styles.modalTitleSuffix}> please enter the following to let us contact you</Text>
             </View>
             <TextInput

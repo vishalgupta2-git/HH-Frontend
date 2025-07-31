@@ -8,6 +8,7 @@ import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-han
 import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import axios from 'axios';
+import { getEndpointUrl } from '@/constants/ApiConfig';
 
 export const options = { headerShown: false };
 
@@ -312,8 +313,8 @@ export default function CreateTempleScreen() {
   useEffect(() => {
     const fetchDeityData = async () => {
       try {
-        console.log('Fetching deity data from: http://192.168.1.5:3000/api/deity-statues');
-        const res = await axios.get('http://192.168.1.5:3000/api/deity-statues');
+            console.log('Fetching deity data from: https://backend-ot2766akl-surbhi-guptas-projects-4a5bc02c.vercel.app/api/deity-statues');
+    const res = await axios.get(getEndpointUrl('DEITY_STATUES'));
         console.log('Fetched deity data:', res.data);
         
         // Log detailed statue information
@@ -540,6 +541,12 @@ export default function CreateTempleScreen() {
                   ) : (
                     <View style={styles.deityGrid}>
                       {deityData.map((deity) => {
+                        // Add null check for deity.Deity
+                        if (!deity.Deity) {
+                          console.log('⚠️ Skipping deity with no Deity property:', deity);
+                          return null;
+                        }
+                        
                         console.log('Rendering deity:', {
                           id: deity._id,
                           name: deity.Deity?.Name,
@@ -553,6 +560,12 @@ export default function CreateTempleScreen() {
                             key={deity._id}
                             style={styles.deityOption}
                             onPress={() => {
+                              // Add null check before accessing deity.Deity
+                              if (!deity.Deity) {
+                                console.log('⚠️ Cannot access deity with no Deity property');
+                                return;
+                              }
+                              
                               console.log('Deity clicked:', deity.Deity.Name, 'Statues:', deity.Deity.Statues);
                               console.log('Statues type:', typeof deity.Deity.Statues, 'Is array:', Array.isArray(deity.Deity.Statues));
                               
@@ -614,7 +627,7 @@ export default function CreateTempleScreen() {
                                 </View>
                               )}
                             </View>
-                            <Text style={styles.deityLabel}>{deity.Deity.Name}</Text>
+                            <Text style={styles.deityLabel}>{deity.Deity?.Name || 'Unknown Deity'}</Text>
                             {isSelected && selectedStatueUrl && (
                               <Text style={styles.selectedStatueText}>✓ Idol Selected</Text>
                             )}
@@ -630,7 +643,7 @@ export default function CreateTempleScreen() {
               ) : modal === 'statues' && selectedDeityForStatues ? (
                 <View style={styles.modalContent}>
                   <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>Choose {selectedDeityForStatues.Deity.Name} Idol</Text>
+                    <Text style={styles.modalTitle}>Choose {selectedDeityForStatues.Deity?.Name || 'Deity'} Idol</Text>
                     <TouchableOpacity 
                       style={styles.closeButton}
                       onPress={() => {

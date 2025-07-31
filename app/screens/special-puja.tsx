@@ -1,5 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import axios from 'axios';
+import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -61,18 +62,26 @@ export default function SpecialPujaScreen() {
       Alert.alert('Please enter a valid name and phone number.');
       return;
     }
+    
+    const bookingData = {
+      name,
+      phone,
+      date: date.toISOString(), // Convert Date to ISO string for backend
+      slot,
+      pujaName: specialPujaOptions[selected].label, // Send puja name instead of pujaType
+    };
+    
+    console.log('Sending special puja booking data:', bookingData);
+    
     try {
-      await axios.post('http://192.168.1.5:3000/api/special-puja', {
-        name,
-        phone,
-        date,
-        slot,
-        pujaType: specialPujaOptions[selected].label,
-      });
+      const response = await axios.post(getEndpointUrl('SPECIAL_PUJA'), bookingData);
+      console.log('Special puja booking response:', response.data);
       setModalVisible(false);
       setConfirmVisible(true);
-    } catch (err) {
-      Alert.alert('Error', 'Failed to save booking. Please try again.');
+    } catch (err: any) {
+      console.error('Special puja booking error:', err);
+      console.error('Error response:', err.response?.data);
+      Alert.alert('Error', `Failed to save booking: ${err.response?.data?.error || err.message}`);
     }
   };
 
@@ -152,18 +161,6 @@ export default function SpecialPujaScreen() {
             <TouchableOpacity onPress={() => setShowDate(true)} style={styles.datePickerBtn}>
               <Text style={styles.datePickerText}>Date: {date.toLocaleDateString()}</Text>
             </TouchableOpacity>
-            {showDate && (
-              <DateTimePicker
-                value={date}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                minimumDate={new Date()}
-                onChange={(_, d) => {
-                  setShowDate(false);
-                  if (d) setDate(d);
-                }}
-              />
-            )}
             <View style={styles.slotRow}>
               {timeSlots.map(ts => (
                 <TouchableOpacity
@@ -186,6 +183,19 @@ export default function SpecialPujaScreen() {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
+      {/* Date Picker Modal */}
+      {showDate && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          minimumDate={new Date()}
+          onChange={(event, d) => {
+            setShowDate(false);
+            if (d) setDate(d);
+          }}
+        />
+      )}
       {/* Confirmation Modal */}
       <Modal visible={confirmVisible} transparent animationType="fade">
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setConfirmVisible(false)}>

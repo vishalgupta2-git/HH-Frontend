@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -80,27 +81,44 @@ export default function SignUpScreen() {
       valid = false;
     }
     if (!valid) return;
+    
+    const signupData = {
+      name: trimmedName,
+      email,
+      gender,
+      dob: dob ? dob.toISOString() : '',
+      placeOfBirth,
+      rashi,
+    };
+    
+    console.log('Sending signup data:', signupData);
+    
     try {
-      const signupRes = await axios.post('http://192.168.1.5:3000/api/signup', {
-        name: trimmedName,
-        email,
-        gender,
-        dob: dob ? dob.toISOString() : '',
-        placeOfBirth,
-        rashi,
-      });
+      console.log('Calling signup endpoint...');
+      const signupRes = await axios.post(getEndpointUrl('SIGNUP'), signupData);
+      console.log('Signup response:', signupRes.data);
+      
       if (signupRes.data && signupRes.data.error === 'Email already registered.') {
         setEmailError('An account already exists with this ID. Please go to login screen to access your account.');
         return;
       }
-                      await axios.post('http://192.168.1.5:3000/api/send-otp', { email });
-        router.push({ pathname: '/auth/otp', params: { email, name: trimmedName, from: 'signup' } });
+      
+      console.log('Calling send OTP endpoint...');
+      const otpRes = await axios.post(getEndpointUrl('SEND_OTP'), { email });
+      console.log('OTP response:', otpRes.data);
+      
+      router.push({ pathname: '/auth/otp', params: { email, name: trimmedName, from: 'signup' } });
     } catch (err: any) {
+      console.error('Signup error:', err);
+      console.error('Error response:', err.response?.data);
+      
       if (err.response && err.response.data && err.response.data.error === 'Email already registered.') {
         setEmailError('An account already exists with this ID. Please go to login screen to access your account.');
-      } else {
-        Alert.alert('Error', 'Failed to create account or send OTP. Please try again.');
+        return;
       }
+      
+      const errorMessage = err.response?.data?.error || err.message || 'Failed to create account or send OTP. Please try again.';
+      Alert.alert('Error', errorMessage);
     }
   };
 
