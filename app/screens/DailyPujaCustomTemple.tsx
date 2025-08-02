@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { Audio } from 'expo-av';
@@ -111,6 +111,10 @@ export default function DailyPujaCustomTemple() {
   const [flowers, setFlowers] = useState<{ id: number; x: number; y: number; rotation: number; scale: number; opacity: number; type: string }[]>([]);
   const [isFlowerAnimationRunning, setIsFlowerAnimationRunning] = useState(false);
   const [showFlowerModal, setShowFlowerModal] = useState(false);
+  const [smoke, setSmoke] = useState<{ id: number; x: number; y: number; opacity: number; scale: number; rotation: number; animatedY: Animated.Value; animatedOpacity: Animated.Value; animatedScale: Animated.Value }[]>([]);
+  const [isSmokeAnimationRunning, setIsSmokeAnimationRunning] = useState(false);
+  const [showSmokeModal, setShowSmokeModal] = useState(false);
+  const smokeAnimationRef = useRef(false);
   const router = useRouter();
 
   // Function to get image source from MongoDB data using static require calls
@@ -321,6 +325,18 @@ export default function DailyPujaCustomTemple() {
     };
   }, [sound]);
 
+  // Auto-start smoke animation when modal opens
+  useEffect(() => {
+    if (showSmokeModal && !isSmokeAnimationRunning) {
+      // Small delay to ensure modal is fully rendered
+      setTimeout(() => {
+        if (showSmokeModal) {
+          startDhoopSmoke();
+        }
+      }, 100);
+    }
+  }, [showSmokeModal]); // Remove isSmokeAnimationRunning from dependencies
+
 
 
 
@@ -371,6 +387,10 @@ export default function DailyPujaCustomTemple() {
         return '🌷';
       case 'sunflower':
         return '🌻';
+      case 'marigold':
+        return '🌼';
+      case 'belPatra':
+        return '🍃';
       default:
         return '🌸';
     }
@@ -397,8 +417,8 @@ export default function DailyPujaCustomTemple() {
     let totalFlowers = 0;
     let completedFlowers = 0;
     
-    // Create 5 rows of flowers
-    for (let row = 0; row < 5; row++) {
+    // Create 3 rows of flowers
+    for (let row = 0; row < 3; row++) {
       // Create 15 flowers per row
       for (let i = 0; i < 15; i++) {
         totalFlowers++;
@@ -494,16 +514,19 @@ export default function DailyPujaCustomTemple() {
     const templeLeftX = templeCenterX - (templeWidth / 2);
     const templeRightX = templeCenterX + (templeWidth / 2);
     
-    const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower'];
+    const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra'];
     let totalFlowers = 0;
     let completedFlowers = 0;
     
-    // Create 4 rows (one for each flower type)
-    flowerTypes.forEach((flowerType, row) => {
-      // Create 15 flowers per row
+    // Create 3 rows with mixed flower types
+    for (let row = 0; row < 3; row++) {
+      // Create 15 flowers per row with mixed types
       for (let i = 0; i < 15; i++) {
         totalFlowers++;
         const flowerId = Date.now() + (row * 1000) + i; // Unique ID for each flower
+        
+        // Randomly select a flower type for each flower
+        const randomFlowerType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
         
         // Spread flowers evenly across temple width with some randomness
         const baseX = templeLeftX + (templeWidth * i / 14); // Evenly spaced (15 flowers = 14 gaps)
@@ -521,7 +544,7 @@ export default function DailyPujaCustomTemple() {
           rotation: randomRotation,
           scale: randomScale,
           opacity: 1, // Start fully visible
-          type: flowerType,
+          type: randomFlowerType,
         };
 
         setFlowers(prev => [...prev, newFlower]);
@@ -579,7 +602,116 @@ export default function DailyPujaCustomTemple() {
           requestAnimationFrame(animateFall);
         }, (row * 200) + (i * 30)); // 200ms delay between rows, 30ms between flowers
       }
-    });
+    }
+  };
+
+  // Function to start dhoop smoke effect
+  const startDhoopSmoke = () => {
+    if (smokeAnimationRef.current) {
+      return; // Prevent multiple animations
+    }
+    
+    setIsSmokeAnimationRunning(true);
+    smokeAnimationRef.current = true;
+    setSmoke([]); // Clear any existing smoke particles
+    
+    // Calculate dhoop position for modal (center of modal)
+    const modalDhoopX = screenWidth / 2;
+    const modalDhoopY = 580; // 100 pixels lower than before
+    
+    let smokeId = 0;
+    
+    const createSmokeParticle = () => {
+      // Check if animation should continue - use ref instead of state
+      if (!smokeAnimationRef.current) {
+        return;
+      }
+      
+      const particleId = Date.now() + smokeId++;
+      
+      // Random offset across full screen width
+      const randomOffsetX = (Math.random() - 0.5) * screenWidth; // Full screen width spread
+      const startX = modalDhoopX + randomOffsetX;
+      const startY = modalDhoopY;
+      
+      // Random properties for natural smoke effect in modal (half of current size)
+      const randomScale = 0.1125 + Math.random() * 0.1125; // 0.1125-0.225 scale (50% bigger than current)
+      const randomRotation = Math.random() * 360;
+      const riseDuration = 4000 + Math.random() * 3000; // 4-7 seconds
+      const riseDistance = 200 + Math.random() * 150; // Rise 200-350px
+      
+      // Create animated values for smooth animation
+      const animatedY = new Animated.Value(startY);
+      const animatedOpacity = new Animated.Value(1.0);
+      const animatedScale = new Animated.Value(randomScale);
+      
+      const newSmoke = {
+        id: particleId,
+        x: startX,
+        y: startY,
+        opacity: 1.0, // Fully opaque to start
+        scale: randomScale,
+        rotation: randomRotation,
+        animatedY,
+        animatedOpacity,
+        animatedScale,
+      };
+      
+      setSmoke(prev => {
+        const newSmokeArray = [...prev, newSmoke];
+        return newSmokeArray;
+      });
+      
+      // Animate smoke rising using Animated.timing
+      const riseAnimation = Animated.timing(animatedY, {
+        toValue: startY - riseDistance,
+        duration: riseDuration,
+        useNativeDriver: false, // We need to animate position
+      });
+      
+      const opacityAnimation = Animated.timing(animatedOpacity, {
+        toValue: 0.1, // Fade out to 10% opacity
+        duration: riseDuration,
+        useNativeDriver: false,
+      });
+      
+      const scaleAnimation = Animated.timing(animatedScale, {
+        toValue: randomScale * 1.4, // Expand as it rises
+        duration: riseDuration,
+        useNativeDriver: false,
+      });
+      
+      // Run all animations in parallel
+      Animated.parallel([riseAnimation, opacityAnimation, scaleAnimation]).start(() => {
+        // Remove smoke particle when animation completes
+        setTimeout(() => {
+          setSmoke(prev => {
+            const filteredSmoke = prev.filter(particle => particle.id !== particleId);
+            return filteredSmoke;
+          });
+        }, 300);
+      });
+      
+      // Create next smoke particle after a delay (only if animation is still running)
+      if (smokeAnimationRef.current) {
+        setTimeout(() => {
+          createSmokeParticle();
+        }, 50 + Math.random() * 67); // 50-117ms between particles (3x quantity)
+      }
+    };
+    
+    // Start creating smoke particles for modal after a small delay to ensure modal is rendered
+    setTimeout(() => {
+      createSmokeParticle();
+    }, 200);
+    
+    // Automatically stop smoke animation after 10 seconds
+    setTimeout(() => {
+      smokeAnimationRef.current = false;
+      setIsSmokeAnimationRunning(false);
+      setSmoke([]); // Clear all smoke particles
+      setShowSmokeModal(false); // Close the modal
+    }, 10000);
   };
 
   // Dynamic style for temple scroll content positioning
@@ -649,27 +781,35 @@ export default function DailyPujaCustomTemple() {
        <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
        
                {/* Flowers dropped in front of temple */}
-        {flowers.map((flower) => (
-          <Animated.View
-            key={flower.id}
-            style={[
-              styles.flower,
-              {
-                left: flower.x,
-                top: flower.y,
-                opacity: flower.opacity,
-                transform: [
-                  { rotate: `${flower.rotation}deg` },
-                  { scale: flower.scale },
-                ],
-              },
-            ]}
-          >
-                         <Text style={styles.flowerEmoji}>{getFlowerEmoji(flower.type)}</Text>
-          </Animated.View>
-        ))}
-      
-                                         {/* Transparent area for save button */}
+         {flowers.map((flower) => (
+           <Animated.View
+             key={flower.id}
+             style={[
+               styles.flower,
+               {
+                 left: flower.x,
+                 top: flower.y,
+                 opacity: flower.opacity,
+                 transform: [
+                   { rotate: `${flower.rotation}deg` },
+                   { scale: flower.scale },
+                 ],
+               },
+             ]}
+           >
+             {flower.type === 'redRose' ? (
+               <Image 
+                 source={require('@/assets/images/icons/own temple/rose.png')}
+                 style={styles.flowerImage}
+                 resizeMode="contain"
+               />
+             ) : (
+               <Text style={styles.flowerEmoji}>{getFlowerEmoji(flower.type)}</Text>
+             )}
+           </Animated.View>
+         ))}
+         
+         {/* Transparent area for save button */}
          <View 
            style={styles.scrollableArea}
          >
@@ -706,38 +846,7 @@ export default function DailyPujaCustomTemple() {
                 />
               );
             })
-          ) : (
-            // Show test deities if none are selected
-            <>
-              {(() => {
-                const testGanesha = deityState.find(d => d.key === 'test-ganesha');
-                const testKrishna = deityState.find(d => d.key === 'test-krishna');
-                
-                return (
-                  <>
-                    <StaticDeity
-                      key={`test-ganesha-${deityState.length}`}
-                      source={require('@/assets/images/temple/Ganesha1.png')}
-                      x={testGanesha?.x ?? 50}
-                      y={testGanesha?.y ?? 300}
-                      scale={testGanesha?.scale ?? 2}
-                      size={60}
-                      label="Test Ganesha"
-                    />
-                    <StaticDeity
-                      key={`test-krishna-${deityState.length}`}
-                      source={require('@/assets/images/temple/Krishna1.png')}
-                      x={testKrishna?.x ?? 150}
-                      y={testKrishna?.y ?? 300}
-                      scale={testKrishna?.scale ?? 2}
-                      size={60}
-                      label="Test Krishna"
-                    />
-                  </>
-                );
-              })()}
-            </>
-          )}
+          ) : null}
         </View>
         
         {/* Puja Icons Row */}
@@ -766,12 +875,30 @@ export default function DailyPujaCustomTemple() {
             <Text style={styles.pujaIcon}>🕉️</Text>
             <Text style={styles.pujaIconLabel}>Aarti</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.pujaIconItem}>
-            <Text style={styles.pujaIcon}>💨</Text>
-            <Text style={styles.pujaIconLabel}>Dhoop</Text>
+          <TouchableOpacity 
+            style={[
+              styles.pujaIconItem,
+              isSmokeAnimationRunning && styles.pujaIconItemDisabled
+            ]} 
+            onPress={() => setShowSmokeModal(true)}
+            disabled={isSmokeAnimationRunning}
+            activeOpacity={0.7}
+          >
+            <Text style={[
+              styles.pujaIcon,
+              isSmokeAnimationRunning && styles.pujaIconDisabled
+            ]}>💨</Text>
+            <Text style={[
+              styles.pujaIconLabel,
+              isSmokeAnimationRunning && styles.pujaIconLabelDisabled
+            ]}>Dhoop</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
-            <Text style={styles.pujaIcon}>🐚</Text>
+            <Image 
+              source={require('@/assets/images/icons/own temple/sankha.png')}
+              style={styles.pujaIconImage}
+              resizeMode="contain"
+            />
             <Text style={styles.pujaIconLabel}>Shankh</Text>
           </TouchableOpacity>
         </View>
@@ -806,7 +933,11 @@ export default function DailyPujaCustomTemple() {
                   style={styles.flowerOption} 
                   onPress={() => dropFlowers('redRose')}
                 >
-                  <Text style={styles.flowerOptionEmoji}>🌹</Text>
+                  <Image 
+                    source={require('@/assets/images/icons/own temple/rose.png')}
+                    style={styles.flowerOptionImage}
+                    resizeMode="contain"
+                  />
                   <Text style={styles.flowerOptionLabel}>Red Rose</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
@@ -825,6 +956,20 @@ export default function DailyPujaCustomTemple() {
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.flowerOption} 
+                  onPress={() => dropFlowers('marigold')}
+                >
+                  <Text style={styles.flowerOptionEmoji}>🌼</Text>
+                  <Text style={styles.flowerOptionLabel}>Marigold</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
+                  onPress={() => dropFlowers('belPatra')}
+                >
+                  <Text style={styles.flowerOptionEmoji}>🍃</Text>
+                  <Text style={styles.flowerOptionLabel}>Bel Patra</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
                   onPress={() => dropMixFlowers()}
                 >
                   <Text style={styles.flowerOptionEmoji}>🌸</Text>
@@ -835,8 +980,54 @@ export default function DailyPujaCustomTemple() {
           </TouchableOpacity>
         </View>
       </Modal>
-    </>
-  );
+       
+       {/* Smoke Effect Modal - Fully transparent background */}
+       <Modal
+         visible={showSmokeModal}
+         transparent={true}
+         animationType="none"
+         onRequestClose={() => {
+           setIsSmokeAnimationRunning(false);
+           smokeAnimationRef.current = false;
+           setShowSmokeModal(false);
+           setSmoke([]); // Clear all smoke particles
+         }}
+         statusBarTranslucent={true}
+       >
+         <TouchableOpacity 
+           style={styles.smokeModalOverlay}
+           activeOpacity={1}
+           onPress={() => {
+             setIsSmokeAnimationRunning(false);
+             smokeAnimationRef.current = false;
+             setShowSmokeModal(false);
+             setSmoke([]); // Clear all smoke particles
+           }}
+         >
+           {/* Smoke particles rendered in the modal */}
+           {smoke.map((particle) => (
+             <Animated.View
+               key={particle.id}
+               style={[
+                 styles.smokeParticle,
+                 {
+                   left: particle.x,
+                   top: particle.animatedY,
+                   opacity: particle.animatedOpacity,
+                   transform: [
+                     { rotate: `${particle.rotation}deg` },
+                     { scale: particle.animatedScale },
+                   ],
+                 },
+               ]}
+             >
+               <Text style={styles.smokeEmoji}>💨</Text>
+             </Animated.View>
+           ))}
+         </TouchableOpacity>
+       </Modal>
+     </>
+   );
 }
 
  const styles = StyleSheet.create({
@@ -985,6 +1176,10 @@ export default function DailyPujaCustomTemple() {
           textShadowOffset: { width: 1, height: 1 },
           textShadowRadius: 2,
         },
+        flowerImage: {
+          width: 40, // Adjust size as needed
+          height: 40, // Adjust size as needed
+        },
         pujaIconItemDisabled: {
           opacity: 0.5,
         },
@@ -993,6 +1188,11 @@ export default function DailyPujaCustomTemple() {
         },
                  pujaIconLabelDisabled: {
            opacity: 0.5,
+         },
+         pujaIconImage: {
+           width: 32, // Adjust size as needed
+           height: 32, // Adjust size as needed
+           marginBottom: 8,
          },
                                                                                modalOverlay: {
                flex: 1,
@@ -1052,6 +1252,11 @@ export default function DailyPujaCustomTemple() {
            color: '#333',
            textAlign: 'center',
          },
+         flowerOptionImage: {
+           width: 30,
+           height: 30,
+           marginBottom: 5,
+         },
           deityContainer: {
             position: 'absolute',
             top: 0,
@@ -1060,4 +1265,23 @@ export default function DailyPujaCustomTemple() {
             bottom: 0,
             zIndex: 5, // Above temple but below bells and arch
           },
-    });  
+    smokeParticle: {
+      position: 'absolute',
+      zIndex: 30, // Above deities (zIndex: 15) in the same container
+    },
+    smokeEmoji: {
+      fontSize: 60, // Increased from 40
+      textShadowColor: 'rgba(0, 0, 0, 0.9)', // Much darker shadow
+      textShadowOffset: { width: 3, height: 3 },
+      textShadowRadius: 6, // Increased shadow radius
+      color: '#000000', // Black color for better visibility on white background
+    },
+    smokeModalOverlay: {
+      flex: 1,
+      backgroundColor: 'transparent', // Changed from white to transparent
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
+    },
+
+  });  
