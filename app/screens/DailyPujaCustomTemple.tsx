@@ -67,81 +67,128 @@ const ArchSVG = (props: { width?: number; height?: number; style?: any }) => {
   );
 };
 
-                               // Draggable Thali component
-      const DraggableThali: React.FC = () => {
-        const pan = useRef(new Animated.ValueXY()).current;
+// Swingable Bell component
+const SwingableBell: React.FC<{ position: 'left' | 'right'; swingValue: Animated.Value }> = ({ position, swingValue }) => {
+  const swingBell = () => {
+    Animated.sequence([
+      Animated.timing(swingValue, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(swingValue, {
+        toValue: -1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(swingValue, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
 
-        const panResponder = useRef(
-          PanResponder.create({
-            onStartShouldSetPanResponder: () => true,
-            onPanResponderMove: Animated.event(
-              [null, { dx: pan.x, dy: pan.y }],
-              { useNativeDriver: false }
-            ),
-            onPanResponderRelease: () => {
-              // Optional: Add boundaries or snap behavior here
-            },
-          })
-        ).current;
+  const swingStyle = {
+    transform: [
+      {
+        rotate: swingValue.interpolate({
+          inputRange: [-1, 0, 1],
+          outputRange: ['-30deg', '0deg', '30deg'],
+        }),
+      },
+    ],
+    transformOrigin: 'top',
+  };
 
-        return (
-          <Animated.View
-            style={[
-              { 
-                transform: pan.getTranslateTransform(),
-                position: 'absolute',
-                bottom: 100,
-                left: (screenWidth - 200) / 2, // Center horizontally
-                width: 200,
-                height: 200,
-                zIndex: 1000,
-              }
-            ]}
-            {...panResponder.panHandlers}
-          >
-            <Image 
-              source={require('@/assets/images/icons/own temple/PujaThali1.png')}
-              style={{ width: '100%', height: '100%' }}
-              resizeMode="contain"
-              onLoad={() => console.log('🔍 [DEBUG] PujaThali1.png loaded successfully')}
-              onError={(error) => console.error('🔍 [DEBUG] PujaThali1.png failed to load:', error)}
-            />
-          </Animated.View>
-        );
-      };
+  return (
+    <TouchableOpacity onPress={swingBell} activeOpacity={0.8}>
+      <Animated.View style={[position === 'left' ? styles.bellLeft : styles.bellRight, swingStyle]}>
+        <Image
+          source={require('@/assets/images/temple/GoldenBell.png')}
+          style={{ width: '100%', height: '100%' }}
+          resizeMode="contain"
+        />
+      </Animated.View>
+    </TouchableOpacity>
+  );
+};
 
-                               // Static deity display component
-      const StaticDeity: React.FC<{
-        source?: any;
-        emoji?: string;
-        x: number;
-        y: number;
-        scale?: number;
-        size?: number;
-        label?: string;
-      }> = ({ source, emoji, x, y, scale = 1, size = 72, label }) => {
-        return (
-          <View
-            style={{
-              position: 'absolute',
-              left: x,
-              top: y,
-              zIndex: 15,
-              transform: [{ scale }],
-              width: size,
-              height: size,
-            }}
-          >
-            {source ? (
-              <Image source={source} style={{ width: size, height: size }} resizeMode="contain" />
-            ) : (
-              <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FF6A00' }}>
-                <Text style={{ fontSize: size * 0.6 }}>{emoji}</Text>
-              </View>
-            )}
-          </View>
-        );
-      };
+// Draggable Thali component
+const DraggableThali: React.FC = () => {
+  const pan = useRef(new Animated.ValueXY()).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: Animated.event(
+        [null, { dx: pan.x, dy: pan.y }],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: () => {
+        // Optional: Add boundaries or snap behavior here
+      },
+    })
+  ).current;
+
+  return (
+    <Animated.View
+      style={[
+        { 
+          transform: pan.getTranslateTransform(),
+          position: 'absolute',
+          bottom: 100,
+          left: (screenWidth - 200) / 2, // Center horizontally
+          width: 200,
+          height: 200,
+          zIndex: 1000,
+        }
+      ]}
+      {...panResponder.panHandlers}
+    >
+      <Image 
+        source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+        style={{ width: '100%', height: '100%' }}
+        resizeMode="contain"
+        onLoad={() => console.log('🔍 [DEBUG] PujaThali1.png loaded successfully')}
+        onError={(error) => console.error('🔍 [DEBUG] PujaThali1.png failed to load:', error)}
+      />
+    </Animated.View>
+  );
+};
+
+// Static deity display component
+const StaticDeity: React.FC<{
+  source?: any;
+  emoji?: string;
+  x: number;
+  y: number;
+  scale?: number;
+  size?: number;
+  label?: string;
+}> = ({ source, emoji, x, y, scale = 1, size = 72, label }) => {
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        left: x,
+        top: y,
+        zIndex: 15,
+        transform: [{ scale }],
+        width: size,
+        height: size,
+      }}
+    >
+      {source ? (
+        <Image source={source} style={{ width: size, height: size }} resizeMode="contain" />
+      ) : (
+        <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FF6A00' }}>
+          <Text style={{ fontSize: size * 0.6 }}>{emoji}</Text>
+        </View>
+      )}
+    </View>
+  );
+};
 
 export default function DailyPujaCustomTemple() {
   const [selectedDeities, setSelectedDeities] = useState<{[deityId: string]: string}>({});
@@ -159,6 +206,8 @@ export default function DailyPujaCustomTemple() {
   const [showSmokeModal, setShowSmokeModal] = useState(false);
   const [showAartiModal, setShowAartiModal] = useState(false);
   const [thaliPosition, setThaliPosition] = useState({ x: 0, y: 0 });
+  const [leftBellSwing, setLeftBellSwing] = useState(new Animated.Value(0));
+  const [rightBellSwing, setRightBellSwing] = useState(new Animated.Value(0));
   const smokeAnimationRef = useRef(false);
   const router = useRouter();
 
@@ -386,7 +435,85 @@ export default function DailyPujaCustomTemple() {
 
 
 
-  // Function to play conch sound
+  const swingBothBells = () => {
+    // Play temple bell sound
+    const playTempleBellSound = async () => {
+      try {
+        // Stop any currently playing sound
+        if (sound) {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        }
+
+        // Load and play the temple bell sound
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          require('@/assets/sounds/TempleBell.mp3'),
+          { shouldPlay: true, isLooping: false }
+        );
+        
+        setSound(newSound);
+
+        // Stop the sound after 3 seconds
+        setTimeout(async () => {
+          try {
+            await newSound.stopAsync();
+            await newSound.unloadAsync();
+            setSound(null);
+          } catch (error) {
+            // Error stopping sound
+          }
+        }, 3000);
+
+      } catch (error) {
+        // Error playing temple bell sound
+        console.error('Error playing temple bell sound:', error);
+      }
+    };
+
+    // Play the sound immediately
+    playTempleBellSound();
+
+    // Swing left bell
+    Animated.sequence([
+      Animated.timing(leftBellSwing, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(leftBellSwing, {
+        toValue: -1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(leftBellSwing, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Swing right bell with slight delay
+    setTimeout(() => {
+      Animated.sequence([
+        Animated.timing(rightBellSwing, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rightBellSwing, {
+          toValue: -1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rightBellSwing, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 200);
+  };
+
   const playConchSound = async () => {
     try {
       // Stop any currently playing sound
@@ -814,16 +941,8 @@ export default function DailyPujaCustomTemple() {
       </ScrollView>
       
       {/* Bells: left and right */}
-      <Image
-        source={require('@/assets/images/temple/GoldenBell.png')}
-        style={styles.bellLeft}
-        resizeMode="contain"
-      />
-      <Image
-        source={require('@/assets/images/temple/GoldenBell.png')}
-        style={styles.bellRight}
-        resizeMode="contain"
-      />
+      <SwingableBell position="left" swingValue={leftBellSwing} />
+      <SwingableBell position="right" swingValue={rightBellSwing} />
              {/* Arch on top */}
        <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
        
@@ -955,6 +1074,10 @@ export default function DailyPujaCustomTemple() {
               styles.pujaIconLabel,
               isSmokeAnimationRunning && styles.pujaIconLabelDisabled
             ]}>Dhoop</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
+            <Text style={styles.pujaIcon}>🔔</Text>
+            <Text style={styles.pujaIconLabel}>Ghanti</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
             <Image 
@@ -1151,7 +1274,7 @@ export default function DailyPujaCustomTemple() {
    );
 }
 
- const styles = StyleSheet.create({
+const styles = StyleSheet.create({
    container: { flex: 1, backgroundColor: '#fff' },
    purpleGradient: {
      position: 'absolute',
