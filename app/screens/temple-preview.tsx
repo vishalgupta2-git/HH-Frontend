@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, Modal } from 'react-native';
-import { State as GestureState, LongPressGestureHandler, PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
+import React, { useEffect, useState, useMemo } from 'react';
+import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 
@@ -33,8 +33,16 @@ const deityList = [
 ];
 
 const templeStyles = [
-  { id: 'temple1', image: require('@/assets/images/temple/Temple1.png') },
-  { id: 'temple2', image: require('@/assets/images/temple/Temple2.png') },
+  {
+    id: 'temple1',
+    name: 'Temple Style 1',
+    image: require('@/assets/images/temple/Temple1.png'),
+  },
+  {
+    id: 'temple2', 
+    name: 'Temple Style 2',
+    image: require('@/assets/images/temple/Temple2.png'),
+  },
 ];
 
 const ArchSVG = (props: { width?: number; height?: number; style?: any }) => {
@@ -60,26 +68,31 @@ const ArchSVG = (props: { width?: number; height?: number; style?: any }) => {
   );
 };
 
-// Draggable/scalable deity overlay
-const DraggableDeity: React.FC<{
-  source?: any;
-  emoji?: string;
-  initialX: number;
-  initialY: number;
-  initialScale?: number;
-  onLongPress?: (setScale: (s: number) => void, currentScale: number) => void;
-  onMoveOrScale?: (x: number, y: number, scale: number) => void;
-}> = ({ source, emoji, initialX, initialY, initialScale = 1, onLongPress, onMoveOrScale }) => {
-  const translateX = useSharedValue(initialX);
-  const translateY = useSharedValue(initialY);
-  const scale = useSharedValue(initialScale);
-  const lastScale = useSharedValue(initialScale);
-  const [showMenu, setShowMenu] = React.useState(false);
-  const [menuPos, setMenuPos] = React.useState({ x: 0, y: 0 });
+      // Draggable/scalable deity overlay
+   const DraggableDeity: React.FC<{
+     source?: any;
+     emoji?: string;
+     initialX: number;
+     initialY: number;
+     initialScale?: number;
+     size?: number;
+     label?: string;
+     onMoveOrScale?: (x: number, y: number, scale: number) => void;
+   }> = ({ source, emoji, initialX, initialY, initialScale = 1, size = 72, label, onMoveOrScale }) => {
+           const translateX = useSharedValue(initialX);
+      const translateY = useSharedValue(initialY);
+      const scale = useSharedValue(initialScale);
+      const lastScale = useSharedValue(initialScale);
+      const panRef = React.useRef(null);
+      const pinchRef = React.useRef(null);
 
-  const panRef = React.useRef(null);
-  const pinchRef = React.useRef(null);
-  const longPressRef = React.useRef(null);
+            // Update shared values when props change
+      React.useEffect(() => {
+        translateX.value = initialX;
+        translateY.value = initialY;
+        scale.value = initialScale;
+        lastScale.value = initialScale;
+      }, [initialX, initialY, initialScale]);
 
   const panHandler = useAnimatedGestureHandler({
     onStart: (_: any, ctx: any) => {
@@ -108,67 +121,48 @@ const DraggableDeity: React.FC<{
     },
   });
 
-  const style = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
-    position: 'absolute',
-    zIndex: 10,
-  }));
+     const style = useAnimatedStyle(() => ({
+     transform: [
+       { translateX: translateX.value },
+       { translateY: translateY.value },
+       { scale: scale.value },
+     ],
+     position: 'absolute',
+     zIndex: 20, // Increased to be above temple and gradient area
+   }));
 
-  // Long press handler
-  const handleLongPress = (event: any) => {
-    if (event.nativeEvent.state === GestureState.ACTIVE) {
-      if (onLongPress) onLongPress((s: number) => { scale.value = s; }, scale.value);
-    }
-  };
-
-  // Remove local menu rendering
-
-  return (
-    <LongPressGestureHandler
-      onHandlerStateChange={handleLongPress}
-      minDurationMs={3000}
-      ref={longPressRef}
-      simultaneousHandlers={[panRef, pinchRef]}
-    >
-      <Animated.View>
-        <PanGestureHandler onGestureEvent={panHandler} ref={panRef} simultaneousHandlers={[pinchRef, longPressRef]}>
-          <Animated.View style={style}>
-            <PinchGestureHandler onGestureEvent={pinchHandler} ref={pinchRef} simultaneousHandlers={[panRef, longPressRef]}>
-              <Animated.View>
-                {source ? (
-                  <Image source={source} style={{ width: 72, height: 72 }} resizeMode="contain" />
-                ) : (
-                  <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FF6A00' }}>
-                    <Text style={{ fontSize: 40 }}>{emoji}</Text>
-                  </View>
-                )}
-              </Animated.View>
-            </PinchGestureHandler>
-          </Animated.View>
-        </PanGestureHandler>
-      </Animated.View>
-    </LongPressGestureHandler>
-  );
+        return (
+     <Animated.View>
+       <PanGestureHandler onGestureEvent={panHandler} ref={panRef} simultaneousHandlers={[pinchRef]}>
+         <Animated.View style={style}>
+           <PinchGestureHandler onGestureEvent={pinchHandler} ref={pinchRef} simultaneousHandlers={[panRef]}>
+             <Animated.View>
+               {source ? (
+                 <Image source={source} style={{ width: size, height: size }} resizeMode="contain" />
+               ) : (
+                 <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FF6A00' }}>
+                   <Text style={{ fontSize: size * 0.6 }}>{emoji}</Text>
+                 </View>
+               )}
+             </Animated.View>
+           </PinchGestureHandler>
+         </Animated.View>
+       </PanGestureHandler>
+     </Animated.View>
+   );
 };
 
 export default function TemplePreviewScreen() {
   const [selectedDeities, setSelectedDeities] = useState<{[deityId: string]: string}>({});
-  const [selectedStyle, setSelectedStyle] = useState<string>('temple1');
+  const [selectedStyle, setSelectedStyle] = useState<string>(templeStyles[0].id);
   const [deityState, setDeityState] = useState<{ key: string; x: number; y: number; scale: number }[]>([]);
-  // Modal state for scaling
-  const [scaleModal, setScaleModal] = useState<{ key: string; currentScale: number; setScale: (s: number) => void } | null>(null);
+  
   const [loading, setLoading] = useState(true);
   const [bgGradient, setBgGradient] = useState(["#8B5CF6", "#7C3AED", "#6D28D9"]);
   const router = useRouter();
 
   // Function to get image source from MongoDB data using static require calls
   const getImageSource = (imagePath: string) => {
-    console.log('Getting image source for:', imagePath);
-    
     // Handle different possible path formats
     let filename = '';
     
@@ -185,81 +179,104 @@ export default function TemplePreviewScreen() {
       filename = imagePath;
     }
     
-    console.log('Extracted filename:', filename);
-    
     // Map MongoDB paths to static require calls
     switch (filename) {
+      // Original icons
       case 'VishnuIcon.png':
-        console.log('✅ Mapping to VishnuIcon.png');
         return require('@/assets/images/temple/VishnuIcon.png');
       case 'Ganesha1.png':
-        console.log('✅ Mapping to Ganesha1.png');
         return require('@/assets/images/temple/Ganesha1.png');
       case 'Ganesha2.png':
-        console.log('✅ Mapping to Ganesha2.png');
         return require('@/assets/images/temple/Ganesha2.png');
       case 'Krishna1.png':
-        console.log('✅ Mapping to Krishna1.png');
         return require('@/assets/images/temple/Krishna1.png');
       case 'Krishna2.png':
-        console.log('✅ Mapping to Krishna2.png');
         return require('@/assets/images/temple/Krishna2.png');
       case 'Vishnu1.png':
-        console.log('✅ Mapping to Vishnu1.png');
         return require('@/assets/images/temple/Vishnu1.png');
       case 'Lakshmi1.png':
-        console.log('✅ Mapping to Lakshmi1.png');
         return require('@/assets/images/temple/Lakshmi1.png');
       case 'Saraswati1.png':
-        console.log('✅ Mapping to Saraswati1.png');
         return require('@/assets/images/temple/Saraswati1.png');
       case 'Durga1.png':
-        console.log('✅ Mapping to Durga1.png');
         return require('@/assets/images/temple/Durga1.png');
       case 'Durga2.png':
-        console.log('✅ Mapping to Durga2.png');
         return require('@/assets/images/temple/Durga2.png');
       case 'Brahma1.png':
-        console.log('✅ Mapping to Brahma1.png');
         return require('@/assets/images/temple/Brahma1.png');
       case 'Shiv2.png':
-        console.log('✅ Mapping to Shiv2.png');
         return require('@/assets/images/temple/Shiv2.png');
       case 'ShivParvati1.png':
-        console.log('✅ Mapping to ShivParvati1.png');
         return require('@/assets/images/temple/ShivParvati1.png');
       case 'Rama1.png':
-        console.log('✅ Mapping to Rama1.png');
         return require('@/assets/images/temple/Rama1.png');
       case 'Hanuman1.png':
-        console.log('✅ Mapping to Hanuman1.png');
         return require('@/assets/images/temple/Hanuman1.png');
       case 'Surya1.png':
-        console.log('✅ Mapping to Surya1.png');
         return require('@/assets/images/temple/Surya1.png');
+      
+      // New icons from "New folder"
+      case 'Ganesha3.png':
+        return require('@/assets/images/temple/New folder/Ganesha3.png');
+      case 'Ganesha4.png':
+        return require('@/assets/images/temple/New folder/Ganesha4.png');
+      case 'Ganesha5.png':
+        return require('@/assets/images/temple/New folder/Ganesha5.png');
+      case 'Krishna3.png':
+        return require('@/assets/images/temple/New folder/Krishna3.png');
+      case 'Krishna4.png':
+        return require('@/assets/images/temple/New folder/Krishna4.png');
+      case 'Krishna5.png':
+        return require('@/assets/images/temple/New folder/Krishna5.png');
+      case 'Vishnu2.png':
+        return require('@/assets/images/temple/New folder/Vishnu2.png');
+      case 'Vishnu3.png':
+        return require('@/assets/images/temple/New folder/Vishnu3.png');
+      case 'Lakshmi2.png':
+        return require('@/assets/images/temple/New folder/Lakshmi2.png');
+      case 'Saraswati2.png':
+        return require('@/assets/images/temple/New folder/Saraswati2.png');
+      case 'Saraswati3.png':
+        return require('@/assets/images/temple/New folder/Saraswati3.png');
+      case 'Durga3.png':
+        return require('@/assets/images/temple/New folder/Durga3.png');
+      case 'Shiv3.png':
+        return require('@/assets/images/temple/New folder/Shiv3.png');
+      case 'Shiv4.png':
+        return require('@/assets/images/temple/New folder/Shiv4.png');
+      case 'ShivParvati2.png':
+        return require('@/assets/images/temple/New folder/ShivParvati2.png');
+      case 'Rama2.png':
+        return require('@/assets/images/temple/New folder/Rama2.png');
+      case 'Rama3.png':
+        return require('@/assets/images/temple/New folder/Rama3.png');
+      case 'Rama4.png':
+        return require('@/assets/images/temple/New folder/Rama4.png');
+      case 'Hanuman2.png':
+        return require('@/assets/images/temple/New folder/Hanuman2.png');
+      case 'Hanuman3.png':
+        return require('@/assets/images/temple/New folder/Hanuman3.png');
+      case 'Hanuman4.png':
+        return require('@/assets/images/temple/New folder/Hanuman4.png');
+      case 'Kali1.png':
+        return require('@/assets/images/temple/New folder/Kali1.png');
+      
+      // Temple and other assets
       case 'Temple1.png':
-        console.log('✅ Mapping to Temple1.png');
         return require('@/assets/images/temple/Temple1.png');
       case 'Temple2.png':
-        console.log('✅ Mapping to Temple2.png');
         return require('@/assets/images/temple/Temple2.png');
       case 'Temple-bg.png':
-        console.log('✅ Mapping to Temple-bg.png');
         return require('@/assets/images/temple/Temple-bg.png');
       case 'TempleStar.png':
-        console.log('✅ Mapping to TempleStar.png');
         return require('@/assets/images/temple/TempleStar.png');
       case 'GoldenBell.png':
-        console.log('✅ Mapping to GoldenBell.png');
         return require('@/assets/images/temple/GoldenBell.png');
       case 'Glow.png':
-        console.log('✅ Mapping to Glow.png');
         return require('@/assets/images/temple/Glow.png');
       case 'arch.svg':
-        console.log('✅ Mapping to arch.svg');
         return require('@/assets/images/temple/arch.svg');
       default:
-        console.log('❌ Image not found in mapping, using fallback. Filename:', filename);
         return require('@/assets/images/temple/Ganesha1.png');
     }
   };
@@ -283,59 +300,89 @@ export default function TemplePreviewScreen() {
           if (config.bgGradient) setBgGradient(config.bgGradient);
         } catch {}
       }
-      const stateStr = await AsyncStorage.getItem(DEITY_STATE_KEY);
-      let loadedState: { key: string; x: number; y: number; scale: number }[] = [];
-      if (stateStr) {
-        try {
-          loadedState = JSON.parse(stateStr);
-        } catch {}
-      }
-      // Merge: keep state for present deities, add new, remove missing
-      const deityKeys = Object.keys(loadedDeities);
-      const mergedState = deityKeys.map((key, idx) => {
-        const found = loadedState.find(d => d.key === key);
-        return found || { key, x: -60 + idx * 80, y: 0, scale: 3 };
-      });
-      setDeityState(mergedState);
+             const stateStr = await AsyncStorage.getItem(DEITY_STATE_KEY);
+       let loadedState: { key: string; x: number; y: number; scale: number }[] = [];
+                if (stateStr) {
+           try {
+             loadedState = JSON.parse(stateStr);
+           } catch (error) {
+             // Error parsing loaded deity state
+           }
+         }
+                     // Merge: keep state for present deities, add new, remove missing
+       const deityKeys = Object.keys(loadedDeities);
+       
+       // Always preserve test deities from loaded state
+       const testDeities = loadedState.filter(d => d.key.startsWith('test-'));
+       
+       const mergedState = deityKeys.map((key, idx) => {
+         const found = loadedState.find(d => d.key === key);
+         const result = found || { key, x: 20 + idx * 80, y: 0, scale: 2 };
+         return result;
+       });
+       
+       // Combine selected deities with test deities
+       const finalState = [...mergedState, ...testDeities];
+       setDeityState(finalState);
       setLoading(false);
     })();
   }, []);
 
-  // When selectedDeities changes, only add new or remove missing, never overwrite existing state
-  useEffect(() => {
-    setDeityState(prev => {
-      const deityKeys = Object.keys(selectedDeities);
-      // Remove missing
-      let filtered = prev.filter(d => deityKeys.includes(d.key));
-      // Add new
-      deityKeys.forEach((key: string, idx: number) => {
-        if (!filtered.find(d => d.key === key)) {
-          filtered.push({ key, x: -60 + idx * 80, y: 0, scale: 3 });
-        }
-      });
-      return filtered;
-    });
-  }, [selectedDeities]);
+     // When selectedDeities changes, only add new or remove missing, never overwrite existing state
+   useEffect(() => {
+     setDeityState(prev => {
+       const deityKeys = Object.keys(selectedDeities);
+       
+       // Always preserve test deities
+       const testDeities = prev.filter(d => d.key.startsWith('test-'));
+       
+       // Remove missing (but keep test deities)
+       let filtered = prev.filter(d => deityKeys.includes(d.key) || d.key.startsWith('test-'));
+       
+       // Add new
+       deityKeys.forEach((key: string, idx: number) => {
+         if (!filtered.find(d => d.key === key)) {
+           filtered.push({ key, x: 20 + idx * 80, y: 0, scale: 2 });
+         }
+       });
+       
+       return filtered;
+     });
+   }, [selectedDeities]);
 
   // Only update AsyncStorage when deityState changes due to user interaction
   useEffect(() => {
     if (deityState.length > 0) {
-      AsyncStorage.setItem(DEITY_STATE_KEY, JSON.stringify(deityState));
+      AsyncStorage.setItem(DEITY_STATE_KEY, JSON.stringify(deityState))
+        .catch((error) => {
+          // Error saving deity state to AsyncStorage
+        });
     }
   }, [deityState]);
 
   const updateDeityState = (key: string, x: number, y: number, scale: number) => {
+    // Save positions directly as they are in the full screen scrollable area
+    console.log('Deity position in full screen area:', key, 'x:', x, 'y:', y, 'scale:', scale);
     setDeityState(prev => {
       const idx = prev.findIndex(d => d.key === key);
       if (idx !== -1) {
         const updated = [...prev];
-        updated[idx] = { key, x, y, scale };
+        updated[idx] = { key, x, y, scale }; // Save position directly
         return updated;
       } else {
-        return [...prev, { key, x, y, scale }];
+        const newState = [...prev, { key, x, y, scale }]; // Save position directly
+        return newState;
       }
     });
   };
+
+  // Dynamic style for temple scroll content positioning
+  const templeScrollContentStyle = useMemo(() => ({
+    ...styles.templeScrollContent,
+    paddingTop: selectedStyle === 'temple1' ? 200 : 125,
+  }), [selectedStyle]);
+
+
 
   if (loading) {
     return (
@@ -345,10 +392,6 @@ export default function TemplePreviewScreen() {
     );
   }
 
-  console.log('temple-preview deityState:', deityState);
-
-  const templeImage = templeStyles.find(t => t.id === selectedStyle)?.image;
-
   const handleSaveTemple = async () => {
     await AsyncStorage.setItem('templeConfig', JSON.stringify({
       selectedStyle,
@@ -356,20 +399,102 @@ export default function TemplePreviewScreen() {
       selectedDeities,
       deityState,
     }));
-    router.push('/');
+    router.back();
   };
-
-
 
   return (
     <View style={styles.container}>
-      {/* Background gradient */}
+      {/* Purple Gradient Background (dynamic) */}
       <LinearGradient
         colors={bgGradient as any}
-        style={StyleSheet.absoluteFill}
+        style={styles.purpleGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
+      
+      {/* Invisible Screen-Sized Box for Deities */}
+      <View style={styles.deityContainer}>
+        {/* Deities positioned in screen-sized container */}
+        {Object.keys(selectedDeities).length > 0 ? (
+          Object.keys(selectedDeities).map((key: string, idx: number) => {
+            const selectedStatueUrl = selectedDeities[key];
+            const statueImage = getImageSource(selectedStatueUrl);
+            
+            // Find saved position and scale for this deity
+            const savedDeity = deityState.find(d => d.key === key);
+            
+            // Use simple screen coordinates
+            const initialX = savedDeity?.x ?? (50 + idx * 100);
+            const initialY = savedDeity?.y ?? (300 + idx * 100);
+            const initialScale = savedDeity?.scale ?? 2;
+            
+            return (
+              <DraggableDeity
+                key={`${key}-${deityState.length}`}
+                source={statueImage}
+                initialX={initialX}
+                initialY={initialY}
+                initialScale={initialScale}
+                size={60}
+                label={deityList.find(d => d.key === key)?.label || key}
+                
+                onMoveOrScale={(x, y, scale) => updateDeityState(key, x, y, scale)}
+              />
+            );
+          })
+        ) : (
+          // Show test deities if none are selected
+          <>
+            {(() => {
+              const testGanesha = deityState.find(d => d.key === 'test-ganesha');
+              const testKrishna = deityState.find(d => d.key === 'test-krishna');
+              
+              return (
+                <>
+                  <DraggableDeity
+                    key={`test-ganesha-${deityState.length}`}
+                    source={require('@/assets/images/temple/Ganesha1.png')}
+                    initialX={testGanesha?.x ?? 50}
+                    initialY={testGanesha?.y ?? 300}
+                    initialScale={testGanesha?.scale ?? 2}
+                    size={60}
+                    label="Test Ganesha"
+                    
+                    onMoveOrScale={(x, y, scale) => updateDeityState('test-ganesha', x, y, scale)}
+                  />
+                  <DraggableDeity
+                    key={`test-krishna-${deityState.length}`}
+                    source={require('@/assets/images/temple/Krishna1.png')}
+                    initialX={testKrishna?.x ?? 150}
+                    initialY={testKrishna?.y ?? 300}
+                    initialScale={testKrishna?.scale ?? 2}
+                    size={60}
+                    label="Test Krishna"
+                    
+                    onMoveOrScale={(x, y, scale) => updateDeityState('test-krishna', x, y, scale)}
+                  />
+                </>
+              );
+            })()}
+          </>
+        )}
+      </View>
+      
+      {/* Invisible ScrollView for temple positioning */}
+      <ScrollView 
+        style={styles.templeScrollView}
+        contentContainerStyle={templeScrollContentStyle}
+        scrollEnabled={false}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Temple image chosen by user */}
+        <Image
+          source={templeStyles.find(t => t.id === selectedStyle)?.image}
+          style={styles.templeImage}
+          resizeMode="contain"
+        />
+      </ScrollView>
+      
       {/* Bells: left and right */}
       <Image
         source={require('@/assets/images/temple/GoldenBell.png')}
@@ -383,129 +508,61 @@ export default function TemplePreviewScreen() {
       />
       {/* Arch on top */}
       <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
-      <Image source={templeImage} style={styles.templeImage} resizeMode="contain" />
-      <TouchableOpacity
-        style={{ marginTop: 24, backgroundColor: '#FF6A00', borderRadius: 24, paddingVertical: 14, paddingHorizontal: 40, alignSelf: 'center' }}
-        onPress={handleSaveTemple}
-      >
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 17 }}>Save my temple</Text>
-      </TouchableOpacity>
-      {Object.keys(selectedDeities).map((key: string, idx: number) => {
-        const state = deityState.find(d => d.key === key);
-        const x = state ? state.x : -60 + idx * 80;
-        const y = state ? state.y : 0;
-        const scale = state ? state.scale : 3;
-        const transform = [
-          { translateX: x },
-          { translateY: y },
-          { scale: scale },
-        ];
-        
-        // Get the selected statue URL for this deity
-        const selectedStatueUrl = selectedDeities[key];
-        console.log('temple-preview', key, 'selectedStatueUrl:', selectedStatueUrl, { x, y, scale, transform });
-        
-        // Use the actual selected statue image
-        const statueImage = getImageSource(selectedStatueUrl);
-        
-        return (
-          <DraggableDeity
-            key={key}
-            source={statueImage}
-            initialX={x}
-            initialY={y}
-            initialScale={scale}
-            onLongPress={(setScale, currentScale) => {
-              setScaleModal({ key, currentScale, setScale });
-            }}
-            onMoveOrScale={(x, y, scale) => updateDeityState(key, x, y, scale)}
-          />
-        );
-      })}
       
-      {/* Scale Modal */}
-      <Modal
-        visible={scaleModal !== null}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setScaleModal(null)}
+      {/* Transparent area for save button */}
+      <View 
+        style={styles.scrollableArea}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Scale Deity</Text>
-            <Text style={styles.scaleValue}>
-              {scaleModal ? `${Math.round(scaleModal.currentScale * 100)}%` : '100%'}
-            </Text>
-            
-            <View style={styles.scaleButtons}>
-              <TouchableOpacity
-                style={styles.scaleButton}
-                onPress={() => {
-                  if (scaleModal) {
-                    const newScale = Math.max(0.5, scaleModal.currentScale - 0.2);
-                    scaleModal.setScale(newScale);
-                    setScaleModal({ ...scaleModal, currentScale: newScale });
-                  }
-                }}
-              >
-                <Text style={styles.scaleButtonText}>-20%</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.scaleButton}
-                onPress={() => {
-                  if (scaleModal) {
-                    const newScale = Math.max(0.5, scaleModal.currentScale - 0.1);
-                    scaleModal.setScale(newScale);
-                    setScaleModal({ ...scaleModal, currentScale: newScale });
-                  }
-                }}
-              >
-                <Text style={styles.scaleButtonText}>-10%</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.scaleButton}
-                onPress={() => {
-                  if (scaleModal) {
-                    const newScale = Math.min(5, scaleModal.currentScale + 0.1);
-                    scaleModal.setScale(newScale);
-                    setScaleModal({ ...scaleModal, currentScale: newScale });
-                  }
-                }}
-              >
-                <Text style={styles.scaleButtonText}>+10%</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.scaleButton}
-                onPress={() => {
-                  if (scaleModal) {
-                    const newScale = Math.min(5, scaleModal.currentScale + 0.2);
-                    scaleModal.setScale(newScale);
-                    setScaleModal({ ...scaleModal, currentScale: newScale });
-                  }
-                }}
-              >
-                <Text style={styles.scaleButtonText}>+20%</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setScaleModal(null)}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
-  );
+       <View style={styles.scrollableContent}>
+         {/* Display selected deity images */}
+         <View style={styles.deityRow}>
+           {/* Deity selection row - now just for display */}
+         </View>
+       
+         <TouchableOpacity
+           style={styles.saveButton}
+           onPress={handleSaveTemple}
+         >
+           <Text style={styles.saveButtonText}>Done, Go back</Text>
+         </TouchableOpacity>
+         
+         
+       </View>
+      </View>
+      {/* Removed duplicate draggable deities since they're now in the full screen scrollable area */}
+    
+    
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  container: { flex: 1, backgroundColor: '#fff' },
+  purpleGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
+  templeScrollView: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0, // Moved behind bells and arch
+  },
+  templeScrollContent: {
+    alignItems: 'center',
+  },
+  templeImage: {
+    width: screenWidth * 1.38,
+    height: undefined,
+    aspectRatio: 1.2,
+    alignSelf: 'center',
+  },
   bellLeft: {
     position: 'absolute',
     top: 95,
@@ -529,76 +586,66 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 2,
   },
-  templeImage: {
-    width: screenWidth * 1.38,
-    height: undefined,
-    aspectRatio: 1.2,
-    marginBottom: 20,
-  },
-  deityOverlay: {
+  scrollableArea: {
     position: 'absolute',
-    top: 180,
-    width: 72,
-    height: 72,
+    top: 590,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 10,
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
+  scrollableContent: {
     alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 40,
+    minHeight: 300,
   },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    margin: 20,
-    alignItems: 'center',
-    minWidth: 280,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#333',
-  },
-  scaleValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF6A00',
-    marginBottom: 20,
-  },
-  scaleButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 24,
-  },
-  scaleButton: {
+  saveButton: {
+    marginTop: 32,
     backgroundColor: '#FF6A00',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginHorizontal: 4,
-    minWidth: 60,
-    alignItems: 'center',
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    alignSelf: 'center',
   },
-  scaleButtonText: {
+  saveButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 17,
   },
-  closeButton: {
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  closeButtonText: {
-    color: '#333',
-    fontWeight: 'bold',
-    fontSize: 16,
+  
+       deityRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 20,
+      marginTop: -5,
+      flexWrap: 'wrap',
+      zIndex: 20,
+    },
+    deityItem: {
+      alignItems: 'center',
+      marginHorizontal: 10,
+      zIndex: 20,
+    },
+       deityImage: {
+      width: 60,
+      height: 60,
+      marginBottom: 8,
+      zIndex: 20,
+    },
+   deityLabel: {
+     color: '#fff',
+     fontSize: 12,
+     fontWeight: 'bold',
+     textAlign: 'center',
+   },
+  deityContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 5, // Above temple but below bells and arch
   },
 }); 

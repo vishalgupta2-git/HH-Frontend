@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
@@ -84,8 +84,6 @@ interface DeityData {
 // Function to get local asset based on icon path - Dynamic mapping
 // Function to get image source from MongoDB data using static require calls
 const getImageSource = (imagePath: string) => {
-  console.log('Getting image source for:', imagePath);
-  
   // Handle different possible path formats
   let filename = '';
   
@@ -102,83 +100,106 @@ const getImageSource = (imagePath: string) => {
     filename = imagePath;
   }
   
-  console.log('Extracted filename:', filename);
-  
-  // Map MongoDB paths to static require calls
-  switch (filename) {
-    case 'VishnuIcon.png':
-      console.log('✅ Mapping to VishnuIcon.png');
-      return require('@/assets/images/temple/VishnuIcon.png');
-    case 'Ganesha1.png':
-      console.log('✅ Mapping to Ganesha1.png');
-      return require('@/assets/images/temple/Ganesha1.png');
-    case 'Ganesha2.png':
-      console.log('✅ Mapping to Ganesha2.png');
-      return require('@/assets/images/temple/Ganesha2.png');
-    case 'Krishna1.png':
-      console.log('✅ Mapping to Krishna1.png');
-      return require('@/assets/images/temple/Krishna1.png');
-    case 'Krishna2.png':
-      console.log('✅ Mapping to Krishna2.png');
-      return require('@/assets/images/temple/Krishna2.png');
-    case 'Vishnu1.png':
-      console.log('✅ Mapping to Vishnu1.png');
-      return require('@/assets/images/temple/Vishnu1.png');
-    case 'Lakshmi1.png':
-      console.log('✅ Mapping to Lakshmi1.png');
-      return require('@/assets/images/temple/Lakshmi1.png');
-    case 'Saraswati1.png':
-      console.log('✅ Mapping to Saraswati1.png');
-      return require('@/assets/images/temple/Saraswati1.png');
-    case 'Durga1.png':
-      console.log('✅ Mapping to Durga1.png');
-      return require('@/assets/images/temple/Durga1.png');
-    case 'Durga2.png':
-      console.log('✅ Mapping to Durga2.png');
-      return require('@/assets/images/temple/Durga2.png');
-    case 'Brahma1.png':
-      console.log('✅ Mapping to Brahma1.png');
-      return require('@/assets/images/temple/Brahma1.png');
-    case 'Shiv2.png':
-      console.log('✅ Mapping to Shiv2.png');
-      return require('@/assets/images/temple/Shiv2.png');
-    case 'ShivParvati1.png':
-      console.log('✅ Mapping to ShivParvati1.png');
-      return require('@/assets/images/temple/ShivParvati1.png');
-    case 'Rama1.png':
-      console.log('✅ Mapping to Rama1.png');
-      return require('@/assets/images/temple/Rama1.png');
-    case 'Hanuman1.png':
-      console.log('✅ Mapping to Hanuman1.png');
-      return require('@/assets/images/temple/Hanuman1.png');
-    case 'Surya1.png':
-      console.log('✅ Mapping to Surya1.png');
-      return require('@/assets/images/temple/Surya1.png');
-    case 'Temple1.png':
-      console.log('✅ Mapping to Temple1.png');
-      return require('@/assets/images/temple/Temple1.png');
-    case 'Temple2.png':
-      console.log('✅ Mapping to Temple2.png');
-      return require('@/assets/images/temple/Temple2.png');
-    case 'Temple-bg.png':
-      console.log('✅ Mapping to Temple-bg.png');
-      return require('@/assets/images/temple/Temple-bg.png');
-    case 'TempleStar.png':
-      console.log('✅ Mapping to TempleStar.png');
-      return require('@/assets/images/temple/TempleStar.png');
-    case 'GoldenBell.png':
-      console.log('✅ Mapping to GoldenBell.png');
-      return require('@/assets/images/temple/GoldenBell.png');
-    case 'Glow.png':
-      console.log('✅ Mapping to Glow.png');
-      return require('@/assets/images/temple/Glow.png');
-    case 'arch.svg':
-      console.log('✅ Mapping to arch.svg');
-      return require('@/assets/images/temple/arch.svg');
-    default:
-      console.log('❌ Image not found in mapping, using fallback. Filename:', filename);
-      return require('@/assets/images/temple/Ganesha1.png');
-  }
+      // Map MongoDB paths to static require calls
+    switch (filename) {
+      // Original icons
+      case 'VishnuIcon.png':
+        return require('@/assets/images/temple/VishnuIcon.png');
+      case 'Ganesha1.png':
+        return require('@/assets/images/temple/Ganesha1.png');
+      case 'Ganesha2.png':
+        return require('@/assets/images/temple/Ganesha2.png');
+      case 'Krishna1.png':
+        return require('@/assets/images/temple/Krishna1.png');
+      case 'Krishna2.png':
+        return require('@/assets/images/temple/Krishna2.png');
+      case 'Vishnu1.png':
+        return require('@/assets/images/temple/Vishnu1.png');
+      case 'Lakshmi1.png':
+        return require('@/assets/images/temple/Lakshmi1.png');
+      case 'Saraswati1.png':
+        return require('@/assets/images/temple/Saraswati1.png');
+      case 'Durga1.png':
+        return require('@/assets/images/temple/Durga1.png');
+      case 'Durga2.png':
+        return require('@/assets/images/temple/Durga2.png');
+      case 'Brahma1.png':
+        return require('@/assets/images/temple/Brahma1.png');
+      case 'Shiv2.png':
+        return require('@/assets/images/temple/Shiv2.png');
+      case 'ShivParvati1.png':
+        return require('@/assets/images/temple/ShivParvati1.png');
+      case 'Rama1.png':
+        return require('@/assets/images/temple/Rama1.png');
+      case 'Hanuman1.png':
+        return require('@/assets/images/temple/Hanuman1.png');
+      case 'Surya1.png':
+        return require('@/assets/images/temple/Surya1.png');
+      
+      // New icons from "New folder"
+      case 'Ganesha3.png':
+        return require('@/assets/images/temple/New folder/Ganesha3.png');
+      case 'Ganesha4.png':
+        return require('@/assets/images/temple/New folder/Ganesha4.png');
+      case 'Ganesha5.png':
+        return require('@/assets/images/temple/New folder/Ganesha5.png');
+      case 'Krishna3.png':
+        return require('@/assets/images/temple/New folder/Krishna3.png');
+      case 'Krishna4.png':
+        return require('@/assets/images/temple/New folder/Krishna4.png');
+      case 'Krishna5.png':
+        return require('@/assets/images/temple/New folder/Krishna5.png');
+      case 'Vishnu2.png':
+        return require('@/assets/images/temple/New folder/Vishnu2.png');
+      case 'Vishnu3.png':
+        return require('@/assets/images/temple/New folder/Vishnu3.png');
+      case 'Lakshmi2.png':
+        return require('@/assets/images/temple/New folder/Lakshmi2.png');
+      case 'Saraswati2.png':
+        return require('@/assets/images/temple/New folder/Saraswati2.png');
+      case 'Saraswati3.png':
+        return require('@/assets/images/temple/New folder/Saraswati3.png');
+      case 'Durga3.png':
+        return require('@/assets/images/temple/New folder/Durga3.png');
+      case 'Shiv3.png':
+        return require('@/assets/images/temple/New folder/Shiv3.png');
+      case 'Shiv4.png':
+        return require('@/assets/images/temple/New folder/Shiv4.png');
+      case 'ShivParvati2.png':
+        return require('@/assets/images/temple/New folder/ShivParvati2.png');
+      case 'Rama2.png':
+        return require('@/assets/images/temple/New folder/Rama2.png');
+      case 'Rama3.png':
+        return require('@/assets/images/temple/New folder/Rama3.png');
+      case 'Rama4.png':
+        return require('@/assets/images/temple/New folder/Rama4.png');
+      case 'Hanuman2.png':
+        return require('@/assets/images/temple/New folder/Hanuman2.png');
+      case 'Hanuman3.png':
+        return require('@/assets/images/temple/New folder/Hanuman3.png');
+      case 'Hanuman4.png':
+        return require('@/assets/images/temple/New folder/Hanuman4.png');
+      case 'Kali1.png':
+        return require('@/assets/images/temple/New folder/Kali1.png');
+      
+      // Temple and other assets
+      case 'Temple1.png':
+        return require('@/assets/images/temple/Temple1.png');
+      case 'Temple2.png':
+        return require('@/assets/images/temple/Temple2.png');
+      case 'Temple-bg.png':
+        return require('@/assets/images/temple/Temple-bg.png');
+      case 'TempleStar.png':
+        return require('@/assets/images/temple/TempleStar.png');
+      case 'GoldenBell.png':
+        return require('@/assets/images/temple/GoldenBell.png');
+      case 'Glow.png':
+        return require('@/assets/images/temple/Glow.png');
+      case 'arch.svg':
+        return require('@/assets/images/temple/arch.svg');
+      default:
+        return require('@/assets/images/temple/Ganesha1.png');
+    }
 };
 
 
@@ -313,27 +334,9 @@ export default function CreateTempleScreen() {
   useEffect(() => {
     const fetchDeityData = async () => {
       try {
-            console.log('Fetching deity data from: https://backend-ot2766akl-surbhi-guptas-projects-4a5bc02c.vercel.app/api/deity-statues');
-    const res = await axios.get(getEndpointUrl('DEITY_STATUES'));
-        console.log('Fetched deity data:', res.data);
-        
-        // Log detailed statue information
-        res.data.forEach((deity: any, index: number) => {
-          console.log(`Deity ${index + 1}:`, {
-            name: deity.Deity?.Name,
-            icon: deity.Icon,
-            statues: deity.Deity?.Statues,
-            statuesType: typeof deity.Deity?.Statues,
-            statuesLength: deity.Deity?.Statues?.length,
-            isArray: Array.isArray(deity.Deity?.Statues)
-          });
-        });
-        
+        const res = await axios.get(getEndpointUrl('DEITY_STATUES'));
         setDeityData(res.data);
       } catch (e: any) {
-        console.error('Error fetching deity data:', e);
-        console.error('Error response:', e.response?.data);
-        console.error('Error status:', e.response?.status);
         Alert.alert(
           'Failed to fetch deity data', 
           `Error: ${e.response?.data?.error || e.message || 'Unknown error'}`
@@ -359,10 +362,16 @@ export default function CreateTempleScreen() {
 
   // Debug modal state
   useEffect(() => {
-    console.log('Modal state changed:', modal, 'selectedDeityForStatues:', selectedDeityForStatues?.Deity?.Name);
+    // Modal state changed
   }, [modal, selectedDeityForStatues]);
 
   const labelColor = getLabelColor(bgGradient);
+
+  // Dynamic style for temple scroll content positioning
+  const templeScrollContentStyle = useMemo(() => ({
+    ...styles.templeScrollContent,
+    paddingTop: selectedStyle === 'temple1' ? 200 : 125,
+  }), [selectedStyle]);
 
   return (
     <View style={styles.container}>
@@ -373,6 +382,22 @@ export default function CreateTempleScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
+      
+      {/* Invisible ScrollView for temple positioning */}
+      <ScrollView 
+        style={styles.templeScrollView}
+        contentContainerStyle={templeScrollContentStyle}
+        scrollEnabled={false}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Temple image chosen by user */}
+        <Image
+          source={templeStyles.find(t => t.id === selectedStyle)?.image}
+          style={styles.templeImage}
+          resizeMode="contain"
+        />
+      </ScrollView>
+      
       {/* Bells: left and right */}
       <Image
         source={require('@/assets/images/temple/GoldenBell.png')}
@@ -386,55 +411,54 @@ export default function CreateTempleScreen() {
       />
       {/* Arch on top */}
       <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
-      <ScrollView contentContainerStyle={{ alignItems: 'center', marginTop: 75, paddingBottom: 40 }}>
-        {/* Temple image chosen by user */}
-        <Image
-          source={templeStyles.find(t => t.id === selectedStyle)?.image}
-          style={
-            selectedStyle === 'temple2'
-              ? [styles.mainTempleImage, { width: styles.mainTempleImage.width * 1.3, marginTop: (styles.mainTempleImage.marginTop || 0) + 75, marginBottom: 0 }]
-            : selectedStyle === 'temple1'
-              ? [styles.mainTempleImage, { width: styles.mainTempleImage.width * 1.2, marginTop: (styles.mainTempleImage.marginTop || 0) + 75, marginBottom: 0 }]
-              : [styles.mainTempleImage, { marginTop: (styles.mainTempleImage.marginTop || 0) + 75, marginBottom: 0 }]
-          }
-          resizeMode="contain"
-        />
-        {/* Move only the icon row and button up by 75px */}
-        <View style={{ alignItems: 'center', marginTop: -60 }}>
-          <View style={styles.buttonRow}>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.circleButton} onPress={() => setModal('temple')}>
-                <Image source={require('@/assets/images/temple/Temple1.png')} style={styles.circleButtonImage} resizeMode="contain" />
-              </TouchableOpacity>
-              <Text style={[styles.buttonFooter, { color: labelColor }]}>Temple</Text>
+       
+               {/* Transparent area for icons and next button */}
+        <View 
+          style={styles.scrollableArea}
+        >
+          <View style={styles.scrollableContent}>
+            <View style={styles.buttonRow}>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('temple')}>
+                  <Image source={require('@/assets/images/temple/Temple1.png')} style={styles.circleButtonImage} resizeMode="contain" />
+                </TouchableOpacity>
+                <Text style={[styles.buttonFooter, { color: labelColor }]}>Temple</Text>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('deities')}>
+                  <Image source={require('@/assets/images/temple/Ganesha1.png')} style={styles.circleButtonImage} resizeMode="contain" />
+                </TouchableOpacity>
+                <Text style={[styles.buttonFooter, { color: labelColor }]}>Deities</Text>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('background')}>
+                  <LinearGradient colors={bgGradient as any} style={styles.gradientCircle} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+                </TouchableOpacity>
+                <Text style={[styles.buttonFooter, { color: labelColor }]}>Background</Text>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('lights')}>
+                  <MaterialCommunityIcons name="lightbulb" size={40} color="#FF6A00" />
+                </TouchableOpacity>
+                <Text style={[styles.buttonFooter, { color: labelColor }]}>Lights</Text>
+              </View>
             </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.circleButton} onPress={() => setModal('deities')}>
-                <Image source={require('@/assets/images/temple/Ganesha1.png')} style={styles.circleButtonImage} resizeMode="contain" />
+            <View style={styles.navigationButtons}>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => router.back()}
+              >
+                <Text style={styles.backButtonText}>Back</Text>
               </TouchableOpacity>
-              <Text style={[styles.buttonFooter, { color: labelColor }]}>Deities</Text>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.circleButton} onPress={() => setModal('background')}>
-                <LinearGradient colors={bgGradient as any} style={styles.gradientCircle} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+              <TouchableOpacity
+                style={styles.nextButton}
+                onPress={() => router.push('/screens/temple-preview')}
+              >
+                <Text style={styles.nextButtonText}>Next</Text>
               </TouchableOpacity>
-              <Text style={[styles.buttonFooter, { color: labelColor }]}>Background</Text>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.circleButton} onPress={() => setModal('lights')}>
-                <MaterialCommunityIcons name="lightbulb" size={40} color="#FF6A00" />
-              </TouchableOpacity>
-              <Text style={[styles.buttonFooter, { color: labelColor }]}>Lights</Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={{ marginTop: 32, backgroundColor: '#FF6A00', borderRadius: 24, paddingVertical: 14, paddingHorizontal: 40, alignSelf: 'center' }}
-            onPress={() => router.push('/screens/temple-preview')}
-          >
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 17 }}>Next</Text>
-          </TouchableOpacity>
         </View>
-      </ScrollView>
       {/* Minimal Modal Implementation for Each Icon */}
       <Modal
         animationType="fade"
@@ -543,16 +567,9 @@ export default function CreateTempleScreen() {
                       {deityData.map((deity) => {
                         // Add null check for deity.Deity
                         if (!deity.Deity) {
-                          console.log('⚠️ Skipping deity with no Deity property:', deity);
                           return null;
                         }
                         
-                        console.log('Rendering deity:', {
-                          id: deity._id,
-                          name: deity.Deity?.Name,
-                          icon: deity.Icon,
-                          statues: deity.Deity?.Statues?.length || 0
-                        });
                         const isSelected = selectedDeities.hasOwnProperty(deity._id || '');
                         const selectedStatueUrl = selectedDeities[deity._id || ''];
                         return (
@@ -562,12 +579,8 @@ export default function CreateTempleScreen() {
                             onPress={() => {
                               // Add null check before accessing deity.Deity
                               if (!deity.Deity) {
-                                console.log('⚠️ Cannot access deity with no Deity property');
                                 return;
                               }
-                              
-                              console.log('Deity clicked:', deity.Deity.Name, 'Statues:', deity.Deity.Statues);
-                              console.log('Statues type:', typeof deity.Deity.Statues, 'Is array:', Array.isArray(deity.Deity.Statues));
                               
                               if (isSelected) {
                                 // Remove this deity from selection
@@ -591,10 +604,7 @@ export default function CreateTempleScreen() {
                                   statuesArray = Object.values(deity.Deity.Statues) as string[];
                                 }
                                 
-                                console.log('Processed statues array:', statuesArray);
-                                
                                 if (statuesArray.length > 0) {
-                                  console.log('Opening statues modal for:', deity.Deity.Name);
                                   // Create a copy of deity with processed statues
                                   const deityWithProcessedStatues = {
                                     ...deity,
@@ -605,8 +615,6 @@ export default function CreateTempleScreen() {
                                   };
                                   setSelectedDeityForStatues(deityWithProcessedStatues);
                                   setModal('statues');
-                                } else {
-                                  console.log('No statues available for:', deity.Deity.Name);
                                 }
                               }
                             }}
@@ -657,7 +665,6 @@ export default function CreateTempleScreen() {
                   <ScrollView style={styles.statuesScrollView}>
                     <View style={styles.statuesGrid}>
                       {selectedDeityForStatues.Deity.Statues.map((statueUrl, index) => {
-                        console.log('Rendering statue:', { index, statueUrl });
                         const isSelected = selectedDeities[selectedDeityForStatues._id || ''] === statueUrl;
                         return (
                           <TouchableOpacity
@@ -748,20 +755,36 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
   mainTempleImage: {
-    width: screenWidth * 1.15,
+    position: 'absolute',
+    width: screenWidth * 1.38,
+    height: undefined,
+    aspectRatio: 1.2,
+    left: -(screenWidth * 0.19), // Center the wider temple by offsetting left
+    zIndex: 3,
+  },
+  templeScrollView: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0, // Moved behind bells and arch
+  },
+  templeScrollContent: {
+    alignItems: 'center',
+  },
+  templeImage: {
+    width: screenWidth * 1.38,
     height: undefined,
     aspectRatio: 1.2,
     alignSelf: 'center',
-    marginTop: 30,
-    marginBottom: 16,
-    zIndex: 4,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 20,
-    marginTop: 50,
+    marginTop: -5, // Moved down by 20 pixels from -25
   },
   buttonContainer: {
     alignItems: 'center',
@@ -1022,11 +1045,55 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
   },
-  selectedStatueText: {
-    fontSize: 10,
-    color: '#FF6A00',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 2,
-  },
+     selectedStatueText: {
+     fontSize: 10,
+     color: '#FF6A00',
+     fontWeight: 'bold',
+     textAlign: 'center',
+     marginTop: 2,
+   },
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               scrollableArea: {
+            position: 'absolute',
+            top: 590, // Moved down by 20 pixels from 570
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10,
+          },
+       scrollableContent: {
+      alignItems: 'center',
+      paddingTop: 20,
+      paddingBottom: 40,
+      minHeight: 300, // Ensure minimum height for content
+    },
+       navigationButtons: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 32,
+      paddingHorizontal: 20,
+      gap: 20,
+    },
+   backButton: {
+     backgroundColor: '#666',
+     borderRadius: 24,
+     paddingVertical: 14,
+     paddingHorizontal: 40,
+   },
+   backButtonText: {
+     color: '#fff',
+     fontWeight: 'bold',
+     fontSize: 17,
+   },
+   nextButton: {
+     backgroundColor: '#FF6A00',
+     borderRadius: 24,
+     paddingVertical: 14,
+     paddingHorizontal: 40,
+   },
+   nextButtonText: {
+     color: '#fff',
+     fontWeight: 'bold',
+     fontSize: 17,
+   },
 }); 
