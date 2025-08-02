@@ -2,11 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { Audio } from 'expo-av';
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const TEMPLE_CONFIG_KEY = 'templeConfig';
 const SELECTED_DEITIES_KEY = 'selectedDeities';
 const DEITY_STATE_KEY = 'deityState';
@@ -67,6 +67,49 @@ const ArchSVG = (props: { width?: number; height?: number; style?: any }) => {
   );
 };
 
+                               // Draggable Thali component
+      const DraggableThali: React.FC = () => {
+        const pan = useRef(new Animated.ValueXY()).current;
+
+        const panResponder = useRef(
+          PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onPanResponderMove: Animated.event(
+              [null, { dx: pan.x, dy: pan.y }],
+              { useNativeDriver: false }
+            ),
+            onPanResponderRelease: () => {
+              // Optional: Add boundaries or snap behavior here
+            },
+          })
+        ).current;
+
+        return (
+          <Animated.View
+            style={[
+              { 
+                transform: pan.getTranslateTransform(),
+                position: 'absolute',
+                bottom: 100,
+                left: (screenWidth - 200) / 2, // Center horizontally
+                width: 200,
+                height: 200,
+                zIndex: 1000,
+              }
+            ]}
+            {...panResponder.panHandlers}
+          >
+            <Image 
+              source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="contain"
+              onLoad={() => console.log('🔍 [DEBUG] PujaThali1.png loaded successfully')}
+              onError={(error) => console.error('🔍 [DEBUG] PujaThali1.png failed to load:', error)}
+            />
+          </Animated.View>
+        );
+      };
+
                                // Static deity display component
       const StaticDeity: React.FC<{
         source?: any;
@@ -115,6 +158,7 @@ export default function DailyPujaCustomTemple() {
   const [isSmokeAnimationRunning, setIsSmokeAnimationRunning] = useState(false);
   const [showSmokeModal, setShowSmokeModal] = useState(false);
   const [showAartiModal, setShowAartiModal] = useState(false);
+  const [thaliPosition, setThaliPosition] = useState({ x: 0, y: 0 });
   const smokeAnimationRef = useRef(false);
   const router = useRouter();
 
@@ -1098,19 +1142,7 @@ export default function DailyPujaCustomTemple() {
              onPress={() => setShowAartiModal(false)}
            >
              <View style={styles.modalContent}>
-               <View style={styles.aartiContainer}>
-                                   <Image 
-                    source={require('@/assets/images/icons/own temple/PujaThali1.png')}
-                    style={styles.aartiPlate}
-                    resizeMode="contain"
-                    onLoad={() => console.log('🔍 [DEBUG] PujaThali1.png loaded successfully')}
-                    onError={(error) => console.error('🔍 [DEBUG] PujaThali1.png failed to load:', error)}
-                  />
-                 <Text style={styles.aartiText}>🕉️ Aarti Plate 🕉️</Text>
-                 <Text style={styles.aartiDescription}>
-                   The sacred flame of Aarti represents the light of knowledge and devotion.
-                 </Text>
-               </View>
+               <DraggableThali />
              </View>
            </TouchableOpacity>
          </View>
@@ -1297,7 +1329,7 @@ export default function DailyPujaCustomTemple() {
                alignItems: 'center',
              },
              modalContent: {
-               backgroundColor: 'rgba(255,255,255,0.7)',
+               backgroundColor: 'transparent',
                borderRadius: 0,
                padding: 0,
                margin: 0,
