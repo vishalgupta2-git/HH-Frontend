@@ -939,77 +939,97 @@ export default function DailyPujaCustomTemple() {
             activeOpacity={1}
             onPress={() => setShowFlowerModal(false)}
           >
-            <View style={styles.modalContent}>
-               <View style={styles.flowerOptions}>
+                        <View style={styles.flowerModalContent}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.flowerOptions}
+                >
                  <TouchableOpacity 
                    style={styles.flowerOption} 
                    onPress={() => dropFlowers('hibiscus')}
                  >
-                   <Text style={styles.flowerOptionEmoji}>🌺</Text>
+                   <View style={styles.flowerIconContainer}>
+                     <Text style={styles.flowerOptionEmoji}>🌺</Text>
+                   </View>
                    <Text style={styles.flowerOptionLabel}>Hibiscus</Text>
                  </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.flowerOption} 
                   onPress={() => dropFlowers('redRose')}
                 >
-                  <Image 
-                    source={require('@/assets/images/icons/own temple/rose.png')}
-                    style={styles.flowerOptionImage}
-                    resizeMode="contain"
-                  />
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/rose.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
                   <Text style={styles.flowerOptionLabel}>Red Rose</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.flowerOption} 
                   onPress={() => dropFlowers('whiteRose')}
                 >
-                  <Image 
-                    source={require('@/assets/images/icons/own temple/whiterose.png')}
-                    style={styles.flowerOptionImage}
-                    resizeMode="contain"
-                  />
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/whiterose.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
                   <Text style={styles.flowerOptionLabel}>White Rose</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.flowerOption} 
                   onPress={() => dropFlowers('sunflower')}
                 >
-                  <Text style={styles.flowerOptionEmoji}>🌻</Text>
+                  <View style={styles.flowerIconContainer}>
+                    <Text style={styles.flowerOptionEmoji}>🌻</Text>
+                  </View>
                   <Text style={styles.flowerOptionLabel}>Sunflower</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.flowerOption} 
                   onPress={() => dropFlowers('marigold')}
                 >
-                  <Text style={styles.flowerOptionEmoji}>🌼</Text>
+                  <View style={styles.flowerIconContainer}>
+                    <Text style={styles.flowerOptionEmoji}>🌼</Text>
+                  </View>
                   <Text style={styles.flowerOptionLabel}>Marigold</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.flowerOption} 
                   onPress={() => dropFlowers('belPatra')}
                 >
-                  <Text style={styles.flowerOptionEmoji}>🍃</Text>
+                  <View style={styles.flowerIconContainer}>
+                    <Text style={styles.flowerOptionEmoji}>🍃</Text>
+                  </View>
                   <Text style={styles.flowerOptionLabel}>Bel Patra</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.flowerOption} 
                   onPress={() => dropFlowers('jasmine')}
                 >
-                  <Image 
-                    source={require('@/assets/images/icons/own temple/jasmine.png')}
-                    style={styles.flowerOptionImage}
-                    resizeMode="contain"
-                  />
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/jasmine.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
                   <Text style={styles.flowerOptionLabel}>Jasmine</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.flowerOption} 
-                  onPress={() => dropMixFlowers()}
-                >
-                  <Text style={styles.flowerOptionEmoji}>🌸</Text>
-                  <Text style={styles.flowerOptionLabel}>Mix Flowers</Text>
-                </TouchableOpacity>
-              </View>
+                                 <TouchableOpacity 
+                   style={styles.flowerOption} 
+                   onPress={() => dropMixFlowers()}
+                 >
+                   <View style={styles.flowerIconContainer}>
+                     <Text style={styles.flowerOptionEmoji}>🌸</Text>
+                   </View>
+                   <Text style={styles.flowerOptionLabel}>Mix Flowers</Text>
+                 </TouchableOpacity>
+               </ScrollView>
             </View>
           </TouchableOpacity>
         </View>
@@ -1277,7 +1297,7 @@ export default function DailyPujaCustomTemple() {
                alignItems: 'center',
              },
              modalContent: {
-               backgroundColor: '#fff',
+               backgroundColor: 'rgba(255,255,255,0.7)',
                borderRadius: 0,
                padding: 0,
                margin: 0,
@@ -1285,6 +1305,23 @@ export default function DailyPujaCustomTemple() {
                justifyContent: 'center',
                width: '100%',
                height: '100%',
+               zIndex: 1001,
+               elevation: 10,
+               shadowColor: '#000',
+               shadowOffset: { width: 0, height: -2 },
+               shadowOpacity: 0.25,
+               shadowRadius: 4,
+             },
+             flowerModalContent: {
+               backgroundColor: 'rgba(255,255,255,0.8)',
+               borderRadius: 16,
+               padding: 24,
+               marginTop: 470,
+               marginHorizontal: 20,
+               alignItems: 'center',
+               justifyContent: 'center',
+               width: '90%',
+               height: 110,
                zIndex: 1001,
                elevation: 10,
                shadowColor: '#000',
@@ -1301,20 +1338,26 @@ export default function DailyPujaCustomTemple() {
          },
          flowerOptions: {
            flexDirection: 'row',
-           flexWrap: 'wrap',
-           justifyContent: 'center',
-           gap: 15,
-           marginBottom: 15,
+           alignItems: 'center',
+           paddingHorizontal: 20,
+           paddingVertical: 15,
          },
          flowerOption: {
            alignItems: 'center',
-           padding: 10,
+           marginRight: 8,
+           minWidth: 70,
+         },
+         flowerIconContainer: {
+           alignItems: 'center',
+           justifyContent: 'center',
+           width: 50,
+           height: 50,
            borderRadius: 10,
            backgroundColor: '#f8f9fa',
-           minWidth: 60,
+           marginBottom: 5,
          },
          flowerOptionEmoji: {
-           fontSize: 30,
+           fontSize: 35,
            marginBottom: 5,
          },
          flowerOptionLabel: {
@@ -1324,8 +1367,8 @@ export default function DailyPujaCustomTemple() {
            textAlign: 'center',
          },
          flowerOptionImage: {
-           width: 30,
-           height: 30,
+           width: 35,
+           height: 35,
            marginBottom: 5,
          },
           deityContainer: {
