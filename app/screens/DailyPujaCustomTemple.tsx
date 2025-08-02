@@ -436,7 +436,7 @@ export default function DailyPujaCustomTemple() {
 
 
   const swingBothBells = () => {
-    // Play temple bell sound
+    // Play temple bell sound and start animations simultaneously
     const playTempleBellSound = async () => {
       try {
         // Stop any currently playing sound
@@ -470,10 +470,10 @@ export default function DailyPujaCustomTemple() {
       }
     };
 
-    // Play the sound immediately
+    // Start both sound and animations at the same time
     playTempleBellSound();
 
-    // Swing left bell
+    // Swing left bell immediately (parallel with sound)
     Animated.sequence([
       Animated.timing(leftBellSwing, {
         toValue: 1,
@@ -492,7 +492,7 @@ export default function DailyPujaCustomTemple() {
       }),
     ]).start();
 
-    // Swing right bell with slight delay
+    // Swing right bell with slight delay (still parallel with sound)
     setTimeout(() => {
       Animated.sequence([
         Animated.timing(rightBellSwing, {
