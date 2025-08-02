@@ -1225,6 +1225,33 @@ export default function DailyPujaCustomTemple() {
              setSmoke([]); // Clear all smoke particles
            }}
          >
+           {/* Multiple Dhoop images horizontally centered */}
+           {[0, 1, 2, 3, 4].map((index) => {
+             const totalWidth = 128 * 5; // 5 images * 128px width
+             const spacing = 10; // 10px gap between images
+             const totalSpacing = spacing * 4; // 4 gaps between 5 images
+             const totalGroupWidth = totalWidth + totalSpacing;
+             const startX = (screenWidth - totalGroupWidth) / 2; // Center the group
+             const leftPosition = startX + (index * (128 + spacing));
+             
+             return (
+               <Image
+                 key={index}
+                 source={require('@/assets/images/icons/own temple/puja essential/Dhoop.png')}
+                 style={[
+                   styles.dhoopImage,
+                   {
+                     left: leftPosition,
+                     bottom: selectedStyle === 'temple1' ? 285 : 335, // 50px lower (closer to bottom) for temple1
+                     width: 128, // 20% smaller (160 * 0.8)
+                     height: 128, // 20% smaller (160 * 0.8)
+                   }
+                 ]}
+                 resizeMode="contain"
+               />
+             );
+           })}
+           
            {/* Smoke particles rendered in the modal */}
            {smoke.map((particle) => (
              <Animated.View
@@ -1551,6 +1578,10 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 1000,
+    },
+    dhoopImage: {
+      position: 'absolute',
+      zIndex: 25, // Above smoke particles
     },
     aartiContainer: {
       alignItems: 'center',
