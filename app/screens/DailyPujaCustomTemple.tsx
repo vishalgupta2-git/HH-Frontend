@@ -114,6 +114,7 @@ export default function DailyPujaCustomTemple() {
   const [smoke, setSmoke] = useState<{ id: number; x: number; y: number; opacity: number; scale: number; rotation: number; animatedY: Animated.Value; animatedOpacity: Animated.Value; animatedScale: Animated.Value }[]>([]);
   const [isSmokeAnimationRunning, setIsSmokeAnimationRunning] = useState(false);
   const [showSmokeModal, setShowSmokeModal] = useState(false);
+  const [showAartiModal, setShowAartiModal] = useState(false);
   const smokeAnimationRef = useRef(false);
   const router = useRouter();
 
@@ -391,6 +392,8 @@ export default function DailyPujaCustomTemple() {
         return '🌼';
       case 'belPatra':
         return '🍃';
+      case 'jasmine':
+        return '🌸';
       default:
         return '🌸';
     }
@@ -514,7 +517,7 @@ export default function DailyPujaCustomTemple() {
     const templeLeftX = templeCenterX - (templeWidth / 2);
     const templeRightX = templeCenterX + (templeWidth / 2);
     
-    const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra'];
+    const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra', 'jasmine'];
     let totalFlowers = 0;
     let completedFlowers = 0;
     
@@ -803,6 +806,18 @@ export default function DailyPujaCustomTemple() {
                  style={styles.flowerImage}
                  resizeMode="contain"
                />
+             ) : flower.type === 'whiteRose' ? (
+               <Image 
+                 source={require('@/assets/images/icons/own temple/whiterose.png')}
+                 style={styles.flowerImage}
+                 resizeMode="contain"
+               />
+             ) : flower.type === 'jasmine' ? (
+               <Image 
+                 source={require('@/assets/images/icons/own temple/jasmine.png')}
+                 style={styles.flowerImage}
+                 resizeMode="contain"
+               />
              ) : (
                <Text style={styles.flowerEmoji}>{getFlowerEmoji(flower.type)}</Text>
              )}
@@ -871,7 +886,11 @@ export default function DailyPujaCustomTemple() {
               isFlowerAnimationRunning && styles.pujaIconLabelDisabled
             ]}>Flowers</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.pujaIconItem}>
+          <TouchableOpacity 
+            style={styles.pujaIconItem}
+            onPress={() => setShowAartiModal(true)}
+            activeOpacity={0.7}
+          >
             <Text style={styles.pujaIcon}>🕉️</Text>
             <Text style={styles.pujaIconLabel}>Aarti</Text>
           </TouchableOpacity>
@@ -944,8 +963,12 @@ export default function DailyPujaCustomTemple() {
                   style={styles.flowerOption} 
                   onPress={() => dropFlowers('whiteRose')}
                 >
-                  <Text style={styles.flowerOptionEmoji}>🌷</Text>
-                  <Text style={styles.flowerOptionLabel}>Pink Rose</Text>
+                  <Image 
+                    source={require('@/assets/images/icons/own temple/whiterose.png')}
+                    style={styles.flowerOptionImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.flowerOptionLabel}>White Rose</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.flowerOption} 
@@ -967,6 +990,17 @@ export default function DailyPujaCustomTemple() {
                 >
                   <Text style={styles.flowerOptionEmoji}>🍃</Text>
                   <Text style={styles.flowerOptionLabel}>Bel Patra</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
+                  onPress={() => dropFlowers('jasmine')}
+                >
+                  <Image 
+                    source={require('@/assets/images/icons/own temple/jasmine.png')}
+                    style={styles.flowerOptionImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.flowerOptionLabel}>Jasmine</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.flowerOption} 
@@ -1025,6 +1059,39 @@ export default function DailyPujaCustomTemple() {
              </Animated.View>
            ))}
          </TouchableOpacity>
+       </Modal>
+       
+       {/* Aarti Modal */}
+       <Modal
+         visible={showAartiModal}
+         transparent={true}
+         animationType="fade"
+         onRequestClose={() => {
+           setShowAartiModal(false);
+         }}
+         statusBarTranslucent={true}
+       >
+         <View style={styles.modalOverlay}>
+           <TouchableOpacity 
+             style={styles.modalOverlayTouchable}
+             activeOpacity={1}
+             onPress={() => setShowAartiModal(false)}
+           >
+             <View style={styles.modalContent}>
+               <View style={styles.aartiContainer}>
+                 <Image 
+                   source={require('@/assets/images/icons/own temple/diya.png')}
+                   style={styles.aartiPlate}
+                   resizeMode="contain"
+                 />
+                 <Text style={styles.aartiText}>🕉️ Aarti Plate 🕉️</Text>
+                 <Text style={styles.aartiDescription}>
+                   The sacred flame of Aarti represents the light of knowledge and devotion.
+                 </Text>
+               </View>
+             </View>
+           </TouchableOpacity>
+         </View>
        </Modal>
      </>
    );
@@ -1282,6 +1349,29 @@ export default function DailyPujaCustomTemple() {
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 1000,
+    },
+    aartiContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 30,
+    },
+    aartiPlate: {
+      width: 200,
+      height: 200,
+      marginBottom: 20,
+    },
+    aartiText: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: '#FF6A00',
+      marginBottom: 15,
+      textAlign: 'center',
+    },
+    aartiDescription: {
+      fontSize: 16,
+      color: '#666',
+      textAlign: 'center',
+      lineHeight: 24,
     },
 
   });  
