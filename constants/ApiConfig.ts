@@ -33,6 +33,9 @@ export const API_CONFIG = {
     
     // Media & Content
     MEDIA_FILES: '/api/media-files',
+    
+    // Astrology & Horoscope
+    FREE_ASTROLOGY_API: 'https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily',
   }
 };
 
