@@ -8,7 +8,7 @@ import { Modal, Platform, Pressable, StatusBar, StyleSheet, Text, TextInput, Tou
 const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
 const TOP_PADDING = (Platform.OS === 'android' ? statusBarHeight : 0) + 24;
 
-export default function HomeHeader({ searchPlaceholder, extraContent, showDailyPujaButton = true, onSearchChange }: { searchPlaceholder?: string, extraContent?: ReactNode, showDailyPujaButton?: boolean, onSearchChange?: (query: string) => void }) {
+export default function HomeHeader({ searchPlaceholder, extraContent, showDailyPujaButton = true, onSearchChange, showSearchBar = true }: { searchPlaceholder?: string, extraContent?: ReactNode, showDailyPujaButton?: boolean, onSearchChange?: (query: string) => void, showSearchBar?: boolean }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState('');
   const [userName, setUserName] = useState('');
@@ -60,28 +60,30 @@ export default function HomeHeader({ searchPlaceholder, extraContent, showDailyP
         </TouchableOpacity>
       </View>
       {/* Search Bar and Button */}
-      <View style={styles.searchSection}>
-        <View style={styles.searchBarContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder={searchPlaceholder || "Search for ‘puja ‘"}
-            placeholderTextColor="#fff"
-            value={search}
-            onChangeText={(text) => {
-              setSearch(text);
-              onSearchChange?.(text);
-            }}
-          />
-          <TouchableOpacity style={styles.micButton}>
-            <Feather name="mic" size={20} color="#fff" />
-          </TouchableOpacity>
+      {showSearchBar && (
+        <View style={styles.searchSection}>
+          <View style={styles.searchBarContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder={searchPlaceholder || "Search for 'puja '"}
+              placeholderTextColor="#fff"
+              value={search}
+              onChangeText={(text) => {
+                setSearch(text);
+                onSearchChange?.(text);
+              }}
+            />
+            <TouchableOpacity style={styles.micButton}>
+              <Feather name="mic" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          {showDailyPujaButton && (
+            <TouchableOpacity style={styles.dailyPujaButton} onPress={() => router.push('/screens/DailyPujaCustomTemple')}>
+              <Text style={styles.dailyPujaButtonText}>Start Your Daily Puja</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        {showDailyPujaButton && (
-          <TouchableOpacity style={styles.dailyPujaButton} onPress={() => router.push('/screens/DailyPujaCustomTemple')}>
-            <Text style={styles.dailyPujaButtonText}>Start Your Daily Puja</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      )}
       {/* Extra content below search bar */}
       {extraContent && <View style={{ width: '100%', alignItems: 'center' }}>{extraContent}</View>}
       {/* Modal for options */}
