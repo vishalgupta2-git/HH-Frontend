@@ -14,6 +14,12 @@ export default function AstrologyScreen() {
   const [rashifalModalVisible, setRashifalModalVisible] = useState(false);
   const [rashifalData, setRashifalData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [rashiCalculatorModalVisible, setRashiCalculatorModalVisible] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<number>(1);
+  const [selectedMonth, setSelectedMonth] = useState<number>(1);
+  const [calculatedRashi, setCalculatedRashi] = useState<string | null>(null);
+  const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
+  const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
 
   const rashiList = [
     'Aries (Mesh)', 'Taurus (Vrishabh)', 'Gemini (Mithun)', 'Cancer (Kark)',
@@ -22,6 +28,23 @@ export default function AstrologyScreen() {
   ];
 
   const frequencyList = ['Daily', 'Weekly', 'Monthly'];
+
+  // Function to calculate Rashi based on date and month
+  const calculateRashi = (date: number, month: number): string => {
+    if ((month === 3 && date >= 21) || (month === 4 && date <= 19)) return 'Aries (Mesh)';
+    if ((month === 4 && date >= 20) || (month === 5 && date <= 20)) return 'Taurus (Vrishabh)';
+    if ((month === 5 && date >= 21) || (month === 6 && date <= 20)) return 'Gemini (Mithun)';
+    if ((month === 6 && date >= 21) || (month === 7 && date <= 22)) return 'Cancer (Kark)';
+    if ((month === 7 && date >= 23) || (month === 8 && date <= 22)) return 'Leo (Singh)';
+    if ((month === 8 && date >= 23) || (month === 9 && date <= 22)) return 'Virgo (Kanya)';
+    if ((month === 9 && date >= 23) || (month === 10 && date <= 22)) return 'Libra (Tula)';
+    if ((month === 10 && date >= 23) || (month === 11 && date <= 21)) return 'Scorpio (Vrishchik)';
+    if ((month === 11 && date >= 22) || (month === 12 && date <= 21)) return 'Sagittarius (Dhanu)';
+    if ((month === 12 && date >= 22) || (month === 1 && date <= 19)) return 'Capricorn (Makar)';
+    if ((month === 1 && date >= 20) || (month === 2 && date <= 18)) return 'Aquarius (Kumbh)';
+    if ((month === 2 && date >= 19) || (month === 3 && date <= 20)) return 'Pisces (Meen)';
+    return 'Aries (Mesh)'; // Default fallback
+  };
 
   // Function to get zodiac sign from rashi
   const getZodiacSign = (rashi: string) => {
@@ -327,12 +350,12 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
             'Show my rashifal now'}
          </Text>
        </TouchableOpacity>
-      <View style={styles.rashifalHelpText}>
-        <Text style={styles.rashifalHelpTextRegular}>Don't know your Rashi? </Text>
-        <TouchableOpacity>
-          <Text style={styles.rashifalHelpTextLink}>Click here</Text>
-        </TouchableOpacity>
-      </View>
+             <View style={styles.rashifalHelpText}>
+         <Text style={styles.rashifalHelpTextRegular}>Don't know your Rashi? </Text>
+         <TouchableOpacity onPress={() => setRashiCalculatorModalVisible(true)}>
+           <Text style={styles.rashifalHelpTextLink}>Click here</Text>
+         </TouchableOpacity>
+       </View>
     </View>
   );
 
@@ -438,13 +461,211 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
                onPress={() => setRashifalModalVisible(false)}
              >
                <Text style={styles.modalCloseButtonText}>Close</Text>
-             </TouchableOpacity>
-           </View>
-         </View>
-       </Modal>
-    </View>
-  );
-}
+                           </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+                 {/* Rashi Calculator Modal */}
+         <Modal
+           visible={rashiCalculatorModalVisible}
+           transparent={true}
+           animationType="slide"
+           onRequestClose={() => setRashiCalculatorModalVisible(false)}
+         >
+           <TouchableWithoutFeedback onPress={() => setRashiCalculatorModalVisible(false)}>
+             <View style={styles.modalOverlay}>
+               <TouchableWithoutFeedback onPress={() => {}}>
+                 <View style={styles.modalContent}>
+                             {/* Header with X button */}
+               <View style={styles.modalHeader}>
+                 <Text style={styles.modalTitle}>Find Your Rashi</Text>
+                 <TouchableOpacity 
+                   style={styles.closeButton}
+                   onPress={() => setRashiCalculatorModalVisible(false)}
+                 >
+                   <MaterialCommunityIcons name="close" size={24} color="#333" />
+                 </TouchableOpacity>
+               </View>
+
+              {/* Content */}
+              <ScrollView 
+                style={styles.modalScrollView} 
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+              >
+                <View style={styles.calculatorContent}>
+                  <Text style={styles.calculatorDescription}>
+                    Enter your date and month of birth to find your Rashi (Zodiac Sign)
+                  </Text>
+
+                                     {/* Date Selection */}
+                   <View style={styles.selectionSection}>
+                     <Text style={styles.selectionLabel}>Date of Birth:</Text>
+                     <View style={styles.calculatorDropdownWrapper}>
+                       <TouchableOpacity
+                         style={styles.calculatorDropdown}
+                         onPress={() => setDateDropdownOpen(open => !open)}
+                       >
+                         <Text style={styles.calculatorDropdownText}>
+                           {selectedDate}
+                         </Text>
+                         <MaterialCommunityIcons
+                           name={dateDropdownOpen ? 'chevron-up' : 'chevron-down'}
+                           size={22}
+                           color="#333"
+                         />
+                       </TouchableOpacity>
+                       <Modal
+                         visible={dateDropdownOpen}
+                         transparent
+                         animationType="fade"
+                         onRequestClose={() => setDateDropdownOpen(false)}
+                       >
+                         <TouchableWithoutFeedback onPress={() => setDateDropdownOpen(false)}>
+                           <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.15)' }}>
+                             <View style={styles.calculatorDropdownModalList}>
+                               <ScrollView style={{ maxHeight: 320 }}>
+                                 {Array.from({ length: 31 }, (_, i) => i + 1).map(date => (
+                                   <TouchableOpacity
+                                     key={date}
+                                     style={[
+                                       styles.calculatorDropdownItem,
+                                       selectedDate === date && styles.calculatorDropdownItemSelected
+                                     ]}
+                                     onPress={() => {
+                                       setSelectedDate(date);
+                                       setDateDropdownOpen(false);
+                                     }}
+                                   >
+                                     <Text
+                                       style={[
+                                         styles.calculatorDropdownItemText,
+                                         selectedDate === date && styles.calculatorDropdownItemTextSelected
+                                       ]}
+                                     >
+                                       {date}
+                                     </Text>
+                                   </TouchableOpacity>
+                                 ))}
+                               </ScrollView>
+                             </View>
+                           </View>
+                         </TouchableWithoutFeedback>
+                       </Modal>
+                     </View>
+                   </View>
+
+                   {/* Month Selection */}
+                   <View style={styles.selectionSection}>
+                     <Text style={styles.selectionLabel}>Month of Birth:</Text>
+                     <View style={styles.calculatorDropdownWrapper}>
+                       <TouchableOpacity
+                         style={styles.calculatorDropdown}
+                         onPress={() => setMonthDropdownOpen(open => !open)}
+                       >
+                         <Text style={styles.calculatorDropdownText}>
+                           {[
+                             { num: 1, name: 'January' }, { num: 2, name: 'February' }, { num: 3, name: 'March' },
+                             { num: 4, name: 'April' }, { num: 5, name: 'May' }, { num: 6, name: 'June' },
+                             { num: 7, name: 'July' }, { num: 8, name: 'August' }, { num: 9, name: 'September' },
+                             { num: 10, name: 'October' }, { num: 11, name: 'November' }, { num: 12, name: 'December' }
+                           ].find(m => m.num === selectedMonth)?.name || 'January'}
+                         </Text>
+                         <MaterialCommunityIcons
+                           name={monthDropdownOpen ? 'chevron-up' : 'chevron-down'}
+                           size={22}
+                           color="#333"
+                         />
+                       </TouchableOpacity>
+                       <Modal
+                         visible={monthDropdownOpen}
+                         transparent
+                         animationType="fade"
+                         onRequestClose={() => setMonthDropdownOpen(false)}
+                       >
+                         <TouchableWithoutFeedback onPress={() => setMonthDropdownOpen(false)}>
+                           <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.15)' }}>
+                             <View style={styles.calculatorDropdownModalList}>
+                               <ScrollView style={{ maxHeight: 320 }}>
+                                 {[
+                                   { num: 1, name: 'January' }, { num: 2, name: 'February' }, { num: 3, name: 'March' },
+                                   { num: 4, name: 'April' }, { num: 5, name: 'May' }, { num: 6, name: 'June' },
+                                   { num: 7, name: 'July' }, { num: 8, name: 'August' }, { num: 9, name: 'September' },
+                                   { num: 10, name: 'October' }, { num: 11, name: 'November' }, { num: 12, name: 'December' }
+                                 ].map(month => (
+                                   <TouchableOpacity
+                                     key={month.num}
+                                     style={[
+                                       styles.calculatorDropdownItem,
+                                       selectedMonth === month.num && styles.calculatorDropdownItemSelected
+                                     ]}
+                                     onPress={() => {
+                                       setSelectedMonth(month.num);
+                                       setMonthDropdownOpen(false);
+                                     }}
+                                   >
+                                     <Text
+                                       style={[
+                                         styles.calculatorDropdownItemText,
+                                         selectedMonth === month.num && styles.calculatorDropdownItemTextSelected
+                                       ]}
+                                     >
+                                       {month.name}
+                                     </Text>
+                                   </TouchableOpacity>
+                                 ))}
+                               </ScrollView>
+                             </View>
+                           </View>
+                         </TouchableWithoutFeedback>
+                       </Modal>
+                     </View>
+                   </View>
+
+                  {/* Calculate Button */}
+                  <TouchableOpacity 
+                    style={styles.calculateButton}
+                    onPress={() => {
+                      const rashi = calculateRashi(selectedDate, selectedMonth);
+                      setCalculatedRashi(rashi);
+                    }}
+                  >
+                    <Text style={styles.calculateButtonText}>Calculate My Rashi</Text>
+                  </TouchableOpacity>
+
+                  {/* Result */}
+                  {calculatedRashi && (
+                    <View style={styles.resultSection}>
+                      <Text style={styles.resultTitle}>Your Rashi is:</Text>
+                      <Text style={styles.resultRashi}>{calculatedRashi}</Text>
+                      <TouchableOpacity 
+                        style={styles.useRashiButton}
+                        onPress={() => {
+                          setSelectedRashi(calculatedRashi);
+                          setRashiCalculatorModalVisible(false);
+                          setCalculatedRashi(null);
+                        }}
+                      >
+                        <Text style={styles.useRashiButtonText}>Use This Rashi</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                                     {/* Extra space at bottom for better scrolling */}
+                   <View style={{ height: 100 }} />
+                 </View>
+               </ScrollView>
+
+               
+                 </View>
+               </TouchableWithoutFeedback>
+             </View>
+           </TouchableWithoutFeedback>
+         </Modal>
+     </View>
+   );
+ }
 
 const styles = StyleSheet.create({
   container: { 
@@ -680,9 +901,130 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  modalCloseButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-}); 
+     modalCloseButtonText: {
+     color: '#fff',
+     fontSize: 16,
+     fontWeight: 'bold',
+   },
+   // Rashi Calculator Modal styles
+   calculatorContent: {
+     paddingVertical: 20,
+     paddingBottom: 60,
+   },
+   calculatorDescription: {
+     fontSize: 16,
+     lineHeight: 24,
+     color: '#555',
+     textAlign: 'center',
+     marginBottom: 25,
+     paddingHorizontal: 10,
+   },
+   selectionSection: {
+     marginBottom: 25,
+   },
+   selectionLabel: {
+     fontSize: 18,
+     fontWeight: 'bold',
+     color: '#333',
+     marginBottom: 15,
+     textAlign: 'center',
+   },
+   
+   calculateButton: {
+     backgroundColor: '#FF6A00',
+     marginHorizontal: 20,
+     marginVertical: 20,
+     paddingVertical: 15,
+     borderRadius: 10,
+     alignItems: 'center',
+   },
+   calculateButtonText: {
+     color: '#fff',
+     fontSize: 16,
+     fontWeight: 'bold',
+   },
+   resultSection: {
+     alignItems: 'center',
+     marginTop: 20,
+     paddingVertical: 20,
+     backgroundColor: '#f9f9f9',
+     borderRadius: 12,
+     marginHorizontal: 20,
+   },
+   resultTitle: {
+     fontSize: 16,
+     color: '#666',
+     marginBottom: 10,
+   },
+   resultRashi: {
+     fontSize: 24,
+     fontWeight: 'bold',
+     color: '#FF6A00',
+     marginBottom: 20,
+     textAlign: 'center',
+   },
+   useRashiButton: {
+     backgroundColor: '#28a745',
+     paddingHorizontal: 30,
+     paddingVertical: 12,
+     borderRadius: 8,
+   },
+       useRashiButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    // Calculator Dropdown styles
+    calculatorDropdownWrapper: {
+      position: 'relative',
+      marginTop: 10,
+      backgroundColor: '#f0f0f0',
+      borderRadius: 8,
+      padding: 5,
+      borderWidth: 1,
+      borderColor: '#ccc',
+      zIndex: 1000,
+      elevation: 20,
+    },
+    calculatorDropdown: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 15,
+    },
+    calculatorDropdownText: {
+      fontSize: 16,
+      color: '#333',
+      fontWeight: '500',
+    },
+    calculatorDropdownModalList: {
+      position: 'absolute',
+      top: 80,
+      left: 40,
+      right: 40,
+      backgroundColor: '#f0f0f0',
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: '#ccc',
+      maxHeight: 320,
+      paddingVertical: 4,
+      zIndex: 1000,
+      elevation: 20,
+    },
+    calculatorDropdownItem: {
+      paddingVertical: 12,
+      paddingHorizontal: 15,
+    },
+    calculatorDropdownItemSelected: {
+      backgroundColor: '#e0e0e0',
+    },
+    calculatorDropdownItemText: {
+      fontSize: 16,
+      color: '#333',
+    },
+    calculatorDropdownItemTextSelected: {
+      fontWeight: 'bold',
+      color: '#FF6A00',
+    },
+ }); 
