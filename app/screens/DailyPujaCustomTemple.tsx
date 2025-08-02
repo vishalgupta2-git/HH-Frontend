@@ -744,8 +744,8 @@ export default function DailyPujaCustomTemple() {
   };
 
   return (
-    <>
-      <View style={styles.container}>
+      <>
+        <View style={styles.container}>
       {/* Purple Gradient Background (dynamic) */}
       <LinearGradient
         colors={bgGradient as any}
@@ -1079,11 +1079,13 @@ export default function DailyPujaCustomTemple() {
            >
              <View style={styles.modalContent}>
                <View style={styles.aartiContainer}>
-                 <Image 
-                   source={require('@/assets/images/icons/own temple/diya.png')}
-                   style={styles.aartiPlate}
-                   resizeMode="contain"
-                 />
+                                   <Image 
+                    source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+                    style={styles.aartiPlate}
+                    resizeMode="contain"
+                    onLoad={() => console.log('🔍 [DEBUG] PujaThali1.png loaded successfully')}
+                    onError={(error) => console.error('🔍 [DEBUG] PujaThali1.png failed to load:', error)}
+                  />
                  <Text style={styles.aartiText}>🕉️ Aarti Plate 🕉️</Text>
                  <Text style={styles.aartiDescription}>
                    The sacred flame of Aarti represents the light of knowledge and devotion.
@@ -1264,23 +1266,25 @@ export default function DailyPujaCustomTemple() {
                                                                                modalOverlay: {
                flex: 1,
                backgroundColor: 'transparent',
-               justifyContent: 'flex-end',
+               justifyContent: 'center',
                alignItems: 'center',
                zIndex: 1000,
              },
              modalOverlayTouchable: {
                flex: 1,
                width: '100%',
-               justifyContent: 'flex-end',
+               justifyContent: 'center',
                alignItems: 'center',
              },
              modalContent: {
                backgroundColor: '#fff',
-               borderRadius: 15,
-               padding: 20,
-               marginBottom: 150,
+               borderRadius: 0,
+               padding: 0,
+               margin: 0,
                alignItems: 'center',
-               minWidth: 250,
+               justifyContent: 'center',
+               width: '100%',
+               height: '100%',
                zIndex: 1001,
                elevation: 10,
                shadowColor: '#000',
@@ -1353,11 +1357,14 @@ export default function DailyPujaCustomTemple() {
     aartiContainer: {
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 30,
+      padding: 20,
+      flex: 1,
+      width: '100%',
+      height: '100%',
     },
     aartiPlate: {
-      width: 200,
-      height: 200,
+      width: '60%',
+      height: '60%',
       marginBottom: 20,
     },
     aartiText: {

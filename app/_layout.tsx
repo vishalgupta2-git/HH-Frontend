@@ -8,15 +8,24 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function RootLayout() {
+  console.log('🔍 [DEBUG] RootLayout: Starting...');
+  
   const colorScheme = useColorScheme();
+  console.log('🔍 [DEBUG] RootLayout: ColorScheme =', colorScheme);
+  
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
+  
+  console.log('🔍 [DEBUG] RootLayout: Fonts loaded =', loaded);
 
   if (!loaded) {
+    console.log('🔍 [DEBUG] RootLayout: Fonts not loaded, returning null');
     // Async font loading only occurs in development.
     return null;
   }
+  
+  console.log('🔍 [DEBUG] RootLayout: Rendering main layout');
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
