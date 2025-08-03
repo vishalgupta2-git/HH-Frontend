@@ -22,6 +22,7 @@ interface SpecialPujaData {
   family?: boolean;
   promote?: boolean;
   pujaDetails?: string;
+  dateMapping?: string; // Date in YYYY-MM-DD format for fixed date pujas
 }
 
 // Helper function to safely convert any value to string

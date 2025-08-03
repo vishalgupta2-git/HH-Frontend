@@ -24,6 +24,7 @@ export const API_CONFIG = {
     PROFESSIONAL_PUJAS: '/api/professional-pujas',
     SPECIAL_PUJA: '/api/special-puja',
     PROFESSIONAL_PUJA_BOOKING: '/api/professional-puja-booking',
+    CHECK_PUJA_BOOKING: '/api/check-puja-booking',
     
     // Authentication & User Management
     SIGNUP: '/api/signup',
