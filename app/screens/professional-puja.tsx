@@ -90,12 +90,10 @@ export default function ProfessionalPujaScreen() {
     const fetchPujas = async () => {
       try {
         const res = await axios.get(getEndpointUrl('PROFESSIONAL_PUJAS'));
-        console.log('Fetched puja data:', res.data);
         // Filter out any items with null/undefined values that might cause rendering issues
         const filteredData = res.data.filter((puja: any) => puja && typeof puja === 'object');
         setPujaFiles(filteredData);
       } catch (e) {
-        console.error('Error fetching pujas:', e);
         Alert.alert('Failed to fetch professional pujas');
       } finally {
         setLoading(false);
@@ -104,33 +102,16 @@ export default function ProfessionalPujaScreen() {
     fetchPujas();
   }, []);
 
-  // Debug currentPuja changes
-  useEffect(() => {
-    console.log('currentPuja changed:', currentPuja);
-  }, [currentPuja]);
+
 
   const handlePlay = (puja: PujaData) => {
-    console.log('handlePlay called with puja:', puja);
-    console.log('Puja fields:', {
-      name: puja.pujaName,
-      deity: puja.mainDeity,
-      purpose: puja.purpose,
-      days: puja.days,
-      hours: puja.hours,
-      price: puja.price,
-      details: puja.details
-    });
-    
     // Validate puja object before setting
     if (!puja || typeof puja !== 'object') {
-      console.error('Invalid puja object:', puja);
       return;
     }
     
-    console.log('Setting currentPuja to:', puja);
     setCurrentPuja(puja);
     setModalVisible(true);
-    console.log('Modal should now be visible');
     // Note: No Link field in Supabase data, so removing YouTube functionality
     // if (puja.Link && (puja.Link.includes('youtube.com') || puja.Link.includes('youtu.be'))) {
     //   setYoutubePlaying(true);
@@ -163,19 +144,13 @@ export default function ProfessionalPujaScreen() {
       price: currentPuja?.price,
     };
     
-    console.log('Sending booking data:', bookingData);
-    console.log('Current puja:', currentPuja);
-    
     try {
       const response = await axios.post(getEndpointUrl('PROFESSIONAL_PUJA_BOOKING'), bookingData);
-      console.log('Booking response:', response.data);
       setBookingModalVisible(false);
       setName('');
       setPhone('');
       Alert.alert('Success', 'Your puja booking request has been submitted successfully!');
     } catch (err: any) {
-      console.error('Booking error:', err);
-      console.error('Error response:', err.response?.data);
       Alert.alert('Error', `Failed to save booking: ${err.response?.data?.error || err.message}`);
     }
   };
@@ -284,21 +259,11 @@ export default function ProfessionalPujaScreen() {
         ) : filteredPujas.length === 0 ? (
           <Text style={styles.noDataText}>No pujas found matching your criteria</Text>
         ) : (
-          filteredPujas.map((puja, idx) => {
-            // Additional safety check
-            if (!puja || typeof puja !== 'object') {
-              console.log('Skipping invalid puja at index:', idx, puja);
-              return null;
-            }
-            
-            console.log('Rendering puja at index:', idx, {
-              name: puja.pujaName,
-              deity: puja.mainDeity,
-              purpose: puja.purpose,
-              days: puja.days,
-              hours: puja.hours,
-              price: puja.price
-            });
+                     filteredPujas.map((puja, idx) => {
+             // Additional safety check
+             if (!puja || typeof puja !== 'object') {
+               return null;
+             }
             
             return (
               <TouchableOpacity

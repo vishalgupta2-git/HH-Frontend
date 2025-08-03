@@ -1,147 +1,309 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
+import HomeHeader from '@/components/Home/HomeHeader';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { getEndpointUrl } from '@/constants/ApiConfig';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, Dimensions, Image, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-
-const { width } = Dimensions.get('window');
-
-const specialPujaOptions = [
-  {
-    label: 'Birthdays & Anniversaries',
-    icon: require('@/assets/images/icons/special puja icons/birthdays-anniversaries.png'),
-  },
-  {
-    label: 'Exams & Job Interviews',
-    icon: require('@/assets/images/icons/special puja icons/exams-job-interviews.png'),
-  },
-  {
-    label: 'Welcoming a newborn',
-    icon: require('@/assets/images/icons/special puja icons/welcoming-a-newborn.png'),
-  },
-  {
-    label: 'Important results',
-    icon: require('@/assets/images/icons/special puja icons/important-results.png'),
-  },
-  {
-    label: 'Death anniversaries',
-    icon: require('@/assets/images/icons/special puja icons/death-anniversaries.png'),
-  },
-  {
-    label: 'First date & proposals',
-    icon: require('@/assets/images/icons/special puja icons/first-date-proposals.png'),
-  },
-];
-
-export const options = { headerShown: false };
+import DateTimePicker from '@react-native-community/datetimepicker';
+import React, { useEffect, useState } from 'react';
+import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, Image } from 'react-native';
+import { getImageSource } from '@/utils/iconMappings';
 
 const timeSlots = [
   '8:00-10:00 AM', '10:00-12:00 PM', '12:00-2:00 PM', '2:00-4:00 PM',
   '4:00-6:00 PM', '6:00-8:00 PM', '8:00-10:00 PM'
 ];
 
+interface SpecialPujaData {
+  createdAt?: string;
+  pujaID?: string;
+  pujaName?: string;
+  icon?: string;
+  individual?: boolean;
+  couple?: boolean;
+  family?: boolean;
+  promote?: boolean;
+  pujaDetails?: string;
+}
+
+// Helper function to safely convert any value to string
+function safeString(value: any): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return value.toString();
+  if (typeof value === 'boolean') return value.toString();
+  // Handle ObjectId and other complex types
+  if (value && typeof value === 'object') {
+    if (value.toString) return value.toString();
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+
+
+export const options = { headerShown: false };
+
 export default function SpecialPujaScreen() {
-  const router = useRouter();
-  const [selected, setSelected] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [bookingModalVisible, setBookingModalVisible] = useState(false);
+  const [currentPuja, setCurrentPuja] = useState<SpecialPujaData | null>(null);
+  const [pujaFiles, setPujaFiles] = useState<SpecialPujaData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [date, setDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000));
   const [showDate, setShowDate] = useState(false);
-  const [slot, setSlot] = useState(timeSlots[0]);
+  const [slot, setSlot] = useState('8:00-10:00 AM');
 
-  const handleBook = () => {
+  useEffect(() => {
+    const fetchPujas = async () => {
+      try {
+        console.log('🔄 Fetching special pujas from:', getEndpointUrl('SPECIAL_PUJA'));
+        const res = await axios.get(getEndpointUrl('SPECIAL_PUJA'));
+        console.log('✅ Special puja API response:', res.data);
+        
+        // Filter out any items with null/undefined values that might cause rendering issues
+        const filteredData = res.data.filter((puja: any) => puja && typeof puja === 'object');
+        console.log('📊 Filtered special puja data:', filteredData.length, 'records');
+        setPujaFiles(filteredData);
+      } catch (e: any) {
+        console.error('❌ Error fetching special pujas:', e.message);
+        console.error('❌ Error response:', e.response?.data);
+        Alert.alert('Failed to fetch special pujas', e.response?.data?.error || e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPujas();
+  }, []);
+
+  const handlePlay = (puja: SpecialPujaData) => {
+    // Validate puja object before setting
+    if (!puja || typeof puja !== 'object') {
+      return;
+    }
+    
+    setCurrentPuja(puja);
     setModalVisible(true);
   };
 
-  const handleConfirm = async () => {
+  const handleBookPuja = () => {
+    setModalVisible(false);
+    setBookingModalVisible(true);
+  };
+
+  const handleConfirmBooking = async () => {
     if (!name.trim() || phone.length < 7) {
       Alert.alert('Please enter a valid name and phone number.');
       return;
     }
     
+    if (!currentPuja?.pujaName) {
+      Alert.alert('Error', 'No puja selected. Please try again.');
+      return;
+    }
+    
     const bookingData = {
       name,
-      phone,
+      phone: parseInt(phone) || phone, // Convert to number if possible
       date: date.toISOString(), // Convert Date to ISO string for backend
       slot,
-      pujaName: specialPujaOptions[selected].label, // Send puja name instead of pujaType
+      pujaName: currentPuja?.pujaName, // Send puja name instead of pujaType
+      pujaId: currentPuja?.pujaID,
     };
     
-    console.log('Sending special puja booking data:', bookingData);
-    
     try {
+      console.log('🔄 Submitting special puja booking:', bookingData);
       const response = await axios.post(getEndpointUrl('SPECIAL_PUJA'), bookingData);
-      console.log('Special puja booking response:', response.data);
-      setModalVisible(false);
-      setConfirmVisible(true);
+      console.log('✅ Booking response:', response.data);
+      setBookingModalVisible(false);
+      setName('');
+      setPhone('');
+      Alert.alert('Success', 'Your special puja booking request has been submitted successfully!');
     } catch (err: any) {
-      console.error('Special puja booking error:', err);
-      console.error('Error response:', err.response?.data);
+      console.error('❌ Booking error:', err.message);
+      console.error('❌ Booking error response:', err.response?.data);
       Alert.alert('Error', `Failed to save booking: ${err.response?.data?.error || err.message}`);
     }
   };
 
+  // Filter pujas based on search query
+  const filteredPujas = pujaFiles.filter(puja => {
+    // Ensure puja is a valid object
+    if (!puja || typeof puja !== 'object') {
+      return false;
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      return (
+        (puja.pujaName && safeString(puja.pujaName).toLowerCase().includes(q)) ||
+        (puja.pujaDetails && safeString(puja.pujaDetails).toLowerCase().includes(q)) ||
+        (puja.individual && safeString(puja.individual).toLowerCase().includes(q)) ||
+        (puja.couple && safeString(puja.couple).toLowerCase().includes(q)) ||
+        (puja.family && safeString(puja.family).toLowerCase().includes(q)) ||
+        (puja.promote && safeString(puja.promote).toLowerCase().includes(q))
+      );
+    }
+    
+    return true;
+  });
+
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={["#FFA040", "#FF6A00"]}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
+      <HomeHeader searchPlaceholder="Search for Special Pujas" showDailyPujaButton={false} onSearchChange={setSearchQuery} />
+      {/* Puja List */}
+      <ScrollView style={styles.content}>
+        <Text style={styles.headline}>Mark your milestones with Divine Blessings</Text>
+        {loading ? (
+          <Text style={styles.loadingText}>Loading...</Text>
+        ) : filteredPujas.length === 0 ? (
+          <Text style={styles.noDataText}>No special pujas found matching your criteria</Text>
+        ) : (
+          filteredPujas.map((puja, idx) => {
+            // Additional safety check
+            if (!puja || typeof puja !== 'object') {
+              return null;
+            }
+            
+            return (
+                             <TouchableOpacity
+                 key={puja.pujaID || idx}
+                 style={styles.pujaCard}
+                 onPress={() => handlePlay(puja)}
+               >
+                 <View style={styles.pujaCardContent}>
+                   {/* Puja Icon on the left */}
+                   {puja.icon && getImageSource(puja.icon) && (
+                     <View style={styles.pujaIconContainer}>
+                       <Image 
+                         source={getImageSource(puja.icon)} 
+                         style={styles.pujaIcon}
+                         resizeMode="contain"
+                       />
+                     </View>
+                   )}
+                   
+                   {/* Puja Name and Type Icons on the right */}
+                   <View style={styles.pujaInfoContainer}>
+                     {/* Puja Name */}
+                     <Text style={styles.pujaName}>{safeString(puja.pujaName || 'Puja Name')}</Text>
+                     
+                     {/* Type Icons Row */}
+                     <View style={styles.typeIconsRow}>
+                       {puja.individual && (
+                         <View style={styles.typeIconContainer}>
+                           <MaterialCommunityIcons name="account" size={20} color="#666" />
+                         </View>
+                       )}
+                                               {puja.couple && (
+                          <View style={styles.typeIconContainer}>
+                            <Image 
+                              source={require('@/assets/images/icons/specialPujaIcons/coupleIcon.png')}
+                              style={{ width: 20, height: 20 }}
+                              resizeMode="contain"
+                            />
+                          </View>
+                        )}
+                                               {puja.family && (
+                          <View style={styles.typeIconContainer}>
+                            <Image 
+                              source={require('@/assets/images/icons/specialPujaIcons/FamilyIcon.png')}
+                              style={{ width: 20, height: 20 }}
+                              resizeMode="contain"
+                            />
+                          </View>
+                        )}
+                       {puja.promote && (
+                         <View style={styles.typeIconContainer}>
+                           <MaterialCommunityIcons name="star" size={20} color="#666" />
+                         </View>
+                       )}
+                     </View>
+                   </View>
+                 </View>
+               </TouchableOpacity>
+            );
+          })
+        )}
+      </ScrollView>
+      
+      {/* Puja Details Modal */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          setModalVisible(false);
+          setCurrentPuja(null);
+        }}
       >
-        <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitlePrefix}>Special Puja for </Text>
-          <Text style={styles.headerTitleBold}>"{specialPujaOptions[selected].label}"</Text>
-        </View>
-        <Image
-          source={require('@/assets/images/temple illustration.png')}
-          style={styles.temple}
-        />
-      </LinearGradient>
-      <View style={styles.card}>
-        <Text style={styles.title}>Special Puja For</Text>
-        <View style={styles.grid}>
-          {specialPujaOptions.map((item, idx) => (
-            <TouchableOpacity
-              key={item.label}
-              style={[styles.tile, selected === idx && styles.tileSelected]}
-              activeOpacity={0.8}
-              onPress={() => setSelected(idx)}
-            >
-              <View style={[styles.iconCircle, selected === idx && styles.iconCircleSelected]}>
-                <Image source={item.icon} style={styles.iconImage} resizeMode="contain" />
-              </View>
-              <Text style={[styles.label, selected === idx && styles.labelSelected]}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-      <LinearGradient
-        colors={["#FF9800", "#FFA040"]}
-        style={styles.ctaButton}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-      >
-        <TouchableOpacity style={{ width: '100%' }} activeOpacity={0.8} onPress={handleBook}>
-          <Text style={styles.ctaText}>Book a puja and let divine energy guide your journey.</Text>
-        </TouchableOpacity>
-      </LinearGradient>
-      {/* Modal for booking */}
-      <Modal visible={modalVisible} transparent animationType="fade">
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setModalVisible(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => {
+          setModalVisible(false);
+          setCurrentPuja(null);
+        }}>
           <TouchableOpacity style={styles.modalCard} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
             {/* X button */}
-            <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => {
+              setModalVisible(false);
+              setCurrentPuja(null);
+            }}>
+              <Text style={styles.closeButtonText}>×</Text>
+            </TouchableOpacity>
+            {currentPuja && (
+              <ScrollView style={styles.modalContent}>
+                <Text style={styles.modalTitle}>{safeString(currentPuja.pujaName || 'Puja Name')}</Text>
+                
+                {currentPuja.pujaDetails && currentPuja.pujaDetails !== '' && (
+                  <Text style={styles.modalDescription}>{safeString(currentPuja.pujaDetails)}</Text>
+                )}
+                
+                {currentPuja.individual && (
+                  <Text style={styles.modalDetail}>
+                    <Text style={styles.modalDetailLabel}>Type: </Text>
+                    Individual
+                  </Text>
+                )}
+                {currentPuja.couple && (
+                  <Text style={styles.modalDetail}>
+                    <Text style={styles.modalDetailLabel}>Type: </Text>
+                    Couple
+                  </Text>
+                )}
+                {currentPuja.family && (
+                  <Text style={styles.modalDetail}>
+                    <Text style={styles.modalDetailLabel}>Type: </Text>
+                    Family
+                  </Text>
+                )}
+                {currentPuja.promote && (
+                  <Text style={styles.modalDetail}>
+                    <Text style={styles.modalDetailLabel}>Type: </Text>
+                    Promote
+                  </Text>
+                )}
+                
+                <TouchableOpacity style={styles.bookPujaButton} onPress={handleBookPuja}>
+                  <Text style={styles.bookPujaButtonText}>Book Puja</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            )}
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+      
+      {/* Booking Modal */}
+      <Modal visible={bookingModalVisible} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setBookingModalVisible(false)}>
+          <TouchableOpacity style={styles.modalCard} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+            {/* X button */}
+            <TouchableOpacity style={styles.closeButton} onPress={() => setBookingModalVisible(false)}>
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
             <View style={styles.modalTitleContainer}>
               <Text style={styles.modalTitlePrefix}>Thanks for requesting </Text>
-              <Text style={styles.modalTitleBold}>"{specialPujaOptions[selected].label}"</Text>
+              <Text style={styles.modalTitleBold}>"{currentPuja?.pujaName}"</Text>
               <Text style={styles.modalTitleSuffix}> please enter the following to let us contact you</Text>
             </View>
             <TextInput
@@ -161,6 +323,18 @@ export default function SpecialPujaScreen() {
             <TouchableOpacity onPress={() => setShowDate(true)} style={styles.datePickerBtn}>
               <Text style={styles.datePickerText}>Date: {date.toLocaleDateString()}</Text>
             </TouchableOpacity>
+            {showDate && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                minimumDate={new Date()}
+                onChange={(_, d) => {
+                  setShowDate(false);
+                  if (d) setDate(d);
+                }}
+              />
+            )}
             <View style={styles.slotRow}>
               {timeSlots.map(ts => (
                 <TouchableOpacity
@@ -173,45 +347,13 @@ export default function SpecialPujaScreen() {
               ))}
             </View>
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={[styles.modalConfirmBtn, {flex: 1, marginRight: 8}]} onPress={handleConfirm}>
+              <TouchableOpacity style={[styles.modalConfirmBtn, {flex: 1, marginRight: 8}]} onPress={handleConfirmBooking}>
                 <Text style={styles.modalConfirmText}>Confirm</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.modalCancelBtn, {flex: 1, marginLeft: 8}]} onPress={() => setModalVisible(false)}>
+              <TouchableOpacity style={[styles.modalCancelBtn, {flex: 1, marginLeft: 8}]} onPress={() => setBookingModalVisible(false)}>
                 <Text style={styles.modalCancelText}>Cancel</Text>
               </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
-      {/* Date Picker Modal */}
-      {showDate && (
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          minimumDate={new Date()}
-          onChange={(event, d) => {
-            setShowDate(false);
-            if (d) setDate(d);
-          }}
-        />
-      )}
-      {/* Confirmation Modal */}
-      <Modal visible={confirmVisible} transparent animationType="fade">
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setConfirmVisible(false)}>
-          <TouchableOpacity style={styles.modalCard} activeOpacity={1} onPress={(e) => e.stopPropagation()}>
-            {/* X button */}
-            <TouchableOpacity style={styles.closeButton} onPress={() => setConfirmVisible(false)}>
-              <Text style={styles.closeButtonText}>×</Text>
-            </TouchableOpacity>
-            <View style={styles.modalTitleContainer}>
-              <Text style={styles.modalTitlePrefix}>We have received your request for </Text>
-              <Text style={styles.modalTitleBold}>"{specialPujaOptions[selected].label}"</Text>
-              <Text style={styles.modalTitleSuffix}> and will contact you on {date.toLocaleDateString()} between {slot}</Text>
-            </View>
-            <TouchableOpacity style={styles.modalConfirmBtn} onPress={() => setConfirmVisible(false)}>
-              <Text style={styles.modalConfirmText}>OK</Text>
-            </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -219,139 +361,98 @@ export default function SpecialPujaScreen() {
   );
 }
 
-const CARD_TOP = 250;
-const CARD_MARGIN_TOP = -40;
-const tileSize = (width - 64) / 3;
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
+  container: { 
+    flex: 1, 
+    backgroundColor: '#fff' 
   },
-  header: {
-    height: CARD_TOP,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 0,
-    position: 'relative',
+  content: {
+    padding: 15,
   },
-  logo: {
-    width: Math.min(width * 1.125 * 0.8, width),
-    height: undefined,
-    aspectRatio: 1,
-    marginTop: -60,
-    marginBottom: 8,
-  },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  headerTitlePrefix: {
-    fontSize: 28,
-    fontWeight: 'normal',
-    color: '#fff',
-    letterSpacing: 1,
-  },
-  headerTitleBold: {
-    fontSize: 28,
+  headline: {
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
-    letterSpacing: 1,
+    color: '#FF6A00',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 30,
   },
-  temple: {
-    position: 'absolute',
-    width: width * 1.5 * 0.8,
-    height: 120 * 0.8,
-    left: width * -0.25 * 0.8,
-    bottom: CARD_TOP + CARD_MARGIN_TOP - 120 - 60,
-    resizeMode: 'contain',
+  loadingText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#666',
+    marginTop: 20,
   },
-  card: {
+  noDataText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#666',
+    marginTop: 20,
+    fontStyle: 'italic',
+  },
+  pujaCard: {
     backgroundColor: '#fff',
-    borderRadius: 20,
-    marginHorizontal: 12,
-    marginTop: CARD_MARGIN_TOP,
-    padding: 24,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF6A00',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 18,
-    textAlign: 'left',
-  },
-  grid: {
+  pujaCardContent: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  pujaIconContainer: {
+    marginRight: 16,
+  },
+  pujaInfoContainer: {
+    flex: 1,
+  },
+  pujaIcon: {
+    width: 64,
+    height: 64,
+    alignSelf: 'center',
+  },
+  typeIconsRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
     marginTop: 8,
   },
-  tile: {
-    width: tileSize,
-    alignItems: 'center',
-    marginBottom: 18,
+  typeIconContainer: {
+    marginHorizontal: 4,
+    padding: 4,
   },
-  iconCircle: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: '#FFF6EE',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-    borderWidth: 1,
-    borderColor: '#FFD6A0',
+  pujaHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
   },
-  iconImage: {
-    width: 32,
-    height: 32,
-    tintColor: '#FF9800',
-  },
-  label: {
-    fontSize: 13,
-    color: '#888',
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  ctaButton: {
-    marginTop: 18,
-    marginHorizontal: 12,
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  ctaText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  tileSelected: {
-    borderColor: '#FF9800',
-    borderWidth: 2,
-    backgroundColor: '#FFF3E0',
-  },
-  iconCircleSelected: {
-    borderColor: '#FF9800',
-    backgroundColor: '#FFF3E0',
-  },
-  labelSelected: {
-    color: '#FF9800',
+  pujaName: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
+    flex: 1,
+    marginRight: 10,
+  },
+  pujaDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 8,
+  },
+  pujaDetail: {
+    fontSize: 13,
+    color: '#666',
+    marginRight: 16,
+    marginBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   modalOverlay: {
     flex: 1,
@@ -364,12 +465,66 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 24,
     width: '90%',
-    alignItems: 'center',
+    maxHeight: '80%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 4,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 10,
+    padding: 6,
+  },
+  closeButtonText: {
+    fontSize: 28,
+    color: '#FF6A00',
+    fontWeight: 'bold',
+  },
+  modalContent: {
+    width: '100%',
+    paddingTop: 20,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#222',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  modalDescription: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 24,
+  },
+  modalDetail: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 24,
+  },
+  modalDetailLabel: {
+    fontWeight: 'bold',
+    color: '#222',
+  },
+  bookPujaButton: {
+    backgroundColor: '#FF6A00',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  bookPujaButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   modalTitleContainer: {
     flexDirection: 'row',
@@ -458,18 +613,6 @@ const styles = StyleSheet.create({
   modalConfirmText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 10,
-    padding: 6,
-  },
-  closeButtonText: {
-    fontSize: 28,
-    color: '#FF6A00',
     fontWeight: 'bold',
   },
   modalCancelBtn: {
