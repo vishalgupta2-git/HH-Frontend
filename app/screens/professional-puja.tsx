@@ -308,11 +308,6 @@ export default function ProfessionalPujaScreen() {
               >
                 <View style={styles.pujaHeader}>
                   <Text style={styles.pujaName}>{safeString(puja.pujaName || 'Puja Name')}</Text>
-                  {puja.pujaId && puja.pujaId !== '' && (
-                    <View style={styles.typeBadge}>
-                      <Text style={styles.typeText}>{safeString(puja.pujaId)}</Text>
-                    </View>
-                  )}
                 </View>
                 
                 <View style={styles.pujaDetails}>
