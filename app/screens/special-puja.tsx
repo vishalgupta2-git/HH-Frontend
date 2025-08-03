@@ -132,35 +132,42 @@ export default function SpecialPujaScreen() {
   };
 
   // Filter pujas based on search query and filters
-  const filteredPujas = pujaFiles.filter(puja => {
-    // Ensure puja is a valid object
-    if (!puja || typeof puja !== 'object') {
-      return false;
-    }
-    
-    // Filter by selected filter
-    if (selectedFilter !== 'puja-for') {
-      if (selectedFilter === 'upcoming' && !puja.promote) return false;
-      if (selectedFilter === 'individual' && !puja.individual) return false;
-      if (selectedFilter === 'couple' && !puja.couple) return false;
-      if (selectedFilter === 'family' && !puja.family) return false;
-    }
-    
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      return (
-        (puja.pujaName && safeString(puja.pujaName).toLowerCase().includes(q)) ||
-        (puja.pujaDetails && safeString(puja.pujaDetails).toLowerCase().includes(q)) ||
-        (puja.individual && safeString(puja.individual).toLowerCase().includes(q)) ||
-        (puja.couple && safeString(puja.couple).toLowerCase().includes(q)) ||
-        (puja.family && safeString(puja.family).toLowerCase().includes(q)) ||
-        (puja.promote && safeString(puja.promote).toLowerCase().includes(q))
-      );
-    }
-    
-    return true;
-  });
+  const filteredPujas = pujaFiles
+    .filter(puja => {
+      // Ensure puja is a valid object
+      if (!puja || typeof puja !== 'object') {
+        return false;
+      }
+      
+      // Filter by selected filter
+      if (selectedFilter !== 'puja-for') {
+        if (selectedFilter === 'upcoming' && !puja.promote) return false;
+        if (selectedFilter === 'individual' && !puja.individual) return false;
+        if (selectedFilter === 'couple' && !puja.couple) return false;
+        if (selectedFilter === 'family' && !puja.family) return false;
+      }
+      
+      // Filter by search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase();
+        return (
+          (puja.pujaName && safeString(puja.pujaName).toLowerCase().includes(q)) ||
+          (puja.pujaDetails && safeString(puja.pujaDetails).toLowerCase().includes(q)) ||
+          (puja.individual && safeString(puja.individual).toLowerCase().includes(q)) ||
+          (puja.couple && safeString(puja.couple).toLowerCase().includes(q)) ||
+          (puja.family && safeString(puja.family).toLowerCase().includes(q)) ||
+          (puja.promote && safeString(puja.promote).toLowerCase().includes(q))
+        );
+      }
+      
+      return true;
+    })
+    .sort((a, b) => {
+      // Sort promoted pujas first
+      if (a.promote && !b.promote) return -1;
+      if (!a.promote && b.promote) return 1;
+      return 0;
+    });
 
   return (
     <View style={styles.container}>
@@ -285,20 +292,26 @@ export default function SpecialPujaScreen() {
                  style={styles.pujaCard}
                  onPress={() => handlePlay(puja)}
                >
-                 <View style={styles.pujaCardContent}>
-                   {/* Puja Icon on the left */}
-                   {puja.icon && getImageSource(puja.icon) && (
-                     <View style={styles.pujaIconContainer}>
-                       <Image 
-                         source={getImageSource(puja.icon)} 
-                         style={styles.pujaIcon}
-                         resizeMode="contain"
-                       />
-                     </View>
-                   )}
-                   
-                   {/* Puja Name and Type Icons on the right */}
-                   <View style={styles.pujaInfoContainer}>
+                                   <View style={styles.pujaCardContent}>
+                    {/* Puja Icon on the left */}
+                    {puja.icon && getImageSource(puja.icon) ? (
+                      <View style={styles.pujaIconContainer}>
+                        <Image 
+                          source={getImageSource(puja.icon)} 
+                          style={styles.pujaIcon}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    ) : (
+                      <View style={styles.pujaIconContainer}>
+                        <View style={styles.pujaIconPlaceholder}>
+                          <MaterialCommunityIcons name="image-off" size={32} color="#ccc" />
+                        </View>
+                      </View>
+                    )}
+                    
+                    {/* Puja Name and Type Icons on the right */}
+                    <View style={styles.pujaInfoContainer}>
                      {/* Puja Name */}
                      <Text style={styles.pujaName}>{safeString(puja.pujaName || 'Puja Name')}</Text>
                      
@@ -807,5 +820,16 @@ const styles = StyleSheet.create({
     },
     filterDropdownItemTick: {
       marginLeft: 'auto',
+    },
+    pujaIconPlaceholder: {
+      width: 64,
+      height: 64,
+      backgroundColor: '#f5f5f5',
+      borderRadius: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: '#e0e0e0',
+      borderStyle: 'dashed',
     },
 }); 

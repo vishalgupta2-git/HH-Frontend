@@ -18,6 +18,10 @@ export const specialPujaIcons = {
   'ChildrensDayPujaIcon.png': require('@/assets/images/icons/specialPujaIcons/ChildrensDayPujaIcon.png'),
   'SpeedyRecoveryPujaIcon.png': require('@/assets/images/icons/specialPujaIcons/SpeedyRecoveryPujaIcon.png'),
   '1stBirthdayPujaIcon.png': require('@/assets/images/icons/specialPujaIcons/1stBirthdayPujaIcon.png'),
+  '1stAnniversaryPujaIcon.png': require('@/assets/images/icons/specialPujaIcons/1stAnniversaryPujaIcon.png'),
+  'FirstDatePujaIcon.png': require('@/assets/images/icons/specialPujaIcons/FirstDatePujaIcon.png'),
+  'karvachauthPujaIcon.png': require('@/assets/images/icons/specialPujaIcons/karvachauthPujaIcon.png'),
+  'newYearPujaIcon.png': require('@/assets/images/icons/specialPujaIcons/newYearPujaIcon.png'),
 };
 
 // Helper function to get image source from icon path
