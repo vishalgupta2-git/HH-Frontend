@@ -14,17 +14,52 @@ export default function HomeHeader({ searchPlaceholder, extraContent, showDailyP
   const [userName, setUserName] = useState('');
   const router = useRouter();
 
+  // Load user data when component mounts
   React.useEffect(() => {
-    AsyncStorage.getItem('user').then(data => {
-      if (data) {
-        try {
+    const loadUserData = async () => {
+      try {
+        const data = await AsyncStorage.getItem('user');
+        console.log('🔍 HomeHeader: Loading user data:', data);
+        if (data) {
           const user = JSON.parse(data);
-          setUserName(user.name || '');
-        } catch {}
-      } else {
+          console.log('🔍 HomeHeader: Parsed user data:', user);
+          setUserName(user.name || user.firstName || '');
+        } else {
+          console.log('🔍 HomeHeader: No user data found');
+          setUserName('');
+        }
+      } catch (error) {
+        console.error('🔍 HomeHeader: Error loading user data:', error);
         setUserName('');
       }
-    });
+    };
+    
+    loadUserData();
+  }, []);
+
+  // Reload user data when modal becomes visible
+  React.useEffect(() => {
+    if (modalVisible) {
+      const loadUserData = async () => {
+        try {
+          const data = await AsyncStorage.getItem('user');
+          console.log('🔍 HomeHeader: Reloading user data for modal:', data);
+          if (data) {
+            const user = JSON.parse(data);
+            console.log('🔍 HomeHeader: Parsed user data for modal:', user);
+            setUserName(user.name || user.firstName || '');
+          } else {
+            console.log('🔍 HomeHeader: No user data found for modal');
+            setUserName('');
+          }
+        } catch (error) {
+          console.error('🔍 HomeHeader: Error loading user data for modal:', error);
+          setUserName('');
+        }
+      };
+      
+      loadUserData();
+    }
   }, [modalVisible]);
 
   const handleLogout = async () => {

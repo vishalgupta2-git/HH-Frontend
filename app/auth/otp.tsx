@@ -95,7 +95,7 @@ export default function OTPScreen() {
     setMessageType('');
     
     try {
-      console.log('Sending OTP verification request:', { email, otp: otpString });
+      console.log('Sending OTP verification request:', { email, otp: otpString, name });
       const response = await axios.post(getEndpointUrl('VERIFY_OTP'), {
         email,
         otp: otpString,
@@ -103,6 +103,7 @@ export default function OTPScreen() {
       });
 
       console.log('OTP verification response:', response.data);
+      console.log('OTP verification response user:', response.data.user);
 
       if (response.data.success) {
         console.log('OTP verification successful, storing user data');
@@ -110,15 +111,56 @@ export default function OTPScreen() {
         // Get user data from response or create basic user object
         const userData = response.data.user || { email, name: name || 'User' };
         
+        // Ensure we have the required fields for the user object
+        const nameStr = typeof name === 'string' ? name : Array.isArray(name) ? name[0] || 'User' : 'User';
+        const completeUserData = {
+          ...userData,
+          email: userData.email || email,
+          name: userData.name || userData.firstName || nameStr,
+          firstName: userData.firstName || userData.name?.split(' ')[0] || nameStr.split(' ')[0] || 'User',
+          lastName: userData.lastName || userData.name?.split(' ').slice(1).join(' ') || nameStr.split(' ').slice(1).join(' ') || '',
+          userId: userData.userId || `user_${Date.now()}`,
+          phone: userData.phone || null,
+          gender: userData.gender || null,
+          dateOfBirth: userData.dateOfBirth || userData.dob || null,
+          placeOfBirth: userData.placeOfBirth || null,
+          rashi: userData.rashi || null,
+          gotra: userData.gotra || null,
+          maritalStatus: userData.maritalStatus || null,
+          anniversaryDate: userData.anniversaryDate || null,
+          kids: userData.kids || null,
+          parents: userData.parents || null
+        };
+        
         // Store user data in AsyncStorage
-        await AsyncStorage.setItem('user', JSON.stringify(userData));
-        console.log('User data stored in AsyncStorage:', userData);
+        await AsyncStorage.setItem('user', JSON.stringify(completeUserData));
+        console.log('User data stored in AsyncStorage:', completeUserData);
+        
+        // Verify the data was stored correctly
+        const storedData = await AsyncStorage.getItem('user');
+        console.log('Verified stored data:', storedData);
+        
+        // Force a re-render of the HomeHeader by triggering a storage event
+        // This ensures the HomeHeader component updates its user state
+        setTimeout(async () => {
+          const currentUser = await AsyncStorage.getItem('user');
+          console.log('Current user data after navigation:', currentUser);
+          
+          // Test if the user is properly logged in
+          if (currentUser) {
+            const parsedUser = JSON.parse(currentUser);
+            console.log('✅ User successfully logged in:', parsedUser.name || parsedUser.firstName);
+          } else {
+            console.log('❌ User data not found after login');
+          }
+        }, 1000);
         
         setMessage('Login successful! Redirecting...');
         setMessageType('success');
         
         // Navigate after a short delay
         setTimeout(() => {
+          console.log('🔄 Navigating to tabs...');
           router.replace('/(tabs)');
         }, 1500);
       } else {

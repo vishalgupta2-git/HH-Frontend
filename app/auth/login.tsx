@@ -10,7 +10,6 @@ const { width } = Dimensions.get('window');
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
-  const [name, setName] = useState('');
   const router = useRouter();
 
   const validateEmail = (email: string) =>
@@ -34,7 +33,7 @@ export default function LoginScreen() {
     if (!valid) return;
     try {
               await axios.post(getEndpointUrl('SEND_OTP'), { email });
-      router.push({ pathname: '/auth/otp', params: { email, name, from: 'login' } });
+      router.push({ pathname: '/auth/otp', params: { email, from: 'login' } });
     } catch (err: any) {
       if (err.response?.status === 429) {
         // Lockout error

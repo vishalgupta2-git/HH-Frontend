@@ -15,6 +15,7 @@ export const API_CONFIG = {
     DEBUG: '/api/debug',
     TEST_CONNECTION: '/api/test-connection',
     STATUS: '/api/status',
+    TEST_USERS: '/api/test-users',
     
     // Temple & Deity
     DEITY_STATUES: '/api/deity-statues',
@@ -30,6 +31,7 @@ export const API_CONFIG = {
     VERIFY_OTP: '/api/verify-otp',
     USER: '/api/user',
     UPDATE_PROFILE: '/api/update-profile',
+    UPDATE_COMPLETE_PROFILE: '/api/update-complete-profile',
     
     // Media & Content
     MEDIA_FILES: '/api/media-files',

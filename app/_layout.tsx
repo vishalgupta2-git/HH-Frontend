@@ -4,6 +4,8 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -17,7 +19,26 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
   
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('user');
+        console.log('🔍 [DEBUG] RootLayout: Checking auth, user data:', userData ? 'exists' : 'none');
+        setIsAuthenticated(!!userData);
+      } catch (error) {
+        console.error('🔍 [DEBUG] RootLayout: Error checking auth:', error);
+        setIsAuthenticated(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
+  
   console.log('🔍 [DEBUG] RootLayout: Fonts loaded =', loaded);
+  console.log('🔍 [DEBUG] RootLayout: Is authenticated =', isAuthenticated);
 
   if (!loaded) {
     console.log('🔍 [DEBUG] RootLayout: Fonts not loaded, returning null');

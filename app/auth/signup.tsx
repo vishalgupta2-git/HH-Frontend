@@ -144,36 +144,38 @@ export default function SignUpScreen() {
        firstName: trimmedFirstName,
        lastName: trimmedLastName,
        email,
+       phone,
        gender,
-       dob: dob ? dob.toISOString() : '',
+       dateOfBirth: dob ? dob.toISOString() : null,
        placeOfBirth,
        gotra,
        rashi,
        maritalStatus,
-       anniversaryDate: anniversaryDate ? anniversaryDate.toISOString() : '',
-       widowDate: widowDate ? widowDate.toISOString() : '',
-       hasKids,
-       kids: kids.map(kid => ({
-         ...kid,
-         dateOfBirth: kid.dateOfBirth ? kid.dateOfBirth.toISOString() : '',
-       })),
-       // Family information
-       mother: {
-         name: motherName,
-         dateOfBirth: motherDeceased ? null : (motherDob ? motherDob.toISOString() : ''),
-         deceased: motherDeceased,
-         deathAnniversary: motherDeceased ? (motherDeathAnniversary ? motherDeathAnniversary.toISOString() : '') : null,
-       },
-       father: {
-         name: fatherName,
-         dateOfBirth: fatherDeceased ? null : (fatherDob ? fatherDob.toISOString() : ''),
-         deceased: fatherDeceased,
-         deathAnniversary: fatherDeceased ? (fatherDeathAnniversary ? fatherDeathAnniversary.toISOString() : '') : null,
-       },
-       spouse: maritalStatus === 'Married' ? {
-         name: spouseName,
-         dateOfBirth: spouseDob ? spouseDob.toISOString() : '',
-       } : null,
+       anniversaryDate: anniversaryDate ? anniversaryDate.toISOString() : null,
+       kids: hasKids === true ? kids.map(kid => ({
+         firstName: kid.firstName,
+         lastName: kid.lastName,
+         gender: kid.gender,
+         dateOfBirth: kid.dateOfBirth ? kid.dateOfBirth.toISOString() : null,
+       })) : null,
+       parents: {
+         mother: motherName ? {
+           name: motherName,
+           dateOfBirth: motherDeceased ? null : (motherDob ? motherDob.toISOString() : null),
+           deceased: motherDeceased,
+           deathAnniversary: motherDeceased ? (motherDeathAnniversary ? motherDeathAnniversary.toISOString() : null) : null,
+         } : null,
+         father: fatherName ? {
+           name: fatherName,
+           dateOfBirth: fatherDeceased ? null : (fatherDob ? fatherDob.toISOString() : null),
+           deceased: fatherDeceased,
+           deathAnniversary: fatherDeceased ? (fatherDeathAnniversary ? fatherDeathAnniversary.toISOString() : null) : null,
+         } : null,
+         spouse: maritalStatus === 'Married' && spouseName ? {
+           name: spouseName,
+           dateOfBirth: spouseDob ? spouseDob.toISOString() : null,
+         } : null,
+       }
      };
     
     console.log('Sending signup data:', signupData);
@@ -225,7 +227,7 @@ export default function SignUpScreen() {
       </View>
       {/* Single card with all fields, scrollable content inside */}
       <View style={[styles.card, { marginTop: CARD_TOP + CARD_MARGIN_TOP, marginBottom: 12, zIndex: 2, flex: 1 }]}> 
-                 <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
+                 <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 400 }} keyboardShouldPersistTaps="handled">
            <Text style={styles.sectionLabel}>Contact Information</Text>
            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
                            <TextInput
@@ -356,9 +358,8 @@ export default function SignUpScreen() {
            </TouchableOpacity>
           <DateTimePickerModal
             isVisible={showDateTime}
-            mode="datetime"
+            mode="date"
             date={dob || new Date()}
-            maximumDate={new Date()}
             onConfirm={(date) => { setDob(date); setShowDateTime(false); }}
             onCancel={() => setShowDateTime(false)}
           />
@@ -388,7 +389,6 @@ export default function SignUpScreen() {
             isVisible={showKidDob !== null}
             mode="date"
             date={showKidDob !== null && kids[showKidDob]?.dateOfBirth ? kids[showKidDob].dateOfBirth : new Date()}
-            maximumDate={new Date()}
             onConfirm={(date) => { 
               if (showKidDob !== null) {
                 updateKid(showKidDob, 'dateOfBirth', date);
@@ -428,7 +428,6 @@ export default function SignUpScreen() {
              isVisible={showMotherDob}
              mode="date"
              date={motherDob || new Date()}
-             maximumDate={new Date()}
              onConfirm={(date) => { setMotherDob(date); setShowMotherDob(false); }}
              onCancel={() => setShowMotherDob(false)}
            />
@@ -448,7 +447,6 @@ export default function SignUpScreen() {
              isVisible={showFatherDob}
              mode="date"
              date={fatherDob || new Date()}
-             maximumDate={new Date()}
              onConfirm={(date) => { setFatherDob(date); setShowFatherDob(false); }}
              onCancel={() => setShowFatherDob(false)}
            />
@@ -468,7 +466,6 @@ export default function SignUpScreen() {
              isVisible={showSpouseDob}
              mode="date"
              date={spouseDob || new Date()}
-             maximumDate={new Date()}
              onConfirm={(date) => { setSpouseDob(date); setShowSpouseDob(false); }}
              onCancel={() => setShowSpouseDob(false)}
            />
@@ -722,8 +719,8 @@ export default function SignUpScreen() {
                 </View>
               ))}
               
-              <TouchableOpacity style={styles.addKidButton} onPress={addKid}>
-                <Text style={styles.addKidText}>+ Add Another Kid</Text>
+              <TouchableOpacity style={styles.addKidTextButton} onPress={addKid}>
+                <Text style={styles.addKidTextLink}>+ Add Another Kid</Text>
               </TouchableOpacity>
             </View>
                      )}
@@ -846,17 +843,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
   },
   button: {
-    backgroundColor: '#3A3939',
+    backgroundColor: '#FF6A00',
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 10,
     marginBottom: 10,
-    shadowColor: '#000',
+    shadowColor: '#FF6A00',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
-    elevation: 2,
+    elevation: 3,
   },
   buttonText: {
     color: '#fff',
@@ -989,6 +986,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
      addKidText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  addKidTextButton: {
+    alignItems: 'center',
+    marginTop: 10,
+    paddingVertical: 8,
+  },
+  addKidTextLink: {
+    color: '#FF6A00',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
    checkboxRow: { flexDirection: 'row', marginBottom: 14 },
    checkboxOption: { flexDirection: 'row', alignItems: 'center' },
    checkbox: { 
