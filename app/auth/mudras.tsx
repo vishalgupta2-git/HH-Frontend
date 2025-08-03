@@ -1,7 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { getEndpointUrl } from '@/constants/ApiConfig';
 
 const { width } = Dimensions.get('window');
 
@@ -10,6 +13,33 @@ export const options = { headerShown: false };
 export default function MudrasScreen() {
   const router = useRouter();
   const [showMudrasModal, setShowMudrasModal] = useState(false);
+  const [mudrasCount, setMudrasCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch user mudras count
+  useEffect(() => {
+    const fetchMudras = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          const response = await axios.get(getEndpointUrl('USER_MUDRAS'), {
+            params: { email: user.email }
+          });
+          
+          if (response.data.success) {
+            setMudrasCount(response.data.mudras);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching mudras:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMudras();
+  }, []);
   
   return (
     <View style={styles.container}>
@@ -29,12 +59,16 @@ export default function MudrasScreen() {
       <View style={styles.card}>
         <Text style={styles.title}>Current Mudras</Text>
         {/* Placeholder for current mudras list */}
-        <View style={styles.mudraListPlaceholder}>
-          <Text style={{ color: '#888', fontSize: 16 }}>No mudras to show.</Text>
-        </View>
-        <TouchableOpacity style={styles.historyLink} onPress={() => router.push('/auth/mudra-history')}>
-          <Text style={styles.historyLinkText}>View Mudra History</Text>
-        </TouchableOpacity>
+                 <View style={styles.mudraListPlaceholder}>
+           {loading ? (
+             <Text style={{ color: '#888', fontSize: 16 }}>Loading mudras...</Text>
+           ) : (
+             <Text style={styles.mudrasCountText}>{mudrasCount} Mudras</Text>
+           )}
+         </View>
+                 <TouchableOpacity style={styles.historyLink} onPress={() => router.push('/auth/mudra-history')}>
+           <Text style={styles.historyLinkText}>View Mudra History</Text>
+         </TouchableOpacity>
         <TouchableOpacity style={styles.historyLink} onPress={() => setShowMudrasModal(true)}>
           <Text style={styles.historyLinkText}>How to earn Mudras</Text>
         </TouchableOpacity>
@@ -317,11 +351,17 @@ const styles = StyleSheet.create({
     color: '#FF6A00',
     fontWeight: 'bold',
   },
-  activitySubtext: {
-    fontSize: 12,
-    color: '#888',
-    fontStyle: 'italic',
-    marginLeft: 16,
-    marginTop: 2,
-  },
-}); 
+     activitySubtext: {
+     fontSize: 12,
+     color: '#888',
+     fontStyle: 'italic',
+     marginLeft: 16,
+     marginTop: 2,
+   },
+   mudrasCountText: {
+     fontSize: 24,
+     fontWeight: 'bold',
+     color: '#FF6A00',
+     textAlign: 'center',
+   },
+ }); 

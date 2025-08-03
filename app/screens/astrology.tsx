@@ -3,6 +3,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, ActivityIndicator, Alert } from 'react-native';
 import { getEndpointUrl } from '@/constants/ApiConfig';
+import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 
 export const options = { headerShown: false };
 
@@ -95,6 +96,23 @@ export default function AstrologyScreen() {
     if (!selectedFrequency) {
       Alert.alert('Please select Duration (Daily/Weekly/Monthly) first');
       return;
+    }
+
+    // Award mudras for checking rashifal
+    try {
+      const hasEarnedToday = await hasEarnedDailyMudras('CHECK_RASHIFAL');
+      if (!hasEarnedToday) {
+        const mudraResult = await awardMudras('CHECK_RASHIFAL');
+        if (mudraResult.success) {
+          console.log('✅ Mudras awarded for checking rashifal:', mudraResult.mudrasEarned);
+        } else {
+          console.log('⚠️ Failed to award mudras for checking rashifal:', mudraResult.error);
+        }
+      } else {
+        console.log('✅ Daily rashifal checking mudras already earned today');
+      }
+    } catch (mudraError) {
+      console.log('⚠️ Error awarding mudras for checking rashifal:', mudraError);
     }
 
     setLoading(true);

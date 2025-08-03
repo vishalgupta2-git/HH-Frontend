@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { awardMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -273,7 +274,20 @@ export default function ProfileScreen() {
         name: `${trimmedFirstName} ${lastName || ''}`.trim()
       }));
       
-      Alert.alert('Success', 'Profile updated successfully!');
+      // Award mudras for profile completion
+      try {
+        const mudraResult = await awardMudras('COMPLETE_PROFILE_PHONE');
+        if (mudraResult.success) {
+          console.log('✅ Mudras awarded for profile completion:', mudraResult.mudrasEarned);
+          Alert.alert('Success', `Profile updated successfully! You earned ${mudraResult.mudrasEarned} mudras!`);
+        } else {
+          console.log('⚠️ Failed to award mudras for profile completion:', mudraResult.error);
+          Alert.alert('Success', 'Profile updated successfully!');
+        }
+      } catch (mudraError) {
+        console.log('⚠️ Error awarding mudras for profile completion:', mudraError);
+        Alert.alert('Success', 'Profile updated successfully!');
+      }
     } catch (err: any) {
       console.error('❌ Error updating profile:', err);
       Alert.alert('Error', `Failed to update profile: ${err.response?.data?.error || err.message}`);

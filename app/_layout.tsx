@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
+import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -21,20 +22,39 @@ export default function RootLayout() {
   
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   
-  // Check authentication status
+  // Check authentication status and award daily login mudras
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthAndAwardMudras = async () => {
       try {
         const userData = await AsyncStorage.getItem('user');
         console.log('🔍 [DEBUG] RootLayout: Checking auth, user data:', userData ? 'exists' : 'none');
         setIsAuthenticated(!!userData);
+        
+        // Award daily login mudras if user is authenticated
+        if (userData) {
+          const hasEarnedToday = await hasEarnedDailyMudras('DAILY_LOGIN');
+          if (!hasEarnedToday) {
+            try {
+              const mudraResult = await awardMudras('DAILY_LOGIN');
+              if (mudraResult.success) {
+                console.log('✅ Daily login mudras awarded:', mudraResult.mudrasEarned);
+              } else {
+                console.log('⚠️ Failed to award daily login mudras:', mudraResult.error);
+              }
+            } catch (mudraError) {
+              console.log('⚠️ Error awarding daily login mudras:', mudraError);
+            }
+          } else {
+            console.log('✅ Daily login mudras already earned today');
+          }
+        }
       } catch (error) {
         console.error('🔍 [DEBUG] RootLayout: Error checking auth:', error);
         setIsAuthenticated(false);
       }
     };
     
-    checkAuth();
+    checkAuthAndAwardMudras();
   }, []);
   
   console.log('🔍 [DEBUG] RootLayout: Fonts loaded =', loaded);

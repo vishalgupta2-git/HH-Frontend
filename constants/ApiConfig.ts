@@ -32,6 +32,10 @@ export const API_CONFIG = {
     USER: '/api/user',
     UPDATE_PROFILE: '/api/update-profile',
     UPDATE_COMPLETE_PROFILE: '/api/update-complete-profile',
+      USER_MUDRAS: '/api/user-mudras',
+  AWARD_MUDRAS: '/api/award-mudras',
+  MUDRAS_HISTORY: '/api/mudra-history',
+  TEST_DB: '/api/test-db',
     
     // Media & Content
     MEDIA_FILES: '/api/media-files',

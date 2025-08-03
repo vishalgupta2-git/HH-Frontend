@@ -5,6 +5,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { Audio } from 'expo-av';
+import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const TEMPLE_CONFIG_KEY = 'templeConfig';
@@ -435,7 +436,24 @@ export default function DailyPujaCustomTemple() {
 
 
 
-  const swingBothBells = () => {
+  const swingBothBells = async () => {
+    // Award mudras for ringing the bell
+    try {
+      const hasEarnedToday = await hasEarnedDailyMudras('RING_BELL');
+      if (!hasEarnedToday) {
+        const mudraResult = await awardMudras('RING_BELL');
+        if (mudraResult.success) {
+          console.log('✅ Mudras awarded for ringing the bell:', mudraResult.mudrasEarned);
+        } else {
+          console.log('⚠️ Failed to award mudras for ringing the bell:', mudraResult.error);
+        }
+      } else {
+        console.log('✅ Daily bell ringing mudras already earned today');
+      }
+    } catch (mudraError) {
+      console.log('⚠️ Error awarding mudras for ringing the bell:', mudraError);
+    }
+
     // Play temple bell sound and start animations simultaneously
     const playTempleBellSound = async () => {
       try {
@@ -515,6 +533,23 @@ export default function DailyPujaCustomTemple() {
   };
 
   const playConchSound = async () => {
+    // Award mudras for playing shankh
+    try {
+      const hasEarnedToday = await hasEarnedDailyMudras('PLAY_SHANKH');
+      if (!hasEarnedToday) {
+        const mudraResult = await awardMudras('PLAY_SHANKH');
+        if (mudraResult.success) {
+          console.log('✅ Mudras awarded for playing shankh:', mudraResult.mudrasEarned);
+        } else {
+          console.log('⚠️ Failed to award mudras for playing shankh:', mudraResult.error);
+        }
+      } else {
+        console.log('✅ Daily shankh playing mudras already earned today');
+      }
+    } catch (mudraError) {
+      console.log('⚠️ Error awarding mudras for playing shankh:', mudraError);
+    }
+
     try {
       // Stop any currently playing sound
       if (sound) {
@@ -576,8 +611,25 @@ export default function DailyPujaCustomTemple() {
   };
 
   // Function to drop flowers
-  const dropFlowers = (flowerType: string = 'hibiscus') => {
+  const dropFlowers = async (flowerType: string = 'hibiscus') => {
     if (isFlowerAnimationRunning) return; // Prevent multiple animations
+    
+    // Award mudras for offering flowers
+    try {
+      const hasEarnedToday = await hasEarnedDailyMudras('OFFER_FLOWERS');
+      if (!hasEarnedToday) {
+        const mudraResult = await awardMudras('OFFER_FLOWERS');
+        if (mudraResult.success) {
+          console.log('✅ Mudras awarded for offering flowers:', mudraResult.mudrasEarned);
+        } else {
+          console.log('⚠️ Failed to award mudras for offering flowers:', mudraResult.error);
+        }
+      } else {
+        console.log('✅ Daily flower offering mudras already earned today');
+      }
+    } catch (mudraError) {
+      console.log('⚠️ Error awarding mudras for offering flowers:', mudraError);
+    }
     
     setIsFlowerAnimationRunning(true);
     setShowFlowerModal(false); // Close modal when dropping flowers
@@ -676,8 +728,25 @@ export default function DailyPujaCustomTemple() {
   };
 
   // Function to drop mix flowers (one row of each type)
-  const dropMixFlowers = () => {
+  const dropMixFlowers = async () => {
     if (isFlowerAnimationRunning) return; // Prevent multiple animations
+    
+    // Award mudras for offering flowers
+    try {
+      const hasEarnedToday = await hasEarnedDailyMudras('OFFER_FLOWERS');
+      if (!hasEarnedToday) {
+        const mudraResult = await awardMudras('OFFER_FLOWERS');
+        if (mudraResult.success) {
+          console.log('✅ Mudras awarded for offering flowers:', mudraResult.mudrasEarned);
+        } else {
+          console.log('⚠️ Failed to award mudras for offering flowers:', mudraResult.error);
+        }
+      } else {
+        console.log('✅ Daily flower offering mudras already earned today');
+      }
+    } catch (mudraError) {
+      console.log('⚠️ Error awarding mudras for offering flowers:', mudraError);
+    }
     
     setIsFlowerAnimationRunning(true);
     setShowFlowerModal(false); // Close modal when dropping flowers
@@ -779,8 +848,47 @@ export default function DailyPujaCustomTemple() {
     }
   };
 
+  // Function to handle aarti action
+  const handleAarti = async () => {
+    // Award mudras for doing aarti
+    try {
+      const hasEarnedToday = await hasEarnedDailyMudras('DO_AARTI');
+      if (!hasEarnedToday) {
+        const mudraResult = await awardMudras('DO_AARTI');
+        if (mudraResult.success) {
+          console.log('✅ Mudras awarded for doing aarti:', mudraResult.mudrasEarned);
+        } else {
+          console.log('⚠️ Failed to award mudras for doing aarti:', mudraResult.error);
+        }
+      } else {
+        console.log('✅ Daily aarti mudras already earned today');
+      }
+    } catch (mudraError) {
+      console.log('⚠️ Error awarding mudras for doing aarti:', mudraError);
+    }
+    
+    setShowAartiModal(true);
+  };
+
   // Function to start dhoop smoke effect
-  const startDhoopSmoke = () => {
+  const startDhoopSmoke = async () => {
+    // Award mudras for offering dhoop
+    try {
+      const hasEarnedToday = await hasEarnedDailyMudras('OFFER_DHOOP');
+      if (!hasEarnedToday) {
+        const mudraResult = await awardMudras('OFFER_DHOOP');
+        if (mudraResult.success) {
+          console.log('✅ Mudras awarded for offering dhoop:', mudraResult.mudrasEarned);
+        } else {
+          console.log('⚠️ Failed to award mudras for offering dhoop:', mudraResult.error);
+        }
+      } else {
+        console.log('✅ Daily dhoop offering mudras already earned today');
+      }
+    } catch (mudraError) {
+      console.log('⚠️ Error awarding mudras for offering dhoop:', mudraError);
+    }
+
     if (smokeAnimationRef.current) {
       return; // Prevent multiple animations
     }
@@ -1051,7 +1159,7 @@ export default function DailyPujaCustomTemple() {
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.pujaIconItem}
-            onPress={() => setShowAartiModal(true)}
+            onPress={handleAarti}
             activeOpacity={0.7}
           >
             <Text style={styles.pujaIcon}>🕉️</Text>

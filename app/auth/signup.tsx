@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { awardMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 
 const { width } = Dimensions.get('window');
 
@@ -193,6 +194,18 @@ export default function SignUpScreen() {
       console.log('Calling send OTP endpoint...');
       const otpRes = await axios.post(getEndpointUrl('SEND_OTP'), { email });
       console.log('OTP response:', otpRes.data);
+      
+      // Award mudras for signup
+      try {
+        const mudraResult = await awardMudras('SIGN_UP');
+        if (mudraResult.success) {
+          console.log('✅ Mudras awarded for signup:', mudraResult.mudrasEarned);
+        } else {
+          console.log('⚠️ Failed to award mudras for signup:', mudraResult.error);
+        }
+      } catch (mudraError) {
+        console.log('⚠️ Error awarding mudras for signup:', mudraError);
+      }
       
       router.push({ pathname: '/auth/otp', params: { email, name: trimmedFirstName + ' ' + trimmedLastName, from: 'signup' } });
     } catch (err: any) {
