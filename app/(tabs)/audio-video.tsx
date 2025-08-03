@@ -2,6 +2,7 @@ import HomeHeader from '@/components/Home/HomeHeader';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { getEndpointUrl } from '@/constants/ApiConfig';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
@@ -59,7 +60,8 @@ export default function AudioVideoScreen() {
   const [selectedDeity, setSelectedDeity] = useState<string | null>(null);
   const [deityDropdownOpen, setDeityDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedClassification, setSelectedClassification] = useState<string | null>(null);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [videoEnabled, setVideoEnabled] = useState(false);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -103,96 +105,104 @@ export default function AudioVideoScreen() {
     }
   };
 
-  const iconRowAndDropdown = (
-    <View style={styles.iconRowTight}>
-      <TouchableOpacity 
-        style={[
-          styles.iconButton,
-          selectedClassification === 'Audio' && styles.iconButtonSelected
-        ]}
-        onPress={() => setSelectedClassification(selectedClassification === 'Audio' ? null : 'Audio')}
-      >
-        <MaterialCommunityIcons 
-          name="music" 
-          size={28} 
-          color={selectedClassification === 'Audio' ? "#fff" : "#FF6A00"} 
-        />
-      </TouchableOpacity>
-      <TouchableOpacity 
-        style={[
-          styles.iconButton,
-          selectedClassification === 'Video' && styles.iconButtonSelected
-        ]}
-        onPress={() => setSelectedClassification(selectedClassification === 'Video' ? null : 'Video')}
-      >
-        <MaterialCommunityIcons 
-          name="video" 
-          size={28} 
-          color={selectedClassification === 'Video' ? "#fff" : "#FF6A00"} 
-        />
-      </TouchableOpacity>
-      <View style={styles.deityDropdownWrapper}>
-        <TouchableOpacity
-          style={styles.deityDropdown}
-          onPress={() => setDeityDropdownOpen(open => !open)}
-        >
-          <Text style={styles.deityDropdownText}>
-            {selectedDeity || 'Deity'}
-          </Text>
-          <MaterialCommunityIcons
-            name={deityDropdownOpen ? 'chevron-up' : 'chevron-down'}
-            size={22}
-            color="#333"
-          />
-        </TouchableOpacity>
-        <Modal
-          visible={deityDropdownOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setDeityDropdownOpen(false)}
-        >
-          <TouchableWithoutFeedback onPress={() => setDeityDropdownOpen(false)}>
-            <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.15)' }}>
-              <View style={styles.deityDropdownModalList}>
-                <ScrollView style={{ maxHeight: 320 }}>
-                  {deityList.map(deity => (
-                    <TouchableOpacity
-                      key={deity}
-                      style={[
-                        styles.deityDropdownItem,
-                        selectedDeity === deity && styles.deityDropdownItemSelected
-                      ]}
-                      onPress={() => {
-                        if (selectedDeity === deity) {
-                          setSelectedDeity(null);
-                        } else {
-                          setSelectedDeity(deity);
-                        }
-                        setDeityDropdownOpen(false);
-                      }}
-                    >
-                      <Text
-                        style={[
-                          styles.deityDropdownItemText,
-                          selectedDeity === deity && styles.deityDropdownItemTextSelected
-                        ]}
-                      >
-                        {deity}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
+  const filterContent = (
+    <View style={styles.filterContainer}>
+      <View style={styles.filterRow}>
+        {/* Audio/Video Toggle Controls */}
+        <View style={styles.toggleContainer}>
+          {/* Audio Toggle */}
+          <TouchableOpacity 
+            style={styles.toggleItem}
+            onPress={() => setAudioEnabled(!audioEnabled)}
+          >
+            <LinearGradient
+              colors={audioEnabled ? ['#4CAF50', '#81C784'] : ['#E0E0E0', '#F5F5F5']}
+              style={styles.toggleTrack}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <View
+                style={[
+                  styles.toggleThumb,
+                  audioEnabled && styles.toggleThumbActive
+                ]}
+              />
+            </LinearGradient>
+            <Text style={styles.toggleLabel}>Audio</Text>
+          </TouchableOpacity>
+
+          {/* Video Toggle */}
+          <TouchableOpacity 
+            style={styles.toggleItem}
+            onPress={() => setVideoEnabled(!videoEnabled)}
+          >
+            <LinearGradient
+              colors={videoEnabled ? ['#4CAF50', '#81C784'] : ['#E0E0E0', '#F5F5F5']}
+              style={styles.toggleTrack}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+            >
+              <View
+                style={[
+                  styles.toggleThumb,
+                  videoEnabled && styles.toggleThumbActive
+                ]}
+              />
+            </LinearGradient>
+            <Text style={styles.toggleLabel}>Video</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Deity Filter - Moved to the right */}
+        <View style={styles.deityFilterWrapper}>
+          <TouchableOpacity 
+            style={styles.filterDropdown}
+            onPress={() => setDeityDropdownOpen(!deityDropdownOpen)}
+          >
+            <Text style={styles.filterDropdownText}>
+              {selectedDeity || 'Deity'}
+            </Text>
+            <MaterialCommunityIcons 
+              name={deityDropdownOpen ? "chevron-up" : "chevron-down"} 
+              size={20} 
+              color="#666" 
+            />
+          </TouchableOpacity>
+          
+          {deityDropdownOpen && (
+            <View style={styles.filterDropdownModal}>
+              <TouchableOpacity 
+                style={[styles.filterDropdownItem, styles.filterDropdownItemDisabled]}
+                disabled={true}
+              >
+                <Text style={styles.filterDropdownItemTextDisabled}>Deity</Text>
+              </TouchableOpacity>
+              
+              {deityList.map(deity => (
+                <TouchableOpacity 
+                  key={deity}
+                  style={styles.filterDropdownItem}
+                  onPress={() => {
+                    setSelectedDeity(selectedDeity === deity ? null : deity);
+                    setDeityDropdownOpen(false);
+                  }}
+                >
+                  <Text style={styles.filterDropdownItemText}>{deity}</Text>
+                  {selectedDeity === deity && (
+                    <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                  )}
+                </TouchableOpacity>
+              ))}
             </View>
-          </TouchableWithoutFeedback>
-        </Modal>
+          )}
+        </View>
       </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <HomeHeader searchPlaceholder="Search for Music" extraContent={iconRowAndDropdown} showDailyPujaButton={false} />
+      <HomeHeader searchPlaceholder="Search for Music" extraContent={filterContent} showDailyPujaButton={false} />
       {/* Media List */}
       <ScrollView style={styles.content}>
          {loading ? (
@@ -206,7 +216,16 @@ export default function AudioVideoScreen() {
              )}
                                        {mediaFiles
                 .filter(media => !selectedDeity || media.Deity === selectedDeity)
-                .filter(media => !selectedClassification || media.Classification === selectedClassification)
+                .filter(media => {
+                  // If both toggles are off, show nothing
+                  if (!audioEnabled && !videoEnabled) return false;
+                  // If only audio is enabled, show only audio items
+                  if (audioEnabled && !videoEnabled) return media.Classification === 'Audio';
+                  // If only video is enabled, show only video items
+                  if (!audioEnabled && videoEnabled) return media.Classification === 'Video';
+                  // If both are enabled, show both audio and video items
+                  return media.Classification === 'Audio' || media.Classification === 'Video';
+                })
                 .filter(media => {
                   if (!searchQuery.trim()) return true;
                   const q = searchQuery.trim().toLowerCase();
@@ -294,72 +313,116 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     paddingTop: 0,
   },
-  iconRowTight: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 30,
-    marginTop: 0,
-    alignItems: 'center',
-  },
-  iconButton: {
-    backgroundColor: '#FFF6EE',
-    padding: 12,
-    borderRadius: 30,
-    marginHorizontal: 8,
-  },
-  iconButtonSelected: {
-    backgroundColor: '#FF6A00',
-  },
-  deityDropdownWrapper: {
+  filterContainer: {
+    marginBottom: 20,
     position: 'relative',
-    marginTop: 0,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    padding: 5,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    zIndex: 1000,
-    elevation: 20,
+    width: '82%',
+    alignSelf: 'center',
   },
-  deityDropdown: {
+  filterRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    width: '100%',
   },
-  deityDropdownText: {
-    fontSize: 16,
-    color: '#333',
+  toggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
   },
-  deityDropdownModalList: {
+  toggleItem: {
+    alignItems: 'center',
+  },
+  toggleTrack: {
+    width: 40,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  toggleThumb: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#fff',
     position: 'absolute',
-    top: 120,
-    left: 40,
-    right: 40,
-    backgroundColor: '#f0f0f0',
+    left: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toggleThumbActive: {
+    left: 21,
+  },
+  toggleLabel: {
+    marginTop: 6,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#fff',
+  },
+  deityFilterWrapper: {
+    position: 'relative',
+  },
+  filterDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ccc',
-    maxHeight: 320,
-    paddingVertical: 4,
-    zIndex: 1000,
-    elevation: 20,
+    borderColor: '#e0e0e0',
+    minWidth: 120,
   },
-  deityDropdownItem: {
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-  },
-  deityDropdownItemSelected: {
-    backgroundColor: '#e0e0e0',
-  },
-  deityDropdownItemText: {
-    fontSize: 16,
+  filterDropdownText: {
+    fontSize: 14,
+    fontWeight: '500',
     color: '#333',
   },
-  deityDropdownItemTextSelected: {
+  filterDropdownModal: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
+    marginTop: 4,
+  },
+  filterDropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  filterDropdownItemText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  filterDropdownItemDisabled: {
+    backgroundColor: '#f8f8f8',
+  },
+  filterDropdownItemTextDisabled: {
+    fontSize: 14,
+    color: '#999',
     fontWeight: 'bold',
-    color: '#FF6A00',
+  },
+  filterDropdownItemTick: {
+    marginLeft: 'auto',
   },
   content: {
     padding: 15,
