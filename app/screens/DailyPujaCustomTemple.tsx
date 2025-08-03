@@ -6,6 +6,7 @@ import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacit
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { Audio } from 'expo-av';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
+import { markDailyPujaVisited } from '@/utils/dailyPujaUtils';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const TEMPLE_CONFIG_KEY = 'templeConfig';
@@ -211,6 +212,20 @@ export default function DailyPujaCustomTemple() {
   const [rightBellSwing, setRightBellSwing] = useState(new Animated.Value(0));
   const smokeAnimationRef = useRef(false);
   const router = useRouter();
+
+  // Mark that user has visited daily puja screen today
+  useEffect(() => {
+    const markVisit = async () => {
+      try {
+        await markDailyPujaVisited();
+        console.log('✅ Daily puja visit marked for today');
+      } catch (error) {
+        console.error('❌ Error marking daily puja visit:', error);
+      }
+    };
+    
+    markVisit();
+  }, []);
 
   // Function to get image source from MongoDB data using static require calls
   const getImageSource = (imagePath: string) => {
