@@ -54,6 +54,10 @@ export default function SpecialPujaScreen() {
   const [date, setDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000));
   const [showDate, setShowDate] = useState(false);
   const [slot, setSlot] = useState('8:00-10:00 AM');
+  
+  // Filter states
+  const [selectedFilter, setSelectedFilter] = useState<string>('puja-for');
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
   useEffect(() => {
     const fetchPujas = async () => {
@@ -127,11 +131,19 @@ export default function SpecialPujaScreen() {
     }
   };
 
-  // Filter pujas based on search query
+  // Filter pujas based on search query and filters
   const filteredPujas = pujaFiles.filter(puja => {
     // Ensure puja is a valid object
     if (!puja || typeof puja !== 'object') {
       return false;
+    }
+    
+    // Filter by selected filter
+    if (selectedFilter !== 'puja-for') {
+      if (selectedFilter === 'upcoming' && !puja.promote) return false;
+      if (selectedFilter === 'individual' && !puja.individual) return false;
+      if (selectedFilter === 'couple' && !puja.couple) return false;
+      if (selectedFilter === 'family' && !puja.family) return false;
     }
     
     // Filter by search query
@@ -152,7 +164,107 @@ export default function SpecialPujaScreen() {
 
   return (
     <View style={styles.container}>
-      <HomeHeader searchPlaceholder="Search for Special Pujas" showDailyPujaButton={false} onSearchChange={setSearchQuery} />
+      <HomeHeader 
+        searchPlaceholder="Search for Special Pujas" 
+        showDailyPujaButton={false} 
+        onSearchChange={setSearchQuery}
+                 extraContent={
+           <View style={styles.filterContainer}>
+             <TouchableOpacity 
+               style={styles.filterDropdown}
+               onPress={() => setFilterDropdownOpen(!filterDropdownOpen)}
+             >
+                               <Text style={styles.filterDropdownText}>
+                  {selectedFilter === 'puja-for' ? 'Puja for' : 
+                   selectedFilter === 'upcoming' ? 'Upcoming' :
+                   selectedFilter === 'individual' ? 'Individual' :
+                   selectedFilter === 'couple' ? 'Couples' :
+                   selectedFilter === 'family' ? 'Families' : 'Puja for'}
+                </Text>
+               <MaterialCommunityIcons 
+                 name={filterDropdownOpen ? "chevron-up" : "chevron-down"} 
+                 size={20} 
+                 color="#666" 
+               />
+             </TouchableOpacity>
+             
+                           {filterDropdownOpen && (
+                <View style={styles.filterDropdownModal}>
+                  <TouchableOpacity 
+                    style={[styles.filterDropdownItem, styles.filterDropdownItemDisabled]}
+                    disabled={true}
+                  >
+                    <Text style={styles.filterDropdownItemTextDisabled}>Puja for</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.filterDropdownItem}
+                    onPress={() => {
+                      setSelectedFilter(selectedFilter === 'upcoming' ? 'puja-for' : 'upcoming');
+                      setFilterDropdownOpen(false);
+                    }}
+                  >
+                    <MaterialCommunityIcons name="star" size={16} color="#666" />
+                    <Text style={styles.filterDropdownItemText}>Upcoming</Text>
+                    {selectedFilter === 'upcoming' && (
+                      <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                    )}
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.filterDropdownItem}
+                    onPress={() => {
+                      setSelectedFilter(selectedFilter === 'individual' ? 'puja-for' : 'individual');
+                      setFilterDropdownOpen(false);
+                    }}
+                  >
+                    <MaterialCommunityIcons name="account" size={16} color="#666" />
+                    <Text style={styles.filterDropdownItemText}>Individual</Text>
+                    {selectedFilter === 'individual' && (
+                      <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                    )}
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.filterDropdownItem}
+                    onPress={() => {
+                      setSelectedFilter(selectedFilter === 'couple' ? 'puja-for' : 'couple');
+                      setFilterDropdownOpen(false);
+                    }}
+                  >
+                    <Image 
+                      source={require('@/assets/images/icons/specialPujaIcons/coupleIcon.png')}
+                      style={{ width: 16, height: 16 }}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.filterDropdownItemText}>Couples</Text>
+                    {selectedFilter === 'couple' && (
+                      <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                    )}
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.filterDropdownItem}
+                    onPress={() => {
+                      setSelectedFilter(selectedFilter === 'family' ? 'puja-for' : 'family');
+                      setFilterDropdownOpen(false);
+                    }}
+                  >
+                    <Image 
+                      source={require('@/assets/images/icons/specialPujaIcons/FamilyIcon.png')}
+                      style={{ width: 16, height: 16 }}
+                      resizeMode="contain"
+                    />
+                    <Text style={styles.filterDropdownItemText}>Families</Text>
+                    {selectedFilter === 'family' && (
+                      <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              )}
+           </View>
+         }
+      />
       {/* Puja List */}
       <ScrollView style={styles.content}>
         <Text style={styles.headline}>Mark your milestones with Divine Blessings</Text>
@@ -625,10 +737,75 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  buttonRow: {
-    flexDirection: 'row',
-    marginTop: 10,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+     buttonRow: {
+     flexDirection: 'row',
+     marginTop: 10,
+     alignItems: 'center',
+     justifyContent: 'space-between',
+   },
+       filterContainer: {
+      marginBottom: 20,
+      position: 'relative',
+      width: '80%',
+      alignSelf: 'center',
+    },
+    filterDropdown: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: '#fff',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: '#e0e0e0',
+      width: '100%',
+    },
+    filterDropdownText: {
+      fontSize: 14,
+      fontWeight: '500',
+      color: '#333',
+    },
+    filterDropdownModal: {
+      position: 'absolute',
+      top: '100%',
+      left: 0,
+      right: 0,
+      backgroundColor: '#fff',
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: '#e0e0e0',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+      zIndex: 1000,
+      marginTop: 4,
+    },
+    filterDropdownItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: '#f0f0f0',
+    },
+    filterDropdownItemText: {
+      fontSize: 14,
+      color: '#333',
+      marginLeft: 8,
+    },
+    filterDropdownItemDisabled: {
+      opacity: 0.5,
+      backgroundColor: '#f5f5f5',
+    },
+    filterDropdownItemTextDisabled: {
+      fontSize: 14,
+      color: '#999',
+      marginLeft: 8,
+    },
+    filterDropdownItemTick: {
+      marginLeft: 'auto',
+    },
 }); 
