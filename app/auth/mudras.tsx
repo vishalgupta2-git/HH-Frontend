@@ -64,76 +64,80 @@ export default function MudrasScreen() {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.modalScrollContent}
             >
-              {/* Puja Activities */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Puja Activities</Text>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Book any Puja: <Text style={styles.mudraCount}>500 Mudras</Text></Text>
-                </View>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Refer a Friend: <Text style={styles.mudraCount}>100 Mudras</Text></Text>
-                </View>
-              </View>
-              
-              {/* One-time Activities */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>One-time Activities</Text>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Complete Profile:</Text>
-                  <View style={styles.activityDetails}>
-                    <Text style={styles.activityDetail}>• Phone Number: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
-                    <Text style={styles.activityDetail}>• Date of Birth: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
-                    <Text style={styles.activityDetail}>• Father's date of birth: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
-                    <Text style={styles.activityDetail}>• Mother's date of birth: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
-                    <Text style={styles.activityDetail}>• Children's name and date of birth: <Text style={styles.mudraCount}>15 Mudras / children</Text></Text>
-                  </View>
-                </View>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Setup your Temple: <Text style={styles.mudraCount}>50 Mudras</Text></Text>
-                </View>
-              </View>
-              
-              {/* Daily Activities */}
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Daily Activities</Text>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Daily Login: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
-                </View>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Offer flowers to god: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
-                </View>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Do aarti: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
-                </View>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Ring the bell: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
-                </View>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Play Shankh: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
-                </View>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Offer Dhoop to God: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
-                </View>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Listen to Audio / Video: <Text style={styles.mudraCount}>5 Mudras per audio / video</Text></Text>
-                  <Text style={styles.activitySubtext}>(Max 25 Mudras per day)</Text>
-                </View>
-                
-                <View style={styles.activityItem}>
-                  <Text style={styles.activityTitle}>Check Rashifal: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
-                </View>
-              </View>
+                             {/* Puja Activities */}
+               <View style={styles.section}>
+                 <Text style={styles.sectionTitle}>Puja activities</Text>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Book any Puja: <Text style={styles.mudraCount}>500 Mudras</Text></Text>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Refer a Friend: <Text style={styles.mudraCount}>100 Mudras</Text></Text>
+                 </View>
+               </View>
+               
+               {/* One-time Activities */}
+               <View style={styles.section}>
+                 <Text style={styles.sectionTitle}>Onetime activities</Text>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Sign Up: <Text style={styles.mudraCount}>100 Mudras</Text></Text>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Complete Profile:</Text>
+                   <View style={styles.activityDetails}>
+                     <Text style={styles.activityDetail}>• Phone Number: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
+                     <Text style={styles.activityDetail}>• Date of Birth: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
+                     <Text style={styles.activityDetail}>• Father's date of birth: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
+                     <Text style={styles.activityDetail}>• Mother's date of birth: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
+                     <Text style={styles.activityDetail}>• Children's name and date of birth: <Text style={styles.mudraCount}>15 Mudras / children</Text></Text>
+                   </View>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Setup your Temple: <Text style={styles.mudraCount}>50 Mudras</Text></Text>
+                 </View>
+               </View>
+               
+               {/* Daily Activities */}
+               <View style={styles.section}>
+                 <Text style={styles.sectionTitle}>Daily activities:</Text>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Daily Login: <Text style={styles.mudraCount}>10 Mudras</Text></Text>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Offer flowers to god: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Do aarti: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Ring the bell: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Play Shankh: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Offer Dhoop to God: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Listen to Audio / Video: <Text style={styles.mudraCount}>5 Mudras per audio / video</Text></Text>
+                   <Text style={styles.activitySubtext}>(Max 25 Mudras per day)</Text>
+                 </View>
+                 
+                 <View style={styles.activityItem}>
+                   <Text style={styles.activityTitle}>Check Rashifal: <Text style={styles.mudraCount}>5 Mudras</Text></Text>
+                 </View>
+               </View>
             </ScrollView>
           </View>
         </View>
