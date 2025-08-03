@@ -384,30 +384,23 @@ export default function SpecialPujaScreen() {
                   <Text style={styles.modalDescription}>{safeString(currentPuja.pujaDetails)}</Text>
                 )}
                 
-                {currentPuja.individual && (
-                  <Text style={styles.modalDetail}>
-                    <Text style={styles.modalDetailLabel}>Type: </Text>
-                    Individual
-                  </Text>
-                )}
-                {currentPuja.couple && (
-                  <Text style={styles.modalDetail}>
-                    <Text style={styles.modalDetailLabel}>Type: </Text>
-                    Couple
-                  </Text>
-                )}
-                {currentPuja.family && (
-                  <Text style={styles.modalDetail}>
-                    <Text style={styles.modalDetailLabel}>Type: </Text>
-                    Family
-                  </Text>
-                )}
-                {currentPuja.promote && (
-                  <Text style={styles.modalDetail}>
-                    <Text style={styles.modalDetailLabel}>Type: </Text>
-                    Promote
-                  </Text>
-                )}
+                {(() => {
+                  const types = [];
+                  if (currentPuja.individual) types.push('Individual');
+                  if (currentPuja.couple) types.push('Couple');
+                  if (currentPuja.family) types.push('Family');
+                  if (currentPuja.promote) types.push('Upcoming');
+                  
+                  if (types.length > 0) {
+                    return (
+                      <Text style={styles.modalDetail}>
+                        <Text style={styles.modalDetailLabel}>Type: </Text>
+                        {types.join(', ')}
+                      </Text>
+                    );
+                  }
+                  return null;
+                })()}
                 
                 <TouchableOpacity style={styles.bookPujaButton} onPress={handleBookPuja}>
                   <Text style={styles.bookPujaButtonText}>Book Puja</Text>
@@ -759,7 +752,7 @@ const styles = StyleSheet.create({
        filterContainer: {
       marginBottom: 20,
       position: 'relative',
-      width: '80%',
+      width: '82%',
       alignSelf: 'center',
     },
     filterDropdown: {
