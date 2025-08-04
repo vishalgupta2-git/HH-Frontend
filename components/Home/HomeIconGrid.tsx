@@ -33,16 +33,7 @@ export default function HomeIconGrid() {
               } else if (item.label === 'Donation') {
                 router.push('/screens/donation');
               } else if (item.label === 'My Virtual Temple') {
-                try {
-                  const config = await AsyncStorage.getItem('templeConfig');
-                  if (config) {
-                    router.push('/screens/create-temple');
-                  } else {
-                    router.push('/screens/temple');
-                  }
-                } catch (e) {
-                  router.push('/screens/temple');
-                }
+                router.push('/screens/create-temple');
               } else if (item.label === 'Puja') {
                 router.push('/screens/puja');
               } else if (item.label === 'Astrology') {

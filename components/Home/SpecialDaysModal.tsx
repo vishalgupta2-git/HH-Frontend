@@ -95,7 +95,7 @@ export default function SpecialDaysModal({
 
   const handleViewPujas = () => {
     onClose();
-    router.push('/(tabs)/special-puja');
+    router.push('/screens/special-puja');
   };
 
   const handleClose = () => {
