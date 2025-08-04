@@ -7,7 +7,7 @@ const icons = [
   { label: 'My Virtual Temple', image: require('@/assets/images/icons/home page icons/temple.png') },
   { label: 'Puja', image: require('@/assets/images/icons/home page icons/puja.png') },
   { label: 'Donation', image: require('@/assets/images/icons/home page icons/charity.png') },
-  { label: 'Astrology', image: require('@/assets/images/icons/home page icons/horoscope.png') },
+  { label: 'Mannat', image: require('@/assets/images/icons/home page icons/horoscope.png') },
   { label: 'Virtual Darshan', image: require('@/assets/images/icons/home page icons/virtual-darshan.png') },
   { label: 'Puja Guidance', image: require('@/assets/images/icons/home page icons/puja-guidance.png') },
   { label: 'Special Day Puja', image: require('@/assets/images/icons/home page icons/special-day-puja.png') },
@@ -36,8 +36,8 @@ export default function HomeIconGrid() {
                 router.push('/screens/create-temple');
               } else if (item.label === 'Puja') {
                 router.push('/screens/puja');
-              } else if (item.label === 'Astrology') {
-                router.push('/screens/astrology');
+              } else if (item.label === 'Mannat') {
+                router.push('/screens/mannat');
               } else if (item.label === 'Virtual Darshan') {
                 router.push('/screens/virtual-darshan');
               } else if (item.label === 'Puja Guidance') {

@@ -1654,7 +1654,7 @@ const styles = StyleSheet.create({
                shadowRadius: 4,
              },
              flowerModalContent: {
-               backgroundColor: 'rgba(255,255,255,0.8)',
+               backgroundColor: '#ffffff',
                borderRadius: 16,
                padding: 24,
                marginTop: 470,

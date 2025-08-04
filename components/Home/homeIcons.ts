@@ -8,7 +8,7 @@ export const homeIcons = [
     image: require('@/assets/images/icons/home page icons/Goddesses.webp'),
   },
   {
-    title: 'Astrology',
+    title: 'Mannat',
     image: require('@/assets/images/icons/home page icons/Astrology.png'),
   },
   {
