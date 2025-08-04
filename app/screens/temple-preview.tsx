@@ -646,7 +646,7 @@ const styles = StyleSheet.create({
   },
   scrollableArea: {
     position: 'absolute',
-    top: 590,
+    top: 540, // Moved up by 50 pixels from 590
     left: 0,
     right: 0,
     bottom: 0,

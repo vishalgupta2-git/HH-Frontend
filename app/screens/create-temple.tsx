@@ -9,7 +9,7 @@ import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, 
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import axios from 'axios';
 import { getEndpointUrl } from '@/constants/ApiConfig';
-import { loadTempleConfiguration } from '@/utils/templeUtils';
+import { loadTempleConfiguration, saveTempleConfiguration } from '@/utils/templeUtils';
 
 export const options = { headerShown: false };
 
@@ -306,7 +306,7 @@ const SELECTED_DEITIES_KEY = 'selectedDeities';
 
 export default function CreateTempleScreen() {
   const router = useRouter();
-  const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'lights' | 'statues'>(null);
+  const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'lights' | 'statues' | 'temples-deities'>(null);
   // State initializers
   const [selectedStyle, setSelectedStyle] = useState<string>(templeStyles[0].id);
   const [bgGradient, setBgGradient] = useState(gradientPresets[0]);
@@ -393,11 +393,96 @@ export default function CreateTempleScreen() {
       TEMPLE_CONFIG_KEY,
       JSON.stringify({ selectedStyle, bgGradient, selectedDeities })
     );
-  }, [selectedStyle, bgGradient, selectedDeities]);
+  }, [selectedStyle, selectedDeities]);
 
-  // Save selectedDeities for next screen
+  // Save background gradient changes to database
+  useEffect(() => {
+    const saveBackgroundToDatabase = async () => {
+      try {
+        const templeConfig = {
+          selectedStyle,
+          bgGradient,
+          selectedDeities,
+          deityState,
+        };
+        
+        console.log('🔄 Saving background gradient to database...');
+        const success = await saveTempleConfiguration(templeConfig);
+        
+        if (success) {
+          console.log('✅ Background gradient saved to database');
+        } else {
+          console.log('⚠️ Failed to save background to database, but saved to local storage');
+        }
+      } catch (error) {
+        console.error('❌ Error saving background gradient:', error);
+      }
+    };
+
+    // Only save if we have a valid background gradient
+    if (bgGradient && bgGradient.length > 0) {
+      saveBackgroundToDatabase();
+    }
+  }, [bgGradient]);
+
+  // Save temple style changes to database
+  useEffect(() => {
+    const saveTempleStyleToDatabase = async () => {
+      try {
+        const templeConfig = {
+          selectedStyle,
+          bgGradient,
+          selectedDeities,
+          deityState,
+        };
+        
+        console.log('🔄 Saving temple style to database...');
+        const success = await saveTempleConfiguration(templeConfig);
+        
+        if (success) {
+          console.log('✅ Temple style saved to database');
+        } else {
+          console.log('⚠️ Failed to save temple style to database, but saved to local storage');
+        }
+      } catch (error) {
+        console.error('❌ Error saving temple style:', error);
+      }
+    };
+
+    // Only save if we have a valid selected style
+    if (selectedStyle) {
+      saveTempleStyleToDatabase();
+    }
+  }, [selectedStyle]);
+
+  // Save selectedDeities for next screen and to database
   useEffect(() => {
     AsyncStorage.setItem(SELECTED_DEITIES_KEY, JSON.stringify(selectedDeities));
+    
+    const saveDeitiesToDatabase = async () => {
+      try {
+        const templeConfig = {
+          selectedStyle,
+          bgGradient,
+          selectedDeities,
+          deityState,
+        };
+        
+        console.log('🔄 Saving selected deities to database...');
+        const success = await saveTempleConfiguration(templeConfig);
+        
+        if (success) {
+          console.log('✅ Selected deities saved to database');
+        } else {
+          console.log('⚠️ Failed to save deities to database, but saved to local storage');
+        }
+      } catch (error) {
+        console.error('❌ Error saving selected deities:', error);
+      }
+    };
+
+    // Save to database when deities change
+    saveDeitiesToDatabase();
   }, [selectedDeities]);
 
   // Debug modal state
@@ -494,44 +579,25 @@ export default function CreateTempleScreen() {
         >
           <View style={styles.scrollableContent}>
             <View style={styles.buttonRow}>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('temple')}>
-                  <Image source={require('@/assets/images/temple/Temple1.png')} style={styles.circleButtonImage} resizeMode="contain" />
-                </TouchableOpacity>
-                <Text style={[styles.buttonFooter, { color: labelColor }]}>Temple</Text>
-              </View>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('deities')}>
-                  <Image source={require('@/assets/images/temple/Ganesha1.png')} style={styles.circleButtonImage} resizeMode="contain" />
-                </TouchableOpacity>
-                <Text style={[styles.buttonFooter, { color: labelColor }]}>Deities</Text>
-              </View>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('background')}>
-                  <LinearGradient colors={bgGradient as any} style={styles.gradientCircle} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
-                </TouchableOpacity>
-                <Text style={[styles.buttonFooter, { color: labelColor }]}>Background</Text>
-              </View>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('lights')}>
-                  <MaterialCommunityIcons name="lightbulb" size={40} color="#FF6A00" />
-                </TouchableOpacity>
-                <Text style={[styles.buttonFooter, { color: labelColor }]}>Lights</Text>
-              </View>
-
-            </View>
-            <View style={styles.navigationButtons}>
               <TouchableOpacity
                 style={styles.backButton}
                 onPress={() => router.back()}
               >
-                <Text style={styles.backButtonText}>Back</Text>
+                <Text style={styles.backButtonText}>Save{'\n'}Temple</Text>
               </TouchableOpacity>
+              
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('temples-deities')}>
+                  <Image source={require('@/assets/images/temple/Temple1.png')} style={styles.circleButtonImage} resizeMode="contain" />
+                </TouchableOpacity>
+                <Text style={[styles.buttonFooter, { color: labelColor }]}>Temples/Deities</Text>
+              </View>
+              
               <TouchableOpacity
                 style={styles.nextButton}
                 onPress={() => router.push('/screens/temple-preview')}
               >
-                <Text style={styles.nextButtonText}>Next</Text>
+                <Text style={styles.nextButtonText}>Edit{'\n'}Deities</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -557,21 +623,21 @@ export default function CreateTempleScreen() {
                       <Text style={styles.closeButtonText}>✕</Text>
                     </TouchableOpacity>
                   </View>
-                  <View style={styles.modalStyleList}>
-                    {templeStyles.map(style => (
-                      <TouchableOpacity
-                        key={style.id}
-                        style={[styles.modalStyleOption, selectedStyle === style.id && styles.modalStyleOptionSelected]}
-                        onPress={() => {
-                          setSelectedStyle(style.id);
-                          setModal(null);
-                        }}
-                      >
-                        <Image source={style.image} style={styles.modalTempleImage} resizeMode="contain" />
-                        <Text style={styles.modalStyleOptionText}>{style.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
+                                     <View style={styles.modalStyleList}>
+                     {templeStyles.map(style => (
+                       <TouchableOpacity
+                         key={style.id}
+                         style={[styles.modalStyleOption, selectedStyle === style.id && styles.modalStyleOptionSelected]}
+                         onPress={() => {
+                           setSelectedStyle(style.id);
+                           setModal(null);
+                         }}
+                       >
+                         <Image source={style.image} style={styles.modalTempleImage} resizeMode="contain" />
+                         <Text style={styles.modalStyleOptionText}>{style.name}</Text>
+                       </TouchableOpacity>
+                     ))}
+                   </View>
                 </View>
               ) : modal === 'background' ? (
                 <View style={styles.modalContent}>
@@ -640,92 +706,128 @@ export default function CreateTempleScreen() {
                       <Text style={styles.loadingText}>Loading deities...</Text>
                     </View>
                   ) : (
-                    <View style={styles.deityGrid}>
-                      {deityData.map((deity) => {
-                        // Add null check for deity.Deity
-                        if (!deity.Deity) {
-                          return null;
-                        }
-                        
-                        const isSelected = selectedDeities.hasOwnProperty(deity._id || '');
-                        const selectedStatueUrl = selectedDeities[deity._id || ''];
-                        return (
-                          <TouchableOpacity
-                            key={deity._id}
-                            style={styles.deityOption}
-                            onPress={() => {
-                              // Add null check before accessing deity.Deity
-                              if (!deity.Deity) {
-                                return;
-                              }
-                              
-                              if (isSelected) {
-                                // Remove this deity from selection
-                                const newSelectedDeities = { ...selectedDeities };
-                                delete newSelectedDeities[deity._id || ''];
-                                setSelectedDeities(newSelectedDeities);
-                              } else {
-                                // Check if we can add more deities (max 3)
-                                if (Object.keys(selectedDeities).length >= 3) {
-                                  setDeityError('Maximum 3 deities allowed');
-                                  setTimeout(() => setDeityError(''), 2000);
-                                  return;
-                                }
-                                
-                                // Handle different possible formats of Statues
-                                let statuesArray: string[] = [];
-                                if (Array.isArray(deity.Deity.Statues)) {
-                                  statuesArray = deity.Deity.Statues as string[];
-                                } else if (deity.Deity.Statues && typeof deity.Deity.Statues === 'object') {
-                                  // If it's an object, try to convert to array
-                                  statuesArray = Object.values(deity.Deity.Statues) as string[];
-                                }
-                                
-                                if (statuesArray.length > 0) {
-                                  // Create a copy of deity with processed statues
-                                  const deityWithProcessedStatues = {
-                                    ...deity,
-                                    Deity: {
-                                      ...deity.Deity,
-                                      Statues: statuesArray
-                                    }
-                                  };
-                                  setSelectedDeityForStatues(deityWithProcessedStatues);
-                                  setModal('statues');
-                                }
-                              }
-                            }}
-                          >
-                            <View style={[styles.deityIconCircle, isSelected && styles.deityIconCircleSelected]}>
-                              {deity.Icon ? (
-                                <Image 
-                                  source={getImageSource(deity.Icon)} 
-                                  style={{ width: 36, height: 36, borderRadius: 18 }} 
-                                  resizeMode="contain" 
-                                />
-                              ) : (
-                                <Text style={styles.deityIcon}>🕉️</Text>
-                              )}
-                              {isSelected && (
-                                <View style={styles.deityCheckmark}>
-                                  <MaterialCommunityIcons name="check-circle" size={22} color="#FF6A00" />
-                                </View>
-                              )}
-                            </View>
-                            <Text style={styles.deityLabel}>{deity.Deity?.Name || 'Unknown Deity'}</Text>
-                            {isSelected && selectedStatueUrl && (
-                              <Text style={styles.selectedStatueText}>✓ Idol Selected</Text>
-                            )}
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
+                                         <View style={styles.deityGrid}>
+                       {deityData.map((deity) => {
+                         // Add null check for deity.Deity
+                         if (!deity.Deity) {
+                           return null;
+                         }
+                         
+                         const isSelected = selectedDeities.hasOwnProperty(deity._id || '');
+                         const selectedStatueUrl = selectedDeities[deity._id || ''];
+                         return (
+                           <TouchableOpacity
+                             key={deity._id}
+                             style={styles.deityOption}
+                             onPress={() => {
+                               // Add null check before accessing deity.Deity
+                               if (!deity.Deity) {
+                                 return;
+                               }
+                               
+                               if (isSelected) {
+                                 // Remove this deity from selection
+                                 const newSelectedDeities = { ...selectedDeities };
+                                 delete newSelectedDeities[deity._id || ''];
+                                 setSelectedDeities(newSelectedDeities);
+                               } else {
+                                 // Check if we can add more deities (max 3)
+                                 if (Object.keys(selectedDeities).length >= 3) {
+                                   setDeityError('Maximum 3 deities allowed');
+                                   setTimeout(() => setDeityError(''), 2000);
+                                   return;
+                                 }
+                                 
+                                 // Handle different possible formats of Statues
+                                 let statuesArray: string[] = [];
+                                 if (Array.isArray(deity.Deity.Statues)) {
+                                   statuesArray = deity.Deity.Statues as string[];
+                                 } else if (deity.Deity.Statues && typeof deity.Deity.Statues === 'object') {
+                                   // If it's an object, try to convert to array
+                                   statuesArray = Object.values(deity.Deity.Statues) as string[];
+                                 }
+                                 
+                                 if (statuesArray.length > 0) {
+                                   // Create a copy of deity with processed statues
+                                   const deityWithProcessedStatues = {
+                                     ...deity,
+                                     Deity: {
+                                       ...deity.Deity,
+                                       Statues: statuesArray
+                                     }
+                                   };
+                                   setSelectedDeityForStatues(deityWithProcessedStatues);
+                                   setModal('statues');
+                                 }
+                               }
+                             }}
+                           >
+                             <View style={[styles.deityIconCircle, isSelected && styles.deityIconCircleSelected]}>
+                               {deity.Icon ? (
+                                 <Image 
+                                   source={getImageSource(deity.Icon)} 
+                                   style={{ width: 36, height: 36, borderRadius: 18 }} 
+                                   resizeMode="contain" 
+                                 />
+                               ) : (
+                                 <Text style={styles.deityIcon}>🕉️</Text>
+                               )}
+                               {isSelected && (
+                                 <View style={styles.deityCheckmark}>
+                                   <MaterialCommunityIcons name="check-circle" size={22} color="#FF6A00" />
+                                 </View>
+                               )}
+                             </View>
+                             <Text style={styles.deityLabel}>{deity.Deity?.Name || 'Unknown Deity'}</Text>
+                             {isSelected && selectedStatueUrl && (
+                               <Text style={styles.selectedStatueText}>✓ Idol Selected</Text>
+                             )}
+                           </TouchableOpacity>
+                         );
+                       })}
+                     </View>
                   )}
                   {deityError ? (
                     <Text style={styles.deityError}>{deityError}</Text>
                   ) : null}
                 </View>
-              ) : modal === 'statues' && selectedDeityForStatues ? (
+                             ) : modal === 'temples-deities' ? (
+                 <View style={styles.modalContent}>
+                   <View style={styles.modalHeader}>
+                     <Text style={styles.modalTitle}>Temples & Deities</Text>
+                     <TouchableOpacity 
+                       style={styles.closeButton}
+                       onPress={() => setModal(null)}
+                     >
+                       <Text style={styles.closeButtonText}>✕</Text>
+                     </TouchableOpacity>
+                   </View>
+                   <ScrollView 
+                     horizontal 
+                     showsHorizontalScrollIndicator={false}
+                     contentContainerStyle={styles.templesDeitiesScrollView}
+                   >
+                     <View style={styles.templesDeitiesContainer}>
+                       <TouchableOpacity style={styles.templesDeitiesButton} onPress={() => setModal('temple')}>
+                         <Image source={require('@/assets/images/temple/Temple1.png')} style={styles.templesDeitiesIcon} resizeMode="contain" />
+                         <Text style={styles.templesDeitiesLabel}>Temple</Text>
+                       </TouchableOpacity>
+                       <TouchableOpacity style={styles.templesDeitiesButton} onPress={() => setModal('deities')}>
+                         <Image source={require('@/assets/images/temple/Ganesha1.png')} style={styles.templesDeitiesIcon} resizeMode="contain" />
+                         <Text style={styles.templesDeitiesLabel}>Deities</Text>
+                       </TouchableOpacity>
+                       <TouchableOpacity style={styles.templesDeitiesButton} onPress={() => setModal('background')}>
+                         <LinearGradient colors={bgGradient as any} style={styles.templesDeitiesGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
+                         <Text style={styles.templesDeitiesLabel}>Background</Text>
+                       </TouchableOpacity>
+                       <TouchableOpacity style={styles.templesDeitiesButton} onPress={() => setModal('lights')}>
+                         <MaterialCommunityIcons name="lightbulb" size={40} color="#FF6A00" />
+                         <Text style={styles.templesDeitiesLabel}>Lights</Text>
+                       </TouchableOpacity>
+                     </View>
+                   </ScrollView>
+                 </View>
+               ) : modal === 'statues' && selectedDeityForStatues ? (
                 <View style={styles.modalContent}>
                   <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>Choose {selectedDeityForStatues.Deity?.Name || 'Deity'} Idol</Text>
@@ -856,12 +958,17 @@ const styles = StyleSheet.create({
     aspectRatio: 1.2,
     alignSelf: 'center',
   },
+  horizontalScrollView: {
+    maxWidth: screenWidth - 40, // Leave some margin on sides
+  },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: 32,
+    paddingHorizontal: 20,
     gap: 20,
-    marginTop: -5, // Moved down by 20 pixels from -25
+    width: '100%',
   },
   buttonContainer: {
     alignItems: 'center',
@@ -959,11 +1066,11 @@ const styles = StyleSheet.create({
     color: '#666',
     fontWeight: 'bold',
   },
-  modalStyleList: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-  },
+     modalStyleList: {
+     flexDirection: 'row',
+     justifyContent: 'center',
+     gap: 20,
+   },
   modalStyleOption: {
     borderWidth: 2,
     borderColor: '#FF6A00',
@@ -1011,18 +1118,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FF6A00',
   },
-  deityGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 8,
-  },
-  deityOption: {
-    width: '22%',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
+     deityGrid: {
+     flexDirection: 'row',
+     flexWrap: 'wrap',
+     justifyContent: 'center',
+     gap: 8,
+     marginTop: 8,
+   },
+     deityOption: {
+     width: '22%',
+     alignItems: 'center',
+     marginBottom: 18,
+   },
   deityIconCircle: {
     width: 56,
     height: 56,
@@ -1249,11 +1356,11 @@ const styles = StyleSheet.create({
       width: 60,
       height: 60,
     },
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               scrollableArea: {
-            position: 'absolute',
-            top: 590, // Moved down by 20 pixels from 570
-            left: 0,
-            right: 0,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               scrollableArea: {
+                  position: 'absolute',
+                  top: 520, // Moved down by 30 pixels from 490
+                  left: 0,
+                  right: 0,
             bottom: 0,
             zIndex: 10,
           },
@@ -1271,26 +1378,66 @@ const styles = StyleSheet.create({
       paddingHorizontal: 20,
       gap: 20,
     },
-   backButton: {
-     backgroundColor: '#666',
-     borderRadius: 24,
-     paddingVertical: 14,
-     paddingHorizontal: 40,
-   },
+     backButton: {
+    backgroundColor: '#FF6A00', // Changed from '#666' to match Edit Deities button
+    borderRadius: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    minWidth: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
    backButtonText: {
      color: '#fff',
      fontWeight: 'bold',
-     fontSize: 17,
+     fontSize: 14,
+     textAlign: 'center',
+     lineHeight: 18,
    },
    nextButton: {
      backgroundColor: '#FF6A00',
      borderRadius: 24,
      paddingVertical: 14,
-     paddingHorizontal: 40,
+     paddingHorizontal: 20,
+     minWidth: 80,
+     alignItems: 'center',
+     justifyContent: 'center',
    },
-   nextButtonText: {
-     color: '#fff',
-     fontWeight: 'bold',
-     fontSize: 17,
-   },
+       nextButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: 14,
+      textAlign: 'center',
+      lineHeight: 18,
+    },
+    templesDeitiesScrollView: {
+      paddingHorizontal: 20,
+    },
+    templesDeitiesContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 20,
+      paddingVertical: 20,
+    },
+    templesDeitiesButton: {
+      alignItems: 'center',
+      minWidth: 100,
+    },
+    templesDeitiesIcon: {
+      width: 60,
+      height: 60,
+      marginBottom: 8,
+    },
+    templesDeitiesGradient: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      marginBottom: 8,
+    },
+    templesDeitiesLabel: {
+      fontSize: 12,
+      color: '#333',
+      textAlign: 'center',
+      fontWeight: 'bold',
+    },
 }); 
