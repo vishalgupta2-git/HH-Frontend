@@ -1,14 +1,15 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
-import React, { useEffect, useState, useMemo } from 'react';
+import { useRouter, useFocusEffect } from 'expo-router';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
-import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, runOnJS } from 'react-native-reanimated';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import axios from 'axios';
 import { getEndpointUrl } from '@/constants/ApiConfig';
+import { loadTempleConfiguration } from '@/utils/templeUtils';
 
 export const options = { headerShown: false };
 
@@ -314,10 +315,36 @@ export default function CreateTempleScreen() {
   const [deityData, setDeityData] = useState<DeityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDeityForStatues, setSelectedDeityForStatues] = useState<DeityData | null>(null);
+  const [deityState, setDeityState] = useState<{ key: string; x: number; y: number; scale: number }[]>([]);
 
-  // Load config on mount
-  useEffect(() => {
-    (async () => {
+  // Function to load temple configuration
+  const loadTempleConfig = useCallback(async () => {
+    try {
+      console.log('🔄 Loading temple configuration...');
+      // Try to load from database first
+      const dbConfig = await loadTempleConfiguration();
+      if (dbConfig) {
+        console.log('✅ Temple configuration loaded from database:', dbConfig);
+        if (dbConfig.selectedStyle) setSelectedStyle(dbConfig.selectedStyle);
+        if (dbConfig.bgGradient) setBgGradient(dbConfig.bgGradient);
+        if (dbConfig.selectedDeities) setSelectedDeities(dbConfig.selectedDeities);
+        if (dbConfig.deityState) setDeityState(dbConfig.deityState);
+      } else {
+        console.log('🔍 No database config found, loading from AsyncStorage...');
+        // Fallback to AsyncStorage
+        const configStr = await AsyncStorage.getItem(TEMPLE_CONFIG_KEY);
+        if (configStr) {
+          try {
+            const config = JSON.parse(configStr);
+            if (config.selectedStyle) setSelectedStyle(config.selectedStyle);
+            if (config.bgGradient) setBgGradient(config.bgGradient);
+            if (config.selectedDeities) setSelectedDeities(config.selectedDeities);
+          } catch {}
+        }
+      }
+    } catch (error) {
+      console.error('Error loading temple configuration:', error);
+      // Fallback to AsyncStorage
       const configStr = await AsyncStorage.getItem(TEMPLE_CONFIG_KEY);
       if (configStr) {
         try {
@@ -327,8 +354,21 @@ export default function CreateTempleScreen() {
           if (config.selectedDeities) setSelectedDeities(config.selectedDeities);
         } catch {}
       }
-    })();
+    }
   }, []);
+
+  // Load config on mount
+  useEffect(() => {
+    loadTempleConfig();
+  }, [loadTempleConfig]);
+
+  // Reload config when screen comes into focus (e.g., returning from preview screen)
+  useFocusEffect(
+    useCallback(() => {
+      console.log('🔄 Screen focused, reloading temple configuration...');
+      loadTempleConfig();
+    }, [loadTempleConfig])
+  );
 
   // Fetch deity data from MongoDB
   useEffect(() => {
@@ -411,6 +451,42 @@ export default function CreateTempleScreen() {
       />
       {/* Arch on top */}
       <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
+      
+      {/* Deities positioned in their saved locations */}
+      <View style={styles.deityContainer}>
+        {Object.keys(selectedDeities).length > 0 ? (
+          Object.keys(selectedDeities).map((key: string, idx: number) => {
+            const selectedStatueUrl = selectedDeities[key];
+            const statueImage = getImageSource(selectedStatueUrl);
+            
+            // Find saved position and scale for this deity
+            const savedDeity = deityState.find(d => d.key === key);
+            
+            // Use saved coordinates or default
+            const initialX = savedDeity?.x ?? (50 + idx * 100);
+            const initialY = savedDeity?.y ?? (300 + idx * 100);
+            const initialScale = savedDeity?.scale ?? 2;
+            
+            return (
+              <View
+                key={`deity-${key}`}
+                style={[
+                  styles.deity,
+                  {
+                    transform: [
+                      { translateX: initialX },
+                      { translateY: initialY },
+                      { scale: initialScale }
+                    ]
+                  }
+                ]}
+              >
+                <Image source={statueImage} style={styles.deityImage} resizeMode="contain" />
+              </View>
+            );
+          })
+        ) : null}
+      </View>
        
                {/* Transparent area for icons and next button */}
         <View 
@@ -442,6 +518,7 @@ export default function CreateTempleScreen() {
                 </TouchableOpacity>
                 <Text style={[styles.buttonFooter, { color: labelColor }]}>Lights</Text>
               </View>
+
             </View>
             <View style={styles.navigationButtons}>
               <TouchableOpacity
@@ -696,7 +773,7 @@ export default function CreateTempleScreen() {
                     </View>
                   </ScrollView>
                 </View>
-              ) : (
+                             ) : (
                 <View style={{ width: 240, height: 180, backgroundColor: 'white', borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>
                     {modal === 'lights' && 'Coming Soon'}
@@ -1052,6 +1129,126 @@ const styles = StyleSheet.create({
      textAlign: 'center',
      marginTop: 2,
    },
+   // Preview modal styles
+   previewModalContainer: {
+     width: screenWidth,
+     height: '100%',
+     position: 'relative',
+   },
+   previewBackground: {
+     position: 'absolute',
+     top: 0,
+     left: 0,
+     right: 0,
+     bottom: 0,
+     zIndex: 0,
+   },
+   previewTempleScrollView: {
+     position: 'absolute',
+     top: 0,
+     left: 0,
+     right: 0,
+     bottom: 0,
+     zIndex: 0,
+   },
+   previewTempleScrollContent: {
+     alignItems: 'center',
+     paddingTop: 200,
+   },
+   previewTempleImage: {
+     width: screenWidth * 1.38,
+     height: undefined,
+     aspectRatio: 1.2,
+     alignSelf: 'center',
+   },
+   previewBellLeft: {
+     position: 'absolute',
+     top: 95,
+     left: 40,
+     width: 62.4,
+     height: 117,
+     zIndex: 1,
+   },
+   previewBellRight: {
+     position: 'absolute',
+     top: 95,
+     right: 40,
+     width: 62.4,
+     height: 117,
+     zIndex: 1,
+   },
+   previewArchImage: {
+     position: 'absolute',
+     top: 0,
+     left: 0,
+     right: 0,
+     zIndex: 2,
+   },
+   previewDeityContainer: {
+     position: 'absolute',
+     top: 0,
+     left: 0,
+     right: 0,
+     bottom: 0,
+     zIndex: 5,
+   },
+   previewDeity: {
+     position: 'absolute',
+     width: 60,
+     height: 60,
+   },
+   previewDeityImage: {
+     width: 60,
+     height: 60,
+   },
+   previewNoDeities: {
+     position: 'absolute',
+     top: '50%',
+     left: '50%',
+     transform: [{ translateX: -50 }, { translateY: -50 }],
+     alignItems: 'center',
+     justifyContent: 'center',
+   },
+   previewNoDeitiesText: {
+     color: '#fff',
+     fontSize: 18,
+     fontWeight: 'bold',
+     textAlign: 'center',
+   },
+   previewCloseButton: {
+     position: 'absolute',
+     bottom: 40,
+     left: '50%',
+     transform: [{ translateX: -50 }],
+     backgroundColor: '#FF6A00',
+     paddingHorizontal: 24,
+     paddingVertical: 12,
+     borderRadius: 24,
+     zIndex: 10,
+   },
+       previewCloseButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    // Deity display styles
+    deityContainer: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 5,
+    },
+    deity: {
+      position: 'absolute',
+      width: 60,
+      height: 60,
+    },
+    deityImage: {
+      width: 60,
+      height: 60,
+    },
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                scrollableArea: {
             position: 'absolute',
             top: 590, // Moved down by 20 pixels from 570
