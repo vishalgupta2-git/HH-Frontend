@@ -8,7 +8,7 @@ export const options = { headerShown: false };
 export default function DonationScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [templesEnabled, setTemplesEnabled] = useState(true);
-  const [charitiesEnabled, setCharitiesEnabled] = useState(false);
+  const [charitiesEnabled, setCharitiesEnabled] = useState(true);
 
   const toggleControls = (
     <View style={styles.toggleRow}>

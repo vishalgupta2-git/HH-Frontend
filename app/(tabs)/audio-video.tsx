@@ -60,8 +60,8 @@ export default function AudioVideoScreen() {
   const [selectedDeity, setSelectedDeity] = useState<string | null>(null);
   const [deityDropdownOpen, setDeityDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [audioEnabled, setAudioEnabled] = useState(false);
-  const [videoEnabled, setVideoEnabled] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [videoEnabled, setVideoEnabled] = useState(true);
 
   useEffect(() => {
     const fetchMedia = async () => {
