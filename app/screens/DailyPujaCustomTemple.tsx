@@ -214,7 +214,40 @@ export default function DailyPujaCustomTemple() {
   const smokeAnimationRef = useRef(false);
   const router = useRouter();
 
-  // Mark that user has visited daily puja screen today
+  // Function to play welcome bell sound
+  const playWelcomeBell = async () => {
+    try {
+      // Stop any currently playing sound
+      if (sound) {
+        await sound.stopAsync();
+        await sound.unloadAsync();
+      }
+
+      // Load and play the temple bell sound
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        require('@/assets/sounds/TempleBell.mp3'),
+        { shouldPlay: true, isLooping: false }
+      );
+      
+      setSound(newSound);
+
+      // Stop the sound after 2 seconds
+      setTimeout(async () => {
+        try {
+          await newSound.stopAsync();
+          await newSound.unloadAsync();
+          setSound(null);
+        } catch (error) {
+          // Error stopping sound
+        }
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error playing welcome bell sound:', error);
+    }
+  };
+
+  // Mark that user has visited daily puja screen today and play welcome bell
   useEffect(() => {
     const markVisit = async () => {
       try {
@@ -226,6 +259,51 @@ export default function DailyPujaCustomTemple() {
     };
     
     markVisit();
+    
+    // Play welcome bell after a short delay
+    setTimeout(() => {
+      playWelcomeBell();
+      
+      // Swing left bell
+      Animated.sequence([
+        Animated.timing(leftBellSwing, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(leftBellSwing, {
+          toValue: -1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(leftBellSwing, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Swing right bell with slight delay
+      setTimeout(() => {
+        Animated.sequence([
+          Animated.timing(rightBellSwing, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rightBellSwing, {
+            toValue: -1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rightBellSwing, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 200);
+    }, 1000);
   }, []);
 
   // Function to get image source from MongoDB data using static require calls
@@ -505,7 +583,7 @@ export default function DailyPujaCustomTemple() {
       console.log('⚠️ Error awarding mudras for ringing the bell:', mudraError);
     }
 
-    // Play temple bell sound and start animations simultaneously
+    // Play temple bell sound twice and start animations
     const playTempleBellSound = async () => {
       try {
         // Stop any currently playing sound
@@ -522,7 +600,7 @@ export default function DailyPujaCustomTemple() {
         
         setSound(newSound);
 
-        // Stop the sound after 3 seconds
+        // Stop the sound after 2 seconds
         setTimeout(async () => {
           try {
             await newSound.stopAsync();
@@ -531,7 +609,7 @@ export default function DailyPujaCustomTemple() {
           } catch (error) {
             // Error stopping sound
           }
-        }, 3000);
+        }, 2000);
 
       } catch (error) {
         // Error playing temple bell sound
@@ -539,10 +617,10 @@ export default function DailyPujaCustomTemple() {
       }
     };
 
-    // Start both sound and animations at the same time
+    // Play first bell sound
     playTempleBellSound();
 
-    // Swing left bell immediately (parallel with sound)
+    // Swing left bell immediately (parallel with first sound)
     Animated.sequence([
       Animated.timing(leftBellSwing, {
         toValue: 1,
@@ -561,7 +639,7 @@ export default function DailyPujaCustomTemple() {
       }),
     ]).start();
 
-    // Swing right bell with slight delay (still parallel with sound)
+    // Swing right bell with slight delay (still parallel with first sound)
     setTimeout(() => {
       Animated.sequence([
         Animated.timing(rightBellSwing, {
@@ -581,6 +659,51 @@ export default function DailyPujaCustomTemple() {
         }),
       ]).start();
     }, 200);
+
+    // Play second bell sound after 2.5 seconds
+    setTimeout(() => {
+      playTempleBellSound();
+      
+      // Swing left bell again for second ring
+      Animated.sequence([
+        Animated.timing(leftBellSwing, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(leftBellSwing, {
+          toValue: -1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(leftBellSwing, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Swing right bell again with slight delay
+      setTimeout(() => {
+        Animated.sequence([
+          Animated.timing(rightBellSwing, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rightBellSwing, {
+            toValue: -1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rightBellSwing, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 200);
+    }, 2500);
   };
 
   const playConchSound = async () => {

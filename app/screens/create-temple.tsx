@@ -7,6 +7,7 @@ import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, Touchabl
 import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, runOnJS } from 'react-native-reanimated';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
+import { Audio } from 'expo-av';
 import axios from 'axios';
 import { getEndpointUrl } from '@/constants/ApiConfig';
 import { loadTempleConfiguration, saveTempleConfiguration } from '@/utils/templeUtils';
@@ -316,6 +317,40 @@ export default function CreateTempleScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedDeityForStatues, setSelectedDeityForStatues] = useState<DeityData | null>(null);
   const [deityState, setDeityState] = useState<{ key: string; x: number; y: number; scale: number }[]>([]);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+  // Function to play welcome bell sound
+  const playWelcomeBell = async () => {
+    try {
+      // Stop any currently playing sound
+      if (sound) {
+        await sound.stopAsync();
+        await sound.unloadAsync();
+      }
+
+      // Load and play the temple bell sound
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        require('@/assets/sounds/TempleBell.mp3'),
+        { shouldPlay: true, isLooping: false }
+      );
+      
+      setSound(newSound);
+
+      // Stop the sound after 2 seconds
+      setTimeout(async () => {
+        try {
+          await newSound.stopAsync();
+          await newSound.unloadAsync();
+          setSound(null);
+        } catch (error) {
+          // Error stopping sound
+        }
+      }, 2000);
+
+    } catch (error) {
+      console.error('Error playing welcome bell sound:', error);
+    }
+  };
 
   // Function to load temple configuration
   const loadTempleConfig = useCallback(async () => {
@@ -360,6 +395,11 @@ export default function CreateTempleScreen() {
   // Load config on mount
   useEffect(() => {
     loadTempleConfig();
+    
+    // Play welcome bell after a short delay
+    setTimeout(() => {
+      playWelcomeBell();
+    }, 1000);
   }, [loadTempleConfig]);
 
   // Reload config when screen comes into focus (e.g., returning from preview screen)
