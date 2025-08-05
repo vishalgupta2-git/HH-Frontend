@@ -1187,7 +1187,12 @@ export default function DailyPujaCustomTemple() {
         </View>
         
         {/* Puja Icons Row */}
-        <View style={styles.pujaIconsRow}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.pujaIconsRow}
+          contentContainerStyle={styles.pujaIconsContent}
+        >
           <TouchableOpacity 
             style={[
               styles.pujaIconItem, 
@@ -1246,7 +1251,7 @@ export default function DailyPujaCustomTemple() {
             />
             <Text style={styles.pujaIconLabel}>Shankh</Text>
           </TouchableOpacity>
-        </View>
+        </ScrollView>
       </View>
   
              {/* Flower Selection Modal - Moved outside main container */}
@@ -1567,15 +1572,17 @@ const styles = StyleSheet.create({
      pujaIconsRow: {
       position: 'absolute',
       top: 500, // Position below temple area
-      left: 0,
-      right: 0,
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-      paddingHorizontal: 20,
-      width: '100%',
+      left: '10%', // 10% from left edge
+      right: '10%', // 10% from right edge
+      width: '80%', // 80% of screen width
       zIndex: 10, // Above temple but below bells and arch
       marginTop: 60,
+    },
+     pujaIconsContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+      gap: 10, // Reduced spacing between icons
     },
      pujaIconItem: {
        alignItems: 'center',
@@ -1657,7 +1664,7 @@ const styles = StyleSheet.create({
                backgroundColor: '#ffffff',
                borderRadius: 16,
                padding: 24,
-               marginTop: 470,
+               marginTop: 420, // Moved up by 50 pixels from 470
                marginHorizontal: 20,
                alignItems: 'center',
                justifyContent: 'center',
