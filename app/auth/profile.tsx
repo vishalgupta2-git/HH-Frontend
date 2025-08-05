@@ -437,52 +437,58 @@ export default function ProfileScreen() {
           </Modal>
           
                      {/* Date-Time Picker */}
-           <TouchableOpacity style={styles.input} onPress={() => setShowDateTime(true)}>
-             <Text style={styles.dropdownText}>{dob ? dob.toLocaleDateString() : 'Select Date of Birth'}</Text>
-           </TouchableOpacity>
+                       <TouchableOpacity style={styles.input} onPress={() => setShowDateTime(true)}>
+              <Text style={styles.dropdownText}>{dob ? dob.toLocaleString() : 'Select Date & Time of Birth'}</Text>
+            </TouchableOpacity>
           
                      {/* Date of Birth Picker */}
-           <DateTimePickerModal
-             isVisible={showDateTime}
-             mode="date"
-             date={dob || new Date()}
-             onConfirm={(date) => { setDob(date); setShowDateTime(false); }}
-             onCancel={() => setShowDateTime(false)}
-           />
+                                               <DateTimePickerModal
+               isVisible={showDateTime}
+               mode="datetime"
+               date={dob || new Date()}
+               maximumDate={new Date()}
+               minimumDate={new Date('1900-01-01')}
+               onConfirm={(date) => { setDob(date); setShowDateTime(false); }}
+               onCancel={() => setShowDateTime(false)}
+             />
            
-           {/* Anniversary Date Picker */}
-           <DateTimePickerModal
-             isVisible={showAnniversaryDate}
-             mode="date"
-             date={anniversaryDate || new Date()}
-             maximumDate={new Date()}
-             onConfirm={(date) => { setAnniversaryDate(date); setShowAnniversaryDate(false); }}
-             onCancel={() => setShowAnniversaryDate(false)}
-           />
+                       {/* Anniversary Date Picker */}
+            <DateTimePickerModal
+              isVisible={showAnniversaryDate}
+              mode="date"
+              date={anniversaryDate || new Date()}
+              maximumDate={new Date()}
+              minimumDate={new Date('1900-01-01')}
+              onConfirm={(date) => { setAnniversaryDate(date); setShowAnniversaryDate(false); }}
+              onCancel={() => setShowAnniversaryDate(false)}
+            />
           
-          {/* Widow Date Picker */}
-          <DateTimePickerModal
-            isVisible={showWidowDate}
-            mode="date"
-            date={widowDate || new Date()}
-            maximumDate={new Date()}
-            onConfirm={(date) => { setWidowDate(date); setShowWidowDate(false); }}
-            onCancel={() => setShowWidowDate(false)}
-          />
+                     {/* Widow Date Picker */}
+           <DateTimePickerModal
+             isVisible={showWidowDate}
+             mode="date"
+             date={widowDate || new Date()}
+             maximumDate={new Date()}
+             minimumDate={new Date('1900-01-01')}
+             onConfirm={(date) => { setWidowDate(date); setShowWidowDate(false); }}
+             onCancel={() => setShowWidowDate(false)}
+           />
           
                      {/* Kid Date of Birth Picker */}
-           <DateTimePickerModal
-             isVisible={showKidDob !== null}
-             mode="date"
-             date={showKidDob !== null && kids[showKidDob]?.dateOfBirth ? kids[showKidDob].dateOfBirth : new Date()}
-             onConfirm={(date) => { 
-               if (showKidDob !== null) {
-                 updateKid(showKidDob, 'dateOfBirth', date);
-               }
-               setShowKidDob(null);
-             }}
-             onCancel={() => setShowKidDob(null)}
-           />
+                       <DateTimePickerModal
+              isVisible={showKidDob !== null}
+              mode="date"
+              date={showKidDob !== null && kids[showKidDob]?.dateOfBirth ? kids[showKidDob].dateOfBirth : new Date()}
+              maximumDate={new Date()}
+              minimumDate={new Date('1900-01-01')}
+              onConfirm={(date) => { 
+                if (showKidDob !== null) {
+                  updateKid(showKidDob, 'dateOfBirth', date);
+                }
+                setShowKidDob(null);
+              }}
+              onCancel={() => setShowKidDob(null)}
+            />
           
           {/* Kid Gender Modal */}
           <Modal
@@ -510,13 +516,15 @@ export default function ProfileScreen() {
           </Modal>
           
                      {/* Mother Date of Birth Picker */}
-           <DateTimePickerModal
-             isVisible={showMotherDob}
-             mode="date"
-             date={motherDob || new Date()}
-             onConfirm={(date) => { setMotherDob(date); setShowMotherDob(false); }}
-             onCancel={() => setShowMotherDob(false)}
-           />
+                       <DateTimePickerModal
+              isVisible={showMotherDob}
+              mode="date"
+              date={motherDob || new Date()}
+              maximumDate={new Date()}
+              minimumDate={new Date('1900-01-01')}
+              onConfirm={(date) => { setMotherDob(date); setShowMotherDob(false); }}
+              onCancel={() => setShowMotherDob(false)}
+            />
           
           {/* Mother Death Anniversary Picker */}
           <DateTimePickerModal
@@ -524,18 +532,21 @@ export default function ProfileScreen() {
             mode="date"
             date={motherDeathAnniversary || new Date()}
             maximumDate={new Date()}
+            minimumDate={new Date('1900-01-01')}
             onConfirm={(date) => { setMotherDeathAnniversary(date); setShowMotherDeathAnniversary(false); }}
             onCancel={() => setShowMotherDeathAnniversary(false)}
           />
           
                      {/* Father Date of Birth Picker */}
-           <DateTimePickerModal
-             isVisible={showFatherDob}
-             mode="date"
-             date={fatherDob || new Date()}
-             onConfirm={(date) => { setFatherDob(date); setShowFatherDob(false); }}
-             onCancel={() => setShowFatherDob(false)}
-           />
+                       <DateTimePickerModal
+              isVisible={showFatherDob}
+              mode="date"
+              date={fatherDob || new Date()}
+              maximumDate={new Date()}
+              minimumDate={new Date('1900-01-01')}
+              onConfirm={(date) => { setFatherDob(date); setShowFatherDob(false); }}
+              onCancel={() => setShowFatherDob(false)}
+            />
           
           {/* Father Death Anniversary Picker */}
           <DateTimePickerModal
@@ -543,18 +554,21 @@ export default function ProfileScreen() {
             mode="date"
             date={fatherDeathAnniversary || new Date()}
             maximumDate={new Date()}
+            minimumDate={new Date('1900-01-01')}
             onConfirm={(date) => { setFatherDeathAnniversary(date); setShowFatherDeathAnniversary(false); }}
             onCancel={() => setShowFatherDeathAnniversary(false)}
           />
           
                      {/* Spouse Date of Birth Picker */}
-           <DateTimePickerModal
-             isVisible={showSpouseDob}
-             mode="date"
-             date={spouseDob || new Date()}
-             onConfirm={(date) => { setSpouseDob(date); setShowSpouseDob(false); }}
-             onCancel={() => setShowSpouseDob(false)}
-           />
+                       <DateTimePickerModal
+              isVisible={showSpouseDob}
+              mode="date"
+              date={spouseDob || new Date()}
+              maximumDate={new Date()}
+              minimumDate={new Date('1900-01-01')}
+              onConfirm={(date) => { setSpouseDob(date); setShowSpouseDob(false); }}
+              onCancel={() => setShowSpouseDob(false)}
+            />
           
           {/* Place of Birth and Gotra in same row */}
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>

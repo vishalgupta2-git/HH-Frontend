@@ -273,15 +273,15 @@ export default function SignUpScreen() {
             <View style={styles.countryCodeBox}>
               <Text style={styles.countryCode}>+91</Text>
             </View>
-                                                   <TextInput
-                style={styles.phoneInput}
-                placeholder="Enter Your Phone No *"
-                placeholderTextColor="#888"
-                value={phone}
-                onChangeText={handlePhoneChange}
-                keyboardType="phone-pad"
-                maxLength={10}
-              />
+                                                                <TextInput
+               style={styles.phoneInput}
+               placeholder="Enter Your Phone No"
+               placeholderTextColor="#888"
+               value={phone}
+               onChangeText={handlePhoneChange}
+               keyboardType="phone-pad"
+               maxLength={10}
+             />
           </View>
                      {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
            <Text style={styles.sectionLabel}>About Yourself</Text>
@@ -371,8 +371,10 @@ export default function SignUpScreen() {
            </TouchableOpacity>
           <DateTimePickerModal
             isVisible={showDateTime}
-            mode="date"
+            mode="datetime"
             date={dob || new Date()}
+            maximumDate={new Date()}
+            minimumDate={new Date('1900-01-01')}
             onConfirm={(date) => { setDob(date); setShowDateTime(false); }}
             onCancel={() => setShowDateTime(false)}
           />
@@ -383,6 +385,7 @@ export default function SignUpScreen() {
             mode="date"
             date={anniversaryDate || new Date()}
             maximumDate={new Date()}
+            minimumDate={new Date('1900-01-01')}
             onConfirm={(date) => { setAnniversaryDate(date); setShowAnniversaryDate(false); }}
             onCancel={() => setShowAnniversaryDate(false)}
           />
@@ -393,6 +396,7 @@ export default function SignUpScreen() {
             mode="date"
             date={widowDate || new Date()}
             maximumDate={new Date()}
+            minimumDate={new Date('1900-01-01')}
             onConfirm={(date) => { setWidowDate(date); setShowWidowDate(false); }}
             onCancel={() => setShowWidowDate(false)}
           />
@@ -402,6 +406,8 @@ export default function SignUpScreen() {
             isVisible={showKidDob !== null}
             mode="date"
             date={showKidDob !== null && kids[showKidDob]?.dateOfBirth ? kids[showKidDob].dateOfBirth : new Date()}
+            maximumDate={new Date()}
+            minimumDate={new Date('1900-01-01')}
             onConfirm={(date) => { 
               if (showKidDob !== null) {
                 updateKid(showKidDob, 'dateOfBirth', date);
@@ -441,6 +447,8 @@ export default function SignUpScreen() {
              isVisible={showMotherDob}
              mode="date"
              date={motherDob || new Date()}
+             maximumDate={new Date()}
+             minimumDate={new Date('1900-01-01')}
              onConfirm={(date) => { setMotherDob(date); setShowMotherDob(false); }}
              onCancel={() => setShowMotherDob(false)}
            />
@@ -451,6 +459,7 @@ export default function SignUpScreen() {
              mode="date"
              date={motherDeathAnniversary || new Date()}
              maximumDate={new Date()}
+             minimumDate={new Date('1900-01-01')}
              onConfirm={(date) => { setMotherDeathAnniversary(date); setShowMotherDeathAnniversary(false); }}
              onCancel={() => setShowMotherDeathAnniversary(false)}
            />
@@ -460,6 +469,8 @@ export default function SignUpScreen() {
              isVisible={showFatherDob}
              mode="date"
              date={fatherDob || new Date()}
+             maximumDate={new Date()}
+             minimumDate={new Date('1900-01-01')}
              onConfirm={(date) => { setFatherDob(date); setShowFatherDob(false); }}
              onCancel={() => setShowFatherDob(false)}
            />
@@ -470,6 +481,7 @@ export default function SignUpScreen() {
              mode="date"
              date={fatherDeathAnniversary || new Date()}
              maximumDate={new Date()}
+             minimumDate={new Date('1900-01-01')}
              onConfirm={(date) => { setFatherDeathAnniversary(date); setShowFatherDeathAnniversary(false); }}
              onCancel={() => setShowFatherDeathAnniversary(false)}
            />
@@ -479,6 +491,8 @@ export default function SignUpScreen() {
              isVisible={showSpouseDob}
              mode="date"
              date={spouseDob || new Date()}
+             maximumDate={new Date()}
+             minimumDate={new Date('1900-01-01')}
              onConfirm={(date) => { setSpouseDob(date); setShowSpouseDob(false); }}
              onCancel={() => setShowSpouseDob(false)}
            />
