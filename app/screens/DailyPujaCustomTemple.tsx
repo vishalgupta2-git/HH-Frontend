@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder, Alert } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { Audio } from 'expo-av';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
@@ -430,79 +430,46 @@ export default function DailyPujaCustomTemple() {
   useEffect(() => {
     (async () => {
       try {
-        console.log('🔄 Loading temple configuration...');
+        console.log('🔄 [DAILY PUJA] Loading temple configuration...');
         
-        // Try to load from database first
-        const dbConfig = await loadTempleConfiguration();
+        const templeConfig = await loadTempleConfiguration();
         
-        if (dbConfig) {
-          console.log('✅ Temple configuration loaded from database:', dbConfig);
+        if (templeConfig) {
+          console.log('✅ [DAILY PUJA] Temple configuration loaded:', templeConfig);
           
-          // Load from database configuration
-          if (dbConfig.selectedDeities) {
-            setSelectedDeities(dbConfig.selectedDeities);
+          // Load from configuration
+          if (templeConfig.selectedDeities) {
+            setSelectedDeities(templeConfig.selectedDeities);
           }
-          if (dbConfig.selectedStyle) {
-            setSelectedStyle(dbConfig.selectedStyle);
+          if (templeConfig.selectedStyle) {
+            setSelectedStyle(templeConfig.selectedStyle);
           }
-          if (dbConfig.bgGradient) {
-            setBgGradient(dbConfig.bgGradient);
+          if (templeConfig.bgGradient) {
+            setBgGradient(templeConfig.bgGradient);
           }
-          if (dbConfig.deityState) {
-            setDeityState(dbConfig.deityState);
+          if (templeConfig.deityState) {
+            setDeityState(templeConfig.deityState);
           }
         } else {
-          console.log('🔍 No database config found, loading from AsyncStorage...');
-          
-          // Fallback to AsyncStorage
-          const deitiesStr = await AsyncStorage.getItem(SELECTED_DEITIES_KEY);
-          let loadedDeities: {[deityId: string]: string} = {};
-          if (deitiesStr) {
-            try {
-              loadedDeities = JSON.parse(deitiesStr);
-              setSelectedDeities(loadedDeities);
-            } catch {}
-          }
-          
-          const configStr = await AsyncStorage.getItem(TEMPLE_CONFIG_KEY);
-          if (configStr) {
-            try {
-              const config = JSON.parse(configStr);
-              if (config.selectedStyle) setSelectedStyle(config.selectedStyle);
-              if (config.bgGradient) setBgGradient(config.bgGradient);
-            } catch {}
-          }
-          
-          const stateStr = await AsyncStorage.getItem(DEITY_STATE_KEY);
-          let loadedState: { key: string; x: number; y: number; scale: number }[] = [];
-          if (stateStr) {
-            try {
-              loadedState = JSON.parse(stateStr);
-            } catch (error) {
-              // Error parsing loaded deity state
-            }
-          }
-          
-          // Merge: keep state for present deities, add new, remove missing
-          const deityKeys = Object.keys(loadedDeities);
-          
-          // Always preserve test deities from loaded state
-          const testDeities = loadedState.filter(d => d.key.startsWith('test-'));
-          
-          const mergedState = deityKeys.map((key, idx) => {
-            const found = loadedState.find(d => d.key === key);
-            const result = found || { key, x: 20 + idx * 80, y: 0, scale: 2 };
-            return result;
-          });
-          
-          // Combine selected deities with test deities
-          const finalState = [...mergedState, ...testDeities];
-          setDeityState(finalState);
+          console.log('🔍 [DAILY PUJA] No temple configuration found');
+          Alert.alert(
+            'No Temple Configured',
+            'Please go to "My Virtual Temple" on the home page to create a temple.',
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  console.log('🔄 [DAILY PUJA] Navigating back to home...');
+                  router.replace('/(tabs)');
+                }
+              }
+            ]
+          );
         }
         
         setLoading(false);
       } catch (error) {
-        console.error('❌ Error loading temple configuration:', error);
+        console.error('❌ [DAILY PUJA] Error loading temple configuration:', error);
         setLoading(false);
       }
     })();
@@ -752,8 +719,7 @@ export default function DailyPujaCustomTemple() {
 
     } catch (error) {
       // Error playing conch sound
-      // Fallback alert if audio fails
-      alert('🔔 Conch sound played!');
+      console.log('❌ Error playing conch sound:', error);
     }
   };
 

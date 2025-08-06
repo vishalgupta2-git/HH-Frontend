@@ -355,40 +355,20 @@ export default function CreateTempleScreen() {
   // Function to load temple configuration
   const loadTempleConfig = useCallback(async () => {
     try {
-      console.log('🔄 Loading temple configuration...');
-      // Try to load from database first
-      const dbConfig = await loadTempleConfiguration();
-      if (dbConfig) {
-        console.log('✅ Temple configuration loaded from database:', dbConfig);
-        if (dbConfig.selectedStyle) setSelectedStyle(dbConfig.selectedStyle);
-        if (dbConfig.bgGradient) setBgGradient(dbConfig.bgGradient);
-        if (dbConfig.selectedDeities) setSelectedDeities(dbConfig.selectedDeities);
-        if (dbConfig.deityState) setDeityState(dbConfig.deityState);
+      console.log('🔄 [CREATE TEMPLE] Loading temple configuration...');
+      
+      const templeConfig = await loadTempleConfiguration();
+      if (templeConfig) {
+        console.log('✅ [CREATE TEMPLE] Temple configuration loaded:', templeConfig);
+        if (templeConfig.selectedStyle) setSelectedStyle(templeConfig.selectedStyle);
+        if (templeConfig.bgGradient) setBgGradient(templeConfig.bgGradient);
+        if (templeConfig.selectedDeities) setSelectedDeities(templeConfig.selectedDeities);
+        if (templeConfig.deityState) setDeityState(templeConfig.deityState);
       } else {
-        console.log('🔍 No database config found, loading from AsyncStorage...');
-        // Fallback to AsyncStorage
-        const configStr = await AsyncStorage.getItem(TEMPLE_CONFIG_KEY);
-        if (configStr) {
-          try {
-            const config = JSON.parse(configStr);
-            if (config.selectedStyle) setSelectedStyle(config.selectedStyle);
-            if (config.bgGradient) setBgGradient(config.bgGradient);
-            if (config.selectedDeities) setSelectedDeities(config.selectedDeities);
-          } catch {}
-        }
+        console.log('🔍 [CREATE TEMPLE] No temple configuration found, using defaults');
       }
     } catch (error) {
-      console.error('Error loading temple configuration:', error);
-      // Fallback to AsyncStorage
-      const configStr = await AsyncStorage.getItem(TEMPLE_CONFIG_KEY);
-      if (configStr) {
-        try {
-          const config = JSON.parse(configStr);
-          if (config.selectedStyle) setSelectedStyle(config.selectedStyle);
-          if (config.bgGradient) setBgGradient(config.bgGradient);
-          if (config.selectedDeities) setSelectedDeities(config.selectedDeities);
-        } catch {}
-      }
+      console.error('❌ [CREATE TEMPLE] Error loading temple configuration:', error);
     }
   }, []);
 
@@ -427,103 +407,7 @@ export default function CreateTempleScreen() {
     };
     fetchDeityData();
   }, []);
-  // Save config on change
-  useEffect(() => {
-    AsyncStorage.setItem(
-      TEMPLE_CONFIG_KEY,
-      JSON.stringify({ selectedStyle, bgGradient, selectedDeities })
-    );
-  }, [selectedStyle, selectedDeities]);
-
-  // Save background gradient changes to database
-  useEffect(() => {
-    const saveBackgroundToDatabase = async () => {
-      try {
-        const templeConfig = {
-          selectedStyle,
-          bgGradient,
-          selectedDeities,
-          deityState,
-        };
-        
-        console.log('🔄 Saving background gradient to database...');
-        const success = await saveTempleConfiguration(templeConfig);
-        
-        if (success) {
-          console.log('✅ Background gradient saved to database');
-        } else {
-          console.log('⚠️ Failed to save background to database, but saved to local storage');
-        }
-      } catch (error) {
-        console.error('❌ Error saving background gradient:', error);
-      }
-    };
-
-    // Only save if we have a valid background gradient
-    if (bgGradient && bgGradient.length > 0) {
-      saveBackgroundToDatabase();
-    }
-  }, [bgGradient]);
-
-  // Save temple style changes to database
-  useEffect(() => {
-    const saveTempleStyleToDatabase = async () => {
-      try {
-        const templeConfig = {
-          selectedStyle,
-          bgGradient,
-          selectedDeities,
-          deityState,
-        };
-        
-        console.log('🔄 Saving temple style to database...');
-        const success = await saveTempleConfiguration(templeConfig);
-        
-        if (success) {
-          console.log('✅ Temple style saved to database');
-        } else {
-          console.log('⚠️ Failed to save temple style to database, but saved to local storage');
-        }
-      } catch (error) {
-        console.error('❌ Error saving temple style:', error);
-      }
-    };
-
-    // Only save if we have a valid selected style
-    if (selectedStyle) {
-      saveTempleStyleToDatabase();
-    }
-  }, [selectedStyle]);
-
-  // Save selectedDeities for next screen and to database
-  useEffect(() => {
-    AsyncStorage.setItem(SELECTED_DEITIES_KEY, JSON.stringify(selectedDeities));
-    
-    const saveDeitiesToDatabase = async () => {
-      try {
-        const templeConfig = {
-          selectedStyle,
-          bgGradient,
-          selectedDeities,
-          deityState,
-        };
-        
-        console.log('🔄 Saving selected deities to database...');
-        const success = await saveTempleConfiguration(templeConfig);
-        
-        if (success) {
-          console.log('✅ Selected deities saved to database');
-        } else {
-          console.log('⚠️ Failed to save deities to database, but saved to local storage');
-        }
-      } catch (error) {
-        console.error('❌ Error saving selected deities:', error);
-      }
-    };
-
-    // Save to database when deities change
-    saveDeitiesToDatabase();
-  }, [selectedDeities]);
+  // Note: No automatic saving - only save when user clicks "Save Temple" or "Edit Deities" buttons
 
   // Debug modal state
   useEffect(() => {
@@ -621,7 +505,30 @@ export default function CreateTempleScreen() {
             <View style={styles.buttonRow}>
               <TouchableOpacity
                 style={styles.backButton}
-                onPress={() => router.back()}
+                onPress={async () => {
+                  // Save current configuration to database
+                  try {
+                    const templeConfig = {
+                      selectedStyle,
+                      bgGradient,
+                      selectedDeities,
+                      deityState,
+                    };
+                    
+                    console.log('🔄 Saving temple configuration to database...');
+                    const success = await saveTempleConfiguration(templeConfig);
+                    
+                    if (success) {
+                      console.log('✅ Temple configuration saved to database');
+                    } else {
+                      console.log('⚠️ Failed to save to database, but saved to local storage');
+                    }
+                  } catch (error) {
+                    console.error('❌ Error saving temple configuration:', error);
+                  }
+                  
+                  router.back();
+                }}
               >
                 <Text style={styles.backButtonText}>Save{'\n'}Temple</Text>
               </TouchableOpacity>
@@ -635,7 +542,30 @@ export default function CreateTempleScreen() {
               
               <TouchableOpacity
                 style={styles.nextButton}
-                onPress={() => router.push('/screens/temple-preview')}
+                onPress={async () => {
+                  // Save current configuration before navigating
+                  try {
+                    const templeConfig = {
+                      selectedStyle,
+                      bgGradient,
+                      selectedDeities,
+                      deityState,
+                    };
+                    
+                    console.log('🔄 [CREATE TEMPLE] Saving temple configuration before editing deities...');
+                    const success = await saveTempleConfiguration(templeConfig);
+                    
+                    if (success) {
+                      console.log('✅ [CREATE TEMPLE] Temple configuration saved successfully');
+                    } else {
+                      console.log('⚠️ [CREATE TEMPLE] Failed to save temple configuration');
+                    }
+                  } catch (error) {
+                    console.error('❌ [CREATE TEMPLE] Error saving temple configuration:', error);
+                  }
+                  
+                  router.push('/screens/temple-preview');
+                }}
               >
                 <Text style={styles.nextButtonText}>Edit{'\n'}Deities</Text>
               </TouchableOpacity>

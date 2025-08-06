@@ -286,79 +286,33 @@ export default function TemplePreviewScreen() {
   useEffect(() => {
     (async () => {
       try {
-        console.log('🔄 Loading temple configuration for preview...');
+        console.log('🔄 [TEMPLE PREVIEW] Loading temple configuration for preview...');
         
-        // Try to load from database first
-        const dbConfig = await loadTempleConfiguration();
+        const templeConfig = await loadTempleConfiguration();
         
-        if (dbConfig) {
-          console.log('✅ Temple configuration loaded from database for preview:', dbConfig);
+        if (templeConfig) {
+          console.log('✅ [TEMPLE PREVIEW] Temple configuration loaded:', templeConfig);
           
-          // Load from database configuration
-          if (dbConfig.selectedDeities) {
-            setSelectedDeities(dbConfig.selectedDeities);
+          // Load from configuration
+          if (templeConfig.selectedDeities) {
+            setSelectedDeities(templeConfig.selectedDeities);
           }
-          if (dbConfig.selectedStyle) {
-            setSelectedStyle(dbConfig.selectedStyle);
+          if (templeConfig.selectedStyle) {
+            setSelectedStyle(templeConfig.selectedStyle);
           }
-          if (dbConfig.bgGradient) {
-            setBgGradient(dbConfig.bgGradient);
+          if (templeConfig.bgGradient) {
+            setBgGradient(templeConfig.bgGradient);
           }
-          if (dbConfig.deityState) {
-            setDeityState(dbConfig.deityState);
+          if (templeConfig.deityState) {
+            setDeityState(templeConfig.deityState);
           }
         } else {
-          console.log('🔍 No database config found for preview, loading from AsyncStorage...');
-          
-          // Fallback to AsyncStorage
-          const deitiesStr = await AsyncStorage.getItem(SELECTED_DEITIES_KEY);
-          let loadedDeities: {[deityId: string]: string} = {};
-          if (deitiesStr) {
-            try {
-              loadedDeities = JSON.parse(deitiesStr);
-              setSelectedDeities(loadedDeities);
-            } catch {}
-          }
-          
-          const configStr = await AsyncStorage.getItem(TEMPLE_CONFIG_KEY);
-          if (configStr) {
-            try {
-              const config = JSON.parse(configStr);
-              if (config.selectedStyle) setSelectedStyle(config.selectedStyle);
-              if (config.bgGradient) setBgGradient(config.bgGradient);
-            } catch {}
-          }
-          
-          const stateStr = await AsyncStorage.getItem(DEITY_STATE_KEY);
-          let loadedState: { key: string; x: number; y: number; scale: number }[] = [];
-          if (stateStr) {
-            try {
-              loadedState = JSON.parse(stateStr);
-            } catch (error) {
-              // Error parsing loaded deity state
-            }
-          }
-          
-          // Merge: keep state for present deities, add new, remove missing
-          const deityKeys = Object.keys(loadedDeities);
-          
-          // Always preserve test deities from loaded state
-          const testDeities = loadedState.filter(d => d.key.startsWith('test-'));
-          
-          const mergedState = deityKeys.map((key, idx) => {
-            const found = loadedState.find(d => d.key === key);
-            const result = found || { key, x: 20 + idx * 80, y: 0, scale: 2 };
-            return result;
-          });
-          
-          // Combine selected deities with test deities
-          const finalState = [...mergedState, ...testDeities];
-          setDeityState(finalState);
+          console.log('🔍 [TEMPLE PREVIEW] No temple configuration found, using defaults');
         }
         
         setLoading(false);
       } catch (error) {
-        console.error('❌ Error loading temple configuration for preview:', error);
+        console.error('❌ [TEMPLE PREVIEW] Error loading temple configuration:', error);
         setLoading(false);
       }
     })();
@@ -386,27 +340,21 @@ export default function TemplePreviewScreen() {
      });
    }, [selectedDeities]);
 
-  // Only update AsyncStorage when deityState changes due to user interaction
-  useEffect(() => {
-    if (deityState.length > 0) {
-      AsyncStorage.setItem(DEITY_STATE_KEY, JSON.stringify(deityState))
-        .catch((error) => {
-          // Error saving deity state to AsyncStorage
-        });
-    }
-  }, [deityState]);
+  // Note: No automatic saving - only save when user clicks "Done, Go back" button
 
   const updateDeityState = (key: string, x: number, y: number, scale: number) => {
     // Save positions directly as they are in the full screen scrollable area
-    console.log('Deity position in full screen area:', key, 'x:', x, 'y:', y, 'scale:', scale);
+    console.log('🎯 [TEMPLE PREVIEW] Deity position updated:', key, 'x:', x, 'y:', y, 'scale:', scale);
     setDeityState(prev => {
       const idx = prev.findIndex(d => d.key === key);
       if (idx !== -1) {
         const updated = [...prev];
         updated[idx] = { key, x, y, scale }; // Save position directly
+        console.log('🔄 [TEMPLE PREVIEW] Updated existing deity position for:', key);
         return updated;
       } else {
         const newState = [...prev, { key, x, y, scale }]; // Save position directly
+        console.log('🔄 [TEMPLE PREVIEW] Added new deity position for:', key);
         return newState;
       }
     });
@@ -430,9 +378,7 @@ export default function TemplePreviewScreen() {
 
   const handleSaveTemple = async () => {
     try {
-      // Debug: Check user data first
-      const userData = await AsyncStorage.getItem('user');
-      console.log('🔍 [TEMP DEBUG] User data from AsyncStorage:', userData ? JSON.parse(userData) : 'No user data');
+      console.log('🎯 [TEMPLE PREVIEW] "Done, Go back" button clicked');
       
       const templeConfig = {
         selectedStyle,
@@ -441,23 +387,27 @@ export default function TemplePreviewScreen() {
         deityState,
       };
 
-      console.log('🔄 Saving temple configuration to database...');
-      console.log('🔍 [TEMP DEBUG] Temple config to save:', templeConfig);
+      console.log('🔄 [TEMPLE PREVIEW] Saving temple configuration...');
+      console.log('🔍 [TEMPLE PREVIEW] Temple config to save:', {
+        selectedStyle,
+        bgGradient: bgGradient?.length || 0,
+        selectedDeitiesCount: Object.keys(selectedDeities).length,
+        deityStateCount: deityState.length
+      });
       
-      // Save to database
-      const success = await saveTempleConfiguration(templeConfig);
+             const success = await saveTempleConfiguration(templeConfig);
+       
+       if (success) {
+         console.log('✅ [TEMPLE PREVIEW] Temple configuration saved successfully');
+       } else {
+         console.log('⚠️ [TEMPLE PREVIEW] Failed to save temple configuration');
+       }
       
-                      if (success) {
-                  console.log('✅ Temple configuration saved successfully');
-                } else {
-                  console.log('⚠️ Failed to save to database, but saved to local storage');
-                }
-      
+      console.log('🔄 [TEMPLE PREVIEW] Navigating back to create-temple screen...');
       router.back();
-    } catch (error) {
-      console.error('❌ Error saving temple configuration:', error);
-      Alert.alert('Error', 'Failed to save temple configuration. Please try again.');
-    }
+         } catch (error: any) {
+       console.error('❌ [TEMPLE PREVIEW] Error saving temple configuration:', error);
+     }
   };
 
   return (
@@ -579,7 +529,10 @@ export default function TemplePreviewScreen() {
        
          <TouchableOpacity
            style={styles.saveButton}
-           onPress={handleSaveTemple}
+           onPress={() => {
+             console.log('🎯 [TEMPLE PREVIEW] "Done, Go back" button pressed');
+             handleSaveTemple();
+           }}
          >
            <Text style={styles.saveButtonText}>Done, Go back</Text>
          </TouchableOpacity>
