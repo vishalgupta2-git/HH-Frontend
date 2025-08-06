@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
+import { Audio } from 'expo-av';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -22,10 +23,39 @@ export default function RootLayout() {
   
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   
-  // Check authentication status and award daily login mudras
+  // Function to play welcome bell sound
+  const playWelcomeBell = async () => {
+    try {
+      console.log('🔔 Playing welcome bell sound...');
+      
+      // Load and play the temple bell sound
+      const { sound } = await Audio.Sound.createAsync(
+        require('../assets/sounds/TempleBell.mp3'),
+        { shouldPlay: true, isLooping: false }
+      );
+      
+      // Stop the sound after 2 seconds
+      setTimeout(async () => {
+        try {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        } catch (error) {
+          console.log('🔔 Error stopping bell sound:', error);
+        }
+      }, 2000);
+      
+    } catch (error) {
+      console.log('🔔 Error playing welcome bell sound:', error);
+    }
+  };
+  
+  // Check authentication status, award daily login mudras, and play welcome bell
   useEffect(() => {
-    const checkAuthAndAwardMudras = async () => {
+    const initializeApp = async () => {
       try {
+        // Play welcome bell sound
+        await playWelcomeBell();
+        
         const userData = await AsyncStorage.getItem('user');
         console.log('🔍 [DEBUG] RootLayout: Checking auth, user data:', userData ? 'exists' : 'none');
         setIsAuthenticated(!!userData);
@@ -49,12 +79,12 @@ export default function RootLayout() {
           }
         }
       } catch (error) {
-        console.error('🔍 [DEBUG] RootLayout: Error checking auth:', error);
+        console.error('🔍 [DEBUG] RootLayout: Error during app initialization:', error);
         setIsAuthenticated(false);
       }
     };
     
-    checkAuthAndAwardMudras();
+    initializeApp();
   }, []);
   
   console.log('🔍 [DEBUG] RootLayout: Fonts loaded =', loaded);
