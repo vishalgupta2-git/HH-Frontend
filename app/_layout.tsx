@@ -8,6 +8,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { Audio } from 'expo-av';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
+import { hasVisitedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUtils';
+import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
+import DailyPujaReminderModal from '@/components/Home/DailyPujaReminderModal';
+import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -22,6 +26,12 @@ export default function RootLayout() {
   });
   
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [showDailyPujaModal, setShowDailyPujaModal] = useState(false);
+  const [showSpecialPujaModal, setShowSpecialPujaModal] = useState(false);
+  const [upcomingPujas, setUpcomingPujas] = useState<UpcomingPuja[]>([]);
+  const [userFirstName, setUserFirstName] = useState<string | null>(null);
+  const [appInitialized, setAppInitialized] = useState(false);
+  const [dailyPujaShown, setDailyPujaShown] = useState(false);
   
   // Function to play welcome bell sound
   const playWelcomeBell = async () => {
@@ -46,6 +56,57 @@ export default function RootLayout() {
       
     } catch (error) {
       console.log('🔔 Error playing welcome bell sound:', error);
+    }
+  };
+
+  // Function to handle daily puja modal close
+  const handleDailyPujaModalClose = () => {
+    setShowDailyPujaModal(false);
+    // Show special puja modal after daily puja modal closes (if there are upcoming pujas)
+    if (upcomingPujas.length > 0) {
+      setTimeout(() => {
+        console.log('🔍 [DEBUG] Showing special puja modal after daily puja modal closed');
+        setShowSpecialPujaModal(true);
+      }, 1000); // 1 second delay after daily puja modal closes
+    }
+  };
+
+  // Function to check and show modals
+  const checkAndShowModals = async () => {
+    try {
+      console.log('🔍 [DEBUG] Checking modals to show...');
+      
+      // Get user first name
+      const firstName = await getUserFirstName();
+      setUserFirstName(firstName);
+      
+      // Check if user has visited daily puja today
+      const hasVisitedToday = await hasVisitedDailyPujaToday();
+      console.log('🔍 [DEBUG] Has visited daily puja today:', hasVisitedToday);
+      
+      // Check for upcoming special pujas
+      const specialPujas = await getUpcomingSpecialPujas();
+      setUpcomingPujas(specialPujas);
+      console.log('🔍 [DEBUG] Upcoming special pujas:', specialPujas.length);
+      
+      // Show modals with delay to ensure app is fully loaded
+      setTimeout(() => {
+        // Show daily puja modal first if user hasn't visited today
+        if (!hasVisitedToday) {
+          console.log('🔍 [DEBUG] Showing daily puja modal');
+          setShowDailyPujaModal(true);
+          setDailyPujaShown(true);
+        } else {
+          // If daily puja already done, show special puja modal immediately
+          if (specialPujas.length > 0) {
+            console.log('🔍 [DEBUG] Showing special puja modal (daily puja already done)');
+            setShowSpecialPujaModal(true);
+          }
+        }
+      }, 2000); // 2 second delay after app initialization
+      
+    } catch (error) {
+      console.error('🔍 [DEBUG] Error checking modals:', error);
     }
   };
   
@@ -78,14 +139,26 @@ export default function RootLayout() {
             console.log('✅ Daily login mudras already earned today');
           }
         }
+        
+        // Mark app as initialized
+        setAppInitialized(true);
+        
       } catch (error) {
         console.error('🔍 [DEBUG] RootLayout: Error during app initialization:', error);
         setIsAuthenticated(false);
+        setAppInitialized(true);
       }
     };
     
     initializeApp();
   }, []);
+
+  // Check and show modals after app is initialized
+  useEffect(() => {
+    if (appInitialized) {
+      checkAndShowModals();
+    }
+  }, [appInitialized]);
   
   console.log('🔍 [DEBUG] RootLayout: Fonts loaded =', loaded);
   console.log('🔍 [DEBUG] RootLayout: Is authenticated =', isAuthenticated);
@@ -106,6 +179,20 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
+        
+        {/* Daily Puja Reminder Modal */}
+        <DailyPujaReminderModal
+          visible={showDailyPujaModal}
+          onClose={handleDailyPujaModalClose}
+          firstName={userFirstName || undefined}
+        />
+        
+        {/* Special Days Modal */}
+        <SpecialDaysModal
+          visible={showSpecialPujaModal}
+          onClose={() => setShowSpecialPujaModal(false)}
+          upcomingPujas={upcomingPujas}
+        />
       </ThemeProvider>
     </GestureHandlerRootView>
   );
