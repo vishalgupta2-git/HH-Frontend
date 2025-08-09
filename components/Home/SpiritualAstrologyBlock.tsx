@@ -6,7 +6,7 @@ import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'rea
 const spiritualItems = [
   { label: 'Vedas', image: require('@/assets/images/icons/home page icons/vedas.jpg') },
   { label: 'Dhams and Yatras', image: require('@/assets/images/icons/home page icons/dhams.png') },
-  { label: 'Goddesses', image: require('@/assets/images/icons/home page icons/goddesses.webp') },
+  { label: 'Holy Books', image: require('@/assets/images/icons/home page icons/HolyBooksIcon.png') },
   { label: 'Gods & Godesses', image: require('@/assets/images/icons/home page icons/godsAndGodessesIcon.png') },
 ];
 
@@ -41,6 +41,8 @@ export default function SpiritualAstrologyBlock() {
                 router.push('/screens/gods-and-godesses');
               } else if (item.label === 'Dhams and Yatras') {
                 router.push('/screens/dhams');
+              } else if (item.label === 'Holy Books') {
+                router.push('/screens/holy-books');
               } else {
                 router.push(`/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`);
               }
