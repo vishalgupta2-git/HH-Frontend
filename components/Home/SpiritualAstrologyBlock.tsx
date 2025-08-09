@@ -5,9 +5,9 @@ import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'rea
 
 const spiritualItems = [
   { label: 'Vedas', image: require('@/assets/images/icons/home page icons/vedas.jpg') },
-  { label: 'Dhams', image: require('@/assets/images/icons/home page icons/dhams.png') },
+  { label: 'Dhams and Yatras', image: require('@/assets/images/icons/home page icons/dhams.png') },
   { label: 'Goddesses', image: require('@/assets/images/icons/home page icons/goddesses.webp') },
-  { label: 'God', image: require('@/assets/images/icons/home page icons/god.jpg') },
+  { label: 'Gods & Godesses', image: require('@/assets/images/icons/home page icons/godsAndGodessesIcon.png') },
 ];
 
 const astrologyItems = [
@@ -35,7 +35,16 @@ export default function SpiritualAstrologyBlock() {
             key={item.label}
             style={styles.spiritualItem}
             activeOpacity={0.8}
-            onPress={() => router.push(`/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`)}
+            onPress={() => {
+              // Route mapping with special case for combined gods & goddesses page
+              if (item.label === 'Gods & Godesses') {
+                router.push('/screens/gods-and-godesses');
+              } else if (item.label === 'Dhams and Yatras') {
+                router.push('/screens/dhams');
+              } else {
+                router.push(`/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`);
+              }
+            }}
           >
             <Image source={item.image} style={styles.spiritualImage} />
             <Text style={styles.spiritualLabel}>{item.label}</Text>
