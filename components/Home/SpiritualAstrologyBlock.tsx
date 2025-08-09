@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // import ReferralConnectBlock, { SocialRow } from './ReferralConnectBlock';
 
 const spiritualItems = [
@@ -8,6 +8,7 @@ const spiritualItems = [
   { label: 'Dhams and Yatras', image: require('@/assets/images/icons/home page icons/dhams.png') },
   { label: 'Holy Books', image: require('@/assets/images/icons/home page icons/HolyBooksIcon.png') },
   { label: 'Gods & Godesses', image: require('@/assets/images/icons/home page icons/godsAndGodessesIcon.png') },
+  { label: 'Famous Temples', image: require('@/assets/images/icons/home page icons/FamousTemple.png') },
 ];
 
 const astrologyItems = [
@@ -29,32 +30,41 @@ export default function SpiritualAstrologyBlock() {
         <Text style={styles.sectionTitle}>Spiritual Information</Text>
         <View style={styles.sectionLine} />
       </View>
-      <View style={styles.spiritualRow}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.spiritualScrollContent}>
         {spiritualItems.map((item) => (
           <TouchableOpacity
             key={item.label}
             style={styles.spiritualItem}
             activeOpacity={0.8}
             onPress={() => {
-              // Route mapping with special case for combined gods & goddesses page
               if (item.label === 'Gods & Godesses') {
-                router.push('/screens/gods-and-godesses');
-              } else if (item.label === 'Dhams and Yatras') {
-                router.push('/screens/dhams');
-              } else if (item.label === 'Holy Books') {
-                router.push('/screens/holy-books');
-              } else {
-                router.push(`/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`);
+                router.push({ pathname: '/screens/gods-and-godesses' });
+                return;
               }
+              if (item.label === 'Dhams and Yatras') {
+                router.push({ pathname: '/screens/dhams' });
+                return;
+              }
+              if (item.label === 'Holy Books') {
+                router.push({ pathname: '/screens/holy-books' });
+                return;
+              }
+              if (item.label === 'Famous Temples') {
+                router.push({ pathname: '/screens/famous-temples' });
+                return;
+              }
+              const path = `/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`;
+              // @ts-expect-error dynamic route path
+              router.push({ pathname: path });
             }}
           >
             <Image source={item.image} style={styles.spiritualImage} />
             <Text style={styles.spiritualLabel}>{item.label}</Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
       {/* Astrology Services Section */}
-      <View style={[styles.sectionHeaderRow, { marginTop: 24 }] }>
+      <View style={[styles.sectionHeaderRow, { marginTop: 24 }]}>
         <Text style={styles.sectionTitle}>Astrology Services</Text>
         <View style={styles.sectionLine} />
       </View>
@@ -64,7 +74,11 @@ export default function SpiritualAstrologyBlock() {
             key={item.label}
             style={[styles.astrologyTile, idx === 4 ? styles.fullWidthTile : null]}
             activeOpacity={0.8}
-            onPress={() => router.push(`/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`)}
+            onPress={() => {
+              const path = `/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`;
+              // @ts-expect-error dynamic route path
+              router.push({ pathname: path });
+            }}
           >
             <Image source={item.image} style={styles.astrologyIcon} />
             <Text style={styles.astrologyLabel}>{item.label}</Text>
@@ -99,24 +113,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
     marginLeft: 4,
   },
-  spiritualRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+  spiritualScrollContent: {
+    paddingRight: 12,
   },
   spiritualItem: {
     alignItems: 'center',
-    flex: 1,
+    width: 92,
+    marginRight: 8,
   },
   spiritualImage: {
-    width: 56,
-    height: 56,
+    width: 64,
+    height: 64,
     borderRadius: 12,
     marginBottom: 4,
     backgroundColor: '#F8F8F8',
   },
   spiritualLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#444',
     marginTop: 2,
     textAlign: 'center',
