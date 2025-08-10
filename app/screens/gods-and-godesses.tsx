@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 
 export const options = { headerShown: false };
 
@@ -93,6 +93,28 @@ export default function GodsAndGodessesScreen() {
             sectionY.current['trimurti'] = e.nativeEvent.layout.y;
           }}
         >
+          {/* Trimurti Image Slider */}
+          <View style={styles.imageSliderContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.imageSliderContent}
+            >
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/brahma.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Vishnu.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Shiva.jpg')} 
+                style={styles.sectionImage} 
+              />
+            </ScrollView>
+          </View>
+
           <Text style={styles.h2}>The Trimurti: The Core Trinity</Text>
           <Text style={styles.h3}>Brahma - The Creator</Text>
           <Text style={styles.p}>
@@ -114,6 +136,44 @@ export default function GodsAndGodessesScreen() {
             sectionY.current['feminine'] = e.nativeEvent.layout.y;
           }}
         >
+          {/* Divine Feminine Image Slider */}
+          <View style={styles.imageSliderContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.imageSliderContent}
+            >
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Lakshmi.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Saraswati.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Parvati.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Durga.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Kali.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Sita.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Radha.jpg')} 
+                style={styles.sectionImage} 
+              />
+            </ScrollView>
+          </View>
+
           <Text style={styles.h2}>The Divine Feminine: Major Goddesses and Shakti</Text>
           <Text style={styles.h3}>Lakshmi - Goddess of Wealth and Prosperity</Text>
           <Text style={styles.p}>
@@ -151,6 +211,52 @@ export default function GodsAndGodessesScreen() {
             sectionY.current['regional'] = e.nativeEvent.layout.y;
           }}
         >
+          {/* Regional Goddesses Image Slider */}
+          <View style={styles.imageSliderContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.imageSliderContent}
+            >
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Ganga.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Yamuna.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Annapurna.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Bhumi.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Chandi.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Ambika.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Gayatri.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Bagalamukhi.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Bhuvaneshwari.jpg')} 
+                style={styles.sectionImage} 
+              />
+            </ScrollView>
+          </View>
+
           <Text style={styles.h2}>Regional and Specialized Goddesses</Text>
           <Text style={styles.h3}>Ganga - River Goddess</Text>
           <Text style={styles.p}>
@@ -184,10 +290,7 @@ export default function GodsAndGodessesScreen() {
           <Text style={styles.p}>
             Goddess Bagalamukhi is one of the ten Mahavidyas (great wisdom goddesses) who represents the power to control and paralyze enemies. She is depicted holding the tongue of a demon, symbolizing control over negative speech and harmful forces.
           </Text>
-          <Text style={styles.h3}>Tara - The Star Goddess</Text>
-          <Text style={styles.p}>
-            Goddess Tara is another Mahavidya representing compassion and protection. She guides devotees through difficulties like a guiding star. Tara is particularly revered in tantric traditions and represents the divine mother who saves her children from danger.
-          </Text>
+
           <Text style={styles.h3}>Bhuvaneshwari - Goddess of the Universe</Text>
           <Text style={styles.p}>
             Goddess Bhuvaneshwari represents the divine mother as the ruler of the universe. She embodies the cosmic creative power and is depicted sitting on a lotus, symbolizing her role as the supreme creatrix of all worlds.
@@ -200,6 +303,28 @@ export default function GodsAndGodessesScreen() {
             sectionY.current['popular'] = e.nativeEvent.layout.y;
           }}
         >
+          {/* Popular Deities Image Slider */}
+          <View style={styles.imageSliderContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.imageSliderContent}
+            >
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Ganesha.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Krishna.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Hanuman.jpg')} 
+                style={styles.sectionImage} 
+              />
+            </ScrollView>
+          </View>
+
           <Text style={styles.h2}>Beloved Popular Deities</Text>
           <Text style={styles.h3}>Ganesha - The Remover of Obstacles</Text>
           <Text style={styles.p}>
@@ -221,6 +346,36 @@ export default function GodsAndGodessesScreen() {
             sectionY.current['vedic'] = e.nativeEvent.layout.y;
           }}
         >
+          {/* Vedic Deities Image Slider */}
+          <View style={styles.imageSliderContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.imageSliderContent}
+            >
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Surya.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/IndraDev.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/AgniDev.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/VayuDev.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/VarunDev.jpg')} 
+                style={styles.sectionImage} 
+              />
+            </ScrollView>
+          </View>
+
           <Text style={styles.h2}>Vedic Solar and Cosmic Deities</Text>
           <Text style={styles.h3}>Surya - The Sun God</Text>
           <Text style={styles.p}>
@@ -250,6 +405,36 @@ export default function GodsAndGodessesScreen() {
             sectionY.current['secondary'] = e.nativeEvent.layout.y;
           }}
         >
+          {/* Secondary Deities Image Slider */}
+          <View style={styles.imageSliderContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.imageSliderContent}
+            >
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Kuber.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Kartikeya.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Kamadeva.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Dhanvantari.jpg')} 
+                style={styles.sectionImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Vishvakarma.jpg')} 
+                style={styles.sectionImage} 
+              />
+            </ScrollView>
+          </View>
+
           <Text style={styles.h2}>Important Secondary Deities</Text>
           <Text style={styles.h3}>Kubera - God of Wealth</Text>
           <Text style={styles.p}>
@@ -295,12 +480,43 @@ export default function GodsAndGodessesScreen() {
             sectionY.current['couples'] = e.nativeEvent.layout.y;
           }}
         >
+          {/* Divine Couples Image Slider */}
+          <View style={styles.imageSliderContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.imageSliderContent}
+            >
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Shiv-Parvati.jpg')} 
+                style={styles.coupleImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Vishnu-Lakshmi.jpg')} 
+                style={styles.coupleImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Rama-Sita.jpg')} 
+                style={styles.coupleImage} 
+              />
+              <Image 
+                source={require('@/assets/images/GodsandGoddessesImages/Radha_Krishna_at_Iskcon_Vrindavan.jpg')} 
+                style={styles.coupleImage} 
+              />
+            </ScrollView>
+          </View>
+          
           <Text style={styles.h2}>Divine Couples and Their Significance</Text>
+          <Text style={styles.p}>
+            Divine couples in Hinduism represent the perfect balance of masculine and feminine energies, each embodying complementary aspects of the divine:
+          </Text>
           <Text style={styles.li}>• Shiva-Parvati: Consciousness and creative energy</Text>
           <Text style={styles.li}>• Vishnu-Lakshmi: Preservation and prosperity</Text>
-          <Text style={styles.li}>• Brahma-Saraswati: Creation and knowledge</Text>
           <Text style={styles.li}>• Rama-Sita: Dharma and virtue</Text>
           <Text style={styles.li}>• Krishna-Radha: Divine love and devotion</Text>
+          <Text style={styles.p}>
+            These divine unions symbolize the fundamental principle that creation and cosmic order require both masculine and feminine principles working in harmony.
+          </Text>
         </View>
 
         <View
@@ -425,6 +641,25 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginLeft: 8,
     marginBottom: 2,
+  },
+
+  imageSliderContainer: {
+    marginBottom: 16,
+  },
+  imageSliderContent: {
+    paddingHorizontal: 4,
+  },
+  coupleImage: {
+    width: 120,
+    height: 80,
+    borderRadius: 8,
+    marginHorizontal: 4,
+  },
+  sectionImage: {
+    width: 120,
+    height: 80,
+    borderRadius: 8,
+    marginHorizontal: 4,
   },
 });
 

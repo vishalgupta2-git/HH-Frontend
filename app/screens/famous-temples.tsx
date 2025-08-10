@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking, Image } from 'react-native';
 
 export const options = { headerShown: false };
 
@@ -105,17 +105,32 @@ export default function FamousTemplesScreen() {
           <Text style={styles.h2}>The Most Visited Sacred Sites</Text>
 
           <Text style={styles.h3}>Tirupati Balaji Temple - The Crown Jewel of Pilgrimage</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/Balaji Image.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>
             The Venkateswara Temple at Tirumala stands as the most visited Hindu temple in the world, attracting 30,000-40,000 visitors daily and up to 75,000 on New Year's Day. Located in the hills of Tirumala in Andhra Pradesh, this temple dedicated to Lord Venkateswara (a form of Vishnu) receives 30-40 million visitors annually, making it not just India's busiest temple but potentially the most visited religious site globally.[1][2]
           </Text>
           <Text style={styles.p}>The temple sits atop seven hills representing the seven heads of Adisesha, the cosmic serpent on which Vishnu rests. Devotees believe that Venkateswara appeared on earth to save mankind from the trials of Kali Yuga, making this pilgrimage especially significant for spiritual seekers.[1]</Text>
 
           <Text style={styles.h3}>Shirdi Sai Baba Temple - Universal Spiritual Center</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/SaiBaba.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>
             The Sri Sai Baba Temple in Shirdi, Maharashtra attracts over 60,000 devotees daily, with numbers reaching 2-3 lakh on special occasions. This temple, built in 1922, honors Sai Baba of Shirdi, a spiritual master revered across religious boundaries. The temple receives more than 30 million devotees annually, making it one of the world's top pilgrimage destinations and India's second-richest temple.[1]
           </Text>
 
           <Text style={styles.h3}>Ayodhya Ram Janmabhoomi - The Sacred Birthplace</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/Ram Mandir.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>
             The newly inaugurated Ram Mandir in Ayodhya represents one of the most significant recent developments in Hindu temple architecture. Consecrated on January 22, 2024, this temple is believed to be located at Ram Janmabhoomi, the birthplace of Lord Rama. Projections suggest it will receive 50 million visitors annually, potentially making it the world's top pilgrimage site.[1]
           </Text>
@@ -125,10 +140,34 @@ export default function FamousTemplesScreen() {
         <View style={styles.card} onLayout={(e) => (sectionY.current['charDham'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h2}>The Sacred Char Dham Circuit</Text>
           <Text style={styles.h3}>Jagannath Temple, Puri - The Lord of the Universe</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/JagannathPuri.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>The Jagannath Temple in Puri, Odisha represents one of the four sacred Char Dham sites and houses the famous wooden idols of Lord Jagannath (Krishna), Balabhadra, and Subhadra. The temple is renowned for its annual Rath Yatra (chariot festival).[1]</Text>
+          
           <Text style={styles.h3}>Kashi Vishwanath Temple - The Eternal City's Heart</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/KashiVishwanath.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>The Kashi Vishwanath Temple in Varanasi holds special significance as one of the twelve sacred Jyotirlingas dedicated to Lord Shiva. Located in the ancient holy city on the banks of the Ganges, this temple recorded 3.35 lakh pilgrims on January 1, 2023.[1]</Text>
+          
           <Text style={styles.h3}>Badrinath and Kedarnath - Himalayan Sacred Heights</Text>
+          <View style={styles.imageRow}>
+            <Image 
+              source={require('@/assets/images/FamousTempleImages/BadrinathDham.jpg')} 
+              style={styles.halfImage}
+              resizeMode="cover"
+            />
+            <Image 
+              source={require('@/assets/images/FamousTempleImages/KedarnathDham.jpg')} 
+              style={styles.halfImage}
+              resizeMode="cover"
+            />
+          </View>
           <Text style={styles.p}>Badrinath Temple sits at 10,400 feet above sea level in the Garhwal Himalayas, positioned between the Nar and Narayan mountain ranges with the magnificent Neelkanth peak as backdrop. Kedarnath Temple serves both as a Char Dham site and one of the twelve Jyotirlingas.[1][3]</Text>
         </View>
 
@@ -136,10 +175,25 @@ export default function FamousTemplesScreen() {
         <View style={styles.card} onLayout={(e) => (sectionY.current['architectural'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h2}>Architectural Marvels and Cultural Treasures</Text>
           <Text style={styles.h3}>Meenakshi Amman Temple - South Indian Splendor</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/MeenakshiAmmannTemple.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>The Meenakshi Amman Temple in Madurai exemplifies the pinnacle of South Indian temple architecture. This 17th-century complex features 12 towering gopurams adorned with over a thousand statues. The temple's Thousand Pillared Hall now houses the Temple Art Museum, while the famous musical pillars produce different notes when struck.[4]</Text>
           <Text style={styles.h3}>Konark Sun Temple - Architectural Wonder</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/KonarkSunTemple.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>The Konark Sun Temple stands as a UNESCO World Heritage Site designed as a massive stone chariot dedicated to Surya (the Sun God), showcasing intricate carvings and precise astronomical alignments.</Text>
           <Text style={styles.h3}>Khajuraho Temples - Artistic Excellence</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/Khajuraho.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>The Khajuraho temple complex represents medieval Indian temple architecture at its finest, featuring intricate carvings and sculptures that celebrate life in all its forms. These 10th-11th century temples demonstrate sophisticated artistic traditions.[5]</Text>
         </View>
 
@@ -147,10 +201,25 @@ export default function FamousTemplesScreen() {
         <View style={styles.card} onLayout={(e) => (sectionY.current['jyotirlingas'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h2}>Sacred Jyotirlingas - Shiva's Divine Light</Text>
           <Text style={styles.h3}>Somnath Temple - The Eternal Shrine</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/SomnathTemple.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>Somnath Temple in Gujarat stands as the first among the Jyotirlingas, representing Shiva's eternal and indestructible nature. Despite being destroyed and rebuilt multiple times, it symbolizes the undying nature of faith.[1]</Text>
           <Text style={styles.h3}>Mahakaleshwar Temple - The Time Lord</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/MahaKaleshwar.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>Mahakaleshwar Temple in Ujjain is unique as the only south-facing Jyotirlinga and is famous for its Bhasma Aarti ceremony. The temple represents Shiva as Mahakaal, the lord of time and death.[1]</Text>
           <Text style={styles.h3}>Mallikarjuna Temple - Divine Union</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/Mallikarjuna.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>Mallikarjuna Temple at Srisailam signifies the divine union of Shiva and Parvati, serving as both a Jyotirlinga and a Shakti Peetha.[1]</Text>
         </View>
 
@@ -171,8 +240,18 @@ export default function FamousTemplesScreen() {
         <View style={styles.card} onLayout={(e) => (sectionY.current['unique'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h2}>Unique and Rare Temples</Text>
           <Text style={styles.h3}>Brahma Temple, Pushkar - The Creator's Rare Shrine</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/BrahmaTemplePushkar.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>The Brahma Temple in Pushkar, Rajasthan represents one of the world's few temples dedicated to Lord Brahma. This 14th-century structure features a distinctive red pinnacle and vibrant blue-painted pillars. Literature suggests Sage Vishwamitra built the original structure.[3]</Text>
           <Text style={styles.h3}>Vaishno Devi Temple - The Divine Mother's Abode</Text>
+          <Image 
+            source={require('@/assets/images/FamousTempleImages/VaishnoDevi.jpg')} 
+            style={styles.templeImage}
+            resizeMode="cover"
+          />
           <Text style={styles.p}>Vaishno Devi Temple in Jammu & Kashmir requires pilgrims to trek 12 kilometers from Katra base camp to reach the sacred cave at 5,200 feet. The main deity appears as three natural rock formations representing different aspects of the Divine Mother.[3]</Text>
         </View>
 
@@ -258,4 +337,22 @@ const styles = StyleSheet.create({
   dropdownCard: { width: '100%', backgroundColor: '#fff', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 12 },
   dropdownItem: { paddingVertical: 12 },
   dropdownItemText: { fontSize: 16, color: '#333' },
+  templeImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  imageRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  halfImage: {
+    width: '48%',
+    height: 150,
+    borderRadius: 10,
+  },
 });
