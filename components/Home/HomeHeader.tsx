@@ -32,14 +32,16 @@ export default function HomeHeader({
   showDailyPujaButton = true, 
   onSearchChange, 
   showSearchBar = true,
-  enableSpiritualSearch = false 
+  enableSpiritualSearch = false,
+  showTopicDropdown = true
 }: { 
   searchPlaceholder?: string, 
   extraContent?: ReactNode, 
   showDailyPujaButton?: boolean, 
   onSearchChange?: (query: string) => void, 
   showSearchBar?: boolean,
-  enableSpiritualSearch?: boolean
+  enableSpiritualSearch?: boolean,
+  showTopicDropdown?: boolean
 }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [userName, setUserName] = useState('');
@@ -286,7 +288,7 @@ export default function HomeHeader({
       )}
       
       {/* Topic Dropdown */}
-      {enableSpiritualSearch && (
+      {enableSpiritualSearch && showTopicDropdown && (
         <View style={styles.topicDropdownContainer}>
           <TouchableOpacity
             activeOpacity={0.8}
