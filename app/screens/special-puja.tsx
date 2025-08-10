@@ -174,21 +174,38 @@ export default function SpecialPujaScreen() {
     <View style={styles.container}>
       <HomeHeader 
         searchPlaceholder="Search for Special Pujas" 
-        showDailyPujaButton={false} 
-        onSearchChange={setSearchQuery}
-                 extraContent={
+        showDailyPujaButton={false}
+        showSearchBar={false}
+        extraContent={
            <View style={styles.filterContainer}>
+             {/* Search Input */}
+             <View style={styles.searchInputContainer}>
+               <TextInput
+                 style={styles.searchInput}
+                 placeholder="Search for pujas, details, or categories..."
+                 placeholderTextColor="#666"
+                 value={searchQuery}
+                 onChangeText={setSearchQuery}
+               />
+               <MaterialCommunityIcons 
+                 name="magnify" 
+                 size={20} 
+                 color="#666" 
+                 style={styles.searchIcon}
+               />
+             </View>
+             
              <TouchableOpacity 
                style={styles.filterDropdown}
                onPress={() => setFilterDropdownOpen(!filterDropdownOpen)}
              >
-                               <Text style={styles.filterDropdownText}>
-                  {selectedFilter === 'puja-for' ? 'Puja for' : 
-                   selectedFilter === 'upcoming' ? 'Upcoming' :
-                   selectedFilter === 'individual' ? 'Individual' :
-                   selectedFilter === 'couple' ? 'Couples' :
-                   selectedFilter === 'family' ? 'Families' : 'Puja for'}
-                </Text>
+               <Text style={styles.filterDropdownText}>
+                 {selectedFilter === 'puja-for' ? 'Puja for' : 
+                  selectedFilter === 'upcoming' ? 'Upcoming' :
+                  selectedFilter === 'individual' ? 'Individual' :
+                  selectedFilter === 'couple' ? 'Couples' :
+                  selectedFilter === 'family' ? 'Families' : 'Puja for'}
+               </Text>
                <MaterialCommunityIcons 
                  name={filterDropdownOpen ? "chevron-up" : "chevron-down"} 
                  size={20} 
@@ -196,80 +213,80 @@ export default function SpecialPujaScreen() {
                />
              </TouchableOpacity>
              
-                           {filterDropdownOpen && (
-                <View style={styles.filterDropdownModal}>
-                  <TouchableOpacity 
-                    style={[styles.filterDropdownItem, styles.filterDropdownItemDisabled]}
-                    disabled={true}
-                  >
-                    <Text style={styles.filterDropdownItemTextDisabled}>Puja for</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.filterDropdownItem}
-                    onPress={() => {
-                      setSelectedFilter(selectedFilter === 'upcoming' ? 'puja-for' : 'upcoming');
-                      setFilterDropdownOpen(false);
-                    }}
-                  >
-                    <MaterialCommunityIcons name="star" size={16} color="#666" />
-                    <Text style={styles.filterDropdownItemText}>Upcoming</Text>
-                    {selectedFilter === 'upcoming' && (
-                      <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
-                    )}
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.filterDropdownItem}
-                    onPress={() => {
-                      setSelectedFilter(selectedFilter === 'individual' ? 'puja-for' : 'individual');
-                      setFilterDropdownOpen(false);
-                    }}
-                  >
-                    <MaterialCommunityIcons name="account" size={16} color="#666" />
-                    <Text style={styles.filterDropdownItemText}>Individual</Text>
-                    {selectedFilter === 'individual' && (
-                      <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
-                    )}
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.filterDropdownItem}
-                    onPress={() => {
-                      setSelectedFilter(selectedFilter === 'couple' ? 'puja-for' : 'couple');
-                      setFilterDropdownOpen(false);
-                    }}
-                  >
-                    <Image 
-                      source={require('@/assets/images/icons/specialPujaIcons/coupleIcon.png')}
-                      style={{ width: 16, height: 16 }}
-                      resizeMode="contain"
-                    />
-                    <Text style={styles.filterDropdownItemText}>Couples</Text>
-                    {selectedFilter === 'couple' && (
-                      <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
-                    )}
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={styles.filterDropdownItem}
-                    onPress={() => {
-                      setSelectedFilter(selectedFilter === 'family' ? 'puja-for' : 'family');
-                      setFilterDropdownOpen(false);
-                    }}
-                  >
-                    <Image 
-                      source={require('@/assets/images/icons/specialPujaIcons/FamilyIcon.png')}
-                      style={{ width: 16, height: 16 }}
-                      resizeMode="contain"
-                    />
-                    <Text style={styles.filterDropdownItemText}>Families</Text>
-                    {selectedFilter === 'family' && (
-                      <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
-                    )}
-                  </TouchableOpacity>
-                </View>
-              )}
+             {filterDropdownOpen && (
+               <View style={styles.filterDropdownModal}>
+                 <TouchableOpacity 
+                   style={[styles.filterDropdownItem, styles.filterDropdownItemDisabled]}
+                   disabled={true}
+                 >
+                   <Text style={styles.filterDropdownItemTextDisabled}>Puja for</Text>
+                 </TouchableOpacity>
+                 
+                 <TouchableOpacity 
+                   style={styles.filterDropdownItem}
+                   onPress={() => {
+                     setSelectedFilter(selectedFilter === 'upcoming' ? 'puja-for' : 'upcoming');
+                     setFilterDropdownOpen(false);
+                   }}
+                 >
+                   <MaterialCommunityIcons name="star" size={16} color="#666" />
+                   <Text style={styles.filterDropdownItemText}>Upcoming</Text>
+                   {selectedFilter === 'upcoming' && (
+                     <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                   )}
+                 </TouchableOpacity>
+                 
+                 <TouchableOpacity 
+                   style={styles.filterDropdownItem}
+                   onPress={() => {
+                     setSelectedFilter(selectedFilter === 'individual' ? 'puja-for' : 'individual');
+                     setFilterDropdownOpen(false);
+                   }}
+                 >
+                   <MaterialCommunityIcons name="account" size={16} color="#666" />
+                   <Text style={styles.filterDropdownItemText}>Individual</Text>
+                   {selectedFilter === 'individual' && (
+                     <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                   )}
+                 </TouchableOpacity>
+                 
+                 <TouchableOpacity 
+                   style={styles.filterDropdownItem}
+                   onPress={() => {
+                     setSelectedFilter(selectedFilter === 'couple' ? 'puja-for' : 'couple');
+                     setFilterDropdownOpen(false);
+                   }}
+                 >
+                   <Image 
+                     source={require('@/assets/images/icons/specialPujaIcons/coupleIcon.png')}
+                     style={{ width: 16, height: 16 }}
+                     resizeMode="contain"
+                   />
+                   <Text style={styles.filterDropdownItemText}>Couples</Text>
+                   {selectedFilter === 'couple' && (
+                     <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                   )}
+                 </TouchableOpacity>
+                 
+                 <TouchableOpacity 
+                   style={styles.filterDropdownItem}
+                   onPress={() => {
+                     setSelectedFilter(selectedFilter === 'family' ? 'puja-for' : 'family');
+                     setFilterDropdownOpen(false);
+                   }}
+                 >
+                   <Image 
+                     source={require('@/assets/images/icons/specialPujaIcons/FamilyIcon.png')}
+                     style={{ width: 16, height: 16 }}
+                     resizeMode="contain"
+                   />
+                   <Text style={styles.filterDropdownItemText}>Families</Text>
+                   {selectedFilter === 'family' && (
+                     <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                   )}
+                 </TouchableOpacity>
+               </View>
+             )}
            </View>
          }
       />
@@ -279,7 +296,12 @@ export default function SpecialPujaScreen() {
         {loading ? (
           <Text style={styles.loadingText}>Loading...</Text>
         ) : filteredPujas.length === 0 ? (
-          <Text style={styles.noDataText}>No special pujas found matching your criteria</Text>
+          <Text style={styles.noDataText}>
+            {searchQuery.trim() || selectedFilter !== 'puja-for' 
+              ? 'No special pujas found matching your current filters. Try adjusting your search or filters.'
+              : 'No special pujas found. Please check the database.'
+            }
+          </Text>
         ) : (
           filteredPujas.map((puja, idx) => {
             // Additional safety check
@@ -755,6 +777,26 @@ const styles = StyleSheet.create({
       position: 'relative',
       width: '82%',
       alignSelf: 'center',
+    },
+    searchInputContainer: {
+      position: 'relative',
+      marginBottom: 16,
+    },
+    searchInput: {
+      backgroundColor: '#fff',
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: '#e0e0e0',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      paddingRight: 40,
+      fontSize: 14,
+      color: '#333',
+    },
+    searchIcon: {
+      position: 'absolute',
+      right: 12,
+      top: 12,
     },
     filterDropdown: {
       flexDirection: 'row',

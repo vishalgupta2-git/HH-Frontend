@@ -156,7 +156,24 @@ export default function ProfessionalPujaScreen() {
   };
 
   const iconRowAndDropdown = (
-    <View style={styles.iconRowTight}>
+    <View style={styles.filterContainer}>
+      {/* Search Input */}
+      <View style={styles.searchInputContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search for pujas, deities, or purposes..."
+          placeholderTextColor="#666"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <MaterialCommunityIcons 
+          name="magnify" 
+          size={20} 
+          color="#666" 
+          style={styles.searchIcon}
+        />
+      </View>
+      
       <View style={styles.deityDropdownWrapper}>
         <TouchableOpacity
           style={styles.deityDropdown}
@@ -239,9 +256,9 @@ export default function ProfessionalPujaScreen() {
         (puja.details && safeString(puja.details).toLowerCase().includes(q)) ||
         (puja.mainDeity && safeString(puja.mainDeity).toLowerCase().includes(q)) ||
         (puja.purpose && safeString(puja.purpose).toLowerCase().includes(q)) ||
-        (typeof puja.days === 'number' && safeString(puja.days).toLowerCase().includes(q)) ||
-        (typeof puja.hours === 'number' && safeString(puja.hours).toLowerCase().includes(q)) ||
-        (typeof puja.price === 'number' && safeString(puja.price).toLowerCase().includes(q))
+        (puja.days && safeString(puja.days).toLowerCase().includes(q)) ||
+        (puja.hours && safeString(puja.hours).toLowerCase().includes(q)) ||
+        (puja.price && safeString(puja.price).toLowerCase().includes(q))
       );
     }
     
@@ -250,14 +267,19 @@ export default function ProfessionalPujaScreen() {
 
   return (
     <View style={styles.container}>
-      <HomeHeader searchPlaceholder="Search for Pujas" extraContent={iconRowAndDropdown} showDailyPujaButton={false} onSearchChange={setSearchQuery} />
+      <HomeHeader searchPlaceholder="Search for Pujas" extraContent={iconRowAndDropdown} showDailyPujaButton={false} showSearchBar={false} />
       {/* Puja List */}
       <ScrollView style={styles.content}>
         <Text style={styles.sectionHeader}>Puja Library</Text>
         {loading ? (
           <Text style={styles.loadingText}>Loading...</Text>
         ) : filteredPujas.length === 0 ? (
-          <Text style={styles.noDataText}>No pujas found matching your criteria</Text>
+          <Text style={styles.noDataText}>
+            {searchQuery.trim() || selectedDeity 
+              ? 'No pujas found matching your current filters. Try adjusting your search or deity selection.'
+              : 'No pujas found. Please check the database.'
+            }
+          </Text>
         ) : (
                      filteredPujas.map((puja, idx) => {
              // Additional safety check
@@ -811,5 +833,34 @@ const styles = StyleSheet.create({
     marginTop: 10,
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    marginTop: 10,
+    marginBottom: 15,
+  },
+  searchInputContainer: {
+    position: 'relative',
+    flex: 1,
+    marginRight: 10,
+  },
+  searchInput: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingRight: 40,
+    fontSize: 14,
+    color: '#333',
+  },
+  searchIcon: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
   },
 }); 
