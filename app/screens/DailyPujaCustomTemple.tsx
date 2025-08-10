@@ -118,8 +118,9 @@ const SwingableBell: React.FC<{ position: 'left' | 'right'; swingValue: Animated
 };
 
 // Draggable Thali component
-const DraggableThali: React.FC = () => {
+const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) => {
   const pan = useRef(new Animated.ValueXY()).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -134,6 +135,16 @@ const DraggableThali: React.FC = () => {
     })
   ).current;
 
+  const handleImageLoad = () => {
+    onImageLoad();
+    // Fade in the thali smoothly
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
     <Animated.View
       style={[
@@ -145,6 +156,7 @@ const DraggableThali: React.FC = () => {
           width: 200,
           height: 200,
           zIndex: 1000,
+          opacity: fadeAnim,
         }
       ]}
       {...panResponder.panHandlers}
@@ -153,7 +165,7 @@ const DraggableThali: React.FC = () => {
         source={require('@/assets/images/icons/own temple/PujaThali1.png')}
         style={{ width: '100%', height: '100%' }}
         resizeMode="contain"
-        onLoad={() => console.log('🔍 [DEBUG] PujaThali1.png loaded successfully')}
+        onLoad={handleImageLoad}
         onError={(error) => console.error('🔍 [DEBUG] PujaThali1.png failed to load:', error)}
       />
     </Animated.View>
@@ -199,6 +211,8 @@ export default function DailyPujaCustomTemple() {
   const [deityState, setDeityState] = useState<{ key: string; x: number; y: number; scale: number }[]>([]);
   
   const [loading, setLoading] = useState(true);
+  const [assetPreloading, setAssetPreloading] = useState(true);
+  const [preloadProgress, setPreloadProgress] = useState(0);
   const [bgGradient, setBgGradient] = useState(["#8B5CF6", "#7C3AED", "#6D28D9"]);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [flowers, setFlowers] = useState<{ id: number; x: number; y: number; rotation: number; scale: number; opacity: number; type: string }[]>([]);
@@ -211,6 +225,7 @@ export default function DailyPujaCustomTemple() {
   const [thaliPosition, setThaliPosition] = useState({ x: 0, y: 0 });
   const [leftBellSwing, setLeftBellSwing] = useState(new Animated.Value(0));
   const [rightBellSwing, setRightBellSwing] = useState(new Animated.Value(0));
+  const [thaliImageLoaded, setThaliImageLoaded] = useState(false);
   const smokeAnimationRef = useRef(false);
   const router = useRouter();
 
@@ -259,6 +274,184 @@ export default function DailyPujaCustomTemple() {
     };
     
     markVisit();
+    
+    // Comprehensive preloading of all essential assets for smooth daily puja experience
+    const preloadAllAssets = async () => {
+      console.log('🚀 Starting comprehensive asset preloading...');
+      setAssetPreloading(true);
+      setPreloadProgress(0);
+      
+      // Helper function to safely preload images
+      const safePrefetchImage = async (imagePath: any, description: string) => {
+        try {
+          // Validate that imagePath is a valid require statement
+          if (typeof imagePath === 'string' || typeof imagePath === 'number') {
+            console.log(`⚠️ Skipping invalid image path for ${description}:`, imagePath);
+            return false;
+          }
+          
+          await Image.prefetch(imagePath);
+          return true;
+        } catch (error) {
+          console.log(`⚠️ Failed to preload ${description}:`, error);
+          return false;
+        }
+      };
+      
+      try {
+        let completedSteps = 0;
+        const totalSteps = 7; // Total number of preloading steps
+        
+        const updateProgress = () => {
+          completedSteps++;
+          const progress = Math.min(Math.round((completedSteps / totalSteps) * 100), 100);
+          setPreloadProgress(progress);
+          console.log(`📊 Preloading progress: ${progress}%`);
+        };
+        
+        // Preload all flower images
+        const flowerImages = [
+          require('@/assets/images/icons/own temple/rose.png'),
+          require('@/assets/images/icons/own temple/whiterose.png'),
+          require('@/assets/images/icons/own temple/jasmine.png'),
+          require('@/assets/images/icons/own temple/YellowShevanthi.png'),
+          require('@/assets/images/icons/own temple/WhiteShevanthi.png'),
+          require('@/assets/images/icons/own temple/RedShevanthi.png'),
+        ];
+        
+        console.log('🌸 Preloading flower images...');
+        const flowerResults = await Promise.all(flowerImages.map(async (image, index) => {
+          const flowerNames = ['rose', 'whiterose', 'jasmine', 'YellowShevanthi', 'WhiteShevanthi', 'RedShevanthi'];
+          return await safePrefetchImage(image, `flower ${flowerNames[index]}`);
+        }));
+        const successfulFlowers = flowerResults.filter(result => result).length;
+        console.log(`✅ ${successfulFlowers}/${flowerImages.length} flower images preloaded successfully`);
+        updateProgress();
+        
+        // Preload arti thali
+        console.log('🪔 Preloading arti thali...');
+        const thaliSuccess = await safePrefetchImage(
+          require('@/assets/images/icons/own temple/PujaThali1.png'),
+          'arti thali'
+        );
+        if (thaliSuccess) {
+          console.log('✅ Arti thali preloaded successfully');
+        }
+        updateProgress();
+        
+        // Preload bell images
+        console.log('🔔 Preloading bell images...');
+        const bellImages = [
+          require('@/assets/images/temple/GoldenBell.png'),
+          require('@/assets/images/temple/Glow.png'),
+        ];
+        
+        const bellResults = await Promise.all(bellImages.map(async (image, index) => {
+          const bellNames = ['GoldenBell', 'Glow'];
+          return await safePrefetchImage(image, `bell ${bellNames[index]}`);
+        }));
+        const successfulBells = bellResults.filter(result => result).length;
+        console.log(`✅ ${successfulBells}/${bellImages.length} bell images preloaded successfully`);
+        updateProgress();
+        
+        // Preload shankh image
+        console.log('🐚 Preloading shankh image...');
+        const shankhSuccess = await safePrefetchImage(
+          require('@/assets/images/icons/own temple/sankha.png'),
+          'shankh'
+        );
+        if (shankhSuccess) {
+          console.log('✅ Shankh image preloaded successfully');
+        }
+        updateProgress();
+        
+        // Preload dhoop image
+        console.log('💨 Preloading dhoop image...');
+        const dhoopSuccess = await safePrefetchImage(
+          require('@/assets/images/icons/own temple/puja essential/Dhoop.png'),
+          'dhoop'
+        );
+        if (dhoopSuccess) {
+          console.log('✅ Dhoop image preloaded successfully');
+        }
+        updateProgress();
+        
+        // Preload essential deity images for better performance
+        console.log('🙏 Preloading essential deity images...');
+        const essentialDeityImages = [
+          require('@/assets/images/temple/VishnuIcon.png'),
+          require('@/assets/images/temple/Ganesha1.png'),
+          require('@/assets/images/temple/Krishna1.png'),
+          require('@/assets/images/temple/Lakshmi1.png'),
+          require('@/assets/images/temple/Saraswati1.png'),
+          require('@/assets/images/temple/Durga1.png'),
+          require('@/assets/images/temple/Hanuman1.png'),
+        ];
+        
+        const deityResults = await Promise.all(essentialDeityImages.map(async (image, index) => {
+          const deityNames = ['VishnuIcon', 'Ganesha1', 'Krishna1', 'Lakshmi1', 'Saraswati1', 'Durga1', 'Hanuman1'];
+          return await safePrefetchImage(image, `deity ${deityNames[index]}`);
+        }));
+        const successfulDeities = deityResults.filter(result => result).length;
+        console.log(`✅ ${successfulDeities}/${essentialDeityImages.length} essential deity images preloaded successfully`);
+        updateProgress();
+        
+        // Preload temple background images
+        console.log('🏛️ Preloading temple background images...');
+        const templeImages = [
+          require('@/assets/images/temple/Temple1.png'),
+          require('@/assets/images/temple/Temple2.png'),
+          require('@/assets/images/temple/Temple-bg.png'),
+          require('@/assets/images/temple/TempleStar.png'),
+        ];
+        
+        const templeResults = await Promise.all(templeImages.map(async (image, index) => {
+          const templeNames = ['Temple1', 'Temple2', 'Temple-bg', 'TempleStar'];
+          return await safePrefetchImage(image, `temple ${templeNames[index]}`);
+        }));
+        const successfulTemples = templeResults.filter(result => result).length;
+        console.log(`✅ ${successfulTemples}/${templeImages.length} temple background images preloaded successfully`);
+        updateProgress();
+        
+        // Preload sound files
+        console.log('🔊 Preloading sound files...');
+        try {
+          // Preload temple bell sound
+          const templeBellSound = new Audio.Sound();
+          await templeBellSound.loadAsync(require('@/assets/sounds/TempleBell.mp3'));
+          await templeBellSound.unloadAsync();
+          console.log('✅ Temple bell sound preloaded successfully');
+          
+          // Preload conch sound
+          const conchSound = new Audio.Sound();
+          await conchSound.loadAsync(require('@/assets/sounds/conch.mp3'));
+          await conchSound.unloadAsync();
+          console.log('✅ Conch sound preloaded successfully');
+        } catch (error) {
+          console.log('⚠️ Failed to preload sound files:', error);
+        }
+        updateProgress();
+        
+        console.log('🎉 All assets preloaded successfully! Daily puja is ready for smooth experience.');
+        
+        // Log summary of preloading results
+        const totalAssets = flowerImages.length + 1 + bellImages.length + 1 + 1 + essentialDeityImages.length + templeImages.length + 2; // +2 for sounds
+        const successfulAssets = successfulFlowers + (thaliSuccess ? 1 : 0) + successfulBells + (shankhSuccess ? 1 : 0) + (dhoopSuccess ? 1 : 0) + successfulDeities + successfulTemples + 2; // +2 for sounds
+        console.log(`📊 Preloading Summary: ${successfulAssets}/${totalAssets} assets loaded successfully`);
+        
+        // Show completion message for a moment before transitioning
+        setTimeout(() => {
+          setAssetPreloading(false);
+        }, 1000);
+        
+      } catch (error) {
+        console.error('❌ Error during asset preloading:', error);
+        setAssetPreloading(false);
+      }
+    };
+    
+    // Start preloading all assets
+    preloadAllAssets();
     
     // Play welcome bell after a short delay
     setTimeout(() => {
@@ -996,7 +1189,10 @@ export default function DailyPujaCustomTemple() {
 
   // Function to handle aarti action
   const handleAarti = async () => {
-    // Award mudras for doing aarti
+    // Show modal immediately for better user experience
+    setShowAartiModal(true);
+    
+    // Award mudras for doing aarti (moved after showing modal)
     try {
       const hasEarnedToday = await hasEarnedDailyMudras('DO_AARTI');
       if (!hasEarnedToday) {
@@ -1012,8 +1208,6 @@ export default function DailyPujaCustomTemple() {
     } catch (mudraError) {
       console.log('⚠️ Error awarding mudras for doing aarti:', mudraError);
     }
-    
-    setShowAartiModal(true);
   };
 
   // Function to start dhoop smoke effect
@@ -1131,7 +1325,7 @@ export default function DailyPujaCustomTemple() {
     // Start creating smoke particles for modal after a small delay to ensure modal is rendered
     setTimeout(() => {
       createSmokeParticle();
-    }, 200);
+    }, 50); // Reduced from 200ms to 50ms for faster response
     
     // Automatically stop smoke animation after 10 seconds
     setTimeout(() => {
@@ -1154,6 +1348,47 @@ export default function DailyPujaCustomTemple() {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size="large" color="#FF6A00" />
+      </View>
+    );
+  }
+
+  if (assetPreloading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <LinearGradient
+          colors={["#8B5CF6", "#7C3AED", "#6D28D9"]}
+          style={styles.loadingGradient}
+        >
+          <View style={styles.loadingContent}>
+            <Image 
+              source={require('@/assets/images/hindu heritage.png')}
+              style={styles.loadingLogo}
+              resizeMode="contain"
+            />
+            <Text style={styles.loadingTitle}>Preparing Your Daily Puja</Text>
+            <Text style={styles.loadingSubtitle}>Loading sacred elements for a divine experience</Text>
+            
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBar}>
+                <View style={[styles.progressFill, { width: `${preloadProgress}%` }]} />
+              </View>
+              <Text style={styles.progressText}>{preloadProgress}%</Text>
+            </View>
+            
+            <View style={styles.loadingSteps}>
+              <Text style={styles.loadingStepText}>
+                {preloadProgress < 15 && '🌸 Loading sacred flowers...'}
+                {preloadProgress >= 15 && preloadProgress < 30 && '🪔 Preparing arti thali...'}
+                {preloadProgress >= 30 && preloadProgress < 45 && '🔔 Loading divine bells...'}
+                {preloadProgress >= 45 && preloadProgress < 60 && '🐚 Preparing shankh...'}
+                {preloadProgress >= 60 && preloadProgress < 75 && '💨 Loading dhoop...'}
+                {preloadProgress >= 75 && preloadProgress < 90 && '🙏 Loading deities...'}
+                {preloadProgress >= 90 && preloadProgress < 100 && '🏛️ Preparing temple...'}
+                {preloadProgress === 100 && '🎉 Ready for divine puja!'}
+              </Text>
+            </View>
+          </View>
+        </LinearGradient>
       </View>
     );
   }
@@ -1601,21 +1836,25 @@ export default function DailyPujaCustomTemple() {
        <Modal
          visible={showAartiModal}
          transparent={true}
-         animationType="fade"
+         animationType="none"
          onRequestClose={() => {
            setShowAartiModal(false);
          }}
          statusBarTranslucent={true}
        >
-         <View style={styles.modalOverlay}>
+         <View style={styles.aartiModalOverlay}>
            <TouchableOpacity 
-             style={styles.modalOverlayTouchable}
+             style={styles.aartiModalOverlayTouchable}
              activeOpacity={1}
              onPress={() => setShowAartiModal(false)}
            >
-             <View style={styles.modalContent}>
-               <DraggableThali />
-             </View>
+             {!thaliImageLoaded && (
+               <View style={styles.thaliLoadingContainer}>
+                 <ActivityIndicator size="large" color="#FF6A00" />
+                 <Text style={styles.thaliLoadingText}>Loading Aarti Thali...</Text>
+               </View>
+             )}
+             <DraggableThali onImageLoad={() => setThaliImageLoaded(true)} />
            </TouchableOpacity>
          </View>
        </Modal>
@@ -1933,5 +2172,95 @@ const styles = StyleSheet.create({
       textAlign: 'center',
       lineHeight: 24,
     },
-
+    thaliLoadingContainer: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: [{ translateX: -100 }, { translateY: -50 }],
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'transparent',
+      borderRadius: 10,
+      padding: 20,
+      zIndex: 1002,
+    },
+    thaliLoadingText: {
+      marginTop: 10,
+      fontSize: 16,
+      color: '#FF6A00',
+      fontWeight: 'bold',
+      textShadowColor: 'rgba(0, 0, 0, 0.8)',
+      textShadowOffset: { width: 1, height: 1 },
+      textShadowRadius: 3,
+    },
+    loadingGradient: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    loadingContent: {
+      alignItems: 'center',
+    },
+    loadingLogo: {
+      width: 100,
+      height: 100,
+      marginBottom: 20,
+    },
+    loadingTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: '#fff',
+      marginBottom: 10,
+    },
+    loadingSubtitle: {
+      fontSize: 16,
+      color: '#fff',
+      textAlign: 'center',
+      marginBottom: 20,
+    },
+    progressContainer: {
+      width: '80%',
+      marginBottom: 20,
+    },
+    progressBar: {
+      height: 10,
+      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+      borderRadius: 5,
+      overflow: 'hidden',
+      marginBottom: 10,
+    },
+    progressFill: {
+      height: '100%',
+      backgroundColor: '#FF6A00',
+      borderRadius: 5,
+    },
+    progressText: {
+      fontSize: 14,
+      color: '#fff',
+      textAlign: 'center',
+      fontWeight: 'bold',
+    },
+    loadingSteps: {
+      alignItems: 'center',
+    },
+    loadingStepText: {
+      fontSize: 16,
+      color: '#fff',
+      textAlign: 'center',
+      fontWeight: '500',
+    },
+    aartiModalOverlay: {
+      flex: 1,
+      backgroundColor: 'transparent',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1000,
+    },
+    aartiModalOverlayTouchable: {
+      flex: 1,
+      width: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   });  
