@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState, useEffect } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking, TextInput } from 'react-native';
 import HighlightedText from '@/components/Home/HighlightedText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -28,6 +28,10 @@ export default function HolyBooksScreen() {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownLabel, setDropdownLabel] = useState('Topic');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{section: string, text: string, index: number, sectionKey: string}>>([]);
+  const [currentResultIndex, setCurrentResultIndex] = useState(-1);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   // Check for search context when component mounts
   useEffect(() => {
@@ -49,6 +53,111 @@ export default function HolyBooksScreen() {
 
     checkSearchContext();
   }, []);
+
+  const performSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setCurrentResultIndex(-1);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const results: Array<{section: string, text: string, index: number, sectionKey: string}> = [];
+    const searchTerm = query.toLowerCase();
+
+    // Search through all sections
+    sections.forEach(section => {
+      const sectionElement = sectionY.current[section.key];
+      if (sectionElement !== undefined) {
+        // Search through the actual text content for this section
+        const sectionText = getSectionText(section.key);
+        if (sectionText && sectionText.toLowerCase().includes(searchTerm)) {
+          results.push({
+            section: section.title,
+            text: `Found "${query}" in ${section.title}`,
+            index: results.length,
+            sectionKey: section.key
+          });
+        }
+      }
+    });
+
+    setSearchResults(results);
+    setCurrentResultIndex(results.length > 0 ? 0 : -1);
+    setShowSearchResults(results.length > 0);
+  };
+
+  // Helper function to get text content for each section
+  const getSectionText = (sectionKey: string): string => {
+    switch (sectionKey) {
+      case 'intro':
+        return 'Hinduism boasts one of the world\'s most extensive and ancient collections of sacred literature, encompassing thousands of texts that have been preserved and transmitted across generations. These texts form the foundation of Hindu philosophy, spirituality, and cultural practices, offering guidance for every aspect of human life.';
+      case 'twoTier':
+        return 'Hindu sacred literature is traditionally classified into two main categories: Shruti (that which is heard) and Smriti (that which is remembered). Shruti texts are considered divinely revealed and include the Vedas, Upanishads, and Brahmanas. Smriti texts are human compositions that interpret and expand upon the Shruti teachings.';
+      case 'epics':
+        return 'The Mahabharata and Ramayana are the two great epics of Hinduism, each containing profound spiritual teachings embedded within their narrative structures. These epics have shaped Hindu culture and philosophy for thousands of years and continue to inspire millions of people worldwide.';
+      case 'gita':
+        return 'The Bhagavad Gita, often called the "Song of the Lord," is one of the most important texts in Hinduism. It presents a dialogue between Lord Krishna and Arjuna on the battlefield of Kurukshetra, addressing fundamental questions about duty, righteousness, and the nature of reality.';
+      case 'ramcharit':
+        return 'Ramcharitmanas, written by Tulsidas, is a retelling of the Ramayana in the Awadhi language. This text has become one of the most popular and accessible versions of the Ramayana story, particularly in North India.';
+      case 'puranas':
+        return 'The Puranas are a collection of ancient texts that contain mythological stories, genealogies, and philosophical teachings. There are eighteen major Puranas, each focusing on different aspects of Hindu cosmology and theology.';
+      case 'additional':
+        return 'Beyond the major texts, Hinduism includes numerous other sacred writings such as the Agamas, Tantras, and various commentaries by ancient and medieval scholars. These texts provide additional perspectives on Hindu philosophy and practice.';
+      case 'cultural':
+        return 'Hindu sacred literature has had a profound impact on Indian culture, influencing art, music, literature, and social practices. These texts continue to provide guidance for contemporary Hindu communities worldwide.';
+      case 'modern':
+        return 'In the modern era, Hindu sacred texts have gained global recognition and are studied by scholars and spiritual seekers from diverse backgrounds. Their universal themes of dharma, karma, and spiritual liberation continue to resonate with people across cultures.';
+      default:
+        return '';
+    }
+  };
+
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    setSearchHighlight(text); // Set the highlight text
+    performSearch(text);
+  };
+
+  const handleNextResult = () => {
+    if (currentResultIndex < searchResults.length - 1) {
+      const newIndex = currentResultIndex + 1;
+      setCurrentResultIndex(newIndex);
+      navigateToSearchResult(newIndex);
+    }
+  };
+
+  const handlePreviousResult = () => {
+    if (currentResultIndex > 0) {
+      const newIndex = currentResultIndex - 1;
+      setCurrentResultIndex(newIndex);
+      navigateToSearchResult(newIndex);
+    }
+  };
+
+  const navigateToSearchResult = (resultIndex: number) => {
+    if (resultIndex >= 0 && resultIndex < searchResults.length) {
+      const result = searchResults[resultIndex];
+      const sectionYPosition = sectionY.current[result.sectionKey];
+      
+      if (sectionYPosition !== undefined) {
+        requestAnimationFrame(() => {
+          scrollRef.current?.scrollTo({ 
+            y: Math.max(0, sectionYPosition - 8), 
+            animated: true 
+          });
+        });
+      }
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setCurrentResultIndex(-1);
+    setShowSearchResults(false);
+    setSearchHighlight(''); // Clear the highlight
+  };
 
   const handleSelect = (key: string) => {
     setDropdownOpen(false);
@@ -75,14 +184,56 @@ export default function HolyBooksScreen() {
     <View style={styles.root}>
       <HomeHeader
         showDailyPujaButton={false}
-        searchPlaceholder="Search Gita, Ramayan, Mahabharat, Puranas..."
+        searchPlaceholder="Search for Holy Books"
         enableSpiritualSearch={true}
+        showSearchBar={false}
+        showTopicDropdown={false}
         extraContent={
           <>
+            {/* Custom Search Box - Inside the gradient */}
+            <View style={styles.searchInputContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search through Holy Books content..."
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                value={searchQuery}
+                onChangeText={handleSearch}
+              />
+              
+              {/* Navigation controls inside search box */}
+              {showSearchResults && searchResults.length > 0 && (
+                <View style={styles.searchNavigationInline}>
+                  <Text style={styles.resultsCount}>
+                    {currentResultIndex + 1}/{searchResults.length}
+                  </Text>
+                  <TouchableOpacity 
+                    onPress={handlePreviousResult}
+                    disabled={currentResultIndex === 0}
+                    style={[styles.navButtonInline, currentResultIndex === 0 && styles.navButtonDisabled]}
+                  >
+                    <Text style={[styles.navButtonTextInline, currentResultIndex === 0 && styles.navButtonTextDisabled]}>‹</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    onPress={handleNextResult}
+                    disabled={currentResultIndex === searchResults.length - 1}
+                    style={[styles.navButtonInline, currentResultIndex === searchResults.length - 1 && styles.navButtonDisabled]}
+                  >
+                    <Text style={[styles.navButtonTextInline, currentResultIndex === searchResults.length - 1 && styles.navButtonTextDisabled]}>›</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+                  <Text style={styles.clearButtonText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setDropdownOpen(true)}
-              style={styles.dropdownTrigger}
+              style={[styles.dropdownTrigger, { marginTop: 15 }]}
             >
               <Text style={styles.dropdownText}>{dropdownLabel}</Text>
               <Text style={styles.dropdownChevron}>▾</Text>
@@ -340,7 +491,7 @@ const styles = StyleSheet.create({
     color: '#1a73e8',
     textDecorationLine: 'underline',
   },
-  dropdownTrigger: {
+  searchInputContainer: {
     width: '88%',
     height: 44,
     flexDirection: 'row',
@@ -353,13 +504,73 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginTop: 6,
   },
-  dropdownText: {
-    color: '#fff',
+  searchInput: {
+    flex: 1,
+    height: 44,
     fontSize: 16,
+    color: '#fff',
+  },
+  clearButton: {
+    padding: 8,
+  },
+  clearButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  searchNavigationInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 8,
+  },
+  resultsCount: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '500',
+    marginRight: 4,
+  },
+  navButtonInline: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navButtonDisabled: {
+    backgroundColor: '#CCC',
+  },
+  navButtonTextInline: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  navButtonTextDisabled: {
+    color: '#999',
+  },
+  dropdownTrigger: {
+    width: '88%',
+    height: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 6,
+  },
+  dropdownText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
   },
   dropdownChevron: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#666',
+    fontSize: 20,
   },
   dropdownOverlay: {
     flex: 1,
@@ -371,15 +582,29 @@ const styles = StyleSheet.create({
   dropdownCard: {
     width: '100%',
     backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    borderRadius: 8,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
   },
   dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   dropdownItemText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
   },
 });

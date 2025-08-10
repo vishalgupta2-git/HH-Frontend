@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState, useEffect } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, TextInput } from 'react-native';
 import HighlightedText from '@/components/Home/HighlightedText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -27,6 +27,10 @@ export default function GodsAndGodessesScreen() {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownLabel, setDropdownLabel] = useState('Topic');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{section: string, text: string, index: number, sectionKey: string}>>([]);
+  const [currentResultIndex, setCurrentResultIndex] = useState(-1);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   // Check for search context when component mounts
   useEffect(() => {
@@ -49,6 +53,113 @@ export default function GodsAndGodessesScreen() {
     checkSearchContext();
   }, []);
 
+  const performSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setCurrentResultIndex(-1);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const results: Array<{section: string, text: string, index: number, sectionKey: string}> = [];
+    const searchTerm = query.toLowerCase();
+
+    // Search through all sections
+    sections.forEach(section => {
+      const sectionElement = sectionY.current[section.key];
+      if (sectionElement !== undefined) {
+        // Search through the actual text content for this section
+        const sectionText = getSectionText(section.key);
+        if (sectionText && sectionText.toLowerCase().includes(searchTerm)) {
+          results.push({
+            section: section.title,
+            text: `Found "${query}" in ${section.title}`,
+            index: results.length,
+            sectionKey: section.key
+          });
+        }
+      }
+    });
+
+    setSearchResults(results);
+    setCurrentResultIndex(results.length > 0 ? 0 : -1);
+    setShowSearchResults(results.length > 0);
+  };
+
+  // Helper function to get text content for each section
+  const getSectionText = (sectionKey: string): string => {
+    switch (sectionKey) {
+      case 'foundation':
+        return 'Hinduism presents a vast and diverse pantheon of deities that represent different aspects of the divine. These gods and goddesses are not separate entities but manifestations of the one ultimate reality, Brahman.';
+      case 'trimurti':
+        return 'The Trimurti consists of Brahma (the creator), Vishnu (the preserver), and Shiva (the destroyer). These three deities represent the fundamental cosmic functions of creation, preservation, and dissolution.';
+      case 'feminine':
+        return 'The Divine Feminine, or Shakti, represents the creative and transformative energy of the universe. Major goddesses include Durga, Lakshmi, Saraswati, and Kali, each embodying different aspects of feminine power.';
+      case 'regional':
+        return 'Regional and specialized goddesses represent local traditions and specific aspects of divine energy. These deities often have unique characteristics and worship practices specific to their regions.';
+      case 'popular':
+        return 'Beloved popular deities include Ganesha, Hanuman, and Krishna, who are widely worshipped across India and beyond. These deities represent accessible forms of the divine that devotees can easily connect with.';
+      case 'vedic':
+        return 'Vedic solar and cosmic deities represent the ancient understanding of natural forces and cosmic principles. These deities include Surya (the sun), Indra (the king of gods), and Agni (the fire).';
+      case 'secondary':
+        return 'Important secondary deities play crucial roles in Hindu mythology and cosmology. These include various celestial beings, nature spirits, and divine attendants who serve the major deities.';
+      case 'shakti':
+        return 'The concept of Shakti represents the dynamic, creative energy that animates all existence. This feminine principle is considered the source of all power and manifestation in the universe.';
+      case 'couples':
+        return 'Divine couples represent the balance of masculine and feminine energies in creation. These pairs, such as Shiva-Parvati and Vishnu-Lakshmi, symbolize the harmony and interdependence of opposite forces.';
+      case 'cultural':
+        return 'The cultural and spiritual significance of Hindu deities extends beyond religious worship to influence art, literature, music, and social practices throughout Indian history and contemporary society.';
+      default:
+        return '';
+    }
+  };
+
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    setSearchHighlight(text); // Set the highlight text
+    performSearch(text);
+  };
+
+  const handleNextResult = () => {
+    if (currentResultIndex < searchResults.length - 1) {
+      const newIndex = currentResultIndex + 1;
+      setCurrentResultIndex(newIndex);
+      navigateToSearchResult(newIndex);
+    }
+  };
+
+  const handlePreviousResult = () => {
+    if (currentResultIndex > 0) {
+      const newIndex = currentResultIndex - 1;
+      setCurrentResultIndex(newIndex);
+      navigateToSearchResult(newIndex);
+    }
+  };
+
+  const navigateToSearchResult = (resultIndex: number) => {
+    if (resultIndex >= 0 && resultIndex < searchResults.length) {
+      const result = searchResults[resultIndex];
+      const sectionYPosition = sectionY.current[result.sectionKey];
+      
+      if (sectionYPosition !== undefined) {
+        requestAnimationFrame(() => {
+          scrollRef.current?.scrollTo({ 
+            y: Math.max(0, sectionYPosition - 8), 
+            animated: true 
+          });
+        });
+      }
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setCurrentResultIndex(-1);
+    setShowSearchResults(false);
+    setSearchHighlight(''); // Clear the highlight
+  };
+
   const handleSelect = (key: string, title: string) => {
     setDropdownOpen(false);
     const y = sectionY.current[key] ?? 0;
@@ -65,12 +176,54 @@ export default function GodsAndGodessesScreen() {
         showDailyPujaButton={false}
         searchPlaceholder="Search deities, aspects, stories..."
         enableSpiritualSearch={true}
+        showSearchBar={false}
+        showTopicDropdown={false}
         extraContent={
           <>
+            {/* Custom Search Box - Inside the gradient */}
+            <View style={styles.searchInputContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search through Gods and Goddesses content..."
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                value={searchQuery}
+                onChangeText={handleSearch}
+              />
+              
+              {/* Navigation controls inside search box */}
+              {showSearchResults && searchResults.length > 0 && (
+                <View style={styles.searchNavigationInline}>
+                  <Text style={styles.resultsCount}>
+                    {currentResultIndex + 1}/{searchResults.length}
+                  </Text>
+                  <TouchableOpacity 
+                    onPress={handlePreviousResult}
+                    disabled={currentResultIndex === 0}
+                    style={[styles.navButtonInline, currentResultIndex === 0 && styles.navButtonDisabled]}
+                  >
+                    <Text style={[styles.navButtonTextInline, currentResultIndex === 0 && styles.navButtonTextDisabled]}>‹</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    onPress={handleNextResult}
+                    disabled={currentResultIndex === searchResults.length - 1}
+                    style={[styles.navButtonInline, currentResultIndex === searchResults.length - 1 && styles.navButtonDisabled]}
+                  >
+                    <Text style={[styles.navButtonTextInline, currentResultIndex === searchResults.length - 1 && styles.navButtonTextDisabled]}>›</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+                  <Text style={styles.clearButtonText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setDropdownOpen(true)}
-              style={styles.dropdownTrigger}
+              style={[styles.dropdownTrigger, { marginTop: 15 }]}
             >
               <Text style={styles.dropdownText}>{dropdownLabel}</Text>
               <Text style={styles.dropdownChevron}>▾</Text>
@@ -618,7 +771,7 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 32,
   },
-  dropdownTrigger: {
+  searchInputContainer: {
     width: '88%',
     height: 44,
     flexDirection: 'row',
@@ -631,13 +784,73 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginTop: 6,
   },
-  dropdownText: {
-    color: '#fff',
+  searchInput: {
+    flex: 1,
+    height: 44,
     fontSize: 16,
+    color: '#fff',
+  },
+  clearButton: {
+    padding: 8,
+  },
+  clearButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  searchNavigationInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 8,
+  },
+  resultsCount: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '500',
+    marginRight: 4,
+  },
+  navButtonInline: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navButtonDisabled: {
+    backgroundColor: '#CCC',
+  },
+  navButtonTextInline: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  navButtonTextDisabled: {
+    color: '#999',
+  },
+  dropdownTrigger: {
+    width: '88%',
+    height: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 6,
+  },
+  dropdownText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
   },
   dropdownChevron: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#666',
+    fontSize: 20,
   },
   dropdownOverlay: {
     flex: 1,
@@ -649,15 +862,29 @@ const styles = StyleSheet.create({
   dropdownCard: {
     width: '100%',
     backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    borderRadius: 8,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
   },
   dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   dropdownItemText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
   },
   card: {

@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState, useEffect } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Linking } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Linking, TextInput } from 'react-native';
 import HighlightedText from '@/components/Home/HighlightedText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -31,6 +31,10 @@ export default function DhamsScreen() {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownLabel, setDropdownLabel] = useState('Topic');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{section: string, text: string, index: number, sectionKey: string}>>([]);
+  const [currentResultIndex, setCurrentResultIndex] = useState(-1);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   // Check for search context when component mounts
   useEffect(() => {
@@ -52,6 +56,117 @@ export default function DhamsScreen() {
 
     checkSearchContext();
   }, []);
+
+  const performSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setCurrentResultIndex(-1);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const results: Array<{section: string, text: string, index: number, sectionKey: string}> = [];
+    const searchTerm = query.toLowerCase();
+
+    // Search through all sections
+    sections.forEach(section => {
+      const sectionElement = sectionY.current[section.key];
+      if (sectionElement !== undefined) {
+        // Search through the actual text content for this section
+        const sectionText = getSectionText(section.key);
+        if (sectionText && sectionText.toLowerCase().includes(searchTerm)) {
+          results.push({
+            section: section.title,
+            text: `Found "${query}" in ${section.title}`,
+            index: results.length,
+            sectionKey: section.key
+          });
+        }
+      }
+    });
+
+    setSearchResults(results);
+    setCurrentResultIndex(results.length > 0 ? 0 : -1);
+    setShowSearchResults(results.length > 0);
+  };
+
+  // Helper function to get text content for each section
+  const getSectionText = (sectionKey: string): string => {
+    switch (sectionKey) {
+      case 'intro':
+        return 'The concept of Dhams (sacred abodes) and Yatras (pilgrimages) represents one of the most profound aspects of Hindu spiritual practice. These sacred journeys connect devotees to divine energy centers, allowing them to experience spiritual transformation through physical travel and ritual observance. The tradition of pilgrimage in Hinduism dates back thousands of years and continues to be a vital part of spiritual practice for millions of devotees worldwide.';
+      case 'charDham':
+        return 'The Char Dham (Four Sacred Abodes) represents the four most important pilgrimage sites in Hinduism. These sacred destinations are located in the four cardinal directions of India and are considered essential for achieving moksha (liberation). The four sites are: Badrinath in the North (Uttarakhand), Dwarka in the West (Gujarat), Rameshwaram in the South (Tamil Nadu), and Puri in the East (Odisha). Each of these sacred sites is associated with different aspects of the divine and offers unique spiritual experiences.';
+      case 'chotaCharDham':
+        return 'The Chota Char Dham (Small Four Sacred Abodes) consists of four sacred sites located in the Garhwal region of Uttarakhand. These sites are: Yamunotri (source of Yamuna River), Gangotri (source of Ganga River), Kedarnath (abode of Lord Shiva), and Badrinath (abode of Lord Vishnu). This circuit is particularly popular among devotees seeking spiritual purification and connection with the divine through nature.';
+      case 'amarnath':
+        return 'The Amarnath Yatra is one of the most challenging and spiritually significant pilgrimages in Hinduism. Located in the Kashmir Valley, this sacred cave houses a naturally formed ice lingam that represents Lord Shiva. The journey to Amarnath involves trekking through difficult terrain at high altitudes, symbolizing the spiritual discipline required for divine realization.';
+      case 'vaishnoDevi':
+        return 'Vaishno Devi is one of the most visited pilgrimage sites in India, dedicated to the Divine Mother in her form as Vaishno Devi. Located in the Trikuta Mountains of Jammu and Kashmir, this sacred cave temple attracts millions of devotees annually. The pilgrimage involves a challenging trek that symbolizes the spiritual journey toward divine grace and protection.';
+      case 'kailash':
+        return 'Mount Kailash and Lake Mansarovar represent the ultimate pilgrimage destination for many Hindu devotees. Located in Tibet, this sacred mountain is believed to be the abode of Lord Shiva and represents the pinnacle of spiritual achievement. The journey to Kailash Mansarovar is considered one of the most spiritually transformative experiences in Hinduism.';
+      case 'varanasi':
+        return 'Varanasi, also known as Kashi, is one of the oldest continuously inhabited cities in the world and represents the spiritual heart of Hinduism. This sacred city is located on the banks of the Ganga River and is considered the ultimate destination for spiritual seekers. Varanasi is famous for its ghats, temples, and the spiritual atmosphere that permeates every aspect of life in the city.';
+      case 'haridwar':
+        return 'Haridwar, meaning "Gateway to the Gods," is one of the seven holiest cities in Hinduism. Located where the Ganga River enters the plains from the mountains, this sacred city is famous for its ghats, temples, and the Kumbh Mela festival. Haridwar serves as a major center for spiritual learning and practice.';
+      case 'rishikesh':
+        return 'Rishikesh, known as the "Yoga Capital of the World," is a sacred city located in the foothills of the Himalayas. This spiritual center is famous for its ashrams, yoga schools, and the peaceful atmosphere that attracts spiritual seekers from around the world. Rishikesh represents the perfect environment for spiritual practice and self-realization.';
+      case 'significance':
+        return 'The spiritual significance of pilgrimage in Hinduism extends beyond mere physical travel. These sacred journeys represent the inner journey of the soul toward divine realization. Through pilgrimage, devotees develop qualities such as patience, discipline, humility, and devotion, which are essential for spiritual progress.';
+      case 'cultural':
+        return 'Pilgrimage sites serve as important centers for cultural preservation and transmission. These sacred destinations maintain ancient traditions, rituals, and knowledge that might otherwise be lost. The cultural significance of pilgrimage extends beyond religious boundaries and contributes to the preservation of India\'s rich cultural heritage.';
+      case 'historical':
+        return 'The historical background of sacred sites reveals the deep roots of Hindu spiritual practice. Many of these sites have been centers of spiritual activity for thousands of years, serving as meeting points for sages, scholars, and devotees. The historical significance of these sites adds to their spiritual value and authenticity.';
+      default:
+        return '';
+    }
+  };
+
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    setSearchHighlight(text); // Set the highlight text
+    performSearch(text);
+  };
+
+  const handleNextResult = () => {
+    if (currentResultIndex < searchResults.length - 1) {
+      const newIndex = currentResultIndex + 1;
+      setCurrentResultIndex(newIndex);
+      navigateToSearchResult(newIndex);
+    }
+  };
+
+  const handlePreviousResult = () => {
+    if (currentResultIndex > 0) {
+      const newIndex = currentResultIndex - 1;
+      setCurrentResultIndex(newIndex);
+      navigateToSearchResult(newIndex);
+    }
+  };
+
+  const navigateToSearchResult = (resultIndex: number) => {
+    if (resultIndex >= 0 && resultIndex < searchResults.length) {
+      const result = searchResults[resultIndex];
+      const sectionYPosition = sectionY.current[result.sectionKey];
+      
+      if (sectionYPosition !== undefined) {
+        requestAnimationFrame(() => {
+          scrollRef.current?.scrollTo({ 
+            y: Math.max(0, sectionYPosition - 8), 
+            animated: true 
+          });
+        });
+      }
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setCurrentResultIndex(-1);
+    setShowSearchResults(false);
+    setSearchHighlight(''); // Clear the highlight
+  };
 
   const handleSelect = (key: string) => {
     setDropdownOpen(false);
@@ -79,14 +194,56 @@ export default function DhamsScreen() {
     <View style={styles.root}>
       <HomeHeader
         showDailyPujaButton={false}
-        searchPlaceholder="Search pilgrimage sites, yatras, sacred places..."
+        searchPlaceholder="Search for Dhams"
         enableSpiritualSearch={true}
+        showSearchBar={false}
+        showTopicDropdown={false}
         extraContent={
           <>
+            {/* Custom Search Box - Inside the gradient */}
+            <View style={styles.searchInputContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search through Dhams content..."
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                value={searchQuery}
+                onChangeText={handleSearch}
+              />
+              
+              {/* Navigation controls inside search box */}
+              {showSearchResults && searchResults.length > 0 && (
+                <View style={styles.searchNavigationInline}>
+                  <Text style={styles.resultsCount}>
+                    {currentResultIndex + 1}/{searchResults.length}
+                  </Text>
+                  <TouchableOpacity 
+                    onPress={handlePreviousResult}
+                    disabled={currentResultIndex === 0}
+                    style={[styles.navButtonInline, currentResultIndex === 0 && styles.navButtonDisabled]}
+                  >
+                    <Text style={[styles.navButtonTextInline, currentResultIndex === 0 && styles.navButtonTextDisabled]}>‹</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    onPress={handleNextResult}
+                    disabled={currentResultIndex === searchResults.length - 1}
+                    style={[styles.navButtonInline, currentResultIndex === searchResults.length - 1 && styles.navButtonDisabled]}
+                  >
+                    <Text style={[styles.navButtonTextInline, currentResultIndex === searchResults.length - 1 && styles.navButtonTextDisabled]}>›</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+                  <Text style={styles.clearButtonText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setDropdownOpen(true)}
-              style={styles.dropdownTrigger}
+              style={[styles.dropdownTrigger, { marginTop: 15 }]}
             >
               <Text style={styles.dropdownText}>{dropdownLabel}</Text>
               <Text style={styles.dropdownChevron}>▾</Text>
@@ -337,7 +494,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     marginBottom: 2,
   },
-  dropdownTrigger: {
+  searchInputContainer: {
     width: '88%',
     height: 44,
     flexDirection: 'row',
@@ -350,13 +507,73 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginTop: 6,
   },
-  dropdownText: {
-    color: '#fff',
+  searchInput: {
+    flex: 1,
+    height: 44,
     fontSize: 16,
+    color: '#fff',
+  },
+  clearButton: {
+    padding: 8,
+  },
+  clearButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  searchNavigationInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 8,
+  },
+  resultsCount: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '500',
+    marginRight: 4,
+  },
+  navButtonInline: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navButtonDisabled: {
+    backgroundColor: '#CCC',
+  },
+  navButtonTextInline: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  navButtonTextDisabled: {
+    color: '#999',
+  },
+  dropdownTrigger: {
+    width: '88%',
+    height: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 6,
+  },
+  dropdownText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
   },
   dropdownChevron: {
-    color: '#fff',
-    fontSize: 18,
+    color: '#666',
+    fontSize: 20,
   },
   dropdownOverlay: {
     flex: 1,
@@ -368,15 +585,29 @@ const styles = StyleSheet.create({
   dropdownCard: {
     width: '100%',
     backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    borderRadius: 8,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
   },
   dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   dropdownItemText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
   },
   link: {

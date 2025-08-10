@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking, Image } from 'react-native';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking, Image, TextInput } from 'react-native';
 
 export const options = { headerShown: false };
 
@@ -25,6 +25,119 @@ export default function FamousTemplesScreen() {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownLabel, setDropdownLabel] = useState('Topic');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{section: string, text: string, index: number, sectionKey: string}>>([]);
+  const [currentResultIndex, setCurrentResultIndex] = useState(-1);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchHighlight, setSearchHighlight] = useState('');
+
+  const performSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setCurrentResultIndex(-1);
+      setShowSearchResults(false);
+      setSearchHighlight('');
+      return;
+    }
+
+    const results: Array<{section: string, text: string, index: number, sectionKey: string}> = [];
+    const searchTerm = query.toLowerCase();
+
+    // Search through all sections
+    sections.forEach(section => {
+      const sectionElement = sectionY.current[section.key];
+      if (sectionElement !== undefined) {
+        // Search through the actual text content for this section
+        const sectionText = getSectionText(section.key);
+        if (sectionText && sectionText.toLowerCase().includes(searchTerm)) {
+          results.push({
+            section: section.title,
+            text: `Found "${query}" in ${section.title}`,
+            index: results.length,
+            sectionKey: section.key
+          });
+        }
+      }
+    });
+
+    setSearchResults(results);
+    setCurrentResultIndex(results.length > 0 ? 0 : -1);
+    setShowSearchResults(results.length > 0);
+    setSearchHighlight(query);
+  };
+
+  // Helper function to get text content for each section
+  const getSectionText = (sectionKey: string): string => {
+    switch (sectionKey) {
+      case 'intro':
+        return 'Hindu temples represent some of the world\'s most magnificent architectural achievements and serve as living centers of spiritual devotion, cultural preservation, and divine worship.';
+      case 'mostVisited':
+        return 'The most visited sacred sites in India attract millions of devotees annually, representing the spiritual heart of Hinduism and serving as major pilgrimage destinations.';
+      case 'charDham':
+        return 'The Char Dham circuit consists of four sacred sites located in the four corners of India, representing a complete spiritual journey that every Hindu aspires to undertake.';
+      case 'architectural':
+        return 'Architectural marvels and cultural treasures showcase the incredible skill and devotion of ancient Indian craftsmen and architects who created these magnificent structures.';
+      case 'jyotirlingas':
+        return 'Sacred Jyotirlingas represent the most sacred abodes of Lord Shiva, where the divine light of consciousness is believed to be eternally present.';
+      case 'regional':
+        return 'Regional temple treasures reflect the diverse cultural and architectural traditions of different parts of India, each with unique characteristics and significance.';
+      case 'unique':
+        return 'Unique and rare temples represent extraordinary examples of Hindu architecture and spirituality, often featuring unusual designs or special religious significance.';
+      case 'significance':
+        return 'Spiritual significance and cultural impact of Hindu temples extends beyond religious worship to influence art, literature, music, and social practices throughout Indian history.';
+      case 'pilgrimage':
+        return 'Pilgrimage traditions and modern accessibility ensure that these sacred sites remain accessible to devotees while preserving their spiritual and cultural significance.';
+      case 'conclusion':
+        return 'Famous Hindu temples continue to inspire awe and devotion, serving as living monuments to the spiritual heritage and architectural genius of ancient India.';
+      default:
+        return '';
+    }
+  };
+
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    performSearch(text);
+  };
+
+  const handleNextResult = () => {
+    if (currentResultIndex < searchResults.length - 1) {
+      const newIndex = currentResultIndex + 1;
+      setCurrentResultIndex(newIndex);
+      navigateToSearchResult(newIndex);
+    }
+  };
+
+  const handlePreviousResult = () => {
+    if (currentResultIndex > 0) {
+      const newIndex = currentResultIndex - 1;
+      setCurrentResultIndex(newIndex);
+      navigateToSearchResult(newIndex);
+    }
+  };
+
+  const navigateToSearchResult = (resultIndex: number) => {
+    if (resultIndex >= 0 && resultIndex < searchResults.length) {
+      const result = searchResults[resultIndex];
+      const sectionYPosition = sectionY.current[result.sectionKey];
+      
+      if (sectionYPosition !== undefined) {
+        requestAnimationFrame(() => {
+          scrollRef.current?.scrollTo({ 
+            y: Math.max(0, sectionYPosition - 8), 
+            animated: true 
+          });
+        });
+      }
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setSearchResults([]);
+    setCurrentResultIndex(-1);
+    setShowSearchResults(false);
+    setSearchHighlight('');
+  };
 
   const handleSelect = (key: string) => {
     setDropdownOpen(false);
@@ -63,12 +176,55 @@ export default function FamousTemplesScreen() {
       <HomeHeader
         showDailyPujaButton={false}
         searchPlaceholder="Search temples, circuits, regions..."
+        enableSpiritualSearch={true}
+        showSearchBar={false}
+        showTopicDropdown={false}
         extraContent={
           <>
+            {/* Custom Search Box - Inside the gradient */}
+            <View style={styles.searchInputContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search through Famous Temples content..."
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                value={searchQuery}
+                onChangeText={handleSearch}
+              />
+              
+              {/* Navigation controls inside search box */}
+              {showSearchResults && searchResults.length > 0 && (
+                <View style={styles.searchNavigationInline}>
+                  <Text style={styles.resultsCount}>
+                    {currentResultIndex + 1}/{searchResults.length}
+                  </Text>
+                  <TouchableOpacity 
+                    onPress={handlePreviousResult}
+                    disabled={currentResultIndex === 0}
+                    style={[styles.navButtonInline, currentResultIndex === 0 && styles.navButtonDisabled]}
+                  >
+                    <Text style={[styles.navButtonTextInline, currentResultIndex === 0 && styles.navButtonTextDisabled]}>‹</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    onPress={handleNextResult}
+                    disabled={currentResultIndex === searchResults.length - 1}
+                    style={[styles.navButtonInline, currentResultIndex === searchResults.length - 1 && styles.navButtonDisabled]}
+                  >
+                    <Text style={[styles.navButtonTextInline, currentResultIndex === searchResults.length - 1 && styles.navButtonTextDisabled]}>›</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+                  <Text style={styles.clearButtonText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setDropdownOpen(true)}
-              style={styles.dropdownTrigger}
+              style={[styles.dropdownTrigger, { marginTop: 15 }]}
             >
               <Text style={styles.dropdownText}>{dropdownLabel}</Text>
               <Text style={styles.dropdownChevron}>▾</Text>
@@ -324,6 +480,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    marginTop: 6,
+  },
+  dropdownText: { 
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333' 
+  },
+  dropdownChevron: { 
+    color: '#666',
+    fontSize: 20 
+  },
+  dropdownOverlay: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.3)', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    paddingHorizontal: 24 
+  },
+  dropdownCard: { 
+    width: '100%', 
+    backgroundColor: '#fff', 
+    borderRadius: 8, 
+    paddingVertical: 0, 
+    paddingHorizontal: 0,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 1000,
+  },
+  dropdownItem: { 
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  dropdownItemText: { 
+    fontSize: 14, 
+    color: '#333' 
+  },
+  searchInputContainer: {
+    width: '88%',
+    height: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: 'rgba(255,255,255,0.18)',
     borderRadius: 10,
     borderWidth: 1.5,
@@ -331,12 +545,51 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginTop: 6,
   },
-  dropdownText: { color: '#fff', fontSize: 16 },
-  dropdownChevron: { color: '#fff', fontSize: 18 },
-  dropdownOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24 },
-  dropdownCard: { width: '100%', backgroundColor: '#fff', borderRadius: 12, paddingVertical: 8, paddingHorizontal: 12 },
-  dropdownItem: { paddingVertical: 12 },
-  dropdownItemText: { fontSize: 16, color: '#333' },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    fontSize: 16,
+    color: '#fff',
+  },
+  clearButton: {
+    padding: 8,
+  },
+  clearButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  searchNavigationInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 8,
+  },
+  resultsCount: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '500',
+    marginRight: 4,
+  },
+  navButtonInline: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navButtonDisabled: {
+    backgroundColor: '#CCC',
+  },
+  navButtonTextInline: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  navButtonTextDisabled: {
+    color: '#999',
+  },
   templeImage: {
     width: '100%',
     height: 200,
