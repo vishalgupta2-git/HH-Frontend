@@ -60,7 +60,7 @@ export default function HomeIconGrid() {
 
 const styles = StyleSheet.create({
   gridWrapper: {
-    marginTop: -40,
+    marginTop: -90,
     alignItems: 'center',
     zIndex: 2,
   },

@@ -1,13 +1,16 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import HighlightedText from '@/components/Home/HighlightedText';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const options = { headerShown: false };
 
 export default function GodsAndGodessesScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const sectionY = useRef<{ [key: string]: number }>({});
+  const [searchHighlight, setSearchHighlight] = useState('');
 
   const sections = [
     { key: 'foundation', title: 'The Divine Foundation' },
@@ -25,6 +28,27 @@ export default function GodsAndGodessesScreen() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownLabel, setDropdownLabel] = useState('Topic');
 
+  // Check for search context when component mounts
+  useEffect(() => {
+    const checkSearchContext = async () => {
+      try {
+        const searchContext = await AsyncStorage.getItem('spiritualSearchContext');
+        if (searchContext) {
+          const context = JSON.parse(searchContext);
+          if (context.pageId === 'gods-and-godesses' && context.query) {
+            setSearchHighlight(context.query);
+            // Clear the context after using it
+            await AsyncStorage.removeItem('spiritualSearchContext');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking search context:', error);
+      }
+    };
+
+    checkSearchContext();
+  }, []);
+
   const handleSelect = (key: string, title: string) => {
     setDropdownOpen(false);
     const y = sectionY.current[key] ?? 0;
@@ -40,6 +64,7 @@ export default function GodsAndGodessesScreen() {
       <HomeHeader
         showDailyPujaButton={false}
         searchPlaceholder="Search deities, aspects, stories..."
+        enableSpiritualSearch={true}
         extraContent={
           <>
             <TouchableOpacity
@@ -70,9 +95,11 @@ export default function GodsAndGodessesScreen() {
       <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.card}>
           <Text style={styles.h1}>Hidu Gods & Goddesses</Text>
-          <Text style={styles.p}>
-            This complete guide combines all the divine deities from Hindu mythology, presenting both the major pantheon and the extensive array of specialized gods and goddesses that form the rich tapestry of Hindu theology, with enhanced focus on the divine feminine aspect.
-          </Text>
+          <HighlightedText 
+            text="This complete guide combines all the divine deities from Hindu mythology, presenting both the major pantheon and the extensive array of specialized gods and goddesses that form the rich tapestry of Hindu theology, with enhanced focus on the divine feminine aspect."
+            highlight={searchHighlight}
+            textStyle={styles.p}
+          />
         </LinearGradient>
 
         <View
@@ -82,9 +109,11 @@ export default function GodsAndGodessesScreen() {
           }}
         >
           <Text style={styles.h2}>The Divine Foundation</Text>
-          <Text style={styles.p}>
-            Hindu mythology presents one of the world's most diverse pantheons, where deities serve as accessible manifestations of the ultimate reality called Brahman. The tradition places equal importance on both masculine and feminine divine aspects, recognizing that cosmic balance requires both energies. Followers can approach divinity through multiple paths - polytheistic, pantheistic, monotheistic, monistic, or even agnostic worship.
-          </Text>
+          <HighlightedText 
+            text="Hindu mythology presents one of the world's most diverse pantheons, where deities serve as accessible manifestations of the ultimate reality called Brahman. The tradition places equal importance on both masculine and feminine divine aspects, recognizing that cosmic balance requires both energies. Followers can approach divinity through multiple paths - polytheistic, pantheistic, monotheistic, monistic, or even agnostic worship."
+            highlight={searchHighlight}
+            textStyle={styles.p}
+          />
         </View>
 
         <View

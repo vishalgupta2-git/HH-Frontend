@@ -4,15 +4,52 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { ReactNode, useState } from 'react';
 import { Modal, Platform, Pressable, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import SearchBar from './SearchBar';
+import SearchResults from './SearchResults';
+import SearchSuggestions from './SearchSuggestions';
+import { useSpiritualSearch } from '@/hooks/useSpiritualSearch';
 
 const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
 const TOP_PADDING = (Platform.OS === 'android' ? statusBarHeight : 0) + 24;
 
-export default function HomeHeader({ searchPlaceholder, extraContent, showDailyPujaButton = true, onSearchChange, showSearchBar = true }: { searchPlaceholder?: string, extraContent?: ReactNode, showDailyPujaButton?: boolean, onSearchChange?: (query: string) => void, showSearchBar?: boolean }) {
+// Topic dropdown options
+const TOPIC_OPTIONS = [
+  { key: 'puja', title: 'Puja & Rituals' },
+  { key: 'temple', title: 'Temples & Pilgrimage' },
+  { key: 'vedas', title: 'Vedas & Scriptures' },
+  { key: 'gods', title: 'Gods & Goddesses' },
+  { key: 'festivals', title: 'Festivals & Fasts' },
+  { key: 'astrology', title: 'Astrology & Vastu' },
+  { key: 'meditation', title: 'Meditation & Yoga' },
+  { key: 'mudras', title: 'Mudras & Mantras' },
+  { key: 'philosophy', title: 'Philosophy & Ethics' },
+  { key: 'history', title: 'History & Culture' }
+];
+
+export default function HomeHeader({ 
+  searchPlaceholder, 
+  extraContent, 
+  showDailyPujaButton = true, 
+  onSearchChange, 
+  showSearchBar = true,
+  enableSpiritualSearch = false 
+}: { 
+  searchPlaceholder?: string, 
+  extraContent?: ReactNode, 
+  showDailyPujaButton?: boolean, 
+  onSearchChange?: (query: string) => void, 
+  showSearchBar?: boolean,
+  enableSpiritualSearch?: boolean
+}) {
   const [modalVisible, setModalVisible] = useState(false);
-  const [search, setSearch] = useState('');
   const [userName, setUserName] = useState('');
+  const [topicDropdownOpen, setTopicDropdownOpen] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const router = useRouter();
+  
+  // Use spiritual search hook if enabled
+  const spiritualSearch = useSpiritualSearch();
 
   // Load user data when component mounts
   React.useEffect(() => {
@@ -68,6 +105,84 @@ export default function HomeHeader({ searchPlaceholder, extraContent, showDailyP
     setModalVisible(false);
   };
 
+  const handleSearch = (query: string) => {
+    console.log('🔍 HomeHeader: Search query:', query);
+    
+    // Show suggestions when typing, hide when query is empty
+    setShowSuggestions(query.length > 0);
+    
+    if (enableSpiritualSearch) {
+      spiritualSearch.handleSearch(query);
+      console.log('🔍 HomeHeader: Spiritual search enabled, calling hook');
+    }
+    onSearchChange?.(query);
+  };
+
+  const handleSearchClear = () => {
+    setShowSuggestions(false);
+    if (enableSpiritualSearch) {
+      spiritualSearch.clearSearch();
+    }
+    onSearchChange?.('');
+  };
+
+  const handleResultSelect = (result: any, matchIndex: number) => {
+    if (enableSpiritualSearch) {
+      spiritualSearch.navigateToResult(result, matchIndex);
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion: string) => {
+    console.log('🔍 HomeHeader: Suggestion selected:', suggestion);
+    setShowSuggestions(false);
+    
+    if (enableSpiritualSearch) {
+      spiritualSearch.handleSearch(suggestion);
+    }
+    onSearchChange?.(suggestion);
+  };
+
+  const handleTopicSelect = (topic: { key: string, title: string }) => {
+    setTopicDropdownOpen(false);
+    setSelectedTopic(topic.title);
+    
+    // Navigate to the appropriate screen based on topic
+    switch (topic.key) {
+      case 'puja':
+        router.push('/screens/special-puja');
+        break;
+      case 'temple':
+        router.push('/screens/famous-temples');
+        break;
+      case 'vedas':
+        router.push('/screens/vedas');
+        break;
+      case 'gods':
+        router.push('/screens/gods-and-godesses');
+        break;
+      case 'festivals':
+        router.push('/screens/fasts-and-festivals');
+        break;
+      case 'astrology':
+        router.push('/screens/astrology');
+        break;
+      case 'meditation':
+        router.push('/screens/vedas'); // Using vedas as meditation content
+        break;
+      case 'mudras':
+        router.push('/auth/mudras');
+        break;
+      case 'philosophy':
+        router.push('/screens/vedas'); // Using vedas for philosophy content
+        break;
+      case 'history':
+        router.push('/screens/holy-books'); // Using holy-books for history content
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <View style={styles.headerContainer}>
       <LinearGradient
@@ -94,31 +209,125 @@ export default function HomeHeader({ searchPlaceholder, extraContent, showDailyP
           <MaterialCommunityIcons name="translate" size={28} color="#fff" />
         </TouchableOpacity>
       </View>
-      {/* Search Bar and Button */}
+      {/* Search Bar */}
       {showSearchBar && (
         <View style={styles.searchSection}>
-          <View style={styles.searchBarContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder={searchPlaceholder || "Search for 'puja '"}
-              placeholderTextColor="#fff"
-              value={search}
-              onChangeText={(text) => {
-                setSearch(text);
-                onSearchChange?.(text);
-              }}
+          {enableSpiritualSearch ? (
+            <SearchBar
+              placeholder={searchPlaceholder || "Search spiritual content..."}
+              onSearch={handleSearch}
+              onClear={handleSearchClear}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onResultSelect={handleResultSelect}
+              searchResults={spiritualSearch.searchResults}
+              currentResultIndex={spiritualSearch.currentResultIndex}
+              totalResults={spiritualSearch.totalResults}
+              onPrevious={spiritualSearch.handlePrevious}
+              onNext={spiritualSearch.handleNext}
+              showNavigation={spiritualSearch.hasResults}
+              isSearching={spiritualSearch.isSearching}
             />
-            <TouchableOpacity style={styles.micButton}>
-              <Feather name="mic" size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
-          {showDailyPujaButton && (
-            <TouchableOpacity style={styles.dailyPujaButton} onPress={() => router.push('/screens/DailyPujaCustomTemple')}>
-              <Text style={styles.dailyPujaButtonText}>Start Your Daily Puja</Text>
-            </TouchableOpacity>
+          ) : (
+            <View style={styles.searchBarContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder={searchPlaceholder || "Search for 'puja '"}
+                placeholderTextColor="#fff"
+                value=""
+                onChangeText={handleSearch}
+              />
+              <TouchableOpacity style={styles.micButton}>
+                <Feather name="mic" size={20} color="#fff" />
+              </TouchableOpacity>
+            </View>
           )}
         </View>
       )}
+      
+      {/* Daily Puja Button - Separated from search section */}
+      {showDailyPujaButton && (
+        <View style={styles.dailyPujaButtonContainer}>
+          <TouchableOpacity style={styles.dailyPujaButton} onPress={() => router.push('/screens/DailyPujaCustomTemple')}>
+            <Text style={styles.dailyPujaButtonText}>Start Your Daily Puja</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      
+      {/* Search Suggestions Display */}
+      {enableSpiritualSearch && (
+        <SearchSuggestions
+          query={spiritualSearch.searchQuery}
+          onSuggestionSelect={handleSuggestionSelect}
+          visible={showSuggestions && !spiritualSearch.hasResults}
+        />
+      )}
+      
+      {/* Search Results Display */}
+      {enableSpiritualSearch && (
+        <>
+          {console.log('🔍 HomeHeader: SearchResults props:', {
+            results: spiritualSearch.searchResults,
+            currentResultIndex: spiritualSearch.currentResultIndex,
+            totalResults: spiritualSearch.totalResults,
+            hasResults: spiritualSearch.hasResults,
+            visible: spiritualSearch.hasResults
+          })}
+          <SearchResults
+            results={spiritualSearch.searchResults}
+            currentResultIndex={spiritualSearch.currentResultIndex}
+            totalResults={spiritualSearch.totalResults}
+            onResultSelect={handleResultSelect}
+            onPrevious={spiritualSearch.handlePrevious}
+            onNext={spiritualSearch.handleNext}
+            visible={spiritualSearch.hasResults}
+          />
+        </>
+      )}
+      
+      {/* Topic Dropdown */}
+      {enableSpiritualSearch && (
+        <View style={styles.topicDropdownContainer}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => setTopicDropdownOpen(true)}
+            style={styles.topicDropdownTrigger}
+          >
+            <Text style={styles.topicDropdownText}>
+              {selectedTopic || 'Choose a Topic'}
+            </Text>
+            <Text style={styles.topicDropdownChevron}>▾</Text>
+          </TouchableOpacity>
+          
+          <Modal 
+            visible={topicDropdownOpen} 
+            transparent 
+            animationType="fade" 
+            onRequestClose={() => setTopicDropdownOpen(false)}
+          >
+            <View style={styles.topicDropdownOverlay}>
+              <View style={styles.topicDropdownCard}>
+                {TOPIC_OPTIONS.map((topic) => (
+                  <TouchableOpacity 
+                    key={topic.key} 
+                    style={styles.topicDropdownItem} 
+                    onPress={() => handleTopicSelect(topic)}
+                  >
+                    <Text style={styles.topicDropdownItemText}>{topic.title}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity 
+                  style={[styles.topicDropdownItem, { borderTopWidth: 1, borderTopColor: '#EEE' }]} 
+                  onPress={() => setTopicDropdownOpen(false)}
+                >
+                  <Text style={[styles.topicDropdownItemText, { color: '#999' }]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      )}
+      
       {/* Extra content below search bar */}
       {extraContent && <View style={{ width: '100%', alignItems: 'center' }}>{extraContent}</View>}
       {/* Modal for options */}
@@ -241,6 +450,11 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  dailyPujaButtonContainer: {
+    width: '88%',
+    marginTop: 14,
+    alignItems: 'center',
+  },
   dailyPujaButtonText: {
     color: '#FF6A00',
     fontSize: 16,
@@ -271,6 +485,64 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 18,
     color: '#FF6A00',
+    fontWeight: 'bold',
+  },
+  topicDropdownContainer: {
+    width: '88%',
+    marginTop: 14,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  topicDropdownTrigger: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+  topicDropdownText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  topicDropdownChevron: {
+    fontSize: 20,
+    color: '#999',
+  },
+  topicDropdownOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  topicDropdownCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  topicDropdownItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
+  },
+  topicDropdownItemText: {
+    fontSize: 16,
+    color: '#333',
     fontWeight: 'bold',
   },
 }); 

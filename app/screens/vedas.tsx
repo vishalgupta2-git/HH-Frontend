@@ -1,13 +1,16 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import HighlightedText from '@/components/Home/HighlightedText';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const options = { headerShown: false };
 
 export default function VedasScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const sectionY = useRef<{ [key: string]: number }>({});
+  const [searchHighlight, setSearchHighlight] = useState('');
 
   const sections = [
     { key: 'intro', title: 'Introduction' },
@@ -25,6 +28,27 @@ export default function VedasScreen() {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownLabel, setDropdownLabel] = useState('Topic');
+
+  // Check for search context when component mounts
+  useEffect(() => {
+    const checkSearchContext = async () => {
+      try {
+        const searchContext = await AsyncStorage.getItem('spiritualSearchContext');
+        if (searchContext) {
+          const context = JSON.parse(searchContext);
+          if (context.pageId === 'vedas' && context.query) {
+            setSearchHighlight(context.query);
+            // Clear the context after using it
+            await AsyncStorage.removeItem('spiritualSearchContext');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking search context:', error);
+      }
+    };
+
+    checkSearchContext();
+  }, []);
 
   const handleSelect = (key: string) => {
     setDropdownOpen(false);
@@ -58,6 +82,7 @@ export default function VedasScreen() {
       <HomeHeader
         showDailyPujaButton={false}
         searchPlaceholder="Search Vedas, Samhitas, Upanishads..."
+        enableSpiritualSearch={false}
         extraContent={
           <>
             <TouchableOpacity
@@ -89,9 +114,11 @@ export default function VedasScreen() {
       <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop} onLayout={(e) => (sectionY.current['intro'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h1}>The Vedas: The Sacred Foundation of Hindu Knowledge</Text>
-          <Text style={styles.p}>
-            The Vedas represent the oldest and most sacred scriptures of Hinduism, forming the foundational texts that have guided Hindu spiritual and philosophical thought for millennia. These ancient Sanskrit texts constitute the earliest layer of Sanskrit literature and serve as the bedrock upon which all Hindu religious practice and philosophy is built.[1]
-          </Text>
+          <HighlightedText 
+            text="The Vedas represent the oldest and most sacred scriptures of Hinduism, forming the foundational texts that have guided Hindu spiritual and philosophical thought for millennia. These ancient Sanskrit texts constitute the earliest layer of Sanskrit literature and serve as the bedrock upon which all Hindu religious practice and philosophy is built.[1]"
+            highlight={searchHighlight}
+            textStyle={styles.p}
+          />
         </LinearGradient>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['divineNature'] = e.nativeEvent.layout.y)}>

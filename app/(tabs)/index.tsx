@@ -10,6 +10,8 @@ import { hasVisitedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUti
 import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
 import { shouldShowSpecialDaysModal } from '@/utils/bookingUtils';
 import { testSpecialDaysLogic } from '@/utils/testSpecialDays';
+import { testTextSearch } from '@/utils/testTextSearch';
+import { testSearchSuggestions } from '@/utils/testSearchSuggestions';
 
 export default function HomeScreen() {
   console.log('🔍 [DEBUG] HomeScreen: Starting...');
@@ -25,6 +27,9 @@ export default function HomeScreen() {
       try {
         // Run test to debug date logic
         testSpecialDaysLogic();
+        
+        // Test text search functionality
+        testTextSearch();
         
         // Check if user is logged in and hasn't visited daily puja today
         const hasVisitedToday = await hasVisitedDailyPujaToday();
@@ -85,7 +90,7 @@ export default function HomeScreen() {
     
     return (
     <View style={styles.root}>
-      <HomeHeader />
+      <HomeHeader enableSpiritualSearch={false} showSearchBar={false} showDailyPujaButton={true} />
       <View style={styles.section}>
         <HomeIconGrid />
       </View>
@@ -135,7 +140,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   section: {
-    marginTop: 16,
+    marginTop: 8,
   },
   referralSection: {
     marginTop: 6,

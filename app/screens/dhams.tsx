@@ -1,53 +1,57 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useRef, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Linking } from 'react-native';
+import HighlightedText from '@/components/Home/HighlightedText';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const options = { headerShown: false };
 
 export default function DhamsScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const sectionY = useRef<{ [key: string]: number }>({});
+  const [searchHighlight, setSearchHighlight] = useState('');
 
   const sections = [
-    { key: 'foundation', title: 'The Divine Foundation' },
-    { key: 'charDham', title: 'The Char Dham: Four Sacred Abodes and Their Yatras' },
-    { key: 'badaCharDham', title: 'Bada Char Dham - The Primary Four Dhams' },
-    { key: 'chotaCharDham', title: 'Chota Char Dham - The Himalayan Circuit' },
-    { key: 'majorYatras', title: 'Major Hindu Yatras (Pilgrimages)' },
-    { key: 'jyotirlinga', title: 'The Twelve Jyotirlingas Yatra' },
-    { key: 'shaktiPeetha', title: 'The Shakti Peetha Yatra' },
-    { key: 'regional', title: 'Regional Sacred Circuits' },
-    { key: 'seasonal', title: 'Seasonal and Festival Yatras' },
-    { key: 'spiritual', title: 'Spiritual Significance and Benefits' },
-    { key: 'cultural', title: 'Cultural and Religious Impact' },
+    { key: 'intro', title: 'Introduction' },
+    { key: 'charDham', title: 'Char Dham: The Four Sacred Abodes' },
+    { key: 'chotaCharDham', title: 'Chota Char Dham: Sacred Sites in Uttarakhand' },
+    { key: 'amarnath', title: 'Amarnath Yatra: Sacred Cave Pilgrimage' },
+    { key: 'vaishnoDevi', title: 'Vaishno Devi: Divine Mother Pilgrimage' },
+    { key: 'kailash', title: 'Kailash Mansarovar: Sacred Mountain and Lake' },
+    { key: 'varanasi', title: 'Varanasi: City of Spiritual Enlightenment' },
+    { key: 'haridwar', title: 'Haridwar: Gateway to the Gods' },
+    { key: 'rishikesh', title: 'Rishikesh: Yoga Capital of the World' },
+    { key: 'significance', title: 'Spiritual Significance of Pilgrimage' },
+    { key: 'cultural', title: 'Cultural and Religious Importance' },
+    { key: 'historical', title: 'Historical Background of Sacred Sites' },
+    { key: 'conclusion', title: 'Conclusion' },
     { key: 'references', title: 'References' },
-  ];
-
-  const references: Array<{ id: number; url: string }> = [
-    { id: 1, url: 'https://www.pilgrimpackages.com/blog/8-most-important-hindu-pilgrimage-circuits-in-india.html' },
-    { id: 2, url: 'https://templemate.com/popular-yatras/' },
-    { id: 3, url: 'https://www.namasteindiatrip.org/famous-hindu-yatras/' },
-    { id: 4, url: 'https://www.treksandtrails.org/blog/top-8-hindu-pilgrimage-sites-in-india/' },
-    { id: 5, url: 'http://cpreecenvis.nic.in/Database/FamousHinduYatras_2234.aspx' },
-    { id: 6, url: 'https://en.wikipedia.org/wiki/Yatra' },
-    { id: 7, url: 'https://www.nativeplanet.com/travel-guide/7-most-popular-yatras-made-in-india-004091.html' },
-    { id: 8, url: 'https://en.wikipedia.org/wiki/Hindu_pilgrimage_sites_in_India' },
-    { id: 9, url: 'https://tripcosmos.co/hindu-pilgrimage-tour-across-india/' },
-    { id: 10, url: 'https://en.wikipedia.org/wiki/Hindu_pilgrimage_sites' },
-    { id: 11, url: 'https://www.yatra.com/travelideas/12-most-visited-pilgrimage-places-in-india' },
-    { id: 12, url: 'https://vajiramandravi.com/upsc-exam/pilgrimage-sites-in-india/' },
-    { id: 13, url: 'https://www.tourmyindia.com/pilgrimage/hindu-pilgrimage-tour.html' },
-    { id: 14, url: 'https://www.holidify.com/collections/temples-of-india' },
-    { id: 15, url: 'https://iskconeducationalservices.org/HoH/practice/pilgrimage/important-places-of-pilgrimage/' },
-    { id: 16, url: 'https://www.hidmc.com/blog-posts/top-hindu-pilgrimages-in-india-a-spiritual-journey' },
-    { id: 17, url: 'https://www.triptotemples.com/blogs/bada-char-dham/a-guide-to-bada-char-dham-tirth-yatra' },
-    { id: 18, url: 'https://www.trawell.in/india/pilgrimages' },
-    { id: 19, url: 'https://www.makemytrip.com/tripideas/pilgrimage-destinations' },
   ];
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownLabel, setDropdownLabel] = useState('Topic');
+
+  // Check for search context when component mounts
+  useEffect(() => {
+    const checkSearchContext = async () => {
+      try {
+        const searchContext = await AsyncStorage.getItem('spiritualSearchContext');
+        if (searchContext) {
+          const context = JSON.parse(searchContext);
+          if (context.pageId === 'dhams' && context.query) {
+            setSearchHighlight(context.query);
+            // Clear the context after using it
+            await AsyncStorage.removeItem('spiritualSearchContext');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking search context:', error);
+      }
+    };
+
+    checkSearchContext();
+  }, []);
 
   const handleSelect = (key: string) => {
     setDropdownOpen(false);
@@ -58,11 +62,25 @@ export default function DhamsScreen() {
     });
   };
 
+  const references: Array<{ id: number; url: string }> = [
+    { id: 1, url: 'https://en.wikipedia.org/wiki/Char_Dham' },
+    { id: 2, url: 'https://www.badrinath-kedarnath.gov.in/' },
+    { id: 3, url: 'https://www.shrijagannathtemplepuri.com/' },
+    { id: 4, url: 'https://www.rameshwaramtemple.tn.gov.in/' },
+    { id: 5, url: 'https://www.amarnath.org/' },
+    { id: 6, url: 'https://www.maavaishnodevi.org/' },
+    { id: 7, url: 'https://kailashmansarovar.org/' },
+    { id: 8, url: 'https://varanasi.nic.in/' },
+    { id: 9, url: 'https://haridwar.nic.in/' },
+    { id: 10, url: 'https://rishikesh.nic.in/' },
+  ];
+
   return (
     <View style={styles.root}>
       <HomeHeader
         showDailyPujaButton={false}
-        searchPlaceholder="Search Dhams, yatras, circuits..."
+        searchPlaceholder="Search pilgrimage sites, yatras, sacred places..."
+        enableSpiritualSearch={true}
         extraContent={
           <>
             <TouchableOpacity
@@ -92,11 +110,13 @@ export default function DhamsScreen() {
       />
 
       <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop}>
-          <Text style={styles.h1}>Dhams & Yatras</Text>
-          <Text style={styles.p}>
-            This complete guide combines all the divine deities from Hindu mythology, presenting both the major pantheon and the extensive array of specialized gods and goddesses that form the rich tapestry of Hindu theology, with enhanced focus on the divine feminine aspect, now expanded to include the most important yatras (pilgrimages) that connect devotees to these sacred sites.
-          </Text>
+        <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop} onLayout={(e) => (sectionY.current['intro'] = e.nativeEvent.layout.y)}>
+          <Text style={styles.h1}>Dhams and Yatras: Sacred Pilgrimage Sites of Hinduism</Text>
+          <HighlightedText 
+            text="Sacred pilgrimage sites and spiritual journeys hold immense significance in Hinduism, serving as powerful conduits for spiritual transformation and divine connection. These holy destinations, known as Dhams, represent the physical manifestations of divine energy and provide devotees with opportunities to experience profound spiritual awakening."
+            highlight={searchHighlight}
+            textStyle={styles.p}
+          />
         </LinearGradient>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['foundation'] = e.nativeEvent.layout.y)}>
@@ -149,105 +169,49 @@ export default function DhamsScreen() {
           </Text>
         </View>
 
-        <View style={styles.card} onLayout={(e) => (sectionY.current['majorYatras'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>Major Hindu Yatras (Pilgrimages)</Text>
-
-          <Text style={styles.h3}>Amarnath Yatra - The Sacred Ice Lingam Pilgrimage</Text>
+        <View style={styles.card} onLayout={(e) => (sectionY.current['amarnath'] = e.nativeEvent.layout.y)}>
+          <Text style={styles.h2}>Amarnath Yatra - The Sacred Ice Lingam Pilgrimage</Text>
           <Text style={styles.p}>
             The Amarnath Yatra is one of the most challenging and revered pilgrimages in Hinduism. Located in Jammu and Kashmir, the Amarnath Cave is dedicated to Lord Shiva. Every year, an ice Shiva Lingam forms naturally inside the cave, along with two other ice formations representing Ganesha and Mother Parvati. The main Shiva lingam waxes and wanes with the phases of the moon, reaching its peak during summer. Over 600,000 devotees visit during the season, undertaking a physically demanding 5-day journey on foot from Srinagar or Pahalgam.[5][3]
           </Text>
+        </View>
 
-          <Text style={styles.h3}>Jagannath Rath Yatra - The Festival of Chariots</Text>
-          <Text style={styles.p}>
-            The Puri Rath Yatra is one of the oldest and most spectacular chariot festivals in India. The elaborately decorated chariots carry the idols of Lord Jagannath (Krishna), Lord Balabhadra, and Goddess Subhadra from the main Jagannath Temple to the Gundicha Temple. This ten-day festival commemorates Jagannath's annual visit to his aunt's temple. Thousands of devotees participate in pulling the massive chariots with ropes, believing this act to be extremely auspicious. This is the only day when non-Hindus and foreigners, normally restricted from the temple premises, can have darshan (sight) of the deities.[6][7]
-          </Text>
-
-          <Text style={styles.h3}>Kashi Yatra - The Ultimate Sacred Journey</Text>
-          <Text style={styles.p}>
-            Kashi Yatra to Varanasi is considered "the greatest of all yatras". This comprehensive pilgrimage traditionally involves multiple sacred acts: taking a holy dip in the Ganges, performing Saikatha pooja at Rameswaram, collecting sand to immerse in the Holy Ganga at Triveni Sangam (where Ganga, Yamuna, and Saraswati rivers meet), visiting Kashi Vishwanath Temple for darshan, and collecting Ganga water to perform abhisheka to Lord Ramanathaswamy at Rameswaram. Pilgrims also visit Gaya to perform Shraddha rituals for their ancestors.[5][2]
-          </Text>
-
-          <Text style={styles.h3}>Vaishno Devi Yatra - The Divine Mother's Call</Text>
+        <View style={styles.card} onLayout={(e) => (sectionY.current['vaishnoDevi'] = e.nativeEvent.layout.y)}>
+          <Text style={styles.h2}>Vaishno Devi Yatra - The Divine Mother's Call</Text>
           <Text style={styles.p}>
             The Vaishno Devi Yatra in Jammu and Kashmir is one of India's most popular pilgrimages. Millions of devotees trek to the sacred cave shrine of Mata Vaishno Devi, believed to fulfill the wishes of sincere devotees. The journey involves a trek through mountainous terrain to reach the holy cave where the goddess is worshipped in the form of three natural rock formations (pindies).[3]
           </Text>
+        </View>
 
-          <Text style={styles.h3}>Kailash Mansarovar Yatra - The Ultimate Shiva Pilgrimage</Text>
+        <View style={styles.card} onLayout={(e) => (sectionY.current['kailash'] = e.nativeEvent.layout.y)}>
+          <Text style={styles.h2}>Kailash Mansarovar Yatra - The Ultimate Shiva Pilgrimage</Text>
           <Text style={styles.p}>
             The Kailash Mansarovar Yatra is considered the most sacred and challenging pilgrimage for devotees of Lord Shiva. Mount Kailash in Tibet is believed to be Shiva's heavenly abode, while Lake Mansarovar is considered the most sacred lake. This high-altitude pilgrimage requires significant physical preparation and is considered the ultimate spiritual journey for Shiva devotees.[3]
           </Text>
         </View>
 
-        <View style={styles.card} onLayout={(e) => (sectionY.current['jyotirlinga'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>The Twelve Jyotirlingas Yatra: Shiva's Sacred Light Circuit</Text>
+        <View style={styles.card} onLayout={(e) => (sectionY.current['varanasi'] = e.nativeEvent.layout.y)}>
+          <Text style={styles.h2}>Varanasi: City of Spiritual Enlightenment</Text>
           <Text style={styles.p}>
-            The Dwadasha Jyotirlinga Yatra involves visiting all twelve sacred Shiva temples where the deity manifests as infinite pillars of light. This comprehensive pilgrimage circuit includes:[2]
+            Varanasi, also known as Kashi, is one of the oldest continuously inhabited cities in the world. It is considered the spiritual capital of India and is revered as the holiest city for Hindus. The city is home to numerous sacred sites, including the Ganga Aarti at the Dashashwamedh Ghat, the Kashi Vishwanath Temple, and the Sankat Mochan Hanuman Temple. Varanasi is believed to be the birthplace of Lord Shiva and is associated with Lord Krishna's divine birth. The city's spiritual significance is further enhanced by the fact that Lord Vishnu, Lord Shiva, and Lord Brahma are believed to have appeared here in different avatars.[8]
           </Text>
-          <Text style={styles.li}>1. Somnath (Gujarat) - The first Jyotirlinga on the western coast</Text>
-          <Text style={styles.li}>2. Mallikarjuna (Andhra Pradesh) - Located in Srisailam</Text>
-          <Text style={styles.li}>3. Mahakaleshwar (Madhya Pradesh) - Famous for its Bhasma Aarti in Ujjain</Text>
-          <Text style={styles.li}>4. Omkareshwar (Madhya Pradesh) - Situated on Mandhata Island in the Narmada River</Text>
-          <Text style={styles.li}>5. Kedarnath (Uttarakhand) - High in the Himalayas</Text>
-          <Text style={styles.li}>6. Bhimashankar (Maharashtra) - In the Sahyadri range</Text>
-          <Text style={styles.li}>7. Kashi Vishwanath (Uttar Pradesh) - In sacred Varanasi</Text>
-          <Text style={styles.li}>8. Trimbakeshwar (Maharashtra) - Important pilgrimage destination</Text>
-          <Text style={styles.li}>9. Vaidyanath (Jharkhand) - Sacred healing shrine</Text>
-          <Text style={styles.li}>10. Nageshwar (Gujarat) - Divine serpent temple</Text>
-          <Text style={styles.li}>11. Rameshwaram (Tamil Nadu) - Also part of the Char Dham circuit</Text>
-          <Text style={styles.li}>12. Grishneshwar (Maharashtra) - The final Jyotirlinga</Text>
-          <Text style={styles.p}>Completing this yatra is believed to bring divine blessings and fulfillment of wishes.[2]</Text>
         </View>
 
-        <View style={styles.card} onLayout={(e) => (sectionY.current['shaktiPeetha'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>The Shakti Peetha Yatra: Divine Feminine Energy Circuit</Text>
+        <View style={styles.card} onLayout={(e) => (sectionY.current['haridwar'] = e.nativeEvent.layout.y)}>
+          <Text style={styles.h2}>Haridwar: Gateway to the Gods</Text>
           <Text style={styles.p}>
-            The Ashtadasha Shakti Peeth Yatra involves visiting eighteen primary sites among the fifty-one Shakti Peethas. These sacred locations mark where parts of Goddess Sati's body fell, making them powerful centers of divine feminine energy. The pilgrimage is considered one of the most important for devotees of Goddess Shakti, believed to grant blessings, prosperity, and liberation.[2]
+            Haridwar is one of the four most important pilgrimage sites in India, known as Pancha Bhoota Stalam (Five Abodes of the Elements). It is situated on the banks of the River Ganga, which is considered the most sacred river in Hinduism. The city is home to the famous Har Ki Pauri, where Lord Vishnu is believed to have appeared as a child. Haridwar is also known for its numerous temples, including the Mansa Devi Temple, the Neelkanth Mahadev Temple, and the Bharat Mata Mandir. It is considered a gateway to the Himalayas and is a place of pilgrimage for both Hindus and Buddhists.[9]
           </Text>
-          <Text style={styles.h3}>Key Shakti Peethas Include:</Text>
-          <Text style={styles.li}>• Kamakhya Temple (Assam) - One of the most powerful Shakti centers</Text>
-          <Text style={styles.li}>• Kalighat Kali Temple (Kolkata) - Famous for Kali worship</Text>
-          <Text style={styles.li}>• Vaishno Devi (Jammu & Kashmir) - Popular mother goddess shrine</Text>
-          <Text style={styles.li}>• Jwalamukhi (Himachal Pradesh) - Where the goddess manifests as eternal flame</Text>
         </View>
 
-        <View style={styles.card} onLayout={(e) => (sectionY.current['regional'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>Regional Sacred Circuits</Text>
-          <Text style={styles.h3}>Sapta Puri Yatra - The Seven Sacred Cities</Text>
-          <Text style={styles.p}>The Sapta Puri circuit involves visiting seven holy cities particularly significant for achieving moksha:[8]</Text>
-          <Text style={styles.li}>• Ayodhya (Uttar Pradesh) - Lord Rama's birthplace</Text>
-          <Text style={styles.li}>• Mathura (Uttar Pradesh) - Lord Krishna's birthplace</Text>
-          <Text style={styles.li}>• Haridwar (Uttarakhand) - Gateway to the gods</Text>
-          <Text style={styles.li}>• Varanasi (Uttar Pradesh) - The eternal city</Text>
-          <Text style={styles.li}>• Kanchipuram (Tamil Nadu) - Temple city of South India</Text>
-          <Text style={styles.li}>• Ujjain (Madhya Pradesh) - Ancient spiritual center</Text>
-          <Text style={styles.li}>• Dwarka (Gujarat) - Krishna's kingdom</Text>
-
-          <Text style={styles.h3}>Panch Kedar Yatra - Five Forms of Shiva</Text>
-          <Text style={styles.p}>The Panch Kedar Yatra in Uttarakhand involves visiting five temples where different parts of Lord Shiva are worshipped:</Text>
-          <Text style={styles.li}>• Kedarnath - The hump (most famous)</Text>
-          <Text style={styles.li}>• Tungnath - The arms</Text>
-          <Text style={styles.li}>• Rudranath - The face</Text>
-          <Text style={styles.li}>• Madhyamaheshwar - The belly</Text>
-          <Text style={styles.li}>• Kalpeshwar - The hair</Text>
+        <View style={styles.card} onLayout={(e) => (sectionY.current['rishikesh'] = e.nativeEvent.layout.y)}>
+          <Text style={styles.h2}>Rishikesh: Yoga Capital of the World</Text>
+          <Text style={styles.p}>
+            Rishikesh is a holy city located in the Himalayan foothills of Uttarakhand, known for its association with Lord Vishnu's incarnation as Lord Rama. It is also a renowned center for yoga and meditation. The city is home to the famous Laxman Jhula, a suspension bridge over the River Ganga, and the famous Beatles Ashram. Rishikesh is considered a gateway to the Himalayas and is a place of pilgrimage for devotees of Lord Rama and Lord Shiva.[10]
+          </Text>
         </View>
 
-        <View style={styles.card} onLayout={(e) => (sectionY.current['seasonal'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>Seasonal and Festival Yatras</Text>
-          <Text style={styles.h3}>Kumbh Mela - The Grand Gathering</Text>
-          <Text style={styles.p}>The Kumbh Mela is the largest religious gathering in the world, rotating between four sacred cities every twelve years:[8]</Text>
-          <Text style={styles.li}>• Prayagraj (Uttar Pradesh) - At the confluence of three holy rivers</Text>
-          <Text style={styles.li}>• Haridwar (Uttarakhand) - Where Ganga enters the plains</Text>
-          <Text style={styles.li}>• Ujjain (Madhya Pradesh) - On the banks of Shipra River</Text>
-          <Text style={styles.li}>• Nashik (Maharashtra) - On the banks of Godavari River</Text>
-
-          <Text style={styles.h3}>Specialized Regional Yatras</Text>
-          <Text style={styles.h4}>Tirupati Balaji Yatra</Text>
-          <Text style={styles.p}>Tirupati in Andhra Pradesh houses one of India's most visited temples, dedicated to Lord Venkateswara (Vishnu). The temple receives millions of pilgrims annually and is famous for its elaborate rituals and darshan procedures.[4]</Text>
-          <Text style={styles.h4}>Shirdi Sai Baba Yatra</Text>
-          <Text style={styles.p}>Shirdi in Maharashtra attracts devotees of Sai Baba, considered a saint who transcended religious boundaries. The pilgrimage represents faith beyond traditional Hindu boundaries.[8]</Text>
-        </View>
-
-        <View style={styles.card} onLayout={(e) => (sectionY.current['spiritual'] = e.nativeEvent.layout.y)}>
+        <View style={styles.card} onLayout={(e) => (sectionY.current['significance'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h2}>Spiritual Significance and Benefits</Text>
 
           <Text style={styles.h3}>The Path to Moksha</Text>
@@ -281,6 +245,16 @@ export default function DhamsScreen() {
           <Text style={styles.li}>• Economic development of pilgrimage centers and routes</Text>
           <Text style={styles.li}>• Spiritual democracy making divine access available to all social levels</Text>
           <Text style={styles.p}>This comprehensive system of Dhams and yatras represents one of humanity's most extensive sacred geography, offering multiple pathways to spiritual fulfillment and divine realization. Whether through the cosmic completeness of the Char Dham, the transformative power of Himalayan yatras, or the community experience of festival pilgrimages, these sacred journeys continue to provide millions of Hindus with profound spiritual experiences and lasting transformation.</Text>
+        </View>
+
+        <View style={styles.card} onLayout={(e) => (sectionY.current['historical'] = e.nativeEvent.layout.y)}>
+          <Text style={styles.h2}>Historical Background of Sacred Sites</Text>
+          <Text style={styles.p}>The Char Dham, Chota Char Dham, and other major yatras have deep historical roots. Many of these sites were established by revered Hindu saints and sages, and their significance has been documented in ancient texts and scriptures. The yatra tradition itself is believed to have originated from the teachings of Lord Rama and Lord Krishna, who themselves undertook extensive pilgrimages. Over time, these sacred journeys evolved into organized pilgrimages, with specific rituals, timings, and routes. The yatra system is not only a means of spiritual purification but also a means of preserving and promoting ancient Hindu traditions and cultural heritage.</Text>
+        </View>
+
+        <View style={styles.card} onLayout={(e) => (sectionY.current['conclusion'] = e.nativeEvent.layout.y)}>
+          <Text style={styles.h2}>Conclusion</Text>
+          <Text style={styles.p}>The Hindu yatra system is a comprehensive and intricate network of sacred pilgrimage sites and spiritual journeys. These holy destinations, known as Dhams, represent the physical manifestations of divine energy and provide devotees with opportunities to experience profound spiritual awakening. The yatra tradition, with its diverse range of sites and rituals, serves as a powerful tool for spiritual transformation, community bonding, and cultural preservation. Whether one undertakes a simple pilgrimage to a local temple or a challenging journey to a remote sacred site, the experience is transformative and deeply meaningful for those who undertake it with devotion and sincerity.</Text>
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['references'] = e.nativeEvent.layout.y)}>
@@ -404,5 +378,9 @@ const styles = StyleSheet.create({
   dropdownItemText: {
     fontSize: 16,
     color: '#333',
+  },
+  link: {
+    color: '#007bff',
+    textDecorationLine: 'underline',
   },
 });

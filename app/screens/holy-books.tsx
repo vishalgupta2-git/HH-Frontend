@@ -1,13 +1,16 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import HighlightedText from '@/components/Home/HighlightedText';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const options = { headerShown: false };
 
 export default function HolyBooksScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const sectionY = useRef<{ [key: string]: number }>({});
+  const [searchHighlight, setSearchHighlight] = useState('');
 
   const sections = [
     { key: 'intro', title: 'Introduction' },
@@ -25,6 +28,27 @@ export default function HolyBooksScreen() {
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownLabel, setDropdownLabel] = useState('Topic');
+
+  // Check for search context when component mounts
+  useEffect(() => {
+    const checkSearchContext = async () => {
+      try {
+        const searchContext = await AsyncStorage.getItem('spiritualSearchContext');
+        if (searchContext) {
+          const context = JSON.parse(searchContext);
+          if (context.pageId === 'holy-books' && context.query) {
+            setSearchHighlight(context.query);
+            // Clear the context after using it
+            await AsyncStorage.removeItem('spiritualSearchContext');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking search context:', error);
+      }
+    };
+
+    checkSearchContext();
+  }, []);
 
   const handleSelect = (key: string) => {
     setDropdownOpen(false);
@@ -52,6 +76,7 @@ export default function HolyBooksScreen() {
       <HomeHeader
         showDailyPujaButton={false}
         searchPlaceholder="Search Gita, Ramayan, Mahabharat, Puranas..."
+        enableSpiritualSearch={true}
         extraContent={
           <>
             <TouchableOpacity
@@ -83,19 +108,25 @@ export default function HolyBooksScreen() {
       <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop} onLayout={(e) => (sectionY.current['intro'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h1}>Holy Books: The Sacred Literary Foundation of Hinduism</Text>
-          <Text style={styles.p}>
-            Hindu sacred literature encompasses a vast collection of texts that form the spiritual, philosophical, and cultural backbone of one of the world's oldest religious traditions. These holy books range from ancient hymns and philosophical treatises to epic narratives that continue to guide millions of devotees in their spiritual journey.
-          </Text>
+          <HighlightedText 
+            text="Hindu sacred literature encompasses a vast collection of texts that form the spiritual, philosophical, and cultural backbone of one of the world's oldest religious traditions. These holy books range from ancient hymns and philosophical treatises to epic narratives that continue to guide millions of devotees in their spiritual journey."
+            highlight={searchHighlight}
+            textStyle={styles.p}
+          />
         </LinearGradient>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['twoTier'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h2}>The Two-Tier Classification: Shruti and Smriti</Text>
-          <Text style={styles.p}>
-            Hindu sacred texts are traditionally classified into two main categories:
-          </Text>
-          <Text style={styles.p}>
-            Shruti ("that which is heard") refers to divine revelation received by ancient sages, including the Vedas and Upanishads. Smriti ("that which is remembered") encompasses texts composed by human authors but based on divine inspiration, including the great epics and Puranas.
-          </Text>
+          <HighlightedText 
+            text="Hindu sacred texts are traditionally classified into two main categories:"
+            highlight={searchHighlight}
+            textStyle={styles.p}
+          />
+          <HighlightedText 
+            text="Shruti ('that which is heard') refers to divine revelation received by ancient sages, including the Vedas and Upanishads. Smriti ('that which is remembered') encompasses texts composed by human authors but based on divine inspiration, including the great epics and Puranas."
+            highlight={searchHighlight}
+            textStyle={styles.p}
+          />
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['epics'] = e.nativeEvent.layout.y)}>
