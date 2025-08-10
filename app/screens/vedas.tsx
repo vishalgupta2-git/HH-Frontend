@@ -196,15 +196,6 @@ export default function VedasScreen() {
         showTopicDropdown={false}
         extraContent={
           <>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => setDropdownOpen(true)}
-              style={styles.dropdownTrigger}
-            >
-              <Text style={styles.dropdownText}>{dropdownLabel}</Text>
-              <Text style={styles.dropdownChevron}>▾</Text>
-            </TouchableOpacity>
-
             {/* Custom Search Box - Inside the gradient */}
             <View style={styles.searchInputContainer}>
               <TextInput
@@ -244,6 +235,15 @@ export default function VedasScreen() {
                 </TouchableOpacity>
               )}
             </View>
+
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => setDropdownOpen(true)}
+              style={styles.dropdownTrigger}
+            >
+              <Text style={styles.dropdownText}>{dropdownLabel}</Text>
+              <Text style={styles.dropdownChevron}>▾</Text>
+            </TouchableOpacity>
 
             <Modal visible={dropdownOpen} transparent animationType="fade" onRequestClose={() => setDropdownOpen(false)}>
               <View style={styles.dropdownOverlay}>
