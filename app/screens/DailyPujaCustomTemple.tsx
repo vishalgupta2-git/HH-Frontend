@@ -740,6 +740,12 @@ export default function DailyPujaCustomTemple() {
         return '🍃';
       case 'jasmine':
         return '🌸';
+      case 'yellowShevanthi':
+        return '🌼';
+      case 'whiteShevanthi':
+        return '🌸';
+      case 'redShevanthi':
+        return '🌹';
       default:
         return '🌸';
     }
@@ -897,7 +903,7 @@ export default function DailyPujaCustomTemple() {
     const templeLeftX = templeCenterX - (templeWidth / 2);
     const templeRightX = templeCenterX + (templeWidth / 2);
     
-    const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra', 'jasmine'];
+    const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra', 'jasmine', 'yellowShevanthi', 'whiteShevanthi', 'redShevanthi'];
     let totalFlowers = 0;
     let completedFlowers = 0;
     
@@ -1229,6 +1235,24 @@ export default function DailyPujaCustomTemple() {
                  style={styles.flowerImage}
                  resizeMode="contain"
                />
+             ) : flower.type === 'yellowShevanthi' ? (
+               <Image 
+                 source={require('@/assets/images/icons/own temple/YellowShevanthi.png')}
+                 style={styles.flowerImage}
+                 resizeMode="contain"
+               />
+             ) : flower.type === 'whiteShevanthi' ? (
+               <Image 
+                 source={require('@/assets/images/icons/own temple/WhiteShevanthi.png')}
+                 style={styles.flowerImage}
+                 resizeMode="contain"
+               />
+             ) : flower.type === 'redShevanthi' ? (
+               <Image 
+                 source={require('@/assets/images/icons/own temple/RedShevanthi.png')}
+                 style={styles.flowerImage}
+                 resizeMode="contain"
+               />
              ) : (
                <Text style={styles.flowerEmoji}>{getFlowerEmoji(flower.type)}</Text>
              )}
@@ -1439,6 +1463,51 @@ export default function DailyPujaCustomTemple() {
                     />
                   </View>
                   <Text style={styles.flowerOptionLabel}>Jasmine</Text>
+                </TouchableOpacity>
+                
+                {/* Yellow Shevanthi */}
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
+                  onPress={() => dropFlowers('yellowShevanthi')}
+                >
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/YellowShevanthi.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Yellow Shevanthi</Text>
+                </TouchableOpacity>
+                
+                {/* White Shevanthi */}
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
+                  onPress={() => dropFlowers('whiteShevanthi')}
+                >
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/WhiteShevanthi.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>White Shevanthi</Text>
+                </TouchableOpacity>
+                
+                {/* Red Shevanthi */}
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
+                  onPress={() => dropFlowers('redShevanthi')}
+                >
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/RedShevanthi.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Red Shevanthi</Text>
                 </TouchableOpacity>
                                  <TouchableOpacity 
                    style={styles.flowerOption} 
