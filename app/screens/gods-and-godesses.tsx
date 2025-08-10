@@ -103,14 +103,17 @@ export default function GodsAndGodessesScreen() {
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/brahma.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Vishnu.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Shiva.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
             </ScrollView>
           </View>
@@ -146,30 +149,37 @@ export default function GodsAndGodessesScreen() {
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Lakshmi.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Saraswati.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Parvati.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Durga.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Kali.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Sita.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Radha.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
             </ScrollView>
           </View>
@@ -221,38 +231,47 @@ export default function GodsAndGodessesScreen() {
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Ganga.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Yamuna.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Annapurna.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Bhumi.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Chandi.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Ambika.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Gayatri.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Bagalamukhi.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Bhuvaneshwari.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
             </ScrollView>
           </View>
@@ -313,14 +332,17 @@ export default function GodsAndGodessesScreen() {
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Ganesha.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Krishna.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Hanuman.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
             </ScrollView>
           </View>
@@ -356,22 +378,27 @@ export default function GodsAndGodessesScreen() {
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Surya.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/IndraDev.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/AgniDev.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/VayuDev.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/VarunDev.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
             </ScrollView>
           </View>
@@ -415,22 +442,27 @@ export default function GodsAndGodessesScreen() {
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Kuber.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Kartikeya.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Kamadeva.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Dhanvantari.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Vishvakarma.jpg')} 
                 style={styles.sectionImage} 
+                resizeMode="contain"
               />
             </ScrollView>
           </View>
@@ -490,18 +522,22 @@ export default function GodsAndGodessesScreen() {
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Shiv-Parvati.jpg')} 
                 style={styles.coupleImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Vishnu-Lakshmi.jpg')} 
                 style={styles.coupleImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Rama-Sita.jpg')} 
                 style={styles.coupleImage} 
+                resizeMode="contain"
               />
               <Image 
                 source={require('@/assets/images/GodsandGoddessesImages/Radha_Krishna_at_Iskcon_Vrindavan.jpg')} 
                 style={styles.coupleImage} 
+                resizeMode="contain"
               />
             </ScrollView>
           </View>
@@ -647,19 +683,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   imageSliderContent: {
-    paddingHorizontal: 4,
+    paddingHorizontal: -10,
   },
   coupleImage: {
-    width: 120,
-    height: 80,
-    borderRadius: 8,
-    marginHorizontal: 4,
+    height: 100,
+    borderRadius: 0,
+    marginHorizontal: 0,
   },
   sectionImage: {
-    width: 120,
-    height: 80,
-    borderRadius: 8,
-    marginHorizontal: 4,
+    height: 100,
+    borderRadius: 0,
+    marginHorizontal: 0,
   },
 });
 
