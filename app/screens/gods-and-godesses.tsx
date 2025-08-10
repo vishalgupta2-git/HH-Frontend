@@ -683,17 +683,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   imageSliderContent: {
-    paddingHorizontal: -10,
+    paddingHorizontal: 8,
   },
-  coupleImage: {
-    height: 100,
-    borderRadius: 0,
-    marginHorizontal: 0,
-  },
-  sectionImage: {
-    height: 100,
-    borderRadius: 0,
-    marginHorizontal: 0,
-  },
+        coupleImage: {
+        height: 150,
+        width: 100,
+        borderRadius: 8,
+        marginHorizontal: 4,
+      },
+      sectionImage: {
+        height: 150,
+        width: 100,
+        borderRadius: 8,
+        marginHorizontal: 4,
+      },
 });
 
