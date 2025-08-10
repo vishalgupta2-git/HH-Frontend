@@ -939,6 +939,14 @@ export default function DailyPujaCustomTemple() {
         return '🌸';
       case 'redShevanthi':
         return '🌹';
+      case 'tulsi':
+        return '🌿';
+      case 'rajnigandha':
+        return '💐';
+      case 'parajita':
+        return '🌼';
+      case 'datura':
+        return '🌸';
       default:
         return '🌸';
     }
@@ -1043,6 +1051,7 @@ export default function DailyPujaCustomTemple() {
           }));
 
           if (progress < 1) {
+            // Start animation immediately instead of with delays
             requestAnimationFrame(animateFall);
           } else {
             // Remove flower when animation completes
@@ -1058,10 +1067,8 @@ export default function DailyPujaCustomTemple() {
           }
         };
 
-        // Stagger the animation start by row and flower
-        setTimeout(() => {
-          requestAnimationFrame(animateFall);
-        }, (row * 200) + (i * 30)); // 200ms delay between rows, 30ms between flowers
+        // Start animation immediately instead of with delays
+        requestAnimationFrame(animateFall);
       }
     }
   };
@@ -1096,7 +1103,7 @@ export default function DailyPujaCustomTemple() {
     const templeLeftX = templeCenterX - (templeWidth / 2);
     const templeRightX = templeCenterX + (templeWidth / 2);
     
-    const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra', 'jasmine', 'yellowShevanthi', 'whiteShevanthi', 'redShevanthi'];
+            const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra', 'jasmine', 'yellowShevanthi', 'whiteShevanthi', 'redShevanthi', 'tulsi', 'rajnigandha', 'parajita', 'datura'];
     let totalFlowers = 0;
     let completedFlowers = 0;
     
@@ -1164,6 +1171,7 @@ export default function DailyPujaCustomTemple() {
           }));
 
           if (progress < 1) {
+            // Start animation immediately instead of with delays
             requestAnimationFrame(animateFall);
           } else {
             // Remove flower when animation completes
@@ -1179,10 +1187,8 @@ export default function DailyPujaCustomTemple() {
           }
         };
 
-        // Stagger the animation start by row and flower
-        setTimeout(() => {
-          requestAnimationFrame(animateFall);
-        }, (row * 200) + (i * 30)); // 200ms delay between rows, 30ms between flowers
+        // Start animation immediately instead of with delays
+        requestAnimationFrame(animateFall);
       }
     }
   };
@@ -1488,6 +1494,24 @@ export default function DailyPujaCustomTemple() {
                  style={styles.flowerImage}
                  resizeMode="contain"
                />
+             ) : flower.type === 'rajnigandha' ? (
+               <Image 
+                 source={require('@/assets/images/icons/own temple/rajnigandha.png')}
+                 style={styles.flowerImage}
+                 resizeMode="contain"
+               />
+             ) : flower.type === 'parajita' ? (
+               <Image 
+                 source={require('@/assets/images/icons/own temple/parajita.png')}
+                 style={styles.flowerImage}
+                 resizeMode="contain"
+               />
+             ) : flower.type === 'datura' ? (
+               <Image 
+                 source={require('@/assets/images/icons/own temple/Datura.png')}
+                 style={styles.flowerImage}
+                 resizeMode="contain"
+               />
              ) : (
                <Text style={styles.flowerEmoji}>{getFlowerEmoji(flower.type)}</Text>
              )}
@@ -1546,20 +1570,33 @@ export default function DailyPujaCustomTemple() {
               styles.pujaIconItem, 
               isFlowerAnimationRunning && styles.pujaIconItemDisabled
             ]} 
-                         onPress={() => {
-               openFlowerModal();
-             }}
+            onPress={() => {
+              openFlowerModal();
+            }}
             disabled={isFlowerAnimationRunning}
             activeOpacity={0.7}
           >
-            <Text style={[
-              styles.pujaIcon,
-              isFlowerAnimationRunning && styles.pujaIconDisabled
-            ]}>🌸</Text>
+            {isFlowerAnimationRunning ? (
+              <View style={styles.pujaIconContainer}>
+                <ActivityIndicator size="small" color="#FF6A00" />
+              </View>
+            ) : (
+              <Text style={[
+                styles.pujaIcon,
+                isFlowerAnimationRunning && styles.pujaIconDisabled
+              ]}>🌸</Text>
+            )}
             <Text style={[
               styles.pujaIconLabel,
               isFlowerAnimationRunning && styles.pujaIconLabelDisabled
-            ]}>Flowers</Text>
+            ]}>
+              {isFlowerAnimationRunning ? 'Dropping...' : 'Flowers'}
+            </Text>
+            {isFlowerAnimationRunning && (
+              <View style={styles.flowerProgressBar}>
+                <View style={styles.flowerProgressFill} />
+              </View>
+            )}
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.pujaIconItem}
@@ -1743,6 +1780,66 @@ export default function DailyPujaCustomTemple() {
                     />
                   </View>
                   <Text style={styles.flowerOptionLabel}>Red Shevanthi</Text>
+                </TouchableOpacity>
+                
+                {/* Tulsi */}
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
+                  onPress={() => dropFlowers('tulsi')}
+                >
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/tulsi.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Tulsi</Text>
+                </TouchableOpacity>
+                
+                {/* Rajnigandha */}
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
+                  onPress={() => dropFlowers('rajnigandha')}
+                >
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/rajnigandha.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Rajnigandha</Text>
+                </TouchableOpacity>
+                
+                {/* Parajita */}
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
+                  onPress={() => dropFlowers('parajita')}
+                >
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/parajita.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Parajita</Text>
+                </TouchableOpacity>
+                
+                {/* Datura */}
+                <TouchableOpacity 
+                  style={styles.flowerOption} 
+                  onPress={() => dropFlowers('datura')}
+                >
+                  <View style={styles.flowerIconContainer}>
+                    <Image 
+                      source={require('@/assets/images/icons/own temple/Datura.png')}
+                      style={styles.flowerOptionImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Datura</Text>
                 </TouchableOpacity>
                                  <TouchableOpacity 
                    style={styles.flowerOption} 
@@ -1984,8 +2081,17 @@ const styles = StyleSheet.create({
      pujaIconItem: {
        alignItems: 'center',
        justifyContent: 'center',
-       paddingVertical: 10,
-       paddingHorizontal: 15,
+       padding: 15,
+       borderRadius: 12,
+       marginHorizontal: 8,
+       minWidth: 80,
+       minHeight: 80,
+     },
+     pujaIconContainer: {
+       alignItems: 'center',
+       justifyContent: 'center',
+       width: 32,
+       height: 32,
      },
      pujaIcon: {
        fontSize: 32,
@@ -2016,18 +2122,25 @@ const styles = StyleSheet.create({
         },
         pujaIconItemDisabled: {
           opacity: 0.5,
+          transform: [{ scale: 0.95 }],
+          shadowColor: '#FF6A00',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 5,
         },
         pujaIconDisabled: {
           opacity: 0.5,
         },
-                 pujaIconLabelDisabled: {
-           opacity: 0.5,
-         },
-         pujaIconImage: {
-           width: 32, // Adjust size as needed
-           height: 32, // Adjust size as needed
-           marginBottom: 8,
-         },
+        pujaIconLabelDisabled: {
+          opacity: 0.5,
+          fontStyle: 'italic',
+        },
+        pujaIconImage: {
+          width: 32, // Adjust size as needed
+          height: 32, // Adjust size as needed
+          marginBottom: 8,
+        },
                                                                                modalOverlay: {
                flex: 1,
                backgroundColor: 'transparent',
@@ -2262,5 +2375,19 @@ const styles = StyleSheet.create({
       width: '100%',
       justifyContent: 'center',
       alignItems: 'center',
+    },
+    flowerProgressBar: {
+      height: 5,
+      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+      borderRadius: 2.5,
+      overflow: 'hidden',
+      marginTop: 5,
+      width: '80%',
+    },
+    flowerProgressFill: {
+      height: '100%',
+      backgroundColor: '#FF6A00',
+      borderRadius: 2.5,
+      width: '100%',
     },
   });  
