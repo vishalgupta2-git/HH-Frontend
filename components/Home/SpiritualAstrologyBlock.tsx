@@ -4,7 +4,7 @@ import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View
 // import ReferralConnectBlock, { SocialRow } from './ReferralConnectBlock';
 
 const spiritualItems = [
-  { label: 'Vedas', image: require('@/assets/images/icons/home page icons/vedas.jpg') },
+  { label: 'Vedas', image: require('@/assets/images/icons/home page icons/vedas.png') },
   { label: 'Dhams and Yatras', image: require('@/assets/images/icons/home page icons/dhams.png') },
   { label: 'Holy Books', image: require('@/assets/images/icons/home page icons/HolyBooksIcon.png') },
   { label: 'Gods & Godesses', image: require('@/assets/images/icons/home page icons/godsAndGodessesIcon.png') },
