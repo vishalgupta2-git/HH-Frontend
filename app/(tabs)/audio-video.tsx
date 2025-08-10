@@ -4,7 +4,7 @@ import axios from 'axios';
 import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
-import { Alert, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
 interface MediaFile {
@@ -105,8 +105,29 @@ export default function AudioVideoScreen() {
     }
   };
 
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+  };
+
   const filterContent = (
     <View style={styles.filterContainer}>
+      {/* Search Input */}
+      <View style={styles.searchInputContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search for music, artists, or deities..."
+          placeholderTextColor="#666"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <MaterialCommunityIcons 
+          name="magnify" 
+          size={20} 
+          color="#666" 
+          style={styles.searchIcon}
+        />
+      </View>
+      
       <View style={styles.filterRow}>
         {/* Audio/Video Toggle Controls */}
         <View style={styles.toggleContainer}>
@@ -202,7 +223,13 @@ export default function AudioVideoScreen() {
 
   return (
     <View style={styles.container}>
-      <HomeHeader searchPlaceholder="Search for Music" extraContent={filterContent} showDailyPujaButton={false} />
+      <HomeHeader 
+        searchPlaceholder="Search for Music" 
+        extraContent={filterContent} 
+        showDailyPujaButton={false}
+        onSearchChange={handleSearchChange}
+        showSearchBar={false}
+      />
       {/* Media List */}
       <ScrollView style={styles.content}>
          {loading ? (
@@ -214,28 +241,40 @@ export default function AudioVideoScreen() {
                  No media files found. Please check the database.
                </Text>
              )}
-                                       {mediaFiles
-                .filter(media => !selectedDeity || media.Deity === selectedDeity)
-                .filter(media => {
-                  // If both toggles are off, show nothing
-                  if (!audioEnabled && !videoEnabled) return false;
-                  // If only audio is enabled, show only audio items
-                  if (audioEnabled && !videoEnabled) return media.Classification === 'Audio';
-                  // If only video is enabled, show only video items
-                  if (!audioEnabled && videoEnabled) return media.Classification === 'Video';
-                  // If both are enabled, show both audio and video items
-                  return media.Classification === 'Audio' || media.Classification === 'Video';
-                })
-                .filter(media => {
-                  if (!searchQuery.trim()) return true;
-                  const q = searchQuery.trim().toLowerCase();
-                  return (
-                    (media.VideoName && media.VideoName.toLowerCase().includes(q)) ||
-                    (media.Artists && media.Artists.toLowerCase().includes(q)) ||
-                    (media.Deity && media.Deity.toLowerCase().includes(q))
-                  );
-                })
-               .map((media, idx) => (
+             {(() => {
+               const filteredMedia = mediaFiles
+                 .filter(media => !selectedDeity || media.Deity === selectedDeity)
+                 .filter(media => {
+                   // If both toggles are off, show nothing
+                   if (!audioEnabled && !videoEnabled) return false;
+                   // If only audio is enabled, show only audio items
+                   if (audioEnabled && !videoEnabled) return media.Classification === 'Audio';
+                   // If only video is enabled, show only video items
+                   if (!audioEnabled && videoEnabled) return media.Classification === 'Video';
+                   // If both are enabled, show both audio and video items
+                   return media.Classification === 'Audio' || media.Classification === 'Video';
+                 })
+                 .filter(media => {
+                   if (!searchQuery.trim()) return true;
+                   const q = searchQuery.trim().toLowerCase();
+                   return (
+                     (media.VideoName && media.VideoName.toLowerCase().includes(q)) ||
+                     (media.Artists && media.Artists.toLowerCase().includes(q)) ||
+                     (media.Deity && media.Deity.toLowerCase().includes(q)) ||
+                     (media.Language && media.Language.toLowerCase().includes(q)) ||
+                     (media.Type && media.Type.toLowerCase().includes(q))
+                   );
+                 });
+               
+               if (filteredMedia.length === 0) {
+                 return (
+                   <Text style={{ color: '#999', textAlign: 'center', marginTop: 20 }}>
+                     No media files match your current filters. Try adjusting your search or filters.
+                   </Text>
+                 );
+               }
+               
+               return filteredMedia.map((media, idx) => (
                  <TouchableOpacity
                    key={media.Link || idx}
                    style={{ marginBottom: 16, backgroundColor: '#fff', borderRadius: 8, padding: 10, elevation: 2 }}
@@ -254,7 +293,8 @@ export default function AudioVideoScreen() {
                      </Text>
                    )}
                  </TouchableOpacity>
-               ))}
+               ));
+             })()}
           </>
         )}
       </ScrollView>
@@ -316,8 +356,28 @@ const styles = StyleSheet.create({
   filterContainer: {
     marginBottom: 20,
     position: 'relative',
-    width: '82%',
+    width: '88%',
     alignSelf: 'center',
+  },
+  searchInputContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  searchInput: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    paddingRight: 40,
+    fontSize: 14,
+    color: '#333',
+  },
+  searchIcon: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
   },
   filterRow: {
     flexDirection: 'row',
