@@ -239,7 +239,7 @@ export default function VedasScreen() {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => setDropdownOpen(true)}
-              style={styles.dropdownTrigger}
+              style={[styles.dropdownTrigger, { marginTop: 15 }]}
             >
               <Text style={styles.dropdownText}>{dropdownLabel}</Text>
               <Text style={styles.dropdownChevron}>▾</Text>
