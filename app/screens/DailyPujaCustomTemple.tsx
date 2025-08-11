@@ -1558,13 +1558,8 @@ export default function DailyPujaCustomTemple() {
           ) : null}
         </View>
         
-        {/* Puja Icons Row */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.pujaIconsRow}
-          contentContainerStyle={styles.pujaIconsContent}
-        >
+        {/* Puja Icons Column - Left Side */}
+        <View style={styles.pujaIconsColumn}>
           <TouchableOpacity 
             style={[
               styles.pujaIconItem, 
@@ -1636,7 +1631,7 @@ export default function DailyPujaCustomTemple() {
             />
             <Text style={styles.pujaIconLabel}>Shankh</Text>
           </TouchableOpacity>
-        </ScrollView>
+        </View>
       </View>
   
              {/* Flower Selection Modal - Moved outside main container */}
@@ -2063,14 +2058,18 @@ const styles = StyleSheet.create({
        fontWeight: 'bold',
        textAlign: 'center',
      },
-     pujaIconsRow: {
+     pujaIconsColumn: {
       position: 'absolute',
-      top: 500, // Position below temple area
-      left: '10%', // 10% from left edge
-      right: '10%', // 10% from right edge
-      width: '80%', // 80% of screen width
+      left: 0, // Align with left edge of screen
+      top: 150, // Moved down 20px from 100 to 120
+      width: 80, // Reduced width for narrower icon bar
       zIndex: 10, // Above temple but below bells and arch
-      marginTop: 60,
+      backgroundColor: 'transparent', // Transparent background
+      borderRightWidth: 0, // Remove border
+      paddingVertical: 20,
+      paddingHorizontal: 5, // Reduced horizontal padding
+      alignItems: 'center',
+      justifyContent: 'flex-start',
     },
      pujaIconsContent: {
       flexDirection: 'row',
@@ -2081,25 +2080,27 @@ const styles = StyleSheet.create({
      pujaIconItem: {
        alignItems: 'center',
        justifyContent: 'center',
-       padding: 15,
-       borderRadius: 12,
-       marginHorizontal: 8,
-       minWidth: 80,
-       minHeight: 80,
+       padding: 8,
+       borderRadius: 0, // Remove border radius
+       marginVertical: 3, // Reduced from 8 to 3 (5px less)
+       marginHorizontal: 0,
+       width: '100%',
+       minHeight: 50,
+       backgroundColor: 'transparent', // Ensure no background
      },
      pujaIconContainer: {
        alignItems: 'center',
        justifyContent: 'center',
-       width: 32,
-       height: 32,
+       width: 28,
+       height: 28,
      },
      pujaIcon: {
-       fontSize: 32,
-       marginBottom: 8,
+       fontSize: 28,
+       marginBottom: 6,
      },
                        pujaIconLabel: {
          color: '#FFE5B4',
-         fontSize: 14,
+         fontSize: 12, // Smaller font size
          fontWeight: 'bold',
          textAlign: 'center',
          textShadowColor: 'rgba(0, 0, 0, 0.8)',
@@ -2137,9 +2138,9 @@ const styles = StyleSheet.create({
           fontStyle: 'italic',
         },
         pujaIconImage: {
-          width: 32, // Adjust size as needed
-          height: 32, // Adjust size as needed
-          marginBottom: 8,
+          width: 28, // Reduced size for narrower column
+          height: 28, // Reduced size for narrower column
+          marginBottom: 6,
         },
                                                                                modalOverlay: {
                flex: 1,
