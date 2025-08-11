@@ -9,13 +9,9 @@ import { ScrollView, StyleSheet, View, Text } from 'react-native';
 import { hasVisitedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUtils';
 import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
 import { shouldShowSpecialDaysModal } from '@/utils/bookingUtils';
-import { testSpecialDaysLogic } from '@/utils/testSpecialDays';
-import { testTextSearch } from '@/utils/testTextSearch';
-import { testSearchSuggestions } from '@/utils/testSearchSuggestions';
+
 
 export default function HomeScreen() {
-  console.log('🔍 [DEBUG] HomeScreen: Starting...');
-  
   const [showDailyPujaModal, setShowDailyPujaModal] = useState(false);
   const [showSpecialDaysModal, setShowSpecialDaysModal] = useState(false);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
@@ -25,20 +21,9 @@ export default function HomeScreen() {
   useEffect(() => {
     const checkReminders = async () => {
       try {
-        // Run test to debug date logic
-        testSpecialDaysLogic();
-        
-        // Test text search functionality
-        testTextSearch();
-        
         // Check if user is logged in and hasn't visited daily puja today
         const hasVisitedToday = await hasVisitedDailyPujaToday();
         const firstName = await getUserFirstName();
-        
-        console.log('🔍 [DEBUG] HomeScreen: Daily puja check:', { 
-          hasVisitedToday, 
-          firstName: firstName || 'not logged in' 
-        });
         
         // Only show daily puja modal if user is logged in and hasn't visited today
         if (!hasVisitedToday && firstName) {
@@ -48,27 +33,19 @@ export default function HomeScreen() {
 
         // Check for upcoming special pujas (show for all users)
         const upcomingPujas = await getUpcomingSpecialPujas();
-        console.log('🔍 [DEBUG] HomeScreen: Upcoming pujas found:', upcomingPujas.length);
         
         if (upcomingPujas.length > 0) {
           // Check if user has already booked the closest upcoming puja in last 30 days
           const closestPuja = upcomingPujas[0];
           const shouldShow = await shouldShowSpecialDaysModal(closestPuja.pujaName);
           
-          console.log('🔍 [DEBUG] HomeScreen: Should show special days modal for', closestPuja.pujaName, ':', shouldShow);
-          
           if (shouldShow) {
-            console.log('🔍 [DEBUG] HomeScreen: Setting special days modal to show');
             setUpcomingPujas(upcomingPujas);
             setShowSpecialDaysModal(true);
-          } else {
-            console.log('🔍 [DEBUG] HomeScreen: User has already booked this puja recently, modal will not show');
           }
-        } else {
-          console.log('🔍 [DEBUG] HomeScreen: No upcoming pujas found, modal will not show');
         }
       } catch (error) {
-        console.error('🔍 [DEBUG] HomeScreen: Error checking reminders:', error);
+        // Handle error silently
       }
     };
     
@@ -85,10 +62,7 @@ export default function HomeScreen() {
     setShowSpecialDaysModal(false);
   };
   
-  try {
-    console.log('🔍 [DEBUG] HomeScreen: About to render components');
-    
-    return (
+  return (
     <View style={styles.root}>
       <HomeHeader enableSpiritualSearch={false} showSearchBar={false} showDailyPujaButton={true} />
       <View style={styles.section}>
@@ -119,16 +93,6 @@ export default function HomeScreen() {
       />
     </View>
   );
-  } catch (error) {
-    console.error('🔍 [DEBUG] HomeScreen: Error rendering:', error);
-    return (
-      <View style={styles.root}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text>Error loading home screen: {error.message}</Text>
-        </View>
-      </View>
-    );
-  }
 }
 
 const styles = StyleSheet.create({
