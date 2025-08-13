@@ -59,15 +59,10 @@ const gradientPresets = [
   ['#8B5CF6', '#7C3AED', '#6D28D9'], // purple
   ['#43CEA2', '#185A9D'], // green-blue
   ['#FFDEE9', '#B5FFFC'], // pink-blue
-  ['#1FA2FF', '#FFD200', '#21D4FD'], // blue-teal-yellow
-  ['#F7971E', '#FFD200', '#21D4FD'], // yellow-blue
   ['#F953C6', '#B91D73'], // pink-violet
   ['#00F2FE', '#4FACFE'], // cyan-blue
-  ['#F7971E', '#FFD200'], // yellow-orange
   ['#43E97B', '#38F9D7'], // green-turquoise
   ['#667EEA', '#764BA2'], // blue-purple
-  ['#FCE38A', '#F38181'], // yellow-pink
-  ['#FAD961', '#F76B1C'], // yellow-orange
   ['#9795f0', '#fbc7d4'], // purple-pink
   ['#C33764', '#1D2671'], // magenta-indigo
   ['#11998e', '#38ef7d'], // green
@@ -301,7 +296,7 @@ const SELECTED_DEITIES_KEY = 'selectedDeities';
 
 export default function CreateTempleScreen() {
   const router = useRouter();
-  const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'lights' | 'statues' | 'temples-deities'>(null);
+  const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'statues' | 'temples-deities'>(null);
   // State initializers
   const [selectedStyle, setSelectedStyle] = useState<string>(templeStyles[0].id);
   const [bgGradient, setBgGradient] = useState(gradientPresets[0]);
@@ -755,7 +750,7 @@ export default function CreateTempleScreen() {
                     <Text style={styles.deityError}>{deityError}</Text>
                   ) : null}
                 </View>
-                             ) : modal === 'temples-deities' ? (
+              ) : modal === 'temples-deities' ? (
                  <View style={styles.modalContent}>
                    <View style={styles.modalHeader}>
                      <Text style={styles.modalTitle}>Temples & Deities</Text>
@@ -784,10 +779,7 @@ export default function CreateTempleScreen() {
                          <LinearGradient colors={bgGradient as any} style={styles.templesDeitiesGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} />
                          <Text style={styles.templesDeitiesLabel}>Background</Text>
                        </TouchableOpacity>
-                       <TouchableOpacity style={styles.templesDeitiesButton} onPress={() => setModal('lights')}>
-                         <MaterialCommunityIcons name="lightbulb" size={40} color="#FF6A00" />
-                         <Text style={styles.templesDeitiesLabel}>Lights</Text>
-                       </TouchableOpacity>
+
                      </View>
                    </ScrollView>
                  </View>
@@ -839,16 +831,8 @@ export default function CreateTempleScreen() {
                     </View>
                   </ScrollView>
                 </View>
-                             ) : (
-                <View style={{ width: 240, height: 180, backgroundColor: 'white', borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 16 }}>
-                    {modal === 'lights' && 'Coming Soon'}
-                  </Text>
-                  <TouchableOpacity onPress={() => setModal(null)} style={{ marginTop: 16, padding: 10, backgroundColor: '#FF6A00', borderRadius: 8 }}>
-                    <Text style={{ color: 'white', fontWeight: 'bold' }}>Close</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+                             ) : null}
+
             </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
