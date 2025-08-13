@@ -50,19 +50,19 @@ const ArchSVG = (props: { width?: number; height?: number; style?: any }) => {
   return (
     <Svg
       width={props.width || screenWidth}
-      height={props.height || (screenWidth * 195) / 393}
-      viewBox="0 0 393 195"
+      height={props.height || (screenWidth * 295) / 393}
+      viewBox="0 0 393 295"
       fill="none"
       style={props.style}
     >
       <Path
-        d="M196.41 50.5308C196.41 50.5308 191.28 93.7515 124.46 91.3237C124.46 91.3237 83.9203 87.722 89.6775 122.405C89.6775 122.405 35.5653 117.176 33.0297 177.151C33.0297 177.151 4.09425 175.444 1.02173 195H-120V0H361.73H513V195H391.799C391.799 195 392.754 176.858 359.791 177.151C359.791 177.151 361.223 121.712 303.143 122.352C303.143 122.352 311.496 95.1389 273.731 91.4838C273.701 91.4838 213.503 101.035 196.41 50.5308Z"
+        d="m195.41,144.53c0,0 -5.13,43.22 -71.95,40.79c0,0 -40.54,-3.6 -34.78,31.09c0,0 -54.11,-5.23 -56.65,54.74c0,0 -28.94,-1.71 -32.01,17.85l-121.02,0c0,-65 -1,-283 -1,-348l480.57,-1.99c145.81,0.66 72.76,-0.67 163.57,1l-10.14,348.99l-121.2,0c0,0 0.95,-18.14 -32.01,-17.85c0,0 1.43,-55.44 -56.65,-54.8c0,0 8.36,-27.21 -29.41,-30.87c-0.03,0 -60.23,9.55 -77.32,-40.95z"
         fill="url(#archGradient)"
       />
       <Defs>
-        <SvgLinearGradient id="archGradient" x1="196.5" y1="29.2058" x2="196.5" y2="151.717" gradientUnits="userSpaceOnUse">
+        <SvgLinearGradient id="archGradient" x1="0.5" y1="0.15" x2="0.5" y2="0.78" gradientUnits="objectBoundingBox">
           <Stop stopColor="#FFAE51" />
-          <Stop offset="0.9888" stopColor="#E87C00" />
+          <Stop offset="0.99" stopColor="#E87C00" />
         </SvgLinearGradient>
       </Defs>
     </Svg>
@@ -363,7 +363,7 @@ export default function TemplePreviewScreen() {
   // Dynamic style for temple scroll content positioning
   const templeScrollContentStyle = useMemo(() => ({
     ...styles.templeScrollContent,
-    paddingTop: selectedStyle === 'temple1' ? 200 : 125,
+    paddingTop: selectedStyle === 'temple1' ? 300 : 225,
   }), [selectedStyle]);
 
 
@@ -515,7 +515,7 @@ export default function TemplePreviewScreen() {
         resizeMode="contain"
       />
       {/* Arch on top */}
-      <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
+              <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
       
       {/* Transparent area for save button */}
       <View 
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
   },
   bellLeft: {
     position: 'absolute',
-    top: 95,
+    top: 195,
     left: 40,
     width: 62.4,
     height: 117,
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
   },
   bellRight: {
     position: 'absolute',
-    top: 95,
+    top: 195,
     right: 40,
     width: 62.4,
     height: 117,
@@ -599,7 +599,7 @@ const styles = StyleSheet.create({
   },
   scrollableArea: {
     position: 'absolute',
-    top: 540, // Moved up by 50 pixels from 590
+    top: 640, // Moved down by 100 pixels from 540
     left: 0,
     right: 0,
     bottom: 0,
