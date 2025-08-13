@@ -233,9 +233,7 @@ export default function DailyPujaCustomTemple() {
   const [flowers, setFlowers] = useState<{ id: number; x: number; y: number; rotation: number; scale: number; opacity: number; type: string }[]>([]);
   const [isFlowerAnimationRunning, setIsFlowerAnimationRunning] = useState(false);
   const [showFlowerModal, setShowFlowerModal] = useState(false);
-  const [smoke, setSmoke] = useState<{ id: number; x: number; y: number; opacity: number; scale: number; rotation: number; animatedY: Animated.Value; animatedOpacity: Animated.Value; animatedScale: Animated.Value }[]>([]);
-  const [isSmokeAnimationRunning, setIsSmokeAnimationRunning] = useState(false);
-  const [showSmokeModal, setShowSmokeModal] = useState(false);
+
   const [showAartiModal, setShowAartiModal] = useState(false);
   const [thaliPosition, setThaliPosition] = useState({ x: 0, y: 0 });
   const [leftBellSwing, setLeftBellSwing] = useState(new Animated.Value(0));
@@ -250,7 +248,7 @@ export default function DailyPujaCustomTemple() {
   const [showS3Gallery, setShowS3Gallery] = useState(false);
   const [s3Loading, setS3Loading] = useState(false);
   
-  const smokeAnimationRef = useRef(false);
+
   const router = useRouter();
 
   // Function to play welcome bell sound
@@ -339,6 +337,13 @@ export default function DailyPujaCustomTemple() {
         const organizedFolders: ImageFolder[] = [];
         
         for (const folderName of folderNames) {
+          // Skip rahu-ketu and brihaspati folders
+          if (folderName.toLowerCase().includes('rahu') || 
+              folderName.toLowerCase().includes('ketu') || 
+              folderName.toLowerCase().includes('brihaspati')) {
+            continue;
+          }
+          
           const folderPrefix = `dailytemples/${folderName}/`;
           const folderImages = data.files.filter((f: any) => 
             f && typeof f.key === 'string' && 
@@ -569,15 +574,7 @@ export default function DailyPujaCustomTemple() {
         }
         updateProgress();
         
-        // Preload dhoop image
-        console.log('💨 Preloading dhoop image...');
-        const dhoopSuccess = await safePrefetchImage(
-          require('@/assets/images/icons/own temple/puja essential/Dhoop.png'),
-          'dhoop'
-        );
-        if (dhoopSuccess) {
-          console.log('✅ Dhoop image preloaded successfully');
-        }
+        
         updateProgress();
         
         // Preload essential deity images for better performance
@@ -638,7 +635,7 @@ export default function DailyPujaCustomTemple() {
         
         // Log summary of preloading results
         const totalAssets = flowerImages.length + 1 + bellImages.length + 1 + 1 + essentialDeityImages.length + templeImages.length + 2; // +2 for sounds
-        const successfulAssets = successfulFlowers + (thaliSuccess ? 1 : 0) + successfulBells + (shankhSuccess ? 1 : 0) + (dhoopSuccess ? 1 : 0) + successfulDeities + successfulTemples + 2; // +2 for sounds
+        const successfulAssets = successfulFlowers + (thaliSuccess ? 1 : 0) + successfulBells + (shankhSuccess ? 1 : 0) + successfulDeities + successfulTemples + 2; // +2 for sounds
         console.log(`📊 Preloading Summary: ${successfulAssets}/${totalAssets} assets loaded successfully`);
         
         // Show completion message for a moment before transitioning
@@ -905,17 +902,7 @@ export default function DailyPujaCustomTemple() {
     };
   }, [sound]);
 
-  // Auto-start smoke animation when modal opens
-  useEffect(() => {
-    if (showSmokeModal && !isSmokeAnimationRunning) {
-      // Small delay to ensure modal is fully rendered
-      setTimeout(() => {
-        if (showSmokeModal) {
-          startDhoopSmoke();
-        }
-      }, 100);
-    }
-  }, [showSmokeModal]); // Remove isSmokeAnimationRunning from dependencies
+
 
 
 
@@ -1412,131 +1399,7 @@ export default function DailyPujaCustomTemple() {
     }
   };
 
-  // Function to start dhoop smoke effect
-  const startDhoopSmoke = async () => {
-    // Award mudras for offering dhoop
-    try {
-      const hasEarnedToday = await hasEarnedDailyMudras('OFFER_DHOOP');
-      if (!hasEarnedToday) {
-        const mudraResult = await awardMudras('OFFER_DHOOP');
-        if (mudraResult.success) {
-          console.log('✅ Mudras awarded for offering dhoop:', mudraResult.mudrasEarned);
-        } else {
-          console.log('⚠️ Failed to award mudras for offering dhoop:', mudraResult.error);
-        }
-      } else {
-        console.log('✅ Daily dhoop offering mudras already earned today');
-      }
-    } catch (mudraError) {
-      console.log('⚠️ Error awarding mudras for offering dhoop:', mudraError);
-    }
 
-    if (smokeAnimationRef.current) {
-      return; // Prevent multiple animations
-    }
-    
-    setIsSmokeAnimationRunning(true);
-    smokeAnimationRef.current = true;
-    setSmoke([]); // Clear any existing smoke particles
-    
-    // Calculate dhoop position for modal (center of modal)
-    const modalDhoopX = screenWidth / 2;
-    const modalDhoopY = 580; // 100 pixels lower than before
-    
-    let smokeId = 0;
-    
-    const createSmokeParticle = () => {
-      // Check if animation should continue - use ref instead of state
-      if (!smokeAnimationRef.current) {
-        return;
-      }
-      
-      const particleId = Date.now() + smokeId++;
-      
-      // Random offset across full screen width
-      const randomOffsetX = (Math.random() - 0.5) * screenWidth; // Full screen width spread
-      const startX = modalDhoopX + randomOffsetX;
-      const startY = modalDhoopY;
-      
-      // Random properties for natural smoke effect in modal (half of current size)
-      const randomScale = 0.1125 + Math.random() * 0.1125; // 0.1125-0.225 scale (50% bigger than current)
-      const randomRotation = Math.random() * 360;
-      const riseDuration = 4000 + Math.random() * 3000; // 4-7 seconds
-      const riseDistance = 200 + Math.random() * 150; // Rise 200-350px
-      
-      // Create animated values for smooth animation
-      const animatedY = new Animated.Value(startY);
-      const animatedOpacity = new Animated.Value(1.0);
-      const animatedScale = new Animated.Value(randomScale);
-      
-      const newSmoke = {
-        id: particleId,
-        x: startX,
-        y: startY,
-        opacity: 1.0, // Fully opaque to start
-        scale: randomScale,
-        rotation: randomRotation,
-        animatedY,
-        animatedOpacity,
-        animatedScale,
-      };
-      
-      setSmoke(prev => {
-        const newSmokeArray = [...prev, newSmoke];
-        return newSmokeArray;
-      });
-      
-      // Animate smoke rising using Animated.timing
-      const riseAnimation = Animated.timing(animatedY, {
-        toValue: startY - riseDistance,
-        duration: riseDuration,
-        useNativeDriver: false, // We need to animate position
-      });
-      
-      const opacityAnimation = Animated.timing(animatedOpacity, {
-        toValue: 0.1, // Fade out to 10% opacity
-        duration: riseDuration,
-        useNativeDriver: false,
-      });
-      
-      const scaleAnimation = Animated.timing(animatedScale, {
-        toValue: randomScale * 1.4, // Expand as it rises
-        duration: riseDuration,
-        useNativeDriver: false,
-      });
-      
-      // Run all animations in parallel
-      Animated.parallel([riseAnimation, opacityAnimation, scaleAnimation]).start(() => {
-        // Remove smoke particle when animation completes
-        setTimeout(() => {
-          setSmoke(prev => {
-            const filteredSmoke = prev.filter(particle => particle.id !== particleId);
-            return filteredSmoke;
-          });
-        }, 300);
-      });
-      
-      // Create next smoke particle after a delay (only if animation is still running)
-      if (smokeAnimationRef.current) {
-        setTimeout(() => {
-          createSmokeParticle();
-        }, 50 + Math.random() * 67); // 50-117ms between particles (3x quantity)
-      }
-    };
-    
-    // Start creating smoke particles for modal after a small delay to ensure modal is rendered
-    setTimeout(() => {
-      createSmokeParticle();
-    }, 50); // Reduced from 200ms to 50ms for faster response
-    
-    // Automatically stop smoke animation after 10 seconds
-    setTimeout(() => {
-      smokeAnimationRef.current = false;
-      setIsSmokeAnimationRunning(false);
-      setSmoke([]); // Clear all smoke particles
-      setShowSmokeModal(false); // Close the modal
-    }, 10000);
-  };
 
   // Dynamic style for temple scroll content positioning
   const templeScrollContentStyle = useMemo(() => ({
@@ -1583,7 +1446,7 @@ export default function DailyPujaCustomTemple() {
                 {preloadProgress >= 15 && preloadProgress < 30 && '🪔 Preparing arti thali...'}
                 {preloadProgress >= 30 && preloadProgress < 45 && '🔔 Loading divine bells...'}
                 {preloadProgress >= 45 && preloadProgress < 60 && '🐚 Preparing shankh...'}
-                {preloadProgress >= 60 && preloadProgress < 75 && '💨 Loading dhoop...'}
+        
                 {preloadProgress >= 75 && preloadProgress < 90 && '🙏 Loading deities...'}
                 {preloadProgress >= 90 && preloadProgress < 100 && '🏛️ Preparing temple...'}
                 {preloadProgress === 100 && '🎉 Ready for divine puja!'}
@@ -1760,7 +1623,7 @@ export default function DailyPujaCustomTemple() {
           ) : null}
         </View>
         
-        {/* Left Puja Icons Column - Flowers, Aarti, Dhoop */}
+        {/* Left Puja Icons Column - Flowers, Aarti */}
         {!showS3Gallery && (
           <View style={styles.leftPujaIconsColumn}>
           <TouchableOpacity 
@@ -1804,24 +1667,7 @@ export default function DailyPujaCustomTemple() {
             <Text style={styles.pujaIcon}>🕉️</Text>
             <Text style={styles.pujaIconLabel}>Aarti</Text>
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[
-              styles.pujaIconItem,
-              isSmokeAnimationRunning && styles.pujaIconItemDisabled
-            ]} 
-            onPress={() => setShowSmokeModal(true)}
-            disabled={isSmokeAnimationRunning}
-            activeOpacity={0.7}
-          >
-            <Text style={[
-              styles.pujaIcon,
-              isSmokeAnimationRunning && styles.pujaIconDisabled
-            ]}>💨</Text>
-            <Text style={[
-              styles.pujaIconLabel,
-              isSmokeAnimationRunning && styles.pujaIconLabelDisabled
-            ]}>Dhoop</Text>
-          </TouchableOpacity>
+
         </View>
         )}
 
@@ -1966,14 +1812,7 @@ export default function DailyPujaCustomTemple() {
               <Text style={styles.pujaIcon}>🕉️</Text>
               <Text style={styles.pujaIconLabel}>Aarti</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.pujaIconItem} 
-              onPress={() => setShowSmokeModal(true)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.pujaIcon}>💨</Text>
-              <Text style={styles.pujaIconLabel}>Dhoop</Text>
-            </TouchableOpacity>
+
           </View>
 
           {/* Puja Icons - Right Column */}
@@ -2211,78 +2050,7 @@ export default function DailyPujaCustomTemple() {
         </View>
       </Modal>
        
-       {/* Smoke Effect Modal - Fully transparent background */}
-       <Modal
-         visible={showSmokeModal}
-         transparent={true}
-         animationType="none"
-         onRequestClose={() => {
-           setIsSmokeAnimationRunning(false);
-           smokeAnimationRef.current = false;
-           setShowSmokeModal(false);
-           setSmoke([]); // Clear all smoke particles
-         }}
-         statusBarTranslucent={true}
-       >
-         <TouchableOpacity 
-           style={styles.smokeModalOverlay}
-           activeOpacity={1}
-           onPress={() => {
-             setIsSmokeAnimationRunning(false);
-             smokeAnimationRef.current = false;
-             setShowSmokeModal(false);
-             setSmoke([]); // Clear all smoke particles
-           }}
-         >
-           {/* Multiple Dhoop images horizontally centered */}
-           {[0, 1, 2, 3, 4].map((index) => {
-             const totalWidth = 128 * 5; // 5 images * 128px width
-             const spacing = 10; // 10px gap between images
-             const totalSpacing = spacing * 4; // 4 gaps between 5 images
-             const totalGroupWidth = totalWidth + totalSpacing;
-             const startX = (screenWidth - totalGroupWidth) / 2; // Center the group
-             const leftPosition = startX + (index * (128 + spacing));
-             
-             return (
-               <Image
-                 key={index}
-                 source={require('@/assets/images/icons/own temple/puja essential/Dhoop.png')}
-                 style={[
-                   styles.dhoopImage,
-                   {
-                     left: leftPosition,
-                     bottom: selectedStyle === 'temple1' ? 285 : 335, // 50px lower (closer to bottom) for temple1
-                     width: 128, // 20% smaller (160 * 0.8)
-                     height: 128, // 20% smaller (160 * 0.8)
-                   }
-                 ]}
-                 resizeMode="contain"
-               />
-             );
-           })}
-           
-           {/* Smoke particles rendered in the modal */}
-           {smoke.map((particle) => (
-             <Animated.View
-               key={particle.id}
-               style={[
-                 styles.smokeParticle,
-                 {
-                   left: particle.x,
-                   top: particle.animatedY,
-                   opacity: particle.animatedOpacity,
-                   transform: [
-                     { rotate: `${particle.rotation}deg` },
-                     { scale: particle.animatedScale },
-                   ],
-                 },
-               ]}
-             >
-               <Text style={styles.smokeEmoji}>💨</Text>
-             </Animated.View>
-           ))}
-         </TouchableOpacity>
-       </Modal>
+
        
        {/* Aarti Modal */}
        <Modal
@@ -2348,7 +2116,7 @@ const styles = StyleSheet.create({
      left: 40,
      width: 62.4,
      height: 117,
-     zIndex: 1,
+     zIndex: 1100,
    },
    bellRight: {
      position: 'absolute',
@@ -2356,7 +2124,7 @@ const styles = StyleSheet.create({
      right: 40,
      width: 62.4,
      height: 117,
-     zIndex: 1,
+     zIndex: 1100,
    },
    archImage: {
      position: 'absolute',
@@ -2532,7 +2300,7 @@ const styles = StyleSheet.create({
                backgroundColor: 'transparent',
                justifyContent: 'center',
                alignItems: 'center',
-               zIndex: 1000,
+               zIndex: 2000,
              },
              modalOverlayTouchable: {
                flex: 1,
@@ -2623,28 +2391,7 @@ const styles = StyleSheet.create({
             bottom: 0,
             zIndex: 5, // Above temple but below bells and arch
           },
-    smokeParticle: {
-      position: 'absolute',
-      zIndex: 30, // Above deities (zIndex: 15) in the same container
-    },
-    smokeEmoji: {
-      fontSize: 60, // Increased from 40
-      textShadowColor: 'rgba(0, 0, 0, 0.9)', // Much darker shadow
-      textShadowOffset: { width: 3, height: 3 },
-      textShadowRadius: 6, // Increased shadow radius
-      color: '#000000', // Black color for better visibility on white background
-    },
-    smokeModalOverlay: {
-      flex: 1,
-      backgroundColor: 'transparent', // Changed from white to transparent
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
-    },
-    dhoopImage: {
-      position: 'absolute',
-      zIndex: 25, // Above smoke particles
-    },
+
     aartiContainer: {
       alignItems: 'center',
       justifyContent: 'center',
@@ -2754,7 +2501,7 @@ const styles = StyleSheet.create({
       backgroundColor: 'transparent',
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 1000,
+      zIndex: 2000,
     },
     aartiModalOverlayTouchable: {
       flex: 1,
