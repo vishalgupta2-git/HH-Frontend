@@ -1364,8 +1364,8 @@ const styles = StyleSheet.create({
     templesDeitiesContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 20,
-      paddingVertical: 20,
+      gap: -12,
+      paddingVertical: 5,
     },
     templesDeitiesButton: {
       alignItems: 'center',
@@ -1377,9 +1377,9 @@ const styles = StyleSheet.create({
       marginBottom: 8,
     },
     templesDeitiesGradient: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
+      width: 50,
+      height: 50,
+      borderRadius: 25,
       marginBottom: 8,
     },
     templesDeitiesLabel: {
