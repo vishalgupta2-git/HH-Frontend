@@ -343,11 +343,10 @@ export default function DailyPujaCustomTemple() {
         console.log('🔔 Preloading bell images...');
         const bellImages = [
           require('@/assets/images/temple/GoldenBell.png'),
-          require('@/assets/images/temple/Glow.png'),
         ];
         
         const bellResults = await Promise.all(bellImages.map(async (image, index) => {
-          const bellNames = ['GoldenBell', 'Glow'];
+          const bellNames = ['GoldenBell'];
           return await safePrefetchImage(image, `bell ${bellNames[index]}`);
         }));
         const successfulBells = bellResults.filter(result => result).length;
@@ -401,12 +400,10 @@ export default function DailyPujaCustomTemple() {
         const templeImages = [
           require('@/assets/images/temple/Temple1.png'),
           require('@/assets/images/temple/Temple2.png'),
-          require('@/assets/images/temple/Temple-bg.png'),
-          require('@/assets/images/temple/TempleStar.png'),
         ];
         
         const templeResults = await Promise.all(templeImages.map(async (image, index) => {
-          const templeNames = ['Temple1', 'Temple2', 'Temple-bg', 'TempleStar'];
+          const templeNames = ['Temple1', 'Temple2'];
           return await safePrefetchImage(image, `temple ${templeNames[index]}`);
         }));
         const successfulTemples = templeResults.filter(result => result).length;
@@ -604,14 +601,8 @@ export default function DailyPujaCustomTemple() {
         return require('@/assets/images/temple/Temple1.png');
       case 'Temple2.png':
         return require('@/assets/images/temple/Temple2.png');
-      case 'Temple-bg.png':
-        return require('@/assets/images/temple/Temple-bg.png');
-      case 'TempleStar.png':
-        return require('@/assets/images/temple/TempleStar.png');
       case 'GoldenBell.png':
         return require('@/assets/images/temple/GoldenBell.png');
-      case 'Glow.png':
-        return require('@/assets/images/temple/Glow.png');
       case 'arch.svg':
         return require('@/assets/images/temple/arch.svg');
       default:

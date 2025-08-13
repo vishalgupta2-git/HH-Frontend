@@ -48,12 +48,6 @@ export default function TempleScreen() {
       />
       {/* Arch on top */}
       <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
-      {/* TempleStar.png at ~100px from top */}
-      <Image
-        source={require('@/assets/images/temple/TempleStar.png')}
-        style={styles.templeStar}
-        resizeMode="contain"
-      />
       {/* Temple1.png below arch, above motivational text */}
       <Image
         source={require('@/assets/images/temple/Temple1.png')}
@@ -80,16 +74,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     zIndex: 2,
   },
-  templeStar: {
-    position: 'absolute',
-    top: 100, // was 120
-    left: '2%',
-    width: '96%',
-    height: undefined,
-    aspectRatio: 1,
-    zIndex: 3,
-    alignSelf: 'center',
-  },
+
   temple1: {
     width: screenWidth * 1.15,
     height: undefined,

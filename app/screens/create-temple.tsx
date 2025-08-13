@@ -189,10 +189,8 @@ const getImageSource = (imagePath: string) => {
         return require('@/assets/images/temple/Temple1.png');
       case 'Temple2.png':
         return require('@/assets/images/temple/Temple2.png');
-             case 'TempleStar.png':
-         return require('@/assets/images/temple/TempleStar.png');
-       case 'GoldenBell.png':
-         return require('@/assets/images/temple/GoldenBell.png');
+                   case 'GoldenBell.png':
+        return require('@/assets/images/temple/GoldenBell.png');
        case 'arch.svg':
          return require('@/assets/images/temple/arch.svg');
       default:
