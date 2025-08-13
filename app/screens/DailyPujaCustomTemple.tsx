@@ -8,11 +8,26 @@ import { Audio } from 'expo-av';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 import { markDailyPujaVisited } from '@/utils/dailyPujaUtils';
 import { loadTempleConfiguration } from '@/utils/templeUtils';
+import { getApiUrl } from '@/constants/ApiConfig';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const TEMPLE_CONFIG_KEY = 'templeConfig';
 const SELECTED_DEITIES_KEY = 'selectedDeities';
 const DEITY_STATE_KEY = 'deityState';
+
+// S3 Image Gallery Interfaces
+interface S3Image {
+  key: string;
+  name: string;
+  url: string;
+  size: number;
+}
+
+interface ImageFolder {
+  name: string;
+  prefix: string;
+  images: S3Image[];
+}
 
 const deityList = [
   { key: 'ganesh', label: 'Ganesh Ji', icon: '🕉️' },
@@ -226,6 +241,15 @@ export default function DailyPujaCustomTemple() {
   const [leftBellSwing, setLeftBellSwing] = useState(new Animated.Value(0));
   const [rightBellSwing, setRightBellSwing] = useState(new Animated.Value(0));
   const [thaliImageLoaded, setThaliImageLoaded] = useState(false);
+  
+  // S3 Image Gallery State
+  const [s3Folders, setS3Folders] = useState<ImageFolder[]>([]);
+  const [currentS3FolderIndex, setCurrentS3FolderIndex] = useState(0);
+  const [currentS3ImageIndex, setCurrentS3ImageIndex] = useState(0);
+  const [currentS3ImageUrl, setCurrentS3ImageUrl] = useState<string>('');
+  const [showS3Gallery, setShowS3Gallery] = useState(false);
+  const [s3Loading, setS3Loading] = useState(false);
+  
   const smokeAnimationRef = useRef(false);
   const router = useRouter();
 
@@ -261,6 +285,187 @@ export default function DailyPujaCustomTemple() {
       console.error('Error playing welcome bell sound:', error);
     }
   };
+
+  // S3 Image Gallery Functions
+  const isImageKey = (key: string) => {
+    const lower = key.toLowerCase();
+    return (
+      lower.endsWith('.jpg') ||
+      lower.endsWith('.jpeg') ||
+      lower.endsWith('.png') ||
+      lower.endsWith('.webp') ||
+      lower.endsWith('.gif')
+    );
+  };
+
+  const extractFolderNames = (files: any[]): string[] => {
+    const folderNames = new Set<string>();
+    
+    files.forEach(file => {
+      if (file.key && file.key.startsWith('dailytemples/')) {
+        const parts = file.key.split('/');
+        if (parts.length >= 2 && parts[0] === 'dailytemples' && parts[1] && parts[1] !== '') {
+          folderNames.add(parts[1]);
+        }
+      }
+    });
+    
+    return Array.from(folderNames).sort();
+  };
+
+  const fetchPresignedUrl = async (key: string): Promise<string | null> => {
+    try {
+      const presignedUrl = getApiUrl(`/api/s3/download-url?key=${encodeURIComponent(key)}&expiresIn=3600`);
+      const res = await fetch(presignedUrl);
+      const data = await res.json();
+      if (data && data.success && data.presignedUrl) {
+        return data.presignedUrl;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const fetchAllImagesAndOrganize = async (): Promise<ImageFolder[]> => {
+    try {
+      const apiUrl = getApiUrl('/api/s3/files?prefix=dailytemples/&maxKeys=1000');
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      
+      if (data && data.success && Array.isArray(data.files)) {
+        const folderNames = extractFolderNames(data.files);
+        const organizedFolders: ImageFolder[] = [];
+        
+        for (const folderName of folderNames) {
+          const folderPrefix = `dailytemples/${folderName}/`;
+          const folderImages = data.files.filter((f: any) => 
+            f && typeof f.key === 'string' && 
+            f.key.startsWith(folderPrefix) && 
+            f.key !== folderPrefix && 
+            isImageKey(f.key)
+          );
+          
+          if (folderImages.length > 0) {
+            const images: S3Image[] = folderImages.map((f: any) => ({
+              key: f.key,
+              name: f.key.split('/').pop() || f.key,
+              url: '',
+              size: f.size || 0,
+            }));
+            
+            organizedFolders.push({
+              name: folderName.replace(/([A-Z])/g, ' $1').trim(),
+              prefix: folderPrefix,
+              images: images
+            });
+          }
+        }
+        
+        return organizedFolders;
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const handleNextToS3Gallery = async () => {
+    if (Object.keys(selectedDeities).length === 0) {
+      Alert.alert('No Deities Selected', 'Please select at least one deity before proceeding.');
+      return;
+    }
+    
+    setS3Loading(true);
+    try {
+      const allFolders = await fetchAllImagesAndOrganize();
+      
+      if (allFolders.length > 0) {
+        setS3Folders(allFolders);
+        setCurrentS3FolderIndex(0);
+        setCurrentS3ImageIndex(0);
+        
+        const firstImage = allFolders[0].images[0];
+        const firstImageUrl = await fetchPresignedUrl(firstImage.key);
+        
+        if (firstImageUrl) {
+          setCurrentS3ImageUrl(firstImageUrl);
+          setShowS3Gallery(true);
+        } else {
+          Alert.alert('Error', 'Failed to load first image. Please try again.');
+        }
+      } else {
+        Alert.alert('No Images Found', 'No temple images are currently available.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load temple images. Please try again.');
+    } finally {
+      setS3Loading(false);
+    }
+  };
+
+  const navigateToNextS3Folder = () => {
+    if (currentS3FolderIndex < s3Folders.length - 1) {
+      setCurrentS3FolderIndex(currentS3FolderIndex + 1);
+      setCurrentS3ImageIndex(0);
+    } else {
+      // Return to deities after last folder
+      setShowS3Gallery(false);
+      setS3Folders([]);
+      setCurrentS3FolderIndex(0);
+      setCurrentS3ImageIndex(0);
+      setCurrentS3ImageUrl('');
+    }
+  };
+
+  const navigateToPreviousS3Folder = () => {
+    if (currentS3FolderIndex > 0) {
+      setCurrentS3FolderIndex(currentS3FolderIndex - 1);
+      setCurrentS3ImageIndex(0);
+    }
+  };
+
+  const navigateToNextS3Image = () => {
+    const currentFolder = s3Folders[currentS3FolderIndex];
+    if (currentS3ImageIndex < currentFolder.images.length - 1) {
+      setCurrentS3ImageIndex(currentS3ImageIndex + 1);
+    } else {
+      // Move to next folder if available
+      if (currentS3FolderIndex < s3Folders.length - 1) {
+        setCurrentS3FolderIndex(currentS3FolderIndex + 1);
+        setCurrentS3ImageIndex(0);
+      }
+    }
+  };
+
+  const navigateToPreviousS3Image = () => {
+    if (currentS3ImageIndex > 0) {
+      setCurrentS3ImageIndex(currentS3ImageIndex - 1);
+    } else {
+      // Move to previous folder if available
+      if (currentS3FolderIndex > 0) {
+        setCurrentS3FolderIndex(currentS3FolderIndex - 1);
+        const previousFolder = s3Folders[currentS3FolderIndex - 1];
+        setCurrentS3ImageIndex(previousFolder.images.length - 1);
+      }
+    }
+  };
+
+  // Update S3 image URL when folder or image index changes
+  useEffect(() => {
+    if (showS3Gallery && s3Folders.length > 0 && 
+        currentS3FolderIndex < s3Folders.length && 
+        currentS3ImageIndex < s3Folders[currentS3FolderIndex].images.length) {
+      
+      const currentImage = s3Folders[currentS3FolderIndex].images[currentS3ImageIndex];
+      fetchPresignedUrl(currentImage.key).then(url => {
+        if (url) {
+          setCurrentS3ImageUrl(url);
+        }
+      });
+    }
+  }, [currentS3FolderIndex, currentS3ImageIndex, s3Folders, showS3Gallery]);
 
   // Mark that user has visited daily puja screen today and play welcome bell
   useEffect(() => {
@@ -1412,23 +1617,29 @@ export default function DailyPujaCustomTemple() {
       />
       
       {/* Invisible ScrollView for temple positioning */}
-      <ScrollView 
-        style={styles.templeScrollView}
-        contentContainerStyle={templeScrollContentStyle}
-        scrollEnabled={false}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Temple image chosen by user */}
-        <Image
-          source={templeStyles.find(t => t.id === selectedStyle)?.image}
-          style={styles.templeImage}
-          resizeMode="contain"
-        />
-      </ScrollView>
+      {!showS3Gallery && (
+        <ScrollView 
+          style={styles.templeScrollView}
+          contentContainerStyle={templeScrollContentStyle}
+          scrollEnabled={false}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Temple image chosen by user */}
+          <Image
+            source={templeStyles.find(t => t.id === selectedStyle)?.image}
+            style={styles.templeImage}
+            resizeMode="contain"
+          />
+        </ScrollView>
+      )}
       
       {/* Bells: left and right */}
-      <SwingableBell position="left" swingValue={leftBellSwing} />
-      <SwingableBell position="right" swingValue={rightBellSwing} />
+      {!showS3Gallery && (
+        <>
+          <SwingableBell position="left" swingValue={leftBellSwing} />
+          <SwingableBell position="right" swingValue={rightBellSwing} />
+        </>
+      )}
              {/* Arch on top */}
        <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
        
@@ -1550,7 +1761,8 @@ export default function DailyPujaCustomTemple() {
         </View>
         
         {/* Left Puja Icons Column - Flowers, Aarti, Dhoop */}
-        <View style={styles.leftPujaIconsColumn}>
+        {!showS3Gallery && (
+          <View style={styles.leftPujaIconsColumn}>
           <TouchableOpacity 
             style={[
               styles.pujaIconItem, 
@@ -1611,23 +1823,176 @@ export default function DailyPujaCustomTemple() {
             ]}>Dhoop</Text>
           </TouchableOpacity>
         </View>
+        )}
 
         {/* Right Puja Icons Column - Ghanti, Shankh */}
-        <View style={styles.rightPujaIconsColumn}>
-          <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
-            <Text style={styles.pujaIcon}>🔔</Text>
-            <Text style={styles.pujaIconLabel}>Ghanti</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
-            <Image 
-              source={require('@/assets/images/icons/own temple/sankha.png')}
-              style={styles.pujaIconImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.pujaIconLabel}>Shankh</Text>
-          </TouchableOpacity>
-        </View>
+        {!showS3Gallery && (
+          <View style={styles.rightPujaIconsColumn}>
+            <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
+              <Text style={styles.pujaIcon}>🔔</Text>
+              <Text style={styles.pujaIconLabel}>Ghanti</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
+              <Image 
+                source={require('@/assets/images/icons/own temple/sankha.png')}
+                style={styles.pujaIconImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.pujaIconLabel}>Shankh</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Next Button - Center */}
+        {!showS3Gallery && (
+          <View style={styles.nextButtonContainer}>
+            <TouchableOpacity 
+              style={[styles.nextButton, s3Loading && styles.nextButtonDisabled]} 
+              onPress={handleNextToS3Gallery}
+              disabled={s3Loading}
+              activeOpacity={0.7}
+            >
+              {s3Loading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <>
+                  <Text style={styles.nextButtonText}>Next</Text>
+                  <Text style={styles.nextButtonSubtext}>Explore Temples</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
+
+      {/* S3 Image Gallery - Overlay when active */}
+      {showS3Gallery && (
+        <View style={styles.s3GalleryOverlay}>
+          {/* Purple Gradient Background (same as main screen) */}
+          <LinearGradient
+            colors={bgGradient as any}
+            style={styles.purpleGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+          
+          {/* Arch on top (same as main screen) */}
+          <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
+          
+          {/* Bells: left and right (same as main screen) */}
+          <SwingableBell position="left" swingValue={leftBellSwing} />
+          <SwingableBell position="right" swingValue={rightBellSwing} />
+          
+          {/* Header - Removed */}
+
+          {/* Main Image */}
+          <View style={styles.s3ImageContainer}>
+            {currentS3ImageUrl ? (
+              <Image
+                source={{ uri: currentS3ImageUrl }}
+                style={styles.s3MainImage}
+                resizeMode="contain"
+                onError={() => Alert.alert('Error', 'Failed to load image')}
+              />
+            ) : (
+              <View style={styles.s3ImagePlaceholder}>
+                <ActivityIndicator size="large" color="#FF6A00" />
+                <Text style={styles.s3ImagePlaceholderText}>Loading...</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Navigation Controls */}
+          <View style={styles.s3NavigationContainer}>
+            <TouchableOpacity 
+              style={styles.s3NavButton} 
+              onPress={navigateToPreviousS3Folder}
+              disabled={currentS3FolderIndex === 0}
+            >
+              <Text style={[styles.s3NavButtonText, currentS3FolderIndex === 0 && styles.s3NavButtonTextDisabled]}>
+                ◀ Previous Folder
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.s3NavButton} 
+              onPress={navigateToNextS3Folder}
+            >
+              <Text style={styles.s3NavButtonText}>
+                {currentS3FolderIndex < s3Folders.length - 1 ? 'Next Folder ▶' : 'Back to Deities ▶'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.s3ImageNavigationContainer}>
+            <TouchableOpacity 
+              style={styles.s3NavButton} 
+              onPress={navigateToPreviousS3Image}
+              disabled={currentS3ImageIndex === 0 && currentS3FolderIndex === 0}
+            >
+              <Text style={[styles.s3NavButtonText, currentS3ImageIndex === 0 && currentS3FolderIndex === 0 && styles.s3NavButtonTextDisabled]}>
+                ▲ Previous Image
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.s3NavButton} 
+              onPress={navigateToNextS3Image}
+              disabled={currentS3ImageIndex === s3Folders[currentS3FolderIndex]?.images.length - 1 && currentS3FolderIndex === s3Folders.length - 1}
+            >
+              <Text style={[styles.s3NavButtonText, currentS3ImageIndex === s3Folders[currentS3FolderIndex]?.images.length - 1 && currentS3FolderIndex === s3Folders.length - 1 && styles.s3NavButtonTextDisabled]}>
+                Next Image ▼
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+
+
+          {/* Puja Icons - Left Column */}
+          <View style={styles.s3LeftPujaIconsColumn}>
+            <TouchableOpacity 
+              style={styles.pujaIconItem} 
+              onPress={() => setShowFlowerModal(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.pujaIcon}>🌸</Text>
+              <Text style={styles.pujaIconLabel}>Flowers</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.pujaIconItem}
+              onPress={handleAarti}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.pujaIcon}>🕉️</Text>
+              <Text style={styles.pujaIconLabel}>Aarti</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.pujaIconItem} 
+              onPress={() => setShowSmokeModal(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.pujaIcon}>💨</Text>
+              <Text style={styles.pujaIconLabel}>Dhoop</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Puja Icons - Right Column */}
+          <View style={styles.s3RightPujaIconsColumn}>
+            <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
+              <Text style={styles.pujaIcon}>🔔</Text>
+              <Text style={styles.pujaIconLabel}>Ghanti</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
+              <Image 
+                source={require('@/assets/images/icons/own temple/sankha.png')}
+                style={styles.pujaIconImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.pujaIconLabel}>Shankh</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
   
              {/* Flower Selection Modal - Moved outside main container */}
        <Modal
@@ -2410,5 +2775,170 @@ const styles = StyleSheet.create({
       backgroundColor: '#FF6A00',
       borderRadius: 2.5,
       width: '100%',
+    },
+    // Next Button Styles
+    nextButtonContainer: {
+      position: 'absolute',
+      bottom: 100,
+      left: 0,
+      right: 0,
+      alignItems: 'center',
+      zIndex: 15,
+    },
+    nextButton: {
+      backgroundColor: '#FF6A00',
+      borderRadius: 25,
+      paddingVertical: 15,
+      paddingHorizontal: 40,
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 4,
+    },
+    nextButtonDisabled: {
+      backgroundColor: '#ccc',
+      opacity: 0.7,
+    },
+    nextButtonText: {
+      color: '#fff',
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 2,
+    },
+    nextButtonSubtext: {
+      color: '#fff',
+      fontSize: 12,
+      opacity: 0.9,
+    },
+    // S3 Gallery Styles
+    s3GalleryOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'transparent',
+      zIndex: 1000,
+    },
+    s3GalleryHeader: {
+      paddingTop: 50,
+      paddingBottom: 20,
+      paddingHorizontal: 20,
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      borderRadius: 15,
+      margin: 20,
+      marginTop: 100,
+    },
+    s3GalleryTitle: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: 'white',
+      marginBottom: 5,
+    },
+    s3GallerySubtitle: {
+      fontSize: 16,
+      color: 'white',
+      opacity: 0.9,
+    },
+    s3ImageContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+      minHeight: 400,
+      marginTop: 100,
+    },
+    s3MainImage: {
+      borderRadius: 15,
+      minHeight: 200,
+      minWidth: 200,
+      transform: [{ scale: 2 }],
+    },
+    s3ImagePlaceholder: {
+      borderRadius: 15,
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    s3ImagePlaceholderText: {
+      color: 'white',
+      fontSize: 16,
+      marginTop: 10,
+    },
+
+    s3NavigationContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingVertical: 15,
+    },
+    s3ImageNavigationContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingHorizontal: 20,
+      paddingVertical: 15,
+    },
+    s3NavButton: {
+      backgroundColor: 'rgba(255, 106, 0, 0.8)',
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderRadius: 25,
+      minWidth: 120,
+      alignItems: 'center',
+    },
+    s3NavButtonText: {
+      color: 'white',
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    s3NavButtonTextDisabled: {
+      opacity: 0.5,
+    },
+    s3InfoContainer: {
+      padding: 20,
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+      margin: 20,
+      borderRadius: 15,
+    },
+    s3FolderInfo: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: '600',
+      marginBottom: 5,
+    },
+    s3ImageInfo: {
+      color: 'white',
+      fontSize: 14,
+      opacity: 0.8,
+    },
+    // S3 Puja Icons Styles
+    s3LeftPujaIconsColumn: {
+      position: 'absolute',
+      left: 0,
+      top: 250,
+      width: 80,
+      zIndex: 1010,
+      backgroundColor: 'transparent',
+      borderRightWidth: 0,
+      paddingVertical: 20,
+      paddingHorizontal: 5,
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+    },
+    s3RightPujaIconsColumn: {
+      position: 'absolute',
+      right: 0,
+      top: 250,
+      width: 80,
+      zIndex: 1010,
+      backgroundColor: 'transparent',
+      borderLeftWidth: 0,
+      paddingVertical: 20,
+      paddingHorizontal: 5,
+      alignItems: 'center',
+      justifyContent: 'flex-start',
     },
   });  
