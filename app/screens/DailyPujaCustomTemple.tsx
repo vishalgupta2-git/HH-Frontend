@@ -1968,6 +1968,7 @@ const styles = StyleSheet.create({
      bottom: 0,
      zIndex: 0,
    },
+
    templeScrollView: {
      position: 'absolute',
      top: 0,

@@ -35,68 +35,45 @@ export default function TempleScreen() {
   const router = useRouter();
   return (
     <View style={styles.container}>
-      <ImageBackground
-        source={require('@/assets/images/temple/Temple-bg.png')}
-        style={styles.bgImage}
-        resizeMode="cover"
-      >
-        {/* Bells: left and right, 60px from each side, in front of bg but behind arch */}
-        <Image
-          source={require('@/assets/images/temple/GoldenBell.png')}
-          style={styles.bellLeft}
-          resizeMode="contain"
-        />
-        <Image
-          source={require('@/assets/images/temple/GoldenBell.png')}
-          style={styles.bellRight}
-          resizeMode="contain"
-        />
-        {/* Glow.png at 200px from top, behind arch */}
-        <Image
-          source={require('@/assets/images/temple/Glow.png')}
-          style={styles.glow}
-          resizeMode="contain"
-        />
-        {/* Arch on top of Glow */}
-        <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
-        {/* TempleStar.png at ~100px from top, in front of bg */}
-        <Image
-          source={require('@/assets/images/temple/TempleStar.png')}
-          style={styles.templeStar}
-          resizeMode="contain"
-        />
-        {/* Temple1.png below arch, above motivational text */}
-        <Image
-          source={require('@/assets/images/temple/Temple1.png')}
-          style={styles.temple1}
-          resizeMode="contain"
-        />
-        <View style={styles.content}>
-          <Text style={styles.motivation}>
-            Maintain your spirituality by creating{"\n"}a virtual temple with a virtual deity.
-          </Text>
-          <TouchableOpacity style={styles.createBtn} onPress={() => router.push('/screens/create-temple')}>
-            <Text style={styles.createBtnText}>Create temple</Text>
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
+      {/* Bells: left and right, 60px from each side, behind arch */}
+      <Image
+        source={require('@/assets/images/temple/GoldenBell.png')}
+        style={styles.bellLeft}
+        resizeMode="contain"
+      />
+      <Image
+        source={require('@/assets/images/temple/GoldenBell.png')}
+        style={styles.bellRight}
+        resizeMode="contain"
+      />
+      {/* Arch on top */}
+      <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
+      {/* TempleStar.png at ~100px from top */}
+      <Image
+        source={require('@/assets/images/temple/TempleStar.png')}
+        style={styles.templeStar}
+        resizeMode="contain"
+      />
+      {/* Temple1.png below arch, above motivational text */}
+      <Image
+        source={require('@/assets/images/temple/Temple1.png')}
+        style={styles.temple1}
+        resizeMode="contain"
+      />
+      <View style={styles.content}>
+        <Text style={styles.motivation}>
+          Maintain your spirituality by creating{"\n"}a virtual temple with a virtual deity.
+        </Text>
+        <TouchableOpacity style={styles.createBtn} onPress={() => router.push('/screens/create-temple')}>
+          <Text style={styles.createBtnText}>Create temple</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  bgImage: { flex: 1, width: '100%', height: '100%' },
-  glow: {
-    position: 'absolute',
-    top: 200,
-    left: 0,
-    right: 0,
-    width: '100%',
-    height: 120,
-    zIndex: 1,
-    alignSelf: 'center',
-  },
   archImage: {
     marginBottom: 0,
     marginTop: 0,
