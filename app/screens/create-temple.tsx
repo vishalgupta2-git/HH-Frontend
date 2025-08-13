@@ -1372,8 +1372,8 @@ const styles = StyleSheet.create({
       minWidth: 100,
     },
     templesDeitiesIcon: {
-      width: 60,
-      height: 60,
+      width: 70,
+      height: 70,
       marginBottom: 8,
     },
     templesDeitiesGradient: {
