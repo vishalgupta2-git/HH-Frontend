@@ -1839,6 +1839,8 @@ export default function DailyPujaCustomTemple() {
           
           {/* Header - Removed */}
 
+          
+
           {/* Folder Navigation Icons - Horizontal Scroll */}
           <View style={styles.folderNavigationContainer}>
             <ScrollView 
@@ -1846,7 +1848,7 @@ export default function DailyPujaCustomTemple() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.folderNavigationContent}
             >
-                            {s3Folders.map((folder, index) => {
+              {s3Folders.map((folder, index) => {
                 const isActive = index === currentS3FolderIndex;
                 const iconImage = folder.iconImage;
                 
@@ -1927,27 +1929,7 @@ export default function DailyPujaCustomTemple() {
             )}
           </View>
 
-          {/* Navigation Controls */}
-          <View style={styles.s3NavigationContainer}>
-            <TouchableOpacity 
-              style={styles.s3NavButton} 
-              onPress={navigateToPreviousS3Folder}
-              disabled={currentS3FolderIndex === 0}
-            >
-              <Text style={[styles.s3NavButtonText, currentS3FolderIndex === 0 && styles.s3NavButtonTextDisabled]}>
-                ◀ Previous Folder
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.s3NavButton} 
-              onPress={navigateToNextS3Folder}
-            >
-              <Text style={styles.s3NavButtonText}>
-                {currentS3FolderIndex < s3Folders.length - 1 ? 'Next Folder ▶' : 'Back to Deities ▶'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+
 
           <View style={styles.s3ImageNavigationContainer}>
             <TouchableOpacity 
@@ -2966,4 +2948,63 @@ const styles = StyleSheet.create({
       color: '#FF6A00',
       fontWeight: 'bold',
     },
-  });  
+    // Deity Dropdown Styles
+    deityDropdownContainer: {
+      position: 'absolute',
+      top: 20,
+      left: '50%',
+      transform: [{ translateX: -20 }], // Center the 40% width dropdown
+      width: '40%',
+      zIndex: 1040,
+    },
+    deityDropdownButton: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.2)', // 80% transparent background
+      paddingHorizontal: 15,
+      paddingVertical: 12,
+      borderRadius: 25,
+      borderWidth: 2,
+      borderColor: '#FF6A00',
+    },
+    deityDropdownButtonText: {
+      fontSize: 10, // Reduced to 10px
+      fontWeight: '600',
+      color: '#333',
+    },
+    deityDropdownArrow: {
+      fontSize: 10, // Reduced to 10px
+      color: '#FF6A00',
+      fontWeight: 'bold',
+    },
+    deityDropdownList: {
+      backgroundColor: 'rgba(255, 255, 255, 0.2)', // 80% transparent background
+      borderRadius: 15,
+      marginTop: 5,
+      maxHeight: 200,
+      borderWidth: 2,
+      borderColor: '#FF6A00',
+    },
+    deityDropdownScroll: {
+      paddingVertical: 10,
+    },
+    deityDropdownItem: {
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: 'rgba(0, 0, 0, 0.1)',
+    },
+    deityDropdownItemActive: {
+      backgroundColor: 'rgba(255, 106, 0, 0.1)',
+    },
+    deityDropdownItemText: {
+      fontSize: 10, // Reduced to 10px
+      color: '#333',
+      textAlign: 'center',
+    },
+    deityDropdownItemTextActive: {
+      color: '#FF6A00',
+      fontWeight: 'bold',
+    },
+  }); // End of StyleSheet
