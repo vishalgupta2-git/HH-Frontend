@@ -331,31 +331,44 @@ export default function DailyPujaCustomTemple() {
     try {
       // Stop any currently playing sound
       if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
+        try {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        } catch (error) {
+          // Ignore errors when stopping/unloading existing sound
+        }
       }
 
-      // Load and play the temple bell sound
+      // Load the temple bell sound first
       const { sound: newSound } = await Audio.Sound.createAsync(
         require('@/assets/sounds/TempleBell.mp3'),
-        { shouldPlay: true, isLooping: false }
+        { shouldPlay: false, isLooping: false } // Don't auto-play, load first
       );
+      
+      // Wait a moment for the sound to be fully loaded
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Now play the sound
+      await newSound.playAsync();
       
       setSound(newSound);
 
       // Stop the sound after 2 seconds
       setTimeout(async () => {
         try {
-          await newSound.stopAsync();
-          await newSound.unloadAsync();
+          if (newSound) {
+            await newSound.stopAsync();
+            await newSound.unloadAsync();
+          }
           setSound(null);
         } catch (error) {
-          // Error stopping sound
+          // Error stopping sound - ignore
         }
       }, 2000);
 
     } catch (error) {
       console.error('Error playing welcome bell sound:', error);
+      // Don't set sound state if there's an error
     }
   };
 
