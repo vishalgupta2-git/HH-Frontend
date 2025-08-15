@@ -31,6 +31,9 @@ interface ImageFolder {
   godName?: string; // Add god name field
 }
 
+// Flower type for animations
+type Flower = { id: number; x: number; y: number; rotation: number; scale: number; opacity: number; type: string };
+
 const deityList = [
   { key: 'ganesh', label: 'Ganesh Ji', icon: '🕉️' },
   { key: 'vishnu', label: 'Vishnu Ji', icon: '🙏' },
@@ -232,7 +235,7 @@ export default function DailyPujaCustomTemple() {
   const [preloadProgress, setPreloadProgress] = useState(0);
   const [bgGradient, setBgGradient] = useState(["#8B5CF6", "#7C3AED", "#6D28D9"]);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
-  const [flowers, setFlowers] = useState<{ id: number; x: number; y: number; rotation: number; scale: number; opacity: number; type: string }[]>([]);
+  const [flowers, setFlowers] = useState<Flower[]>([]);
   const [isFlowerAnimationRunning, setIsFlowerAnimationRunning] = useState(false);
   const [showFlowerModal, setShowFlowerModal] = useState(false);
 
@@ -251,6 +254,11 @@ export default function DailyPujaCustomTemple() {
   const [s3Loading, setS3Loading] = useState(false);
   const [godNames, setGodNames] = useState<{[folderId: string]: string}>({});
   const [swipeDirection, setSwipeDirection] = useState<'up' | 'down' | null>(null);
+  
+  // Puja Ritual State
+  const [isPujaRitualActive, setIsPujaRitualActive] = useState(false);
+  const [thaliEllipseAnimation] = useState(new Animated.Value(0));
+  const [flowerDropAnimation] = useState(new Animated.Value(0));
   
   // PanResponder for swipe gestures on images
   const panResponder = useMemo(() => 
@@ -353,6 +361,161 @@ export default function DailyPujaCustomTemple() {
 
     } catch (error) {
       console.error('Error playing welcome bell sound:', error);
+    }
+  };
+
+  // Function to perform puja ritual
+  const performPujaRitual = async () => {
+    if (isPujaRitualActive) return; // Prevent multiple simultaneous rituals
+    
+    setIsPujaRitualActive(true);
+    console.log('🕉️ Starting Puja Ritual...');
+    console.log('📱 Screen dimensions:', { width: screenWidth, height: screenHeight });
+    console.log('🎯 Modal zIndex: 9998, Thali zIndex: 9999');
+
+    try {
+      // 1. Swing bells in parallel
+      const swingBells = async () => {
+        console.log('🔔 Swinging bells...');
+        const bellSwingDuration = 2000;
+        
+        // Left bell swing
+        Animated.sequence([
+          Animated.timing(leftBellSwing, {
+            toValue: 1,
+            duration: bellSwingDuration / 4,
+            useNativeDriver: true,
+          }),
+          Animated.timing(leftBellSwing, {
+            toValue: -1,
+            duration: bellSwingDuration / 4,
+            useNativeDriver: true,
+          }),
+          Animated.timing(leftBellSwing, {
+            toValue: 0,
+            duration: bellSwingDuration / 4,
+            useNativeDriver: true,
+          }),
+        ]).start();
+
+        // Right bell swing
+        Animated.sequence([
+          Animated.timing(rightBellSwing, {
+            toValue: 1,
+            duration: bellSwingDuration / 4,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rightBellSwing, {
+            toValue: -1,
+            duration: bellSwingDuration / 4,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rightBellSwing, {
+            toValue: 0,
+            duration: bellSwingDuration / 4,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      };
+
+      // 2. Play ghanti sound in parallel
+      const playGhantiSound = async () => {
+        console.log('🔔 Playing ghanti sound...');
+        try {
+          const { sound: ghantiSound } = await Audio.Sound.createAsync(
+            require('@/assets/sounds/TempleBell.mp3'),
+            { shouldPlay: true, isLooping: false, volume: 0.8 }
+          );
+          
+          setTimeout(async () => {
+            try {
+              await ghantiSound.stopAsync();
+              await ghantiSound.unloadAsync();
+            } catch (error) {
+              console.error('Error stopping ghanti sound:', error);
+            }
+          }, 3000);
+        } catch (error) {
+          console.error('Error playing ghanti sound:', error);
+        }
+      };
+
+      // 3. Drop mixed flowers in parallel
+      const dropMixedFlowers = async () => {
+        console.log('🌸 Dropping mixed flowers...');
+        const flowerTypes = ['rose', 'jasmine', 'lotus', 'marigold', 'tulsi'];
+        const newFlowers: Flower[] = [];
+        
+        for (let i = 0; i < 15; i++) {
+          newFlowers.push({
+            id: Date.now() + i,
+            x: Math.random() * screenWidth,
+            y: -50,
+            rotation: Math.random() * 360,
+            scale: 0.5 + Math.random() * 0.5,
+            opacity: 0.8 + Math.random() * 0.2,
+            type: flowerTypes[Math.floor(Math.random() * flowerTypes.length)]
+          });
+        }
+        
+        setFlowers(prev => [...prev, ...newFlowers]);
+        
+        // Animate flowers falling
+        flowerDropAnimation.setValue(0);
+        Animated.timing(flowerDropAnimation, {
+          toValue: 1,
+          duration: 4000,
+          useNativeDriver: false,
+        }).start();
+        
+        // Remove flowers after animation (keep them longer than thali animation)
+        setTimeout(() => {
+          setFlowers(prev => prev.filter(f => !newFlowers.find(nf => nf.id === f.id)));
+        }, 15000); // Keep flowers for 15 seconds (longer than thali animation)
+      };
+
+      // 4. Move Puja Thali in clockwise ellipse in parallel
+      const movePujaThali = async () => {
+        const ellipseWidth = screenWidth * 0.7; // 70% of screen width
+        const ellipseHeight = ellipseWidth * 0.6; // Maintain aspect ratio
+        const startY = 1000; // Start at 1000px from top
+        const centerX = screenWidth / 2;
+        const centerY = startY + ellipseHeight / 2;
+        
+        // Reset animation
+        thaliEllipseAnimation.setValue(0);
+        
+        // Create smooth orbital path like a planet around the sun
+        // Duration: 6000ms for one complete orbit
+        const animation = Animated.timing(thaliEllipseAnimation, {
+          toValue: 1, // 0 to 1 for complete orbit
+          duration: 6000, // 6 seconds for one orbit
+          useNativeDriver: true,
+        });
+        
+        animation.start(({ finished }) => {
+          if (finished) {
+            console.log('✅ Thali orbital animation completed');
+            setIsPujaRitualActive(false);
+            console.log('🔄 Puja ritual state reset to false');
+          } else {
+            console.log('❌ Thali orbital animation was interrupted');
+            setIsPujaRitualActive(false);
+            console.log('🔄 Puja ritual state reset to false (interrupted)');
+          }
+        });
+      };
+
+      // Execute thali animation
+      await movePujaThali();
+
+      console.log('✅ Puja Ritual completed successfully!');
+      
+    } catch (error) {
+      console.error('❌ Error during puja ritual:', error);
+    } finally {
+      // Don't reset state here - let the animation callback handle it
+      console.log('🔄 Puja ritual animation started, state will reset when animation completes');
     }
   };
 
@@ -1824,8 +1987,14 @@ export default function DailyPujaCustomTemple() {
                styles.flower,
                {
                  left: flower.x,
-                 top: flower.y,
-                 opacity: flower.opacity,
+                 top: flowerDropAnimation.interpolate({
+                   inputRange: [0, 1],
+                   outputRange: [flower.y, flower.y + 800], // Fall 800px down
+                 }),
+                 opacity: flowerDropAnimation.interpolate({
+                   inputRange: [0, 0.8, 1],
+                   outputRange: [flower.opacity, flower.opacity, 0], // Fade out at the end
+                 }),
                  transform: [
                    { rotate: `${flower.rotation}deg` },
                    { scale: flower.scale },
@@ -1887,11 +2056,94 @@ export default function DailyPujaCustomTemple() {
                  style={styles.flowerImage}
                  resizeMode="contain"
                />
-             ) : (
-               <Text style={styles.flowerEmoji}>{getFlowerEmoji(flower.type)}</Text>
-             )}
+                            ) : flower.type === 'rose' ? (
+                 <Text style={styles.flowerEmoji}>🌹</Text>
+               ) : flower.type === 'jasmine' ? (
+                 <Text style={styles.flowerEmoji}>🌸</Text>
+               ) : flower.type === 'lotus' ? (
+                 <Text style={styles.flowerEmoji}>🪷</Text>
+               ) : flower.type === 'marigold' ? (
+                 <Text style={styles.flowerEmoji}>🌼</Text>
+               ) : flower.type === 'tulsi' ? (
+                 <Text style={styles.flowerEmoji}>🌿</Text>
+               ) : (
+                 <Text style={styles.flowerEmoji}>{getFlowerEmoji(flower.type)}</Text>
+               )}
            </Animated.View>
          ))}
+         
+         {/* Real Puja Thali Modal for ritual animation */}
+         <Modal
+           visible={isPujaRitualActive}
+           transparent={true}
+           animationType="fade"
+           onRequestClose={() => setIsPujaRitualActive(false)}
+           statusBarTranslucent={true}
+         >
+           <View style={styles.aartiModalOverlay}>
+             <TouchableOpacity 
+               style={styles.aartiModalOverlayTouchable}
+               activeOpacity={1}
+               onPress={() => setIsPujaRitualActive(false)}
+             >
+               {(() => {
+                 const ellipseWidth = screenWidth * 0.7; // 70% of screen width
+                 const ellipseHeight = ellipseWidth * 0.6; // Maintain aspect ratio
+                 
+
+                 
+                 return (
+                   <Animated.View
+                                              style={[
+                           styles.pujaThali,
+                           {
+                             position: 'absolute',
+                             left: (screenWidth - 200) / 2, // Center horizontally (200px width like aarti)
+                             top: (screenHeight - 200) / 2 + 100, // Center vertically + 100px lower
+                             width: 200, // Same size as aarti thali
+                             height: 200,
+                         transform: [
+                           {
+                             translateX: thaliEllipseAnimation.interpolate({
+                               inputRange: [0, 0.25, 0.5, 0.75, 1],
+                               outputRange: [
+                                 0, // Start at 12 o'clock (top)
+                                 ellipseWidth / 2, // Quarter at 3 o'clock (right)
+                                 0, // Half at 6 o'clock (bottom)
+                                 -ellipseWidth / 2, // 3 quarters at 9 o'clock (left)
+                                 0, // Complete at 12 o'clock (top)
+                               ],
+                             }),
+                           },
+                           {
+                             translateY: thaliEllipseAnimation.interpolate({
+                               inputRange: [0, 0.25, 0.5, 0.75, 1],
+                               outputRange: [
+                                 -ellipseHeight / 2, // Start at 12 o'clock (top)
+                                 0, // Quarter at 3 o'clock (center)
+                                 ellipseHeight / 2, // Half at 6 o'clock (bottom)
+                                 0, // 3 quarters at 9 o'clock (center)
+                                 -ellipseHeight / 2, // Complete at 12 o'clock (top)
+                               ],
+                             }),
+                           },
+                         ],
+                       },
+                     ]}
+                   >
+                     <Image
+                       source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+                       style={{ width: '100%', height: '100%' }} // Use full container size
+                       resizeMode="contain"
+                     />
+                   </Animated.View>
+                 );
+               })()}
+             </TouchableOpacity>
+           </View>
+         </Modal>
+         
+         {/* Duplicate thali section removed - using modal version above */}
          
          {/* Transparent area for save button */}
          <View 
@@ -2003,13 +2255,21 @@ export default function DailyPujaCustomTemple() {
 
         {/* Perform Puja Button - Above Navigation Buttons */}
         <View style={styles.performPujaButtonContainer}>
-          <TouchableOpacity 
-            style={styles.performPujaButton}
-            onPress={() => console.log('Perform Puja pressed')}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.performPujaButtonText}>Perform Puja</Text>
-          </TouchableOpacity>
+                      <TouchableOpacity 
+              style={[
+                styles.performPujaButton,
+                isPujaRitualActive && { opacity: 0.6 }
+              ]}
+              onPress={performPujaRitual}
+              activeOpacity={0.7}
+              disabled={isPujaRitualActive}
+            >
+              <Text style={styles.performPujaButtonText}>
+                {isPujaRitualActive ? 'Performing Puja...' : 'Perform Puja'}
+              </Text>
+            </TouchableOpacity>
+            
+
         </View>
 
         {/* Navigation Buttons - Always Visible */}
@@ -2679,7 +2939,7 @@ const styles = StyleSheet.create({
        },
                flower: {
           position: 'absolute',
-          zIndex: 25, // Above deities (zIndex: 15) and temple but below bells and arch
+          zIndex: 15, // Lower than modal and thali, above deities
         },
                flowerEmoji: {
           fontSize: 40,
@@ -2915,10 +3175,10 @@ const styles = StyleSheet.create({
     },
     aartiModalOverlay: {
       flex: 1,
-      backgroundColor: 'transparent',
+      backgroundColor: 'transparent', // 100% transparent background
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 2000,
+      zIndex: 9998, // Very high zIndex, just below thali
     },
     aartiModalOverlayTouchable: {
       flex: 1,
@@ -3397,4 +3657,12 @@ const styles = StyleSheet.create({
       fontWeight: '700', // Bolder than navigation buttons
       textAlign: 'center',
     },
+    // Puja Thali Animation Styles
+    pujaThali: {
+      position: 'absolute',
+      zIndex: 9999, // Very high zIndex to ensure visibility
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+
   }); // End of StyleSheet
