@@ -2001,6 +2001,17 @@ export default function DailyPujaCustomTemple() {
 
 
 
+        {/* Perform Puja Button - Above Navigation Buttons */}
+        <View style={styles.performPujaButtonContainer}>
+          <TouchableOpacity 
+            style={styles.performPujaButton}
+            onPress={() => console.log('Perform Puja pressed')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.performPujaButtonText}>Perform Puja</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Navigation Buttons - Always Visible */}
         <View style={styles.mainNavigationButtonsContainer}>
           <TouchableOpacity 
@@ -3337,7 +3348,7 @@ const styles = StyleSheet.create({
     // Main Navigation Buttons Styles (Always Visible)
     mainNavigationButtonsContainer: {
       position: 'absolute',
-      bottom: 175, // Same position as S3 gallery buttons
+      bottom: 155, // Moved 20 pixels down from 175 to 155
       left: 0,
       right: 0,
       flexDirection: 'row',
@@ -3359,6 +3370,31 @@ const styles = StyleSheet.create({
       color: 'white',
       fontSize: 10, // Font size 10 pixels
       fontWeight: '600',
+      textAlign: 'center',
+    },
+    // Perform Puja Button Styles
+    performPujaButtonContainer: {
+      position: 'absolute',
+      bottom: 205, // Moved 20 pixels down from 225 to 205
+      left: 0,
+      right: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1020,
+    },
+    performPujaButton: {
+      backgroundColor: 'rgba(255, 106, 0, 0.9)', // Slightly more opaque than navigation buttons
+      width: '82%', // 82% width of screen
+      paddingVertical: 15, // Slightly taller than navigation buttons
+      paddingHorizontal: 20,
+      borderRadius: 8, // Slightly more rounded than navigation buttons
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    performPujaButtonText: {
+      color: 'white',
+      fontSize: 14, // Larger font than navigation buttons
+      fontWeight: '700', // Bolder than navigation buttons
       textAlign: 'center',
     },
   }); // End of StyleSheet
