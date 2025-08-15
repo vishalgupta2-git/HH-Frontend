@@ -2452,8 +2452,8 @@ const styles = StyleSheet.create({
           fontStyle: 'italic',
         },
         pujaIconImage: {
-          width: 28, // Reduced size for narrower column
-          height: 28, // Reduced size for narrower column
+          width: 50, // Set to exactly 50x50 pixels
+          height: 50, // Set to exactly 50x50 pixels
           marginBottom: 6,
         },
                                                                                modalOverlay: {
