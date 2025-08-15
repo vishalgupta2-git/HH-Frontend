@@ -27,6 +27,7 @@ interface ImageFolder {
   name: string;
   prefix: string;
   images: S3Image[];
+  godName?: string; // Add god name field
 }
 
 const deityList = [
@@ -247,6 +248,7 @@ export default function DailyPujaCustomTemple() {
   const [currentS3ImageUrl, setCurrentS3ImageUrl] = useState<string>('');
   const [showS3Gallery, setShowS3Gallery] = useState(false);
   const [s3Loading, setS3Loading] = useState(false);
+  const [godNames, setGodNames] = useState<{[folderId: string]: string}>({});
   
 
   const router = useRouter();
@@ -326,7 +328,49 @@ export default function DailyPujaCustomTemple() {
     }
   };
 
-  const fetchAllImagesAndOrganize = async (): Promise<ImageFolder[]> => {
+  const fetchGodNames = async (): Promise<{[folderId: string]: string}> => {
+    try {
+      console.log('🔍 [GOD NAMES] Starting to fetch godNames.json...');
+      const presignedUrl = getApiUrl(`/api/s3/download-url?key=dailytemples/godNames.json&expiresIn=3600`);
+      console.log('🔍 [GOD NAMES] Presigned URL:', presignedUrl);
+      
+      const res = await fetch(presignedUrl);
+      console.log('🔍 [GOD NAMES] API Response status:', res.status);
+      
+      const data = await res.json();
+      console.log('🔍 [GOD NAMES] API Response data:', JSON.stringify(data, null, 2));
+      
+      if (data && data.success && data.presignedUrl) {
+        console.log('🔍 [GOD NAMES] Got presigned URL, fetching actual file...');
+        const godNamesRes = await fetch(data.presignedUrl);
+        console.log('🔍 [GOD NAMES] File fetch status:', godNamesRes.status);
+        
+        const godNamesData = await godNamesRes.json();
+        console.log('🔍 [GOD NAMES] Raw godNames.json content:', JSON.stringify(godNamesData, null, 2));
+        
+        // Convert array format to key-value mapping
+        if (Array.isArray(godNamesData)) {
+          const godNamesMap: {[folderId: string]: string} = {};
+          godNamesData.forEach((item: {id: string, name: string}) => {
+            godNamesMap[item.id] = item.name;
+          });
+          console.log('🔍 [GOD NAMES] Converted to map:', godNamesMap);
+          return godNamesMap;
+        }
+        
+        console.log('🔍 [GOD NAMES] Not an array, returning as is:', godNamesData);
+        return godNamesData || {};
+      } else {
+        console.log('❌ [GOD NAMES] API call failed or no presigned URL');
+        return {};
+      }
+    } catch (e) {
+      console.error('❌ [GOD NAMES] Error fetching god names:', e);
+      return {};
+    }
+  };
+
+  const fetchAllImagesAndOrganize = async (godNamesData: {[folderId: string]: string}): Promise<ImageFolder[]> => {
     try {
       const apiUrl = getApiUrl('/api/s3/files?prefix=dailytemples/&maxKeys=1000');
       const res = await fetch(apiUrl);
@@ -344,6 +388,8 @@ export default function DailyPujaCustomTemple() {
             continue;
           }
           
+          console.log('🔍 Processing folder:', folderName, 'Available god names:', Object.keys(godNamesData));
+          
           const folderPrefix = `dailytemples/${folderName}/`;
           const folderImages = data.files.filter((f: any) => 
             f && typeof f.key === 'string' && 
@@ -360,10 +406,38 @@ export default function DailyPujaCustomTemple() {
               size: f.size || 0,
             }));
             
+            // Try to find matching god name from JSON
+            let godName = godNamesData[folderName];
+            if (!godName) {
+              // Try different variations of the folder name
+              const variations = [
+                folderName.toLowerCase(),
+                folderName.replace(/\d+/g, ''), // Remove numbers
+                folderName.replace(/\d+/g, '').toLowerCase(), // Remove numbers and lowercase
+                folderName.replace(/[0-9]/g, ''), // Alternative number removal
+                folderName.replace(/[0-9]/g, '').toLowerCase()
+              ];
+              
+              for (const variation of variations) {
+                if (godNamesData[variation]) {
+                  godName = godNamesData[variation];
+                  console.log('✅ Found god name for folder', folderName, ':', godName, 'using variation:', variation);
+                  break;
+                }
+              }
+            }
+            
+            if (godName) {
+              console.log('✅ Using god name for folder', folderName, ':', godName);
+            } else {
+              console.log('❌ No god name found for folder:', folderName);
+            }
+            
             organizedFolders.push({
               name: folderName.replace(/([A-Z])/g, ' $1').trim(),
               prefix: folderPrefix,
-              images: images
+              images: images,
+              godName: godName
             });
           }
         }
@@ -384,7 +458,14 @@ export default function DailyPujaCustomTemple() {
     
     setS3Loading(true);
     try {
-      const allFolders = await fetchAllImagesAndOrganize();
+      // Fetch god names first
+      console.log('🔍 [GALLERY] About to fetch god names...');
+      const godNamesData = await fetchGodNames();
+      console.log('🔍 [GALLERY] God names fetched, setting state with:', godNamesData);
+      setGodNames(godNamesData);
+      
+      console.log('🔍 [GALLERY] About to fetch and organize images...');
+      const allFolders = await fetchAllImagesAndOrganize(godNamesData);
       
       if (allFolders.length > 0) {
         setS3Folders(allFolders);
@@ -1728,12 +1809,22 @@ export default function DailyPujaCustomTemple() {
           {/* Main Image */}
           <View style={styles.s3ImageContainer}>
             {currentS3ImageUrl ? (
-              <Image
-                source={{ uri: currentS3ImageUrl }}
-                style={styles.s3MainImage}
-                resizeMode="contain"
-                onError={() => Alert.alert('Error', 'Failed to load image')}
-              />
+              <>
+                <Image
+                  source={{ uri: currentS3ImageUrl }}
+                  style={styles.s3MainImage}
+                  resizeMode="contain"
+                  onError={() => Alert.alert('Error', 'Failed to load image')}
+                />
+                {/* God Name Display - Right below the image */}
+                {s3Folders[currentS3FolderIndex]?.godName && (
+                  <View style={styles.godNameContainer}>
+                    <Text style={styles.godNameText}>
+                      {s3Folders[currentS3FolderIndex].godName}
+                    </Text>
+                  </View>
+                )}
+              </>
             ) : (
               <View style={styles.s3ImagePlaceholder}>
                 <ActivityIndicator size="large" color="#FF6A00" />
@@ -2691,5 +2782,22 @@ const styles = StyleSheet.create({
       paddingHorizontal: 5,
       alignItems: 'center',
       justifyContent: 'flex-start',
+    },
+    // God Name Display Styles
+    godNameContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 10,
+      paddingHorizontal: 20,
+      marginTop: 100, // Position 100 pixels below the image
+    },
+    godNameText: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: 'white',
+      textAlign: 'center',
+      textShadowColor: 'rgba(0, 0, 0, 0.8)',
+      textShadowOffset: { width: 1, height: 1 },
+      textShadowRadius: 3,
     },
   });  
