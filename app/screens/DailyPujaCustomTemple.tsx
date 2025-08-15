@@ -436,11 +436,8 @@ export default function DailyPujaCustomTemple() {
     if (currentS3ImageIndex < currentFolder.images.length - 1) {
       setCurrentS3ImageIndex(currentS3ImageIndex + 1);
     } else {
-      // Move to next folder if available
-      if (currentS3FolderIndex < s3Folders.length - 1) {
-        setCurrentS3FolderIndex(currentS3FolderIndex + 1);
-        setCurrentS3ImageIndex(0);
-      }
+      // Cycle back to first image in the same folder
+      setCurrentS3ImageIndex(0);
     }
   };
 
@@ -448,12 +445,9 @@ export default function DailyPujaCustomTemple() {
     if (currentS3ImageIndex > 0) {
       setCurrentS3ImageIndex(currentS3ImageIndex - 1);
     } else {
-      // Move to previous folder if available
-      if (currentS3FolderIndex > 0) {
-        setCurrentS3FolderIndex(currentS3FolderIndex - 1);
-        const previousFolder = s3Folders[currentS3FolderIndex - 1];
-        setCurrentS3ImageIndex(previousFolder.images.length - 1);
-      }
+      // Cycle to last image in the same folder
+      const currentFolder = s3Folders[currentS3FolderIndex];
+      setCurrentS3ImageIndex(currentFolder.images.length - 1);
     }
   };
 
@@ -1774,9 +1768,9 @@ export default function DailyPujaCustomTemple() {
             <TouchableOpacity 
               style={styles.s3NavButton} 
               onPress={navigateToPreviousS3Image}
-              disabled={currentS3ImageIndex === 0 && currentS3FolderIndex === 0}
+              disabled={false}
             >
-              <Text style={[styles.s3NavButtonText, currentS3ImageIndex === 0 && currentS3FolderIndex === 0 && styles.s3NavButtonTextDisabled]}>
+              <Text style={styles.s3NavButtonText}>
                 ▲ Previous Image
               </Text>
             </TouchableOpacity>
@@ -2617,16 +2611,26 @@ const styles = StyleSheet.create({
     },
 
     s3NavigationContainer: {
+      position: 'absolute',
+      top: 200, // Positioned 100 pixels up from original position
+      left: 0,
+      right: 0,
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
       paddingVertical: 15,
+      zIndex: 1020,
     },
     s3ImageNavigationContainer: {
+      position: 'absolute',
+      top: 250, // Positioned 100 pixels up from original position
+      left: 0,
+      right: 0,
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
       paddingVertical: 15,
+      zIndex: 1020,
     },
     s3NavButton: {
       backgroundColor: 'rgba(255, 106, 0, 0.8)',
