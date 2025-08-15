@@ -2104,6 +2104,33 @@ export default function DailyPujaCustomTemple() {
             </ScrollView>
           </View>
 
+          {/* Action Buttons Row */}
+          <View style={styles.actionButtonsContainer}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => console.log('My Temple pressed')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.actionButtonText} numberOfLines={1}>My Temple</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => console.log('Today\'s Special pressed')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.actionButtonText} numberOfLines={1}>Today's Special</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => console.log('All Temples pressed')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.actionButtonText} numberOfLines={1}>All Temples</Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Main Image with Swipe Gestures */}
           <View style={styles.s3ImageContainer}>
             {currentS3ImageUrl ? (
@@ -3284,6 +3311,33 @@ const styles = StyleSheet.create({
     swipeStatusText: {
       color: '#FF6A00',
       fontSize: 14,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    // Action Buttons Styles
+    actionButtonsContainer: {
+      position: 'absolute',
+      bottom: 175, // Moved 75 pixels down from 250 to 175
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1020,
+    },
+    actionButton: {
+      backgroundColor: 'rgba(255, 106, 0, 0.8)',
+      width: 100, // Button width 100px
+      paddingVertical: 12,
+      paddingHorizontal: 15,
+      borderRadius: 5, // Very less round corners
+      marginHorizontal: 5, // 5px spacing on each side = 10px total spacing
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    actionButtonText: {
+      color: 'white',
+      fontSize: 10, // Font size 10 pixels
       fontWeight: '600',
       textAlign: 'center',
     },
