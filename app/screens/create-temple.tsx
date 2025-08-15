@@ -184,8 +184,8 @@ const getImageSource = (imagePath: string) => {
         return require('@/assets/images/temple/Temple1.png');
       case 'Temple2.png':
         return require('@/assets/images/temple/Temple2.png');
-                   case 'GoldenBell.png':
-        return require('@/assets/images/temple/GoldenBell.png');
+                           case 'templeBellIcon2.png':
+          return require('@/assets/images/temple/templeBellIcon2.png');
        case 'arch.svg':
          return require('@/assets/images/temple/arch.svg');
       default:
@@ -438,12 +438,12 @@ export default function CreateTempleScreen() {
       
       {/* Bells: left and right */}
       <Image
-        source={require('@/assets/images/temple/GoldenBell.png')}
+        source={require('@/assets/images/temple/templeBellIcon2.png')}
         style={styles.bellLeft}
         resizeMode="contain"
       />
       <Image
-        source={require('@/assets/images/temple/GoldenBell.png')}
+        source={require('@/assets/images/temple/templeBellIcon2.png')}
         style={styles.bellRight}
         resizeMode="contain"
       />

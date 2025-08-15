@@ -128,7 +128,7 @@ const SwingableBell: React.FC<{ position: 'left' | 'right'; swingValue: Animated
     <TouchableOpacity onPress={swingBell} activeOpacity={0.8}>
       <Animated.View style={[position === 'left' ? styles.bellLeft : styles.bellRight, swingStyle]}>
         <Image
-          source={require('@/assets/images/temple/GoldenBell.png')}
+          source={require('@/assets/images/temple/templeBellIcon2.png')}
           style={{ width: '100%', height: '100%' }}
           resizeMode="contain"
         />
@@ -847,11 +847,11 @@ export default function DailyPujaCustomTemple() {
         
         // Preload bell images
         const bellImages = [
-          require('@/assets/images/temple/GoldenBell.png'),
+          require('@/assets/images/temple/templeBellIcon2.png'),
         ];
         
         const bellResults = await Promise.all(bellImages.map(async (image, index) => {
-          const bellNames = ['GoldenBell'];
+          const bellNames = ['templeBellIcon2'];
           return await safePrefetchImage(image, `bell ${bellNames[index]}`);
         }));
         const successfulBells = bellResults.filter(result => result).length;
@@ -1131,8 +1131,8 @@ export default function DailyPujaCustomTemple() {
         return require('@/assets/images/temple/Temple1.png');
       case 'Temple2.png':
         return require('@/assets/images/temple/Temple2.png');
-      case 'GoldenBell.png':
-        return require('@/assets/images/temple/GoldenBell.png');
+              case 'templeBellIcon2.png':
+          return require('@/assets/images/temple/templeBellIcon2.png');
       case 'arch.svg':
         return require('@/assets/images/temple/arch.svg');
       default:
@@ -2085,12 +2085,8 @@ export default function DailyPujaCustomTemple() {
 
         </View>
 
-        {/* Right Puja Icons Column - Ghanti, Shankh - Always Visible */}
+        {/* Right Puja Icons Column - Shankh, Ghanti - Always Visible */}
         <View style={styles.rightPujaIconsColumn}>
-          <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
-            <Text style={styles.pujaIcon}>🔔</Text>
-            <Text style={styles.pujaIconLabel}>Ghanti</Text>
-          </TouchableOpacity>
           <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
             <Image 
               source={require('@/assets/images/icons/own temple/sankha.png')}
@@ -2098,6 +2094,10 @@ export default function DailyPujaCustomTemple() {
               resizeMode="contain"
             />
             <Text style={styles.pujaIconLabel}>Shankh</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
+            <Text style={styles.pujaIcon}>🔔</Text>
+            <Text style={styles.pujaIconLabel}>Ghanti</Text>
           </TouchableOpacity>
         </View>
 
@@ -2341,10 +2341,6 @@ export default function DailyPujaCustomTemple() {
 
           {/* Puja Icons - Right Column */}
           <View style={styles.s3RightPujaIconsColumn}>
-            <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
-              <Text style={styles.pujaIcon}>🔔</Text>
-              <Text style={styles.pujaIconLabel}>Ghanti</Text>
-            </TouchableOpacity>
             <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
               <Image 
                 source={require('@/assets/images/icons/own temple/sankha.png')}
@@ -2352,6 +2348,10 @@ export default function DailyPujaCustomTemple() {
                 resizeMode="contain"
               />
               <Text style={styles.pujaIconLabel}>Shankh</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
+              <Text style={styles.pujaIcon}>🔔</Text>
+              <Text style={styles.pujaIconLabel}>Ghanti</Text>
             </TouchableOpacity>
           </View>
         </View>
