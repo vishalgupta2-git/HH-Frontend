@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder, Alert } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder, Alert, Easing } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { Audio } from 'expo-av';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
@@ -32,7 +32,7 @@ interface ImageFolder {
 }
 
 // Flower type for animations
-type Flower = { id: number; x: number; y: number; rotation: number; scale: number; opacity: number; type: string };
+type Flower = { id: string; x: number; y: number; rotation: number; scale: number; opacity: number; type: string };
 
 const deityList = [
   { key: 'ganesh', label: 'Ganesh Ji', icon: '🕉️' },
@@ -236,6 +236,7 @@ export default function DailyPujaCustomTemple() {
   const [bgGradient, setBgGradient] = useState(["#8B5CF6", "#7C3AED", "#6D28D9"]);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [flowers, setFlowers] = useState<Flower[]>([]);
+  const [flowerAnimations, setFlowerAnimations] = useState<{[key: string]: Animated.Value}>({});
   const [isFlowerAnimationRunning, setIsFlowerAnimationRunning] = useState(false);
   const [showFlowerModal, setShowFlowerModal] = useState(false);
 
@@ -259,6 +260,15 @@ export default function DailyPujaCustomTemple() {
   const [isPujaRitualActive, setIsPujaRitualActive] = useState(false);
   const [thaliEllipseAnimation] = useState(new Animated.Value(0));
   const [flowerDropAnimation] = useState(new Animated.Value(0));
+  
+  // Unique flower ID counter to prevent duplicate keys
+  const flowerIdCounter = useRef(0);
+  
+  // Function to generate unique flower ID
+  const generateUniqueFlowerId = () => {
+    flowerIdCounter.current += 1;
+    return `flower_${Date.now()}_${flowerIdCounter.current}`;
+  };
   
   // PanResponder for swipe gestures on images
   const panResponder = useMemo(() => 
@@ -309,7 +319,7 @@ export default function DailyPujaCustomTemple() {
       },
     }), [s3Folders.length, showS3Gallery, s3Loading, currentS3FolderIndex, currentS3ImageIndex]
   );
-  
+
   const router = useRouter();
 
   // Function to play welcome bell sound
@@ -418,35 +428,91 @@ export default function DailyPujaCustomTemple() {
 
       // 3. Drop mixed flowers in parallel
       const dropMixedFlowers = async () => {
+        console.log('🌸 Starting flower drop...');
         const flowerTypes = ['rose', 'jasmine', 'lotus', 'marigold', 'tulsi'];
-        const newFlowers: Flower[] = [];
+        let flowerCounter = 0; // Counter for unique flower IDs
         
-        for (let i = 0; i < 15; i++) {
-          newFlowers.push({
-            id: Date.now() + i,
-            x: Math.random() * screenWidth,
-            y: -50,
-            rotation: Math.random() * 360,
-            scale: 0.5 + Math.random() * 0.5,
-            opacity: 0.8 + Math.random() * 0.2,
-            type: flowerTypes[Math.floor(Math.random() * flowerTypes.length)]
-          });
+        // Calculate temple width and position for flower spread
+        const templeWidth = screenWidth * 1.38; // Same as temple image width
+        const templeCenterX = screenWidth / 2;
+        const templeLeftX = templeCenterX - (templeWidth / 2);
+        const templeRightX = templeCenterX + (templeWidth / 2);
+        
+        // Create 15 rows of flowers using the same system as individual flower dropping
+        for (let row = 0; row < 15; row++) {
+          // Create 15 flowers per row
+          for (let i = 0; i < 15; i++) {
+            const flowerId = generateUniqueFlowerId(); // Generate truly unique ID for each flower
+            const randomType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+            
+            // Spread flowers evenly across temple width with some randomness
+            const baseX = templeLeftX + (templeWidth * i / 14); // Evenly spaced (15 flowers = 14 gaps)
+            const randomOffset = (Math.random() - 0.5) * 60; // ±30px random offset
+            const x = Math.max(30, Math.min(screenWidth - 30, baseX + randomOffset));
+            
+            const randomRotation = Math.random() * 360; // Random rotation
+            const randomScale = 0.4 + Math.random() * 0.2; // Half size: 0.4-0.6 scale
+            const randomStartY = -50 - (Math.random() * 100) - (row * 150); // Stagger rows vertically
+
+            const newFlower: Flower = {
+              id: flowerId,
+              x: x,
+              y: randomStartY, // Start from above the screen with random height
+              rotation: randomRotation,
+              scale: randomScale,
+              opacity: 1, // Start fully visible
+              type: randomType,
+            };
+
+            setFlowers(prev => {
+              console.log('🌸 Adding flower:', newFlower.id, 'Total flowers:', prev.length + 1);
+              return [...prev, newFlower];
+            });
+
+            // Animate flower falling using the same animation system
+            const fallDuration = 3000 + (Math.random() * 1000) + (row * 500); // Stagger duration by row
+            const fallDistance = 800 + (row * 100); // Increase fall distance for each row
+            const templeY = selectedStyle === 'temple1' ? 400 : 325; // Temple position
+            const vanishY = templeY + 200; // Vanish point below temple
+
+            let startTime = Date.now();
+            
+            const animateFall = () => {
+              const elapsed = Date.now() - startTime;
+              const progress = Math.min(elapsed / fallDuration, 1);
+              
+              setFlowers(prev => prev.map(flower => {
+                if (flower.id === flowerId) {
+                  const newY = randomStartY + (fallDistance * progress);
+                  let newOpacity = 1;
+                  
+                  // Start fading when approaching temple
+                  if (newY > templeY - 50) {
+                    const fadeProgress = (newY - (templeY - 50)) / (vanishY - (templeY - 50));
+                    newOpacity = Math.max(0, 1 - fadeProgress);
+                  }
+                  
+                  return {
+                    ...flower,
+                    y: newY,
+                    opacity: newOpacity,
+                  };
+                }
+                return flower;
+              }));
+
+              if (progress < 1) {
+                requestAnimationFrame(animateFall);
+              } else {
+                // Remove flower when animation completes
+                setFlowers(prev => prev.filter(f => f.id !== flowerId));
+              }
+            };
+            
+            // Start animation immediately
+            requestAnimationFrame(animateFall);
+          }
         }
-        
-        setFlowers(prev => [...prev, ...newFlowers]);
-        
-        // Animate flowers falling
-        flowerDropAnimation.setValue(0);
-        Animated.timing(flowerDropAnimation, {
-          toValue: 1,
-          duration: 4000,
-          useNativeDriver: false,
-        }).start();
-        
-        // Remove flowers after animation (keep them longer than thali animation)
-        setTimeout(() => {
-          setFlowers(prev => prev.filter(f => !newFlowers.find(nf => nf.id === f.id)));
-        }, 15000); // Keep flowers for 15 seconds (longer than thali animation)
       };
 
       // 4. Move Puja Thali in clockwise ellipse in parallel
@@ -460,20 +526,72 @@ export default function DailyPujaCustomTemple() {
         // Reset animation
         thaliEllipseAnimation.setValue(0);
         
-        // Create smooth orbital path like a planet around the sun
-        // Duration: 6000ms for one complete orbit
+        // Start continuous bell ringing with proper cleanup
+        let bellInterval: any;
+        let flowerInterval: any;
+        
+        // Start continuous bell ringing
+        bellInterval = setInterval(() => {
+          // Create new bell animations each time to avoid conflicts
+          const leftBellSwing = new Animated.Value(0);
+          const rightBellSwing = new Animated.Value(0);
+          
+          // Left bell swing
+          Animated.sequence([
+            Animated.timing(leftBellSwing, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(leftBellSwing, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+          
+          // Right bell swing
+          Animated.sequence([
+            Animated.timing(rightBellSwing, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(rightBellSwing, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+          
+          // Play bell sound
+          playConchSound();
+        }, 3000); // Ring bells every 3 seconds
+        
+        // Start continuous flower dropping
+        flowerInterval = setInterval(() => {
+          dropMixedFlowers();
+        }, 3000); // Drop flowers every 3 seconds for smoother experience
+        
+        // Create smooth orbital path - 5 complete orbits
+        // Duration: 6000ms for one complete orbit, so 5 orbits = 30 seconds
         const animation = Animated.timing(thaliEllipseAnimation, {
-          toValue: 1, // 0 to 1 for complete orbit
-          duration: 6000, // 6 seconds for one orbit
+          toValue: 5, // 0 to 5 for 5 complete orbits
+          duration: 30000, // 30 seconds for 5 orbits
           useNativeDriver: true,
         });
         
         animation.start(({ finished }) => {
-          if (finished) {
+          // Clear intervals when animation completes
+          if (bellInterval) clearInterval(bellInterval);
+          if (flowerInterval) clearInterval(flowerInterval);
+          
+          // Reset all states properly
+          setTimeout(() => {
             setIsPujaRitualActive(false);
-          } else {
-            setIsPujaRitualActive(false);
-          }
+            setFlowers([]); // Clear all flowers
+            setFlowerAnimations({}); // Clear all flower animations
+          }, 1000); // Small delay to ensure cleanup
         });
       };
 
@@ -603,11 +721,11 @@ export default function DailyPujaCustomTemple() {
                 return fileName !== 'Icon.png'; // Filter out Icon.png files
               })
               .map((f: any) => ({
-                key: f.key,
-                name: f.key.split('/').pop() || f.key,
-                url: '',
-                size: f.size || 0,
-              }));
+              key: f.key,
+              name: f.key.split('/').pop() || f.key,
+              url: '',
+              size: f.size || 0,
+            }));
             
             // Try to find matching god name from JSON
             let godName = godNamesData[folderName];
@@ -726,7 +844,7 @@ export default function DailyPujaCustomTemple() {
       const newIndex = currentS3ImageIndex + 1;
       setCurrentS3ImageIndex(newIndex);
     } else {
-      setCurrentS3ImageIndex(0);
+        setCurrentS3ImageIndex(0);
     }
   };
 
@@ -1502,7 +1620,7 @@ export default function DailyPujaCustomTemple() {
       // Create 15 flowers per row
       for (let i = 0; i < 15; i++) {
         totalFlowers++;
-        const flowerId = Date.now() + (row * 1000) + i; // Unique ID for each flower
+        const flowerId = generateUniqueFlowerId(); // Generate truly unique ID for each flower
         
         // Spread flowers evenly across temple width with some randomness
         const baseX = templeLeftX + (templeWidth * i / 14); // Evenly spaced (15 flowers = 14 gaps)
@@ -1513,7 +1631,7 @@ export default function DailyPujaCustomTemple() {
         const randomScale = 0.4 + Math.random() * 0.2; // Half size: 0.4-0.6 scale
         const randomStartY = -50 - (Math.random() * 100) - (row * 150); // Stagger rows vertically
 
-        const newFlower = {
+        const newFlower: Flower = {
           id: flowerId,
           x: x,
           y: randomStartY, // Start from above the screen with random height
@@ -1622,7 +1740,7 @@ export default function DailyPujaCustomTemple() {
       // Create 15 flowers per row with mixed types
       for (let i = 0; i < 15; i++) {
         totalFlowers++;
-        const flowerId = Date.now() + (row * 1000) + i; // Unique ID for each flower
+        const flowerId = generateUniqueFlowerId(); // Generate truly unique ID for each flower
         
         // Randomly select a flower type for each flower
         const randomFlowerType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
@@ -1636,7 +1754,7 @@ export default function DailyPujaCustomTemple() {
         const randomScale = 0.4 + Math.random() * 0.2; // Half size: 0.4-0.6 scale
         const randomStartY = -50 - (Math.random() * 100) - (row * 150); // Stagger rows vertically
 
-        const newFlower = {
+        const newFlower: Flower = {
           id: flowerId,
           x: x,
           y: randomStartY, // Start from above the screen with random height
@@ -1835,20 +1953,14 @@ export default function DailyPujaCustomTemple() {
        
                {/* Flowers dropped in front of temple */}
          {flowers.map((flower) => (
-           <Animated.View
+           <View
              key={flower.id}
              style={[
                styles.flower,
                {
                  left: flower.x,
-                 top: flowerDropAnimation.interpolate({
-                   inputRange: [0, 1],
-                   outputRange: [flower.y, flower.y + 800], // Fall 800px down
-                 }),
-                 opacity: flowerDropAnimation.interpolate({
-                   inputRange: [0, 0.8, 1],
-                   outputRange: [flower.opacity, flower.opacity, 0], // Fade out at the end
-                 }),
+                 top: flower.y,
+                 opacity: flower.opacity,
                  transform: [
                    { rotate: `${flower.rotation}deg` },
                    { scale: flower.scale },
@@ -1910,20 +2022,20 @@ export default function DailyPujaCustomTemple() {
                  style={styles.flowerImage}
                  resizeMode="contain"
                />
-                            ) : flower.type === 'rose' ? (
-                 <Text style={styles.flowerEmoji}>🌹</Text>
-               ) : flower.type === 'jasmine' ? (
-                 <Text style={styles.flowerEmoji}>🌸</Text>
-               ) : flower.type === 'lotus' ? (
-                 <Text style={styles.flowerEmoji}>🪷</Text>
-               ) : flower.type === 'marigold' ? (
-                 <Text style={styles.flowerEmoji}>🌼</Text>
-               ) : flower.type === 'tulsi' ? (
-                 <Text style={styles.flowerEmoji}>🌿</Text>
-               ) : (
-                 <Text style={styles.flowerEmoji}>{getFlowerEmoji(flower.type)}</Text>
-               )}
-           </Animated.View>
+             ) : flower.type === 'rose' ? (
+               <Text style={styles.flowerEmoji}>🌹</Text>
+             ) : flower.type === 'jasmine' ? (
+               <Text style={styles.flowerEmoji}>🌸</Text>
+             ) : flower.type === 'lotus' ? (
+               <Text style={styles.flowerEmoji}>🪷</Text>
+             ) : flower.type === 'marigold' ? (
+               <Text style={styles.flowerEmoji}>🌼</Text>
+             ) : flower.type === 'tulsi' ? (
+               <Text style={styles.flowerEmoji}>🌿</Text>
+             ) : (
+               <Text style={styles.flowerEmoji}>{getFlowerEmoji(flower.type)}</Text>
+             )}
+           </View>
          ))}
          
          {/* Real Puja Thali Modal for ritual animation */}
@@ -1959,25 +2071,57 @@ export default function DailyPujaCustomTemple() {
                          transform: [
                            {
                              translateX: thaliEllipseAnimation.interpolate({
-                               inputRange: [0, 0.25, 0.5, 0.75, 1],
+                               inputRange: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5],
                                outputRange: [
-                                 0, // Start at 12 o'clock (top)
-                                 ellipseWidth / 2, // Quarter at 3 o'clock (right)
-                                 0, // Half at 6 o'clock (bottom)
-                                 -ellipseWidth / 2, // 3 quarters at 9 o'clock (left)
-                                 0, // Complete at 12 o'clock (top)
+                                 0, // Start at 6 o'clock (bottom)
+                                 -ellipseWidth / 2, // Quarter at 3 o'clock (right)
+                                 0, // Half at 12 o'clock (top)
+                                 ellipseWidth / 2, // 3 quarters at 9 o'clock (left)
+                                 0, // Complete first orbit at 6 o'clock (bottom)
+                                 -ellipseWidth / 2, // Start second orbit - 3 o'clock (right)
+                                 0, // Second orbit - 12 o'clock (top)
+                                 ellipseWidth / 2, // Second orbit - 9 o'clock (left)
+                                 0, // Second orbit complete - 6 o'clock (bottom)
+                                 -ellipseWidth / 2, // Third orbit - 3 o'clock (right)
+                                 0, // Third orbit - 12 o'clock (top)
+                                 ellipseWidth / 2, // Third orbit - 9 o'clock (left)
+                                 0, // Third orbit complete - 6 o'clock (bottom)
+                                 -ellipseWidth / 2, // Fourth orbit - 3 o'clock (right)
+                                 0, // Fourth orbit - 12 o'clock (top)
+                                 ellipseWidth / 2, // Fourth orbit - 9 o'clock (left)
+                                 0, // Fourth orbit complete - 6 o'clock (bottom)
+                                 -ellipseWidth / 2, // Fifth orbit - 3 o'clock (right)
+                                 0, // Fifth orbit - 12 o'clock (top)
+                                 ellipseWidth / 2, // Fifth orbit - 9 o'clock (left)
+                                 0, // Fifth orbit complete - 6 o'clock (bottom)
                                ],
                              }),
                            },
                            {
                              translateY: thaliEllipseAnimation.interpolate({
-                               inputRange: [0, 0.25, 0.5, 0.75, 1],
+                               inputRange: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5],
                                outputRange: [
-                                 -ellipseHeight / 2, // Start at 12 o'clock (top)
-                                 0, // Quarter at 3 o'clock (center)
-                                 ellipseHeight / 2, // Half at 6 o'clock (bottom)
-                                 0, // 3 quarters at 9 o'clock (center)
-                                 -ellipseHeight / 2, // Complete at 12 o'clock (top)
+                                 ellipseHeight / 2, // Start at 6 o'clock (bottom)
+                                 0, // Quarter at 9 o'clock (center)
+                                 -ellipseHeight / 2, // Half at 12 o'clock (top)
+                                 0, // 3 quarters at 3 o'clock (center)
+                                 ellipseHeight / 2, // Complete first orbit at 6 o'clock (bottom)
+                                 0, // Start second orbit - 9 o'clock (center)
+                                 -ellipseHeight / 2, // Second orbit - 12 o'clock (top)
+                                 0, // Second orbit - 3 o'clock (center)
+                                 ellipseHeight / 2, // Second orbit complete - 6 o'clock (bottom)
+                                 0, // Third orbit - 9 o'clock (center)
+                                 -ellipseHeight / 2, // Third orbit - 12 o'clock (top)
+                                 0, // Third orbit - 3 o'clock (center)
+                                 ellipseHeight / 2, // Third orbit complete - 6 o'clock (bottom)
+                                 0, // Fourth orbit - 9 o'clock (center)
+                                 -ellipseHeight / 2, // Fourth orbit - 12 o'clock (top)
+                                 0, // Fourth orbit - 3 o'clock (center)
+                                 ellipseHeight / 2, // Fourth orbit complete - 6 o'clock (bottom)
+                                 0, // Fifth orbit - 9 o'clock (center)
+                                 -ellipseHeight / 2, // Fifth orbit - 12 o'clock (top)
+                                 0, // Fifth orbit - 3 o'clock (center)
+                                 ellipseHeight / 2, // Fifth orbit complete - 6 o'clock (bottom)
                                ],
                              }),
                            },
@@ -2040,7 +2184,7 @@ export default function DailyPujaCustomTemple() {
         </View>
         
         {/* Left Puja Icons Column - Flowers, Aarti - Always Visible */}
-        <View style={styles.leftPujaIconsColumn}>
+          <View style={styles.leftPujaIconsColumn}>
           <TouchableOpacity 
             style={[
               styles.pujaIconItem, 
@@ -2086,26 +2230,26 @@ export default function DailyPujaCustomTemple() {
         </View>
 
         {/* Right Puja Icons Column - Shankh, Ghanti - Always Visible */}
-        <View style={styles.rightPujaIconsColumn}>
-          <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
-            <Image 
-              source={require('@/assets/images/icons/own temple/sankha.png')}
-              style={styles.pujaIconImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.pujaIconLabel}>Shankh</Text>
-          </TouchableOpacity>
+          <View style={styles.rightPujaIconsColumn}>
+            <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
+              <Image 
+                source={require('@/assets/images/icons/own temple/sankha.png')}
+                style={styles.pujaIconImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.pujaIconLabel}>Shankh</Text>
+            </TouchableOpacity>
           <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
             <Text style={styles.pujaIcon}>🔔</Text>
             <Text style={styles.pujaIconLabel}>Ghanti</Text>
           </TouchableOpacity>
-        </View>
+          </View>
 
 
 
         {/* Perform Puja Button - Above Navigation Buttons */}
         <View style={styles.performPujaButtonContainer}>
-                      <TouchableOpacity 
+            <TouchableOpacity 
               style={[
                 styles.performPujaButton,
                 isPujaRitualActive && { opacity: 0.6 }
@@ -2120,7 +2264,7 @@ export default function DailyPujaCustomTemple() {
             </TouchableOpacity>
             
 
-        </View>
+          </View>
 
         {/* Navigation Buttons - Always Visible */}
         <View style={styles.mainNavigationButtonsContainer}>
@@ -2252,12 +2396,12 @@ export default function DailyPujaCustomTemple() {
                   style={styles.swipeableImageContainer}
                   {...panResponder.panHandlers}
                 >
-                  <Image
-                    source={{ uri: currentS3ImageUrl }}
-                    style={styles.s3MainImage}
-                    resizeMode="contain"
-                    onError={() => Alert.alert('Error', 'Failed to load image')}
-                  />
+              <Image
+                source={{ uri: currentS3ImageUrl }}
+                style={styles.s3MainImage}
+                resizeMode="contain"
+                onError={() => Alert.alert('Error', 'Failed to load image')}
+              />
                   
 
                 </View>

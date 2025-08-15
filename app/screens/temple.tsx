@@ -1,12 +1,24 @@
 // Make sure to run: npx expo install react-native-svg expo-svg-uri
-import { useRouter } from 'expo-router';
-import React from 'react';
-import { Dimensions, Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
+import { useRouter } from "expo-router";
+import React from "react";
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import Svg, {
+  Defs,
+  Path,
+  Stop,
+  LinearGradient as SvgLinearGradient,
+} from "react-native-svg";
 
 export const options = { headerShown: false };
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get("window");
 
 function ArchSVG(props: { width?: number; height?: number; style?: any }) {
   return (
@@ -22,7 +34,14 @@ function ArchSVG(props: { width?: number; height?: number; style?: any }) {
         fill="url(#archGradient)"
       />
       <Defs>
-        <SvgLinearGradient id="archGradient" x1="196.5" y1="29.2058" x2="196.5" y2="151.717" gradientUnits="userSpaceOnUse">
+        <SvgLinearGradient
+          id="archGradient"
+          x1="196.5"
+          y1="29.2058"
+          x2="196.5"
+          y2="151.717"
+          gradientUnits="userSpaceOnUse"
+        >
           <Stop stopColor="#FFAE51" />
           <Stop offset="0.9888" stopColor="#E87C00" />
         </SvgLinearGradient>
@@ -37,28 +56,36 @@ export default function TempleScreen() {
     <View style={styles.container}>
       {/* Bells: left and right, 60px from each side, behind arch */}
       <Image
-        source={require('@/assets/images/temple/GoldenBell.png')}
+        source={require("@/assets/images/temple/templeBellIcon2.png")}
         style={styles.bellLeft}
         resizeMode="contain"
       />
       <Image
-        source={require('@/assets/images/temple/GoldenBell.png')}
+        source={require("@/assets/images/temple/templeBellIcon2.png")}
         style={styles.bellRight}
         resizeMode="contain"
       />
       {/* Arch on top */}
-      <ArchSVG width={screenWidth} height={(screenWidth * 195) / 393} style={styles.archImage} />
+      <ArchSVG
+        width={screenWidth}
+        height={(screenWidth * 195) / 393}
+        style={styles.archImage}
+      />
       {/* Temple1.png below arch, above motivational text */}
       <Image
-        source={require('@/assets/images/temple/Temple1.png')}
+        source={require("@/assets/images/temple/Temple1.png")}
         style={styles.temple1}
         resizeMode="contain"
       />
       <View style={styles.content}>
         <Text style={styles.motivation}>
-          Maintain your spirituality by creating{"\n"}a virtual temple with a virtual deity.
+          Maintain your spirituality by creating{"\n"}a virtual temple with a
+          virtual deity.
         </Text>
-        <TouchableOpacity style={styles.createBtn} onPress={() => router.push('/screens/create-temple')}>
+        <TouchableOpacity
+          style={styles.createBtn}
+          onPress={() => router.push("/screens/create-temple")}
+        >
           <Text style={styles.createBtnText}>Create temple</Text>
         </TouchableOpacity>
       </View>
@@ -67,11 +94,11 @@ export default function TempleScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: "#fff" },
   archImage: {
     marginBottom: 0,
     marginTop: 0,
-    alignSelf: 'center',
+    alignSelf: "center",
     zIndex: 2,
   },
 
@@ -79,48 +106,48 @@ const styles = StyleSheet.create({
     width: screenWidth * 1.15,
     height: undefined,
     aspectRatio: 1.2,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginTop: 30, // was 20
     marginBottom: 16,
     zIndex: 4,
   },
   content: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 16,
     paddingBottom: 40,
   },
   motivation: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 32,
-    fontWeight: '500',
-    textShadowColor: 'rgba(0,0,0,0.2)',
+    fontWeight: "500",
+    textShadowColor: "rgba(0,0,0,0.2)",
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
   createBtn: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 24,
     paddingVertical: 14,
     paddingHorizontal: 32,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginTop: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 2,
   },
   createBtnText: {
-    color: '#FF6A00',
-    fontWeight: 'bold',
+    color: "#FF6A00",
+    fontWeight: "bold",
     fontSize: 16,
   },
   bellLeft: {
-    position: 'absolute',
+    position: "absolute",
     top: 95,
     left: 40, // was 60
     width: 62.4,
@@ -128,11 +155,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   bellRight: {
-    position: 'absolute',
+    position: "absolute",
     top: 95,
     right: 40, // was 60
     width: 62.4,
     height: 117,
     zIndex: 1,
   },
-}); 
+});
