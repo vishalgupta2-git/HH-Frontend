@@ -27,6 +27,7 @@ interface ImageFolder {
   name: string;
   prefix: string;
   images: S3Image[];
+  iconImage?: S3Image | null; // Add icon image field for navigation
   godName?: string; // Add god name field
 }
 
@@ -399,12 +400,24 @@ export default function DailyPujaCustomTemple() {
           );
           
           if (folderImages.length > 0) {
-            const images: S3Image[] = folderImages.map((f: any) => ({
-              key: f.key,
-              name: f.key.split('/').pop() || f.key,
-              url: '',
-              size: f.size || 0,
-            }));
+            // Separate Icon.png for folder navigation
+            const iconImage = folderImages.find((f: any) => {
+              const fileName = f.key.split('/').pop() || f.key;
+              return fileName === 'Icon.png';
+            });
+            
+            // Filter out Icon.png for main images
+            const mainImages: S3Image[] = folderImages
+              .filter((f: any) => {
+                const fileName = f.key.split('/').pop() || f.key;
+                return fileName !== 'Icon.png'; // Filter out Icon.png files
+              })
+              .map((f: any) => ({
+                key: f.key,
+                name: f.key.split('/').pop() || f.key,
+                url: '',
+                size: f.size || 0,
+              }));
             
             // Try to find matching god name from JSON
             let godName = godNamesData[folderName];
@@ -436,7 +449,13 @@ export default function DailyPujaCustomTemple() {
             organizedFolders.push({
               name: folderName.replace(/([A-Z])/g, ' $1').trim(),
               prefix: folderPrefix,
-              images: images,
+              images: mainImages, // Main images without Icon.png
+              iconImage: iconImage ? { // Separate icon image for navigation
+                key: iconImage.key,
+                name: iconImage.key.split('/').pop() || iconImage.key,
+                url: '',
+                size: iconImage.size || 0,
+              } : null,
               godName: godName
             });
           }
@@ -539,6 +558,20 @@ export default function DailyPujaCustomTemple() {
         currentS3ImageIndex < s3Folders[currentS3FolderIndex].images.length) {
       
       const currentImage = s3Folders[currentS3FolderIndex].images[currentS3ImageIndex];
+      
+      // Skip Icon.png files - they're only for navigation
+      if (currentImage.name === 'Icon.png') {
+        // Move to next image if current is Icon.png
+        if (currentS3ImageIndex < s3Folders[currentS3FolderIndex].images.length - 1) {
+          setCurrentS3ImageIndex(currentS3ImageIndex + 1);
+        } else if (currentS3FolderIndex < s3Folders.length - 1) {
+          // Move to next folder if at end of current folder
+          setCurrentS3FolderIndex(currentS3FolderIndex + 1);
+          setCurrentS3ImageIndex(0);
+        }
+        return;
+      }
+      
       fetchPresignedUrl(currentImage.key).then(url => {
         if (url) {
           setCurrentS3ImageUrl(url);
@@ -1806,6 +1839,67 @@ export default function DailyPujaCustomTemple() {
           
           {/* Header - Removed */}
 
+          {/* Folder Navigation Icons - Horizontal Scroll */}
+          <View style={styles.folderNavigationContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.folderNavigationContent}
+            >
+                            {s3Folders.map((folder, index) => {
+                const isActive = index === currentS3FolderIndex;
+                const iconImage = folder.iconImage;
+                
+                return (
+                  <TouchableOpacity
+                    key={folder.prefix}
+                    style={[
+                      styles.folderIconItem,
+                      isActive && styles.folderIconItemActive
+                    ]}
+                    onPress={() => {
+                      setCurrentS3FolderIndex(index);
+                      setCurrentS3ImageIndex(0);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    {iconImage ? (
+                      <Image
+                        source={{ uri: iconImage.url || '' }}
+                        style={[
+                          styles.folderIconImage,
+                          isActive && styles.folderIconImageActive
+                        ]}
+                        resizeMode="cover"
+                        onError={() => console.log('Failed to load folder icon for:', folder.name)}
+                        onLoadStart={() => {
+                          // Fetch presigned URL for folder icon if not already loaded
+                          if (!iconImage.url) {
+                            fetchPresignedUrl(iconImage.key).then(url => {
+                              if (url) {
+                                // Update the icon image URL in the folder
+                                setS3Folders(prev => prev.map((f, i) => 
+                                  i === index ? {
+                                    ...f,
+                                    iconImage: f.iconImage ? { ...f.iconImage, url } : null
+                                  } : f
+                                ));
+                              }
+                            });
+                          }
+                        }}
+                      />
+                    ) : (
+                      <View style={[styles.folderIconPlaceholder, isActive && styles.folderIconPlaceholderActive]}>
+                        <Text style={styles.folderIconPlaceholderText}>?</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+
           {/* Main Image */}
           <View style={styles.s3ImageContainer}>
             {currentS3ImageUrl ? (
@@ -2799,5 +2893,77 @@ const styles = StyleSheet.create({
       textShadowColor: 'rgba(0, 0, 0, 0.8)',
       textShadowOffset: { width: 1, height: 1 },
       textShadowRadius: 3,
+    },
+    // Folder Navigation Icons Styles
+    folderNavigationContainer: {
+      position: 'absolute',
+      top: 70, // Moved down to 120 pixels from top
+      left: 0,
+      right: 0,
+      height: 80, // Reduced height to accommodate 35x35 icons + padding + borders
+      zIndex: 1030,
+      justifyContent: 'flex-start', // Ensure content aligns to top
+    },
+    folderNavigationContent: {
+      paddingHorizontal: 20,
+      paddingTop: 10, // Add top padding to position icons properly
+      alignItems: 'center',
+      justifyContent: 'flex-start', // Align to top so bottom gets clipped if needed
+    },
+    folderIconItem: {
+      alignItems: 'center',
+      marginHorizontal: 2, // Further reduced margin for tighter spacing
+      paddingVertical: 8, // Increased padding for larger icons
+      borderRadius: 12,
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      borderWidth: 2,
+      borderColor: 'transparent',
+      minWidth: 45, // Reduced width to accommodate 35x35 icons
+    },
+    folderIconItemActive: {
+      backgroundColor: 'rgba(255, 106, 0, 0.3)',
+      borderColor: '#FF6A00',
+    },
+    folderIconImage: {
+      width: 35, // Icon size as requested
+      height: 35, // Icon size as requested
+      borderRadius: 5,
+      marginBottom: 0, // No margin since no label
+    },
+    folderIconImageActive: {
+      borderWidth: 2,
+      borderColor: '#FF6A00',
+    },
+    folderIconPlaceholder: {
+      width: 35, // Icon size as requested
+      height: 35, // Icon size as requested
+      borderRadius: 5,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 0, // No margin since no label
+    },
+    folderIconPlaceholderActive: {
+      backgroundColor: 'rgba(255, 106, 0, 0.3)',
+      borderWidth: 2,
+      borderColor: '#FF6A00',
+    },
+    folderIconPlaceholderText: {
+      fontSize: 20,
+      color: 'white',
+      fontWeight: 'bold',
+    },
+    folderIconLabel: {
+      fontSize: 10,
+      color: 'white',
+      textAlign: 'center',
+      fontWeight: '500',
+      textShadowColor: 'rgba(0, 0, 0, 0.8)',
+      textShadowOffset: { width: 1, height: 1 },
+      textShadowRadius: 2,
+    },
+    folderIconLabelActive: {
+      color: '#FF6A00',
+      fontWeight: 'bold',
     },
   });  
