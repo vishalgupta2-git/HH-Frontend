@@ -446,7 +446,7 @@ export default function DailyPujaCustomTemple() {
             const randomType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
             
             // Spread flowers evenly across temple width with some randomness
-            const baseX = templeLeftX + (templeWidth * i / 14); // Evenly spaced (15 flowers = 14 gaps)
+            const baseX = templeLeftX + (templeWidth * i / 10); // Evenly spaced (11 flowers = 10 gaps)
             const randomOffset = (Math.random() - 0.5) * 60; // ±30px random offset
             const x = Math.max(30, Math.min(screenWidth - 30, baseX + randomOffset));
             
@@ -465,7 +465,6 @@ export default function DailyPujaCustomTemple() {
             };
 
             setFlowers(prev => {
-              console.log('🌸 Adding flower:', newFlower.id, 'Total flowers:', prev.length + 1);
               return [...prev, newFlower];
             });
 
