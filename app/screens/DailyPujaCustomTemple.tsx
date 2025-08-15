@@ -250,8 +250,77 @@ export default function DailyPujaCustomTemple() {
   const [showS3Gallery, setShowS3Gallery] = useState(false);
   const [s3Loading, setS3Loading] = useState(false);
   const [godNames, setGodNames] = useState<{[folderId: string]: string}>({});
+  const [swipeDirection, setSwipeDirection] = useState<'up' | 'down' | null>(null);
   
-
+  // PanResponder for swipe gestures on images
+  const panResponder = useMemo(() => 
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        const { dx, dy } = gestureState;
+        console.log(`🔄 Move check - dx: ${dx}, dy: ${dy}`);
+        // More responsive: lower threshold and allow some horizontal movement
+        const shouldRespond = Math.abs(dy) > 15 && Math.abs(dy) > Math.abs(dx) * 1.5;
+        console.log(`🔄 Should respond: ${shouldRespond}`);
+        return shouldRespond;
+      },
+      onPanResponderGrant: () => {
+        console.log('🔄 PanResponder granted - gesture started');
+        setSwipeDirection(null);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const { dy } = gestureState;
+        if (Math.abs(dy) > 20) {
+          const direction = dy > 0 ? 'down' : 'up';
+          setSwipeDirection(direction);
+          console.log(`🔄 Swipe direction: ${direction}, distance: ${Math.abs(dy)}`);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        const { dy, vy } = gestureState;
+        const minSwipeDistance = 50; // Reduced threshold for better responsiveness
+        const minVelocity = 0.3; // Lower velocity threshold
+        
+        console.log(`🔄 Gesture released - dy: ${dy}, vy: ${vy}`);
+        
+        // Check if S3 data is ready before allowing navigation
+        if (s3Folders.length === 0) {
+          console.log('❌ Swipe blocked - S3 data not ready yet');
+          console.log('🔄 Current S3 state:', {
+            showS3Gallery,
+            s3Loading,
+            s3FoldersLength: s3Folders.length,
+            currentS3FolderIndex,
+            currentS3ImageIndex
+          });
+          setSwipeDirection(null);
+          return;
+        }
+        
+        if (Math.abs(dy) > minSwipeDistance || Math.abs(vy) > minVelocity) {
+          if (dy > 0) {
+            // Swipe down - go to previous image
+            console.log('🔄 Swipe down detected - navigating to previous image');
+            navigateToPreviousS3Image();
+          } else {
+            // Swipe up - go to next image
+            console.log('🔄 Swipe up detected - navigating to next image');
+            navigateToNextS3Image();
+          }
+        } else {
+          console.log('🔄 Swipe too short or slow - no navigation');
+        }
+        
+        // Reset swipe direction after a short delay
+        setTimeout(() => setSwipeDirection(null), 300);
+      },
+      onPanResponderTerminate: () => {
+        console.log('🔄 PanResponder terminated');
+        setSwipeDirection(null);
+      },
+    }), [s3Folders.length, showS3Gallery, s3Loading, currentS3FolderIndex, currentS3ImageIndex]
+  );
+  
   const router = useRouter();
 
   // Function to play welcome bell sound
@@ -487,6 +556,10 @@ export default function DailyPujaCustomTemple() {
       const allFolders = await fetchAllImagesAndOrganize(godNamesData);
       
       if (allFolders.length > 0) {
+        console.log('✅ S3 data loaded successfully:', {
+          foldersCount: allFolders.length,
+          firstFolderImages: allFolders[0]?.images?.length || 0
+        });
         setS3Folders(allFolders);
         setCurrentS3FolderIndex(0);
         setCurrentS3ImageIndex(0);
@@ -495,12 +568,15 @@ export default function DailyPujaCustomTemple() {
         const firstImageUrl = await fetchPresignedUrl(firstImage.key);
         
         if (firstImageUrl) {
+          console.log('✅ First image URL fetched successfully');
           setCurrentS3ImageUrl(firstImageUrl);
           setShowS3Gallery(true);
         } else {
+          console.log('❌ Failed to fetch first image URL');
           Alert.alert('Error', 'Failed to load first image. Please try again.');
         }
       } else {
+        console.log('❌ No folders found in S3 data');
         Alert.alert('No Images Found', 'No temple images are currently available.');
       }
     } catch (error) {
@@ -532,35 +608,91 @@ export default function DailyPujaCustomTemple() {
   };
 
   const navigateToNextS3Image = () => {
+    console.log('🔄 navigateToNextS3Image called');
+    console.log('🔄 Current state:', { 
+      s3FoldersLength: s3Folders.length, 
+      currentS3FolderIndex, 
+      currentS3ImageIndex,
+      currentFolderImagesLength: s3Folders[currentS3FolderIndex]?.images?.length || 0
+    });
+    
+    if (s3Folders.length === 0) {
+      console.log('❌ No S3 folders available');
+      return;
+    }
+    
     const currentFolder = s3Folders[currentS3FolderIndex];
+    if (!currentFolder || !currentFolder.images || currentFolder.images.length === 0) {
+      console.log('❌ Current folder or images not available:', { 
+        hasFolder: !!currentFolder, 
+        hasImages: !!currentFolder?.images, 
+        imagesLength: currentFolder?.images?.length || 0 
+      });
+      return;
+    }
+    
     if (currentS3ImageIndex < currentFolder.images.length - 1) {
-      setCurrentS3ImageIndex(currentS3ImageIndex + 1);
+      const newIndex = currentS3ImageIndex + 1;
+      console.log(`✅ Moving to next image: ${currentS3ImageIndex} → ${newIndex}`);
+      setCurrentS3ImageIndex(newIndex);
     } else {
-      // Cycle back to first image in the same folder
+      console.log(`🔄 Cycling to first image in folder: ${currentS3ImageIndex} → 0`);
       setCurrentS3ImageIndex(0);
     }
   };
 
   const navigateToPreviousS3Image = () => {
+    console.log('🔄 navigateToPreviousS3Image called');
+    console.log('🔄 Current state:', { 
+      s3FoldersLength: s3Folders.length, 
+      currentS3FolderIndex, 
+      currentS3ImageIndex,
+      currentFolderImagesLength: s3Folders[currentS3FolderIndex]?.images?.length || 0
+    });
+    if (s3Folders.length === 0) {
+      console.log('❌ No S3 folders available');
+      return;
+    }
+    
+    const currentFolder = s3Folders[currentS3FolderIndex];
+    if (!currentFolder || !currentFolder.images || currentFolder.images.length === 0) {
+      console.log('❌ Current folder or images not available:', { 
+        hasFolder: !!currentFolder, 
+        hasImages: !!currentFolder?.images, 
+        imagesLength: currentFolder?.images?.length || 0 
+      });
+      return;
+    }
+    
     if (currentS3ImageIndex > 0) {
       setCurrentS3ImageIndex(currentS3ImageIndex - 1);
     } else {
       // Cycle to last image in the same folder
-      const currentFolder = s3Folders[currentS3FolderIndex];
       setCurrentS3ImageIndex(currentFolder.images.length - 1);
     }
   };
 
   // Update S3 image URL when folder or image index changes
   useEffect(() => {
+    console.log('🔄 useEffect triggered - Image change detected');
+    console.log('🔄 useEffect state:', {
+      showS3Gallery,
+      s3FoldersLength: s3Folders.length,
+      currentS3FolderIndex,
+      currentS3ImageIndex,
+      currentFolderImagesLength: s3Folders[currentS3FolderIndex]?.images?.length || 0
+    });
+    
     if (showS3Gallery && s3Folders.length > 0 && 
         currentS3FolderIndex < s3Folders.length && 
         currentS3ImageIndex < s3Folders[currentS3FolderIndex].images.length) {
       
       const currentImage = s3Folders[currentS3FolderIndex].images[currentS3ImageIndex];
+      console.log('🔄 Current image:', currentImage);
       
       // Skip Icon.png files - they're only for navigation
       if (currentImage.name === 'Icon.png') {
+        console.log('🔄 Skipping Icon.png, moving to next image');
         // Move to next image if current is Icon.png
         if (currentS3ImageIndex < s3Folders[currentS3FolderIndex].images.length - 1) {
           setCurrentS3ImageIndex(currentS3ImageIndex + 1);
@@ -572,11 +704,17 @@ export default function DailyPujaCustomTemple() {
         return;
       }
       
+      console.log('🔄 Fetching presigned URL for:', currentImage.key);
       fetchPresignedUrl(currentImage.key).then(url => {
         if (url) {
+          console.log('✅ Presigned URL fetched successfully');
           setCurrentS3ImageUrl(url);
+        } else {
+          console.log('❌ Failed to fetch presigned URL');
         }
       });
+    } else {
+      console.log('❌ useEffect conditions not met');
     }
   }, [currentS3FolderIndex, currentS3ImageIndex, s3Folders, showS3Gallery]);
 
@@ -1867,7 +2005,7 @@ export default function DailyPujaCustomTemple() {
                   >
                     {iconImage ? (
                       <Image
-                        source={{ uri: iconImage.url || '' }}
+                        source={iconImage.url ? { uri: iconImage.url } : require('@/assets/images/icons/own temple/sankha.png')}
                         style={[
                           styles.folderIconImage,
                           isActive && styles.folderIconImageActive
@@ -1902,21 +2040,38 @@ export default function DailyPujaCustomTemple() {
             </ScrollView>
           </View>
 
-          {/* Main Image */}
+          {/* Main Image with Swipe Gestures */}
           <View style={styles.s3ImageContainer}>
             {currentS3ImageUrl ? (
               <>
-                <Image
-                  source={{ uri: currentS3ImageUrl }}
-                  style={styles.s3MainImage}
-                  resizeMode="contain"
-                  onError={() => Alert.alert('Error', 'Failed to load image')}
-                />
+                <View
+                  style={styles.swipeableImageContainer}
+                  {...panResponder.panHandlers}
+                >
+                  <Image
+                    source={{ uri: currentS3ImageUrl }}
+                    style={styles.s3MainImage}
+                    resizeMode="contain"
+                    onError={() => Alert.alert('Error', 'Failed to load image')}
+                  />
+                  
+
+                </View>
+                
                 {/* God Name Display - Right below the image */}
                 {s3Folders[currentS3FolderIndex]?.godName && (
                   <View style={styles.godNameContainer}>
                     <Text style={styles.godNameText}>
                       {s3Folders[currentS3FolderIndex].godName}
+                    </Text>
+                  </View>
+                )}
+                
+                {/* Swipe Status Message */}
+                {s3Folders.length === 0 && (
+                  <View style={styles.swipeStatusContainer}>
+                    <Text style={styles.swipeStatusText}>
+                      Loading images... Swipe will be available soon
                     </Text>
                   </View>
                 )}
@@ -1933,22 +2088,28 @@ export default function DailyPujaCustomTemple() {
 
           <View style={styles.s3ImageNavigationContainer}>
             <TouchableOpacity 
-              style={styles.s3NavButton} 
-              onPress={navigateToPreviousS3Image}
+              style={[styles.s3NavButton, styles.s3NavButtonLeft]} 
+              onPress={() => {
+                console.log('🔄 Previous Image button pressed');
+                navigateToPreviousS3Image();
+              }}
               disabled={false}
             >
               <Text style={styles.s3NavButtonText}>
-                ▲ Previous Image
+                ▲
               </Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={styles.s3NavButton} 
-              onPress={navigateToNextS3Image}
+              style={[styles.s3NavButton, styles.s3NavButtonRight]} 
+              onPress={() => {
+                console.log('🔄 Next Image button pressed');
+                navigateToNextS3Image();
+              }}
               disabled={currentS3ImageIndex === s3Folders[currentS3FolderIndex]?.images.length - 1 && currentS3FolderIndex === s3Folders.length - 1}
             >
               <Text style={[styles.s3NavButtonText, currentS3ImageIndex === s3Folders[currentS3FolderIndex]?.images.length - 1 && currentS3FolderIndex === s3Folders.length - 1 && styles.s3NavButtonTextDisabled]}>
-                Next Image ▼
+                ▼
               </Text>
             </TouchableOpacity>
           </View>
@@ -2790,30 +2951,40 @@ const styles = StyleSheet.create({
     },
     s3ImageNavigationContainer: {
       position: 'absolute',
-      top: 250, // Positioned 100 pixels up from original position
+      top: 130, // Moved another 20 pixels up from 150
       left: 0,
       right: 0,
       flexDirection: 'row',
       justifyContent: 'space-between',
-      paddingHorizontal: 20,
+      paddingHorizontal: 0, // Remove horizontal padding to allow custom positioning
       paddingVertical: 15,
       zIndex: 1020,
+      backgroundColor: 'transparent', // Make background transparent
     },
     s3NavButton: {
-      backgroundColor: 'rgba(255, 106, 0, 0.8)',
+      backgroundColor: 'transparent', // Remove button background
       paddingHorizontal: 20,
       paddingVertical: 12,
       borderRadius: 25,
-      minWidth: 120,
+      minWidth: 30, // Reduced by 75% from 120 to 30
       alignItems: 'center',
+      position: 'absolute', // Enable absolute positioning
     },
     s3NavButtonText: {
       color: 'white',
-      fontSize: 14,
+      fontSize: 28, // 2x size from 14 to 28
       fontWeight: '600',
     },
     s3NavButtonTextDisabled: {
       opacity: 0.5,
+    },
+    s3NavButtonLeft: {
+      left: 10, // Moved another 10 pixels left from 20 to 10
+      top: 10, // Moved 10 pixels down
+    },
+    s3NavButtonRight: {
+      right: 10, // Moved another 10 pixels left from 20 to 10
+      top: 10, // Moved 10 pixels down
     },
     s3InfoContainer: {
       padding: 20,
@@ -3006,5 +3177,50 @@ const styles = StyleSheet.create({
     deityDropdownItemTextActive: {
       color: '#FF6A00',
       fontWeight: 'bold',
+    },
+    // Swipe Gesture Styles
+    swipeableImageContainer: {
+      position: 'relative',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      height: '100%',
+      // Ensure touch events are captured
+      backgroundColor: 'transparent',
+    },
+    swipeIndicator: {
+      position: 'absolute',
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 20,
+      backgroundColor: 'rgba(255, 106, 0, 0.9)',
+      zIndex: 1050,
+    },
+    swipeIndicatorUp: {
+      top: 20,
+    },
+    swipeIndicatorDown: {
+      bottom: 20,
+    },
+    swipeIndicatorText: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: 'bold',
+      textAlign: 'center',
+    },
+    swipeStatusContainer: {
+      marginTop: 20,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      backgroundColor: 'rgba(255, 106, 0, 0.1)',
+      borderRadius: 15,
+      borderWidth: 1,
+      borderColor: '#FF6A00',
+    },
+    swipeStatusText: {
+      color: '#FF6A00',
+      fontSize: 14,
+      fontWeight: '600',
+      textAlign: 'center',
     },
   }); // End of StyleSheet
