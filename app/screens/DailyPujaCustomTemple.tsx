@@ -1999,26 +1999,44 @@ export default function DailyPujaCustomTemple() {
           </View>
         )}
 
-        {/* Next Button - Center */}
-        {!showS3Gallery && (
-          <View style={styles.nextButtonContainer}>
-            <TouchableOpacity 
-              style={[styles.nextButton, s3Loading && styles.nextButtonDisabled]} 
-              onPress={handleNextToS3Gallery}
-              disabled={s3Loading}
-              activeOpacity={0.7}
-            >
-              {s3Loading ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <>
-                  <Text style={styles.nextButtonText}>Next</Text>
-                  <Text style={styles.nextButtonSubtext}>Explore Temples</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
+
+
+        {/* Navigation Buttons - Always Visible */}
+        <View style={styles.mainNavigationButtonsContainer}>
+          <TouchableOpacity 
+            style={styles.mainNavigationButton}
+            onPress={() => {
+              console.log('My Temple pressed - Navigate to temple deities');
+              setShowS3Gallery(false); // Close S3 gallery if open
+              // Add your navigation logic here for temple deities
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.mainNavigationButtonText} numberOfLines={1}>My Temple</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.mainNavigationButton}
+            onPress={() => console.log('Today\'s Special pressed - Will be used later')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.mainNavigationButtonText} numberOfLines={1}>Today's Special</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.mainNavigationButton}
+            onPress={() => {
+              console.log('All Temples pressed - Navigate to S3 temples');
+              if (!showS3Gallery) {
+                handleNextToS3Gallery(); // Open S3 gallery if not already open
+              }
+              // Add your navigation logic here for S3 temples
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.mainNavigationButtonText} numberOfLines={1}>All Temples</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* S3 Image Gallery - Overlay when active */}
@@ -2104,32 +2122,7 @@ export default function DailyPujaCustomTemple() {
             </ScrollView>
           </View>
 
-          {/* Action Buttons Row */}
-          <View style={styles.actionButtonsContainer}>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => console.log('My Temple pressed')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.actionButtonText} numberOfLines={1}>My Temple</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => console.log('Today\'s Special pressed')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.actionButtonText} numberOfLines={1}>Today's Special</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => console.log('All Temples pressed')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.actionButtonText} numberOfLines={1}>All Temples</Text>
-            </TouchableOpacity>
-          </View>
+
 
           {/* Main Image with Swipe Gestures */}
           <View style={styles.s3ImageContainer}>
@@ -3336,6 +3329,33 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
     },
     actionButtonText: {
+      color: 'white',
+      fontSize: 10, // Font size 10 pixels
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    // Main Navigation Buttons Styles (Always Visible)
+    mainNavigationButtonsContainer: {
+      position: 'absolute',
+      bottom: 175, // Same position as S3 gallery buttons
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1020,
+    },
+    mainNavigationButton: {
+      backgroundColor: 'rgba(255, 106, 0, 0.8)',
+      width: 100, // Button width 100px
+      paddingVertical: 12,
+      paddingHorizontal: 15,
+      borderRadius: 5, // Very less round corners
+      marginHorizontal: 5, // 5px spacing on each side = 10px total spacing
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    mainNavigationButtonText: {
       color: 'white',
       fontSize: 10, // Font size 10 pixels
       fontWeight: '600',
