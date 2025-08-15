@@ -266,14 +266,11 @@ export default function DailyPujaCustomTemple() {
       onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_, gestureState) => {
         const { dx, dy } = gestureState;
-        console.log(`🔄 Move check - dx: ${dx}, dy: ${dy}`);
         // More responsive: lower threshold and allow some horizontal movement
         const shouldRespond = Math.abs(dy) > 15 && Math.abs(dy) > Math.abs(dx) * 1.5;
-        console.log(`🔄 Should respond: ${shouldRespond}`);
         return shouldRespond;
       },
       onPanResponderGrant: () => {
-        console.log('🔄 PanResponder granted - gesture started');
         setSwipeDirection(null);
       },
       onPanResponderMove: (_, gestureState) => {
@@ -281,7 +278,6 @@ export default function DailyPujaCustomTemple() {
         if (Math.abs(dy) > 20) {
           const direction = dy > 0 ? 'down' : 'up';
           setSwipeDirection(direction);
-          console.log(`🔄 Swipe direction: ${direction}, distance: ${Math.abs(dy)}`);
         }
       },
       onPanResponderRelease: (_, gestureState) => {
@@ -289,18 +285,8 @@ export default function DailyPujaCustomTemple() {
         const minSwipeDistance = 50; // Reduced threshold for better responsiveness
         const minVelocity = 0.3; // Lower velocity threshold
         
-        console.log(`🔄 Gesture released - dy: ${dy}, vy: ${vy}`);
-        
         // Check if S3 data is ready before allowing navigation
         if (s3Folders.length === 0) {
-          console.log('❌ Swipe blocked - S3 data not ready yet');
-          console.log('🔄 Current S3 state:', {
-            showS3Gallery,
-            s3Loading,
-            s3FoldersLength: s3Folders.length,
-            currentS3FolderIndex,
-            currentS3ImageIndex
-          });
           setSwipeDirection(null);
           return;
         }
@@ -308,22 +294,17 @@ export default function DailyPujaCustomTemple() {
         if (Math.abs(dy) > minSwipeDistance || Math.abs(vy) > minVelocity) {
           if (dy > 0) {
             // Swipe down - go to previous image
-            console.log('🔄 Swipe down detected - navigating to previous image');
             navigateToPreviousS3Image();
           } else {
             // Swipe up - go to next image
-            console.log('🔄 Swipe up detected - navigating to next image');
             navigateToNextS3Image();
           }
-        } else {
-          console.log('🔄 Swipe too short or slow - no navigation');
         }
         
         // Reset swipe direction after a short delay
         setTimeout(() => setSwipeDirection(null), 300);
       },
       onPanResponderTerminate: () => {
-        console.log('🔄 PanResponder terminated');
         setSwipeDirection(null);
       },
     }), [s3Folders.length, showS3Gallery, s3Loading, currentS3FolderIndex, currentS3ImageIndex]
@@ -368,15 +349,11 @@ export default function DailyPujaCustomTemple() {
   const performPujaRitual = async () => {
     if (isPujaRitualActive) return; // Prevent multiple simultaneous rituals
     
-    setIsPujaRitualActive(true);
-    console.log('🕉️ Starting Puja Ritual...');
-    console.log('📱 Screen dimensions:', { width: screenWidth, height: screenHeight });
-    console.log('🎯 Modal zIndex: 9998, Thali zIndex: 9999');
-
+        setIsPujaRitualActive(true);
+    
     try {
       // 1. Swing bells in parallel
       const swingBells = async () => {
-        console.log('🔔 Swinging bells...');
         const bellSwingDuration = 2000;
         
         // Left bell swing
@@ -420,7 +397,6 @@ export default function DailyPujaCustomTemple() {
 
       // 2. Play ghanti sound in parallel
       const playGhantiSound = async () => {
-        console.log('🔔 Playing ghanti sound...');
         try {
           const { sound: ghantiSound } = await Audio.Sound.createAsync(
             require('@/assets/sounds/TempleBell.mp3'),
@@ -442,7 +418,6 @@ export default function DailyPujaCustomTemple() {
 
       // 3. Drop mixed flowers in parallel
       const dropMixedFlowers = async () => {
-        console.log('🌸 Dropping mixed flowers...');
         const flowerTypes = ['rose', 'jasmine', 'lotus', 'marigold', 'tulsi'];
         const newFlowers: Flower[] = [];
         
@@ -495,27 +470,23 @@ export default function DailyPujaCustomTemple() {
         
         animation.start(({ finished }) => {
           if (finished) {
-            console.log('✅ Thali orbital animation completed');
             setIsPujaRitualActive(false);
-            console.log('🔄 Puja ritual state reset to false');
           } else {
-            console.log('❌ Thali orbital animation was interrupted');
             setIsPujaRitualActive(false);
-            console.log('🔄 Puja ritual state reset to false (interrupted)');
           }
         });
       };
 
-      // Execute thali animation
-      await movePujaThali();
-
-      console.log('✅ Puja Ritual completed successfully!');
+      // Execute flower dropping and thali animation in parallel
+      await Promise.all([
+        dropMixedFlowers(),
+        movePujaThali()
+      ]);
       
     } catch (error) {
-      console.error('❌ Error during puja ritual:', error);
+      // Silent error handling
     } finally {
       // Don't reset state here - let the animation callback handle it
-      console.log('🔄 Puja ritual animation started, state will reset when animation completes');
     }
   };
 
@@ -563,23 +534,14 @@ export default function DailyPujaCustomTemple() {
 
   const fetchGodNames = async (): Promise<{[folderId: string]: string}> => {
     try {
-      console.log('🔍 [GOD NAMES] Starting to fetch godNames.json...');
       const presignedUrl = getApiUrl(`/api/s3/download-url?key=dailytemples/godNames.json&expiresIn=3600`);
-      console.log('🔍 [GOD NAMES] Presigned URL:', presignedUrl);
       
       const res = await fetch(presignedUrl);
-      console.log('🔍 [GOD NAMES] API Response status:', res.status);
-      
       const data = await res.json();
-      console.log('🔍 [GOD NAMES] API Response data:', JSON.stringify(data, null, 2));
       
       if (data && data.success && data.presignedUrl) {
-        console.log('🔍 [GOD NAMES] Got presigned URL, fetching actual file...');
         const godNamesRes = await fetch(data.presignedUrl);
-        console.log('🔍 [GOD NAMES] File fetch status:', godNamesRes.status);
-        
         const godNamesData = await godNamesRes.json();
-        console.log('🔍 [GOD NAMES] Raw godNames.json content:', JSON.stringify(godNamesData, null, 2));
         
         // Convert array format to key-value mapping
         if (Array.isArray(godNamesData)) {
@@ -587,18 +549,14 @@ export default function DailyPujaCustomTemple() {
           godNamesData.forEach((item: {id: string, name: string}) => {
             godNamesMap[item.id] = item.name;
           });
-          console.log('🔍 [GOD NAMES] Converted to map:', godNamesMap);
           return godNamesMap;
         }
         
-        console.log('🔍 [GOD NAMES] Not an array, returning as is:', godNamesData);
         return godNamesData || {};
       } else {
-        console.log('❌ [GOD NAMES] API call failed or no presigned URL');
         return {};
       }
     } catch (e) {
-      console.error('❌ [GOD NAMES] Error fetching god names:', e);
       return {};
     }
   };
@@ -621,7 +579,7 @@ export default function DailyPujaCustomTemple() {
             continue;
           }
           
-          console.log('🔍 Processing folder:', folderName, 'Available god names:', Object.keys(godNamesData));
+
           
           const folderPrefix = `dailytemples/${folderName}/`;
           const folderImages = data.files.filter((f: any) => 
@@ -666,16 +624,9 @@ export default function DailyPujaCustomTemple() {
               for (const variation of variations) {
                 if (godNamesData[variation]) {
                   godName = godNamesData[variation];
-                  console.log('✅ Found god name for folder', folderName, ':', godName, 'using variation:', variation);
                   break;
                 }
               }
-            }
-            
-            if (godName) {
-              console.log('✅ Using god name for folder', folderName, ':', godName);
-            } else {
-              console.log('❌ No god name found for folder:', folderName);
             }
             
             organizedFolders.push({
@@ -710,19 +661,13 @@ export default function DailyPujaCustomTemple() {
     setS3Loading(true);
     try {
       // Fetch god names first
-      console.log('🔍 [GALLERY] About to fetch god names...');
       const godNamesData = await fetchGodNames();
-      console.log('🔍 [GALLERY] God names fetched, setting state with:', godNamesData);
       setGodNames(godNamesData);
       
       console.log('🔍 [GALLERY] About to fetch and organize images...');
       const allFolders = await fetchAllImagesAndOrganize(godNamesData);
       
       if (allFolders.length > 0) {
-        console.log('✅ S3 data loaded successfully:', {
-          foldersCount: allFolders.length,
-          firstFolderImages: allFolders[0]?.images?.length || 0
-        });
         setS3Folders(allFolders);
         setCurrentS3FolderIndex(0);
         setCurrentS3ImageIndex(0);
@@ -731,15 +676,12 @@ export default function DailyPujaCustomTemple() {
         const firstImageUrl = await fetchPresignedUrl(firstImage.key);
         
         if (firstImageUrl) {
-          console.log('✅ First image URL fetched successfully');
           setCurrentS3ImageUrl(firstImageUrl);
           setShowS3Gallery(true);
         } else {
-          console.log('❌ Failed to fetch first image URL');
           Alert.alert('Error', 'Failed to load first image. Please try again.');
         }
       } else {
-        console.log('❌ No folders found in S3 data');
         Alert.alert('No Images Found', 'No temple images are currently available.');
       }
     } catch (error) {
@@ -771,59 +713,30 @@ export default function DailyPujaCustomTemple() {
   };
 
   const navigateToNextS3Image = () => {
-    console.log('🔄 navigateToNextS3Image called');
-    console.log('🔄 Current state:', { 
-      s3FoldersLength: s3Folders.length, 
-      currentS3FolderIndex, 
-      currentS3ImageIndex,
-      currentFolderImagesLength: s3Folders[currentS3FolderIndex]?.images?.length || 0
-    });
-    
     if (s3Folders.length === 0) {
-      console.log('❌ No S3 folders available');
       return;
     }
     
     const currentFolder = s3Folders[currentS3FolderIndex];
     if (!currentFolder || !currentFolder.images || currentFolder.images.length === 0) {
-      console.log('❌ Current folder or images not available:', { 
-        hasFolder: !!currentFolder, 
-        hasImages: !!currentFolder?.images, 
-        imagesLength: currentFolder?.images?.length || 0 
-      });
       return;
     }
     
     if (currentS3ImageIndex < currentFolder.images.length - 1) {
       const newIndex = currentS3ImageIndex + 1;
-      console.log(`✅ Moving to next image: ${currentS3ImageIndex} → ${newIndex}`);
       setCurrentS3ImageIndex(newIndex);
     } else {
-      console.log(`🔄 Cycling to first image in folder: ${currentS3ImageIndex} → 0`);
       setCurrentS3ImageIndex(0);
     }
   };
 
   const navigateToPreviousS3Image = () => {
-    console.log('🔄 navigateToPreviousS3Image called');
-    console.log('🔄 Current state:', { 
-      s3FoldersLength: s3Folders.length, 
-      currentS3FolderIndex, 
-      currentS3ImageIndex,
-      currentFolderImagesLength: s3Folders[currentS3FolderIndex]?.images?.length || 0
-    });
     if (s3Folders.length === 0) {
-      console.log('❌ No S3 folders available');
       return;
     }
     
     const currentFolder = s3Folders[currentS3FolderIndex];
     if (!currentFolder || !currentFolder.images || currentFolder.images.length === 0) {
-      console.log('❌ Current folder or images not available:', { 
-        hasFolder: !!currentFolder, 
-        hasImages: !!currentFolder?.images, 
-        imagesLength: currentFolder?.images?.length || 0 
-      });
       return;
     }
     
@@ -837,25 +750,14 @@ export default function DailyPujaCustomTemple() {
 
   // Update S3 image URL when folder or image index changes
   useEffect(() => {
-    console.log('🔄 useEffect triggered - Image change detected');
-    console.log('🔄 useEffect state:', {
-      showS3Gallery,
-      s3FoldersLength: s3Folders.length,
-      currentS3FolderIndex,
-      currentS3ImageIndex,
-      currentFolderImagesLength: s3Folders[currentS3FolderIndex]?.images?.length || 0
-    });
-    
     if (showS3Gallery && s3Folders.length > 0 && 
         currentS3FolderIndex < s3Folders.length && 
         currentS3ImageIndex < s3Folders[currentS3FolderIndex].images.length) {
       
       const currentImage = s3Folders[currentS3FolderIndex].images[currentS3ImageIndex];
-      console.log('🔄 Current image:', currentImage);
       
       // Skip Icon.png files - they're only for navigation
       if (currentImage.name === 'Icon.png') {
-        console.log('🔄 Skipping Icon.png, moving to next image');
         // Move to next image if current is Icon.png
         if (currentS3ImageIndex < s3Folders[currentS3FolderIndex].images.length - 1) {
           setCurrentS3ImageIndex(currentS3ImageIndex + 1);
@@ -867,17 +769,11 @@ export default function DailyPujaCustomTemple() {
         return;
       }
       
-      console.log('🔄 Fetching presigned URL for:', currentImage.key);
       fetchPresignedUrl(currentImage.key).then(url => {
         if (url) {
-          console.log('✅ Presigned URL fetched successfully');
           setCurrentS3ImageUrl(url);
-        } else {
-          console.log('❌ Failed to fetch presigned URL');
         }
       });
-    } else {
-      console.log('❌ useEffect conditions not met');
     }
   }, [currentS3FolderIndex, currentS3ImageIndex, s3Folders, showS3Gallery]);
 
@@ -886,9 +782,8 @@ export default function DailyPujaCustomTemple() {
     const markVisit = async () => {
       try {
         await markDailyPujaVisited();
-        console.log('✅ Daily puja visit marked for today');
       } catch (error) {
-        console.error('❌ Error marking daily puja visit:', error);
+        // Silent error handling
       }
     };
     
@@ -896,7 +791,6 @@ export default function DailyPujaCustomTemple() {
     
     // Comprehensive preloading of all essential assets for smooth daily puja experience
     const preloadAllAssets = async () => {
-      console.log('🚀 Starting comprehensive asset preloading...');
       setAssetPreloading(true);
       setPreloadProgress(0);
       
@@ -905,14 +799,12 @@ export default function DailyPujaCustomTemple() {
         try {
           // Validate that imagePath is a valid require statement
           if (typeof imagePath === 'string' || typeof imagePath === 'number') {
-            console.log(`⚠️ Skipping invalid image path for ${description}:`, imagePath);
             return false;
           }
           
           await Image.prefetch(imagePath);
           return true;
         } catch (error) {
-          console.log(`⚠️ Failed to preload ${description}:`, error);
           return false;
         }
       };
@@ -925,7 +817,6 @@ export default function DailyPujaCustomTemple() {
           completedSteps++;
           const progress = Math.min(Math.round((completedSteps / totalSteps) * 100), 100);
           setPreloadProgress(progress);
-          console.log(`📊 Preloading progress: ${progress}%`);
         };
         
         // Preload all flower images
@@ -938,28 +829,23 @@ export default function DailyPujaCustomTemple() {
           require('@/assets/images/icons/own temple/RedShevanthi.png'),
         ];
         
-        console.log('🌸 Preloading flower images...');
+
         const flowerResults = await Promise.all(flowerImages.map(async (image, index) => {
           const flowerNames = ['rose', 'whiterose', 'jasmine', 'YellowShevanthi', 'WhiteShevanthi', 'RedShevanthi'];
           return await safePrefetchImage(image, `flower ${flowerNames[index]}`);
         }));
         const successfulFlowers = flowerResults.filter(result => result).length;
-        console.log(`✅ ${successfulFlowers}/${flowerImages.length} flower images preloaded successfully`);
+
         updateProgress();
         
         // Preload arti thali
-        console.log('🪔 Preloading arti thali...');
         const thaliSuccess = await safePrefetchImage(
           require('@/assets/images/icons/own temple/PujaThali1.png'),
           'arti thali'
         );
-        if (thaliSuccess) {
-          console.log('✅ Arti thali preloaded successfully');
-        }
         updateProgress();
         
         // Preload bell images
-        console.log('🔔 Preloading bell images...');
         const bellImages = [
           require('@/assets/images/temple/GoldenBell.png'),
         ];
@@ -969,25 +855,19 @@ export default function DailyPujaCustomTemple() {
           return await safePrefetchImage(image, `bell ${bellNames[index]}`);
         }));
         const successfulBells = bellResults.filter(result => result).length;
-        console.log(`✅ ${successfulBells}/${bellImages.length} bell images preloaded successfully`);
         updateProgress();
         
         // Preload shankh image
-        console.log('🐚 Preloading shankh image...');
         const shankhSuccess = await safePrefetchImage(
           require('@/assets/images/icons/own temple/sankha.png'),
           'shankh'
         );
-        if (shankhSuccess) {
-          console.log('✅ Shankh image preloaded successfully');
-        }
         updateProgress();
         
         
         updateProgress();
         
         // Preload essential deity images for better performance
-        console.log('🙏 Preloading essential deity images...');
         const essentialDeityImages = [
           require('@/assets/images/temple/VishnuIcon.png'),
           require('@/assets/images/temple/Ganesha1.png'),
@@ -1003,11 +883,9 @@ export default function DailyPujaCustomTemple() {
           return await safePrefetchImage(image, `deity ${deityNames[index]}`);
         }));
         const successfulDeities = deityResults.filter(result => result).length;
-        console.log(`✅ ${successfulDeities}/${essentialDeityImages.length} essential deity images preloaded successfully`);
         updateProgress();
         
         // Preload temple background images
-        console.log('🏛️ Preloading temple background images...');
         const templeImages = [
           require('@/assets/images/temple/Temple1.png'),
           require('@/assets/images/temple/Temple2.png'),
@@ -1018,46 +896,36 @@ export default function DailyPujaCustomTemple() {
           return await safePrefetchImage(image, `temple ${templeNames[index]}`);
         }));
         const successfulTemples = templeResults.filter(result => result).length;
-        console.log(`✅ ${successfulTemples}/${templeImages.length} temple background images preloaded successfully`);
         updateProgress();
         
         // Preload sound files
-        console.log('🔊 Preloading sound files...');
         try {
           // Preload temple bell sound
           const templeBellSound = new Audio.Sound();
           await templeBellSound.loadAsync(require('@/assets/sounds/TempleBell.mp3'));
           await templeBellSound.unloadAsync();
-          console.log('✅ Temple bell sound preloaded successfully');
           
           // Preload conch sound
           const conchSound = new Audio.Sound();
           await conchSound.loadAsync(require('@/assets/sounds/conch.mp3'));
           await conchSound.unloadAsync();
-          console.log('✅ Conch sound preloaded successfully');
         } catch (error) {
-          console.log('⚠️ Failed to preload sound files:', error);
+          // Silent error handling
         }
         updateProgress();
         
         // Preload S3 images in background for faster gallery experience
-        console.log('☁️ Starting background S3 image preloading...');
         try {
           // Start S3 preloading without blocking the UI
           const preloadS3Images = async () => {
             try {
-              console.log('🔄 Fetching god names for S3 preloading...');
               const godNamesData = await fetchGodNames();
               
               if (godNamesData && Object.keys(godNamesData).length > 0) {
-                console.log('✅ God names fetched, starting S3 image organization...');
-                
                 // Fetch and organize S3 images in background
                 const allFolders = await fetchAllImagesAndOrganize(godNamesData);
                 
                 if (allFolders.length > 0) {
-                  console.log(`🔄 Preloading ${allFolders.length} S3 folders with images...`);
-                  
                   // Preload first few images from each folder for instant gallery access
                   let totalPreloadedImages = 0;
                   const maxImagesPerFolder = 3; // Preload first 3 images from each folder
@@ -1071,28 +939,21 @@ export default function DailyPujaCustomTemple() {
                           const url = await fetchPresignedUrl(image.key);
                           if (url) {
                             totalPreloadedImages++;
-                            console.log(`✅ Preloaded S3 image: ${image.name} from ${folder.name}`);
                           }
                         } catch (error) {
-                          console.log(`⚠️ Failed to preload S3 image: ${image.name}`, error);
+                          // Silent fail for preloading
                         }
                       }
                     }
                   }
                   
-                  console.log(`🎉 S3 preloading complete: ${totalPreloadedImages} images ready for instant access`);
-                  
                   // Store the organized data for immediate use when gallery opens
                   setS3Folders(allFolders);
                   
-                } else {
-                  console.log('⚠️ No S3 folders found during preloading');
                 }
-              } else {
-                console.log('⚠️ God names not available for S3 preloading');
               }
             } catch (error) {
-              console.log('⚠️ S3 preloading failed (non-blocking):', error);
+              // Silent fail for preloading
             }
           };
           
@@ -1100,16 +961,11 @@ export default function DailyPujaCustomTemple() {
           preloadS3Images();
           
         } catch (error) {
-          console.log('⚠️ Failed to start S3 preloading:', error);
+          // Silent fail for preloading
         }
         updateProgress();
         
-        console.log('🎉 All assets preloaded successfully! Daily puja is ready for smooth experience.');
-        
-        // Log summary of preloading results
-        const totalAssets = flowerImages.length + 1 + bellImages.length + 1 + 1 + essentialDeityImages.length + templeImages.length + 2 + 1; // +2 for sounds, +1 for S3
-        const successfulAssets = successfulFlowers + (thaliSuccess ? 1 : 0) + successfulBells + (shankhSuccess ? 1 : 0) + successfulDeities + successfulTemples + 2 + 1; // +2 for sounds, +1 for S3
-        console.log(`📊 Preloading Summary: ${successfulAssets}/${totalAssets} assets loaded successfully`);
+
         
         // Show completion message for a moment before transitioning
         setTimeout(() => {
@@ -1117,7 +973,6 @@ export default function DailyPujaCustomTemple() {
         }, 1000);
         
       } catch (error) {
-        console.error('❌ Error during asset preloading:', error);
         setAssetPreloading(false);
       }
     };
@@ -1289,13 +1144,9 @@ export default function DailyPujaCustomTemple() {
   useEffect(() => {
     (async () => {
       try {
-        console.log('🔄 [DAILY PUJA] Loading temple configuration...');
-        
         const templeConfig = await loadTempleConfiguration();
         
         if (templeConfig) {
-          console.log('✅ [DAILY PUJA] Temple configuration loaded:', templeConfig);
-          
           // Load from configuration
           if (templeConfig.selectedDeities) {
             setSelectedDeities(templeConfig.selectedDeities);
@@ -1310,7 +1161,6 @@ export default function DailyPujaCustomTemple() {
             setDeityState(templeConfig.deityState);
           }
         } else {
-          console.log('🔍 [DAILY PUJA] No temple configuration found');
           Alert.alert(
             'No Temple Configured',
             'Please go to "My Virtual Temple" on the home page to create a temple.',
@@ -1318,7 +1168,6 @@ export default function DailyPujaCustomTemple() {
               {
                 text: 'OK',
                 onPress: () => {
-                  console.log('🔄 [DAILY PUJA] Navigating back to home...');
                   router.replace('/(tabs)');
                 }
               }
@@ -1328,7 +1177,6 @@ export default function DailyPujaCustomTemple() {
         
         setLoading(false);
       } catch (error) {
-        console.error('❌ [DAILY PUJA] Error loading temple configuration:', error);
         setLoading(false);
       }
     })();
@@ -1388,15 +1236,15 @@ export default function DailyPujaCustomTemple() {
       if (!hasEarnedToday) {
         const mudraResult = await awardMudras('RING_BELL');
         if (mudraResult.success) {
-          console.log('✅ Mudras awarded for ringing the bell:', mudraResult.mudrasEarned);
+          // Mudras awarded successfully
         } else {
-          console.log('⚠️ Failed to award mudras for ringing the bell:', mudraResult.error);
+          // Failed to award mudras
         }
       } else {
-        console.log('✅ Daily bell ringing mudras already earned today');
+        // Daily mudras already earned
       }
     } catch (mudraError) {
-      console.log('⚠️ Error awarding mudras for ringing the bell:', mudraError);
+      // Silent error handling
     }
 
     // Play temple bell sound twice and start animations
@@ -1529,15 +1377,15 @@ export default function DailyPujaCustomTemple() {
       if (!hasEarnedToday) {
         const mudraResult = await awardMudras('PLAY_SHANKH');
         if (mudraResult.success) {
-          console.log('✅ Mudras awarded for playing shankh:', mudraResult.mudrasEarned);
+          // Mudras awarded successfully
         } else {
-          console.log('⚠️ Failed to award mudras for playing shankh:', mudraResult.error);
+          // Failed to award mudras
         }
       } else {
-        console.log('✅ Daily shankh playing mudras already earned today');
+        // Daily mudras already earned
       }
     } catch (mudraError) {
-      console.log('⚠️ Error awarding mudras for playing shankh:', mudraError);
+      // Silent error handling
     }
 
     try {
@@ -1617,7 +1465,7 @@ export default function DailyPujaCustomTemple() {
   const dropFlowers = async (flowerType: string = 'hibiscus') => {
     if (isFlowerAnimationRunning) return; // Prevent multiple animations
     
-    // Award mudras for offering flowers
+    // Award mudras for offering flowers (but still drop flowers even if already earned)
     try {
       const hasEarnedToday = await hasEarnedDailyMudras('OFFER_FLOWERS');
       if (!hasEarnedToday) {
@@ -1628,7 +1476,7 @@ export default function DailyPujaCustomTemple() {
           console.log('⚠️ Failed to award mudras for offering flowers:', mudraResult.error);
         }
       } else {
-        console.log('✅ Daily flower offering mudras already earned today');
+        console.log('✅ Daily flower offering mudras already earned today - but still dropping flowers for testing');
       }
     } catch (mudraError) {
       console.log('⚠️ Error awarding mudras for offering flowers:', mudraError);
@@ -1636,6 +1484,9 @@ export default function DailyPujaCustomTemple() {
     
     setIsFlowerAnimationRunning(true);
     setShowFlowerModal(false); // Close modal when dropping flowers
+    
+    // Reset flower drop animation to start (FIRST FUNCTION)
+    flowerDropAnimation.setValue(0);
     
     // Calculate temple width and position for flower spread
     const templeWidth = screenWidth * 1.38; // Same as temple image width
@@ -1733,7 +1584,7 @@ export default function DailyPujaCustomTemple() {
   const dropMixFlowers = async () => {
     if (isFlowerAnimationRunning) return; // Prevent multiple animations
     
-    // Award mudras for offering flowers
+    // Award mudras for offering flowers (but still drop flowers even if already earned)
     try {
       const hasEarnedToday = await hasEarnedDailyMudras('OFFER_FLOWERS');
       if (!hasEarnedToday) {
@@ -1744,7 +1595,7 @@ export default function DailyPujaCustomTemple() {
           console.log('⚠️ Failed to award mudras for offering flowers:', mudraResult.error);
         }
       } else {
-        console.log('✅ Daily flower offering mudras already earned today');
+        console.log('✅ Daily flower offering mudras already earned today - but still dropping flowers for testing');
       }
     } catch (mudraError) {
       console.log('⚠️ Error awarding mudras for offering flowers:', mudraError);
@@ -1752,6 +1603,9 @@ export default function DailyPujaCustomTemple() {
     
     setIsFlowerAnimationRunning(true);
     setShowFlowerModal(false); // Close modal when dropping flowers
+    
+    // Reset flower drop animation to start (SECOND FUNCTION)
+    flowerDropAnimation.setValue(0);
     
     // Calculate temple width and position for flower spread
     const templeWidth = screenWidth * 1.38; // Same as temple image width
@@ -2185,9 +2039,8 @@ export default function DailyPujaCustomTemple() {
           ) : null}
         </View>
         
-        {/* Left Puja Icons Column - Flowers, Aarti */}
-        {!showS3Gallery && (
-          <View style={styles.leftPujaIconsColumn}>
+        {/* Left Puja Icons Column - Flowers, Aarti - Always Visible */}
+        <View style={styles.leftPujaIconsColumn}>
           <TouchableOpacity 
             style={[
               styles.pujaIconItem, 
@@ -2231,25 +2084,22 @@ export default function DailyPujaCustomTemple() {
           </TouchableOpacity>
 
         </View>
-        )}
 
-        {/* Right Puja Icons Column - Ghanti, Shankh */}
-        {!showS3Gallery && (
-          <View style={styles.rightPujaIconsColumn}>
-            <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
-              <Text style={styles.pujaIcon}>🔔</Text>
-              <Text style={styles.pujaIconLabel}>Ghanti</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
-              <Image 
-                source={require('@/assets/images/icons/own temple/sankha.png')}
-                style={styles.pujaIconImage}
-                resizeMode="contain"
-              />
-              <Text style={styles.pujaIconLabel}>Shankh</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        {/* Right Puja Icons Column - Ghanti, Shankh - Always Visible */}
+        <View style={styles.rightPujaIconsColumn}>
+          <TouchableOpacity style={styles.pujaIconItem} onPress={swingBothBells}>
+            <Text style={styles.pujaIcon}>🔔</Text>
+            <Text style={styles.pujaIconLabel}>Ghanti</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.pujaIconItem} onPress={playConchSound}>
+            <Image 
+              source={require('@/assets/images/icons/own temple/sankha.png')}
+              style={styles.pujaIconImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.pujaIconLabel}>Shankh</Text>
+          </TouchableOpacity>
+        </View>
 
 
 
@@ -2277,7 +2127,6 @@ export default function DailyPujaCustomTemple() {
           <TouchableOpacity 
             style={styles.mainNavigationButton}
             onPress={() => {
-              console.log('My Temple pressed - Navigate to temple deities');
               setShowS3Gallery(false); // Close S3 gallery if open
               // Add your navigation logic here for temple deities
             }}
@@ -2288,7 +2137,7 @@ export default function DailyPujaCustomTemple() {
           
           <TouchableOpacity 
             style={styles.mainNavigationButton}
-            onPress={() => console.log('Today\'s Special pressed - Will be used later')}
+            onPress={() => {}}
             activeOpacity={0.7}
           >
             <Text style={styles.mainNavigationButtonText} numberOfLines={1}>Today's Special</Text>
@@ -2297,7 +2146,7 @@ export default function DailyPujaCustomTemple() {
           <TouchableOpacity 
             style={styles.mainNavigationButton}
             onPress={() => {
-              console.log('All Temples pressed - Navigate to S3 temples');
+      
               if (!showS3Gallery) {
                 handleNextToS3Gallery(); // Open S3 gallery if not already open
               }
@@ -2364,7 +2213,7 @@ export default function DailyPujaCustomTemple() {
                           isActive && styles.folderIconImageActive
                         ]}
                         resizeMode="cover"
-                        onError={() => console.log('Failed to load folder icon for:', folder.name)}
+                        onError={() => {}}
                         onLoadStart={() => {
                           // Fetch presigned URL for folder icon if not already loaded
                           if (!iconImage.url) {
@@ -2445,7 +2294,6 @@ export default function DailyPujaCustomTemple() {
             <TouchableOpacity 
               style={[styles.s3NavButton, styles.s3NavButtonLeft]} 
               onPress={() => {
-                console.log('🔄 Previous Image button pressed');
                 navigateToPreviousS3Image();
               }}
               disabled={false}
@@ -2458,7 +2306,6 @@ export default function DailyPujaCustomTemple() {
             <TouchableOpacity 
               style={[styles.s3NavButton, styles.s3NavButtonRight]} 
               onPress={() => {
-                console.log('🔄 Next Image button pressed');
                 navigateToNextS3Image();
               }}
               disabled={currentS3ImageIndex === s3Folders[currentS3FolderIndex]?.images.length - 1 && currentS3FolderIndex === s3Folders.length - 1}
@@ -2939,7 +2786,8 @@ const styles = StyleSheet.create({
        },
                flower: {
           position: 'absolute',
-          zIndex: 15, // Lower than modal and thali, above deities
+          zIndex: 9997, // Very high zIndex, just below thali to ensure visibility
+          backgroundColor: 'rgba(255, 255, 255, 0)', // White background, 100% transparent
         },
                flowerEmoji: {
           fontSize: 40,
