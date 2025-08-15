@@ -438,10 +438,10 @@ export default function DailyPujaCustomTemple() {
         const templeLeftX = templeCenterX - (templeWidth / 2);
         const templeRightX = templeCenterX + (templeWidth / 2);
         
-        // Create 15 rows of flowers using the same system as individual flower dropping
-        for (let row = 0; row < 15; row++) {
-          // Create 15 flowers per row
-          for (let i = 0; i < 15; i++) {
+        // Create 11 rows of flowers using the same system as individual flower dropping (reduced by 30%)
+        for (let row = 0; row < 11; row++) {
+          // Create 11 flowers per row (reduced by 30%)
+          for (let i = 0; i < 11; i++) {
             const flowerId = generateUniqueFlowerId(); // Generate truly unique ID for each flower
             const randomType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
             
