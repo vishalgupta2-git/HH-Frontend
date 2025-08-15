@@ -256,6 +256,10 @@ export default function DailyPujaCustomTemple() {
   const [godNames, setGodNames] = useState<{[folderId: string]: string}>({});
   const [swipeDirection, setSwipeDirection] = useState<'up' | 'down' | null>(null);
   
+  // Today's Special State
+  const [todaySpecialDeities, setTodaySpecialDeities] = useState<string[]>([]);
+  const [isTodaySpecialMode, setIsTodaySpecialMode] = useState(false);
+  
   // Puja Ritual State
   const [isPujaRitualActive, setIsPujaRitualActive] = useState(false);
   const [thaliEllipseAnimation] = useState(new Animated.Value(0));
@@ -775,6 +779,9 @@ export default function DailyPujaCustomTemple() {
       return;
     }
     
+    // Reset Today's Special mode when showing all temples
+    setIsTodaySpecialMode(false);
+    
     setS3Loading(true);
     try {
       // Fetch god names first
@@ -1142,6 +1149,150 @@ export default function DailyPujaCustomTemple() {
       }, 200);
     }, 1000);
   }, []);
+
+  // Function to get today's day of the week
+  const getTodayDayOfWeek = () => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[new Date().getDay()];
+  };
+
+  // Function to fetch today's special pujas and filter S3 folders
+  const fetchTodaySpecialPujas = async () => {
+    try {
+      setS3Loading(true);
+      const today = getTodayDayOfWeek();
+      
+      console.log('🔍 Fetching today\'s special pujas for:', today);
+      
+      const response = await fetch(getApiUrl(`/api/temples-by-day?dayOfWeek=${today.toLowerCase()}`));
+      const data = await response.json();
+      
+      if (data.success && data.temples && data.temples.length > 0) {
+        console.log('✅ Found special pujas for today:', data.temples.length);
+        
+        // Extract deity names from today's pujas and normalize them
+        const todayDeityNames = data.temples.map((puja: any) => {
+          const normalizedName = puja.deityName.toLowerCase().trim();
+          return normalizedName;
+        });
+        setTodaySpecialDeities(todayDeityNames);
+        
+        console.log('🔍 Today\'s special deities:', todayDeityNames);
+        
+        // Fetch god names first
+        const godNamesData = await fetchGodNames();
+        setGodNames(godNamesData);
+        
+        // Fetch and organize all S3 images
+        const allFolders = await fetchAllImagesAndOrganize(godNamesData);
+        
+        if (allFolders.length > 0) {
+          // Filter folders to only show today's special deities
+          const filteredFolders = allFolders.filter(folder => {
+            // Normalize folder names for case-insensitive comparison
+            const folderNameNormalized = folder.name.toLowerCase().trim();
+            const folderNameWithoutSpaces = folder.name.replace(/\s+/g, '').toLowerCase().trim();
+            const folderNameWithoutSpecialChars = folder.name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            const folderNameWithoutNumbers = folder.name.replace(/[0-9]/g, '').toLowerCase().trim();
+            
+            // Check if any of today's deity names match the folder name
+            return todayDeityNames.some((deityName: string) => {
+              const normalizedDeityName = deityName.toLowerCase().trim();
+              const deityNameWithoutSpaces = deityName.replace(/\s+/g, '').toLowerCase().trim();
+              const deityNameWithoutSpecialChars = deityName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+              const deityNameWithoutNumbers = deityName.replace(/[0-9]/g, '').toLowerCase().trim();
+              
+              // Debug logging for better understanding
+              console.log(`🔍 Comparing folder "${folder.name}" with deity "${deityName}":`);
+              console.log(`  Folder normalized: "${folderNameNormalized}"`);
+              console.log(`  Folder no spaces: "${folderNameWithoutSpaces}"`);
+              console.log(`  Folder no special: "${folderNameWithoutSpecialChars}"`);
+              console.log(`  Folder no numbers: "${folderNameWithoutNumbers}"`);
+              console.log(`  Deity normalized: "${normalizedDeityName}"`);
+              console.log(`  Deity no spaces: "${deityNameWithoutSpaces}"`);
+              console.log(`  Deity no special: "${deityNameWithoutSpecialChars}"`);
+              console.log(`  Deity no numbers: "${deityNameWithoutNumbers}"`);
+              
+              // Multiple comparison strategies for better matching
+              const isMatch = (
+                // Direct case-insensitive comparison
+                folderNameNormalized === normalizedDeityName ||
+                folderNameWithoutSpaces === deityNameWithoutSpaces ||
+                folderNameWithoutSpecialChars === deityNameWithoutSpecialChars ||
+                folderNameWithoutNumbers === deityNameWithoutNumbers ||
+                
+                // Partial matching (contains) - check if key words match
+                folderNameNormalized.includes(normalizedDeityName) ||
+                normalizedDeityName.includes(folderNameNormalized) ||
+                
+                // Space-removed matching
+                folderNameWithoutSpaces.includes(deityNameWithoutSpaces) ||
+                deityNameWithoutSpaces.includes(folderNameWithoutSpaces) ||
+                
+                // Special character removed matching
+                folderNameWithoutSpecialChars.includes(deityNameWithoutSpecialChars) ||
+                deityNameWithoutSpecialChars.includes(folderNameWithoutSpecialChars) ||
+                
+                // Number-removed matching (for cases like "05lakshmi" vs "lakshmi")
+                folderNameWithoutNumbers.includes(deityNameWithoutNumbers) ||
+                deityNameWithoutNumbers.includes(folderNameWithoutNumbers) ||
+                
+                // Key word matching - check if main deity name is contained
+                (() => {
+                  // Extract main deity name (remove common suffixes like "maa", "ji", "dev")
+                  const mainDeityName = normalizedDeityName
+                    .replace(/\b(maa|ji|dev|baba|swami|guru)\b/g, '')
+                    .trim();
+                  
+                  const mainFolderName = folderNameNormalized
+                    .replace(/\b(maa|ji|dev|baba|swami|guru)\b/g, '')
+                    .trim();
+                  
+                  return mainDeityName.length > 2 && (
+                    folderNameNormalized.includes(mainDeityName) ||
+                    mainDeityName.includes(mainFolderName)
+                  );
+                })()
+              );
+              
+              console.log(`  Match result: ${isMatch ? '✅ MATCH' : '❌ NO MATCH'}`);
+              return isMatch;
+            });
+          });
+          
+          console.log('🔍 Filtered folders for today\'s special:', filteredFolders.length);
+          
+          if (filteredFolders.length > 0) {
+            setS3Folders(filteredFolders);
+            setCurrentS3FolderIndex(0);
+            setCurrentS3ImageIndex(0);
+            
+            const firstImage = filteredFolders[0].images[0];
+            const firstImageUrl = await fetchPresignedUrl(firstImage.key);
+            
+            if (firstImageUrl) {
+              setCurrentS3ImageUrl(firstImageUrl);
+              setShowS3Gallery(true);
+              setIsTodaySpecialMode(true);
+            } else {
+              Alert.alert('Error', 'Failed to load first image. Please try again.');
+            }
+          } else {
+            Alert.alert('No Special Pujas Today', 'No special pujas are available for today. Try the "All Temples" option instead.');
+          }
+        } else {
+          Alert.alert('No Images Found', 'No temple images are currently available.');
+        }
+      } else {
+        Alert.alert('No Special Pujas', 'No special pujas are available for today.');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching today\'s special pujas:', error);
+      Alert.alert('Error', 'Failed to load today\'s special pujas. Please try again.');
+    } finally {
+      setS3Loading(false);
+    }
+  };
 
   // Function to get image source from MongoDB data using static require calls
   const getImageSource = (imagePath: string) => {
@@ -2271,6 +2422,7 @@ export default function DailyPujaCustomTemple() {
             style={styles.mainNavigationButton}
             onPress={() => {
               setShowS3Gallery(false); // Close S3 gallery if open
+              setIsTodaySpecialMode(false); // Reset Today's Special mode
               // Add your navigation logic here for temple deities
             }}
             activeOpacity={0.7}
@@ -2279,25 +2431,49 @@ export default function DailyPujaCustomTemple() {
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.mainNavigationButton}
-            onPress={() => {}}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.mainNavigationButtonText} numberOfLines={1}>Today's Special</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.mainNavigationButton}
+            style={[
+              styles.mainNavigationButton,
+              showS3Gallery && isTodaySpecialMode && styles.mainNavigationButtonActive
+            ]}
             onPress={() => {
-      
               if (!showS3Gallery) {
-                handleNextToS3Gallery(); // Open S3 gallery if not already open
+                // First time opening - fetch today's special pujas
+                fetchTodaySpecialPujas();
+              } else if (showS3Gallery && !isTodaySpecialMode) {
+                // Already in gallery but showing all temples - switch to today's special
+                fetchTodaySpecialPujas();
               }
-              // Add your navigation logic here for S3 temples
             }}
             activeOpacity={0.7}
           >
-            <Text style={styles.mainNavigationButtonText} numberOfLines={1}>All Temples</Text>
+            <Text style={[
+              styles.mainNavigationButtonText,
+              showS3Gallery && isTodaySpecialMode && styles.mainNavigationButtonTextActive
+            ]} numberOfLines={1}>Today's Special</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.mainNavigationButton,
+              showS3Gallery && !isTodaySpecialMode && styles.mainNavigationButtonActive
+            ]}
+            onPress={() => {
+              if (!showS3Gallery) {
+                // First time opening - show all temples
+                setIsTodaySpecialMode(false);
+                handleNextToS3Gallery();
+              } else if (showS3Gallery && isTodaySpecialMode) {
+                // Already in gallery but showing today's special - switch to all temples
+                setIsTodaySpecialMode(false);
+                handleNextToS3Gallery();
+              }
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={[
+              styles.mainNavigationButtonText,
+              showS3Gallery && !isTodaySpecialMode && styles.mainNavigationButtonTextActive
+            ]} numberOfLines={1}>All Temples</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -2320,9 +2496,15 @@ export default function DailyPujaCustomTemple() {
           <SwingableBell position="left" swingValue={leftBellSwing} />
           <SwingableBell position="right" swingValue={rightBellSwing} />
           
-          {/* Header - Removed */}
-
-          
+          {/* Header - Show Today's Special indicator */}
+          {isTodaySpecialMode && (
+            <View style={styles.todaySpecialHeader}>
+              <Text style={styles.todaySpecialTitle}>🕉️ Today's Special Pujas</Text>
+              <Text style={styles.todaySpecialSubtitle}>
+                {getTodayDayOfWeek()} - {todaySpecialDeities.join(', ')}
+              </Text>
+            </View>
+          )}
 
           {/* Folder Navigation Icons - Horizontal Scroll */}
           <View style={styles.folderNavigationContainer}>
@@ -2848,6 +3030,32 @@ const styles = StyleSheet.create({
        marginBottom: 8,
        zIndex: 20,
      },
+   
+   // Today's Special Header Styles
+   todaySpecialHeader: {
+     position: 'absolute',
+     top: 80,
+     left: 20,
+     right: 20,
+     zIndex: 1000,
+     backgroundColor: 'transparent',
+     borderRadius: 15,
+     padding: 15,
+     alignItems: 'center',
+   },
+   todaySpecialTitle: {
+     color: '#fff',
+     fontSize: 18,
+     fontWeight: 'bold',
+     marginBottom: 5,
+     textAlign: 'center',
+   },
+   todaySpecialSubtitle: {
+     color: '#fff',
+     fontSize: 14,
+     textAlign: 'center',
+     opacity: 0.9,
+   },
          deityLabel: {
        color: '#fff',
        fontSize: 12,
@@ -3622,6 +3830,21 @@ const styles = StyleSheet.create({
       fontSize: 10, // Font size 10 pixels
       fontWeight: '600',
       textAlign: 'center',
+    },
+    mainNavigationButtonActive: {
+      backgroundColor: 'rgba(255, 106, 0, 1)', // Fully opaque orange when active
+      borderWidth: 2,
+      borderColor: '#fff', // White border for active state
+      shadowColor: '#FF6A00',
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.8,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+    mainNavigationButtonTextActive: {
+      color: 'white',
+      fontSize: 11, // Slightly larger font when active
+      fontWeight: '700', // Bolder when active
     },
     // Perform Puja Button Styles
     performPujaButtonContainer: {
