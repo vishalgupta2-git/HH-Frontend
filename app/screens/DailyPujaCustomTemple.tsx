@@ -756,7 +756,7 @@ export default function DailyPujaCustomTemple() {
       
       try {
         let completedSteps = 0;
-        const totalSteps = 7; // Total number of preloading steps
+        const totalSteps = 8; // Total number of preloading steps (added S3 preloading)
         
         const updateProgress = () => {
           completedSteps++;
@@ -877,11 +877,75 @@ export default function DailyPujaCustomTemple() {
         }
         updateProgress();
         
+        // Preload S3 images in background for faster gallery experience
+        console.log('☁️ Starting background S3 image preloading...');
+        try {
+          // Start S3 preloading without blocking the UI
+          const preloadS3Images = async () => {
+            try {
+              console.log('🔄 Fetching god names for S3 preloading...');
+              const godNamesData = await fetchGodNames();
+              
+              if (godNamesData && Object.keys(godNamesData).length > 0) {
+                console.log('✅ God names fetched, starting S3 image organization...');
+                
+                // Fetch and organize S3 images in background
+                const allFolders = await fetchAllImagesAndOrganize(godNamesData);
+                
+                if (allFolders.length > 0) {
+                  console.log(`🔄 Preloading ${allFolders.length} S3 folders with images...`);
+                  
+                  // Preload first few images from each folder for instant gallery access
+                  let totalPreloadedImages = 0;
+                  const maxImagesPerFolder = 3; // Preload first 3 images from each folder
+                  
+                  for (const folder of allFolders.slice(0, 5)) { // Limit to first 5 folders
+                    if (folder.images && folder.images.length > 0) {
+                      const imagesToPreload = folder.images.slice(0, maxImagesPerFolder);
+                      
+                      for (const image of imagesToPreload) {
+                        try {
+                          const url = await fetchPresignedUrl(image.key);
+                          if (url) {
+                            totalPreloadedImages++;
+                            console.log(`✅ Preloaded S3 image: ${image.name} from ${folder.name}`);
+                          }
+                        } catch (error) {
+                          console.log(`⚠️ Failed to preload S3 image: ${image.name}`, error);
+                        }
+                      }
+                    }
+                  }
+                  
+                  console.log(`🎉 S3 preloading complete: ${totalPreloadedImages} images ready for instant access`);
+                  
+                  // Store the organized data for immediate use when gallery opens
+                  setS3Folders(allFolders);
+                  
+                } else {
+                  console.log('⚠️ No S3 folders found during preloading');
+                }
+              } else {
+                console.log('⚠️ God names not available for S3 preloading');
+              }
+            } catch (error) {
+              console.log('⚠️ S3 preloading failed (non-blocking):', error);
+            }
+          };
+          
+          // Start S3 preloading in background without awaiting
+          preloadS3Images();
+          
+        } catch (error) {
+          console.log('⚠️ Failed to start S3 preloading:', error);
+        }
+        updateProgress();
+        
         console.log('🎉 All assets preloaded successfully! Daily puja is ready for smooth experience.');
         
         // Log summary of preloading results
-        const totalAssets = flowerImages.length + 1 + bellImages.length + 1 + 1 + essentialDeityImages.length + templeImages.length + 2; // +2 for sounds
-        const successfulAssets = successfulFlowers + (thaliSuccess ? 1 : 0) + successfulBells + (shankhSuccess ? 1 : 0) + successfulDeities + successfulTemples + 2; // +2 for sounds
+        const totalAssets = flowerImages.length + 1 + bellImages.length + 1 + 1 + essentialDeityImages.length + templeImages.length + 2 + 1; // +2 for sounds, +1 for S3
+        const successfulAssets = successfulFlowers + (thaliSuccess ? 1 : 0) + successfulBells + (shankhSuccess ? 1 : 0) + successfulDeities + successfulTemples + 2 + 1; // +2 for sounds, +1 for S3
         console.log(`📊 Preloading Summary: ${successfulAssets}/${totalAssets} assets loaded successfully`);
         
         // Show completion message for a moment before transitioning
