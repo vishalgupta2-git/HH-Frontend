@@ -59,7 +59,7 @@ export default function DonationScreen() {
   return (
     <View style={styles.container}>
       <HomeHeader 
-        searchPlaceholder="Search for Temple, Charity or Cause" 
+        searchPlaceholder="Search for Temple or Charity" 
         showDailyPujaButton={false} 
         onSearchChange={setSearchQuery}
         extraContent={toggleControls}
