@@ -2432,7 +2432,10 @@ export default function DailyPujaCustomTemple() {
         {/* Navigation Buttons - Always Visible */}
         <View style={styles.mainNavigationButtonsContainer}>
           <TouchableOpacity 
-            style={styles.mainNavigationButton}
+            style={[
+              styles.mainNavigationButton,
+              !showS3Gallery && styles.mainNavigationButtonActive
+            ]}
             onPress={() => {
               setShowS3Gallery(false); // Close S3 gallery if open
               setIsTodaySpecialMode(false); // Reset Today's Special mode
@@ -2440,7 +2443,10 @@ export default function DailyPujaCustomTemple() {
             }}
             activeOpacity={0.7}
           >
-            <Text style={styles.mainNavigationButtonText} numberOfLines={1}>My Temple</Text>
+            <Text style={[
+              styles.mainNavigationButtonText,
+              !showS3Gallery && styles.mainNavigationButtonTextActive
+            ]} numberOfLines={1}>My Temple</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -2450,10 +2456,13 @@ export default function DailyPujaCustomTemple() {
             ]}
             onPress={() => {
               if (!showS3Gallery) {
-                // First time opening - fetch today's special pujas
+                // First time opening - set highlighting immediately and fetch today's special pujas
+                setShowS3Gallery(true);
+                setIsTodaySpecialMode(true);
                 fetchTodaySpecialPujas();
               } else if (showS3Gallery && !isTodaySpecialMode) {
-                // Already in gallery but showing all temples - switch to today's special
+                // Already in gallery but showing all temples - switch highlighting immediately and fetch today's special
+                setIsTodaySpecialMode(true);
                 fetchTodaySpecialPujas();
               }
             }}
@@ -2472,11 +2481,12 @@ export default function DailyPujaCustomTemple() {
             ]}
             onPress={() => {
               if (!showS3Gallery) {
-                // First time opening - show all temples
+                // First time opening - set highlighting immediately and show all temples
+                setShowS3Gallery(true);
                 setIsTodaySpecialMode(false);
                 handleNextToS3Gallery();
               } else if (showS3Gallery && isTodaySpecialMode) {
-                // Already in gallery but showing today's special - switch to all temples
+                // Already in gallery but showing today's special - switch highlighting immediately and show all temples
                 setIsTodaySpecialMode(false);
                 handleNextToS3Gallery();
               }
