@@ -4,7 +4,7 @@ import axios from 'axios';
 import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
-import { Alert, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, FlatList, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
 interface MediaFile {
@@ -21,23 +21,11 @@ interface MediaFile {
   CreatedAt: string;
 }
 
-const deityList = [
-  'Lord Agni',
-  'Lord Brahma',
-  'Lord Ganesha',
-  'Lord Hanuman',
-  'Lord Indra',
-  'Lord Krishna',
-  'Lord Rama',
-  'Lord Shiva',
-  'Lord Skanda (also known as Kartikeya or Murugan)',
-  'Lord Vishnu',
-  'Khatu Shyam Ji',
-  'Goddess Durga',
-  'Goddess Kali',
-  'Goddess Lakshmi',
-  'Goddess Parvati',
-  'Goddess Saraswati',
+const typeList = [
+  'Aarti',
+  'Bhajan',
+  'Chalisa',
+  'Paath / Strotam',
 ];
 
 function extractYouTubeId(url: string): string | null {
@@ -57,8 +45,8 @@ export default function AudioVideoScreen() {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [youtubePlaying, setYoutubePlaying] = useState(false);
-  const [selectedDeity, setSelectedDeity] = useState<string | null>(null);
-  const [deityDropdownOpen, setDeityDropdownOpen] = useState(false);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
@@ -67,45 +55,86 @@ export default function AudioVideoScreen() {
     const fetchMedia = async () => {
       try {
         const url = getEndpointUrl('MEDIA_FILES');
-        console.log('🔍 Fetching media files from:', url);
-        console.log('🔍 Full URL:', url);
+        console.log('🔍 [AUDIO-VIDEO] ===== STARTING API CALL =====');
+        console.log('🔍 [AUDIO-VIDEO] Fetching media files from:', url);
+        console.log('🔍 [AUDIO-VIDEO] Full URL:', url);
+        console.log('🔍 [AUDIO-VIDEO] Request timestamp:', new Date().toISOString());
         
         const res = await axios.get(url);
-        console.log('📱 Response status:', res.status);
-        console.log('📱 Response headers:', res.headers);
-        console.log('📱 Received media files:', res.data);
-        console.log('📱 Number of files:', res.data?.length || 0);
-        console.log('📱 Type of data:', typeof res.data);
-        console.log('📱 Is array?', Array.isArray(res.data));
+        console.log('📱 [AUDIO-VIDEO] ===== API RESPONSE RECEIVED =====');
+        console.log('📱 [AUDIO-VIDEO] Response status:', res.status);
+        console.log('📱 [AUDIO-VIDEO] Response headers:', JSON.stringify(res.headers, null, 2));
+        console.log('📱 [AUDIO-VIDEO] Response data type:', typeof res.data);
+        console.log('📱 [AUDIO-VIDEO] Response data length:', res.data?.length || 0);
+        console.log('📱 [AUDIO-VIDEO] Is array?', Array.isArray(res.data));
+        console.log('📱 [AUDIO-VIDEO] Full response data:', JSON.stringify(res.data, null, 2));
         
         if (Array.isArray(res.data)) {
-          console.log('📱 First item sample:', res.data[0]);
+          console.log('📱 [AUDIO-VIDEO] First item sample:', JSON.stringify(res.data[0], null, 2));
+          console.log('📱 [AUDIO-VIDEO] Total items received:', res.data.length);
+          
+          // Log some statistics about the data
+          const audioCount = res.data.filter((item: MediaFile) => item.Type?.toLowerCase().includes('audio')).length;
+          const videoCount = res.data.filter((item: MediaFile) => item.Type?.toLowerCase().includes('video')).length;
+          console.log('📱 [AUDIO-VIDEO] Audio files count:', audioCount);
+          console.log('📱 [AUDIO-VIDEO] Video files count:', videoCount);
+        } else {
+          console.log('📱 [AUDIO-VIDEO] Response is not an array, actual type:', typeof res.data);
+          console.log('📱 [AUDIO-VIDEO] Response structure:', Object.keys(res.data || {}));
         }
         
         setMediaFiles(res.data || []);
+        console.log('📱 [AUDIO-VIDEO] ===== API CALL COMPLETED SUCCESSFULLY =====');
       } catch (e: any) {
-        console.error('❌ Error fetching media files:', e);
-        console.error('❌ Error message:', e.message);
-        console.error('❌ Error response status:', e.response?.status);
-        console.error('❌ Error response data:', e.response?.data);
-        console.error('❌ Error response headers:', e.response?.headers);
+        console.error('❌ [AUDIO-VIDEO] ===== API CALL FAILED =====');
+        console.error('❌ [AUDIO-VIDEO] Error type:', typeof e);
+        console.error('❌ [AUDIO-VIDEO] Error message:', e.message);
+        console.error('❌ [AUDIO-VIDEO] Error name:', e.name);
+        console.error('❌ [AUDIO-VIDEO] Error stack:', e.stack);
+        
+        if (e.response) {
+          console.error('❌ [AUDIO-VIDEO] Error response status:', e.response.status);
+          console.error('❌ [AUDIO-VIDEO] Error response data:', JSON.stringify(e.response.data, null, 2));
+          console.error('❌ [AUDIO-VIDEO] Error response headers:', JSON.stringify(e.response.headers, null, 2));
+        } else if (e.request) {
+          console.error('❌ [AUDIO-VIDEO] No response received, request details:', e.request);
+        } else {
+          console.error('❌ [AUDIO-VIDEO] Error setting up request:', e.message);
+        }
+        
         Alert.alert('Failed to fetch media files', e.response?.data?.error || e.message);
       } finally {
         setLoading(false);
+        console.log('📱 [AUDIO-VIDEO] Loading state set to false');
       }
     };
     fetchMedia();
   }, []);
 
   const handlePlay = (media: MediaFile) => {
+    console.log('🎬 [AUDIO-VIDEO] ===== HANDLE PLAY CALLED =====');
+    console.log('🎬 [AUDIO-VIDEO] Media file to play:', JSON.stringify(media, null, 2));
+    console.log('🎬 [AUDIO-VIDEO] Media type:', media.Type);
+    console.log('🎬 [AUDIO-VIDEO] Media link:', media.Link);
+    console.log('🎬 [AUDIO-VIDEO] Deity:', media.Deity);
+    console.log('🎬 [AUDIO-VIDEO] Video name:', media.VideoName);
+    
     setCurrentMedia(media);
     setModalVisible(true);
+    
     if (media.Link && (media.Link.includes('youtube.com') || media.Link.includes('youtu.be'))) {
+      console.log('🎬 [AUDIO-VIDEO] YouTube link detected, setting youtubePlaying to true');
       setYoutubePlaying(true);
+    } else {
+      console.log('🎬 [AUDIO-VIDEO] Non-YouTube link, youtubePlaying remains false');
     }
+    
+    console.log('🎬 [AUDIO-VIDEO] Modal opened, current media set');
   };
 
   const handleSearchChange = (query: string) => {
+    console.log('🔍 [AUDIO-VIDEO] Search query changed:', query);
+    console.log('🔍 [AUDIO-VIDEO] Current media files count:', mediaFiles.length);
     setSearchQuery(query);
   };
 
@@ -174,47 +203,63 @@ export default function AudioVideoScreen() {
           </TouchableOpacity>
         </View>
         
-        {/* Deity Filter - Moved to the right */}
-        <View style={styles.deityFilterWrapper}>
+        {/* Type Filter */}
+        <View style={styles.typeFilterWrapper}>
           <TouchableOpacity 
             style={styles.filterDropdown}
-            onPress={() => setDeityDropdownOpen(!deityDropdownOpen)}
+            onPress={() => setTypeDropdownOpen(!typeDropdownOpen)}
           >
             <Text style={styles.filterDropdownText}>
-              {selectedDeity || 'Deity'}
+              {selectedType || 'Select Type'}
             </Text>
             <MaterialCommunityIcons 
-              name={deityDropdownOpen ? "chevron-up" : "chevron-down"} 
+              name={typeDropdownOpen ? "chevron-up" : "chevron-down"} 
               size={20} 
               color="#666" 
             />
           </TouchableOpacity>
           
-          {deityDropdownOpen && (
-            <View style={styles.filterDropdownModal}>
-              <TouchableOpacity 
-                style={[styles.filterDropdownItem, styles.filterDropdownItemDisabled]}
-                disabled={true}
-              >
-                <Text style={styles.filterDropdownItemTextDisabled}>Deity</Text>
-              </TouchableOpacity>
-              
-              {deityList.map(deity => (
-                <TouchableOpacity 
-                  key={deity}
-                  style={styles.filterDropdownItem}
-                  onPress={() => {
-                    setSelectedDeity(selectedDeity === deity ? null : deity);
-                    setDeityDropdownOpen(false);
-                  }}
-                >
-                  <Text style={styles.filterDropdownItemText}>{deity}</Text>
-                  {selectedDeity === deity && (
-                    <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
+          {typeDropdownOpen && (
+            <TouchableWithoutFeedback onPress={() => setTypeDropdownOpen(false)}>
+              <View style={styles.dropdownOverlay}>
+                <TouchableWithoutFeedback onPress={() => {}}>
+                  <View style={styles.filterDropdownModal}>
+                    <TouchableOpacity 
+                      style={[styles.filterDropdownItem, styles.filterDropdownItemDisabled]}
+                      disabled={true}
+                    >
+                      <Text style={styles.filterDropdownItemTextDisabled}>Type</Text>
+                    </TouchableOpacity>
+                    
+                    <ScrollView 
+                      style={styles.typeListContainer}
+                      showsVerticalScrollIndicator={true}
+                      scrollEnabled={true}
+                      nestedScrollEnabled={false}
+                      bounces={false}
+                      keyboardShouldPersistTaps="handled"
+                      contentContainerStyle={{ flexGrow: 1 }}
+                    >
+                      {typeList.map((type: string) => (
+                        <TouchableOpacity 
+                          key={type}
+                          style={styles.filterDropdownItem}
+                          onPress={() => {
+                            setSelectedType(selectedType === type ? null : type);
+                            setTypeDropdownOpen(false);
+                          }}
+                        >
+                          <Text style={styles.filterDropdownItemText}>{type}</Text>
+                          {selectedType === type && (
+                            <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                </TouchableWithoutFeedback>
+              </View>
+            </TouchableWithoutFeedback>
           )}
         </View>
       </View>
@@ -242,8 +287,15 @@ export default function AudioVideoScreen() {
                </Text>
              )}
              {(() => {
+               console.log('🔍 [AUDIO-VIDEO] ===== FILTERING MEDIA FILES =====');
+               console.log('🔍 [AUDIO-VIDEO] Total media files:', mediaFiles.length);
+               console.log('🔍 [AUDIO-VIDEO] Selected type:', selectedType);
+               console.log('🔍 [AUDIO-VIDEO] Audio enabled:', audioEnabled);
+               console.log('🔍 [AUDIO-VIDEO] Video enabled:', videoEnabled);
+               console.log('🔍 [AUDIO-VIDEO] Search query:', searchQuery);
+               
                const filteredMedia = mediaFiles
-                 .filter(media => !selectedDeity || media.Deity === selectedDeity)
+                 .filter(media => !selectedType || media.Type === selectedType)
                  .filter(media => {
                    // If both toggles are off, show nothing
                    if (!audioEnabled && !videoEnabled) return false;
@@ -266,7 +318,11 @@ export default function AudioVideoScreen() {
                    );
                  });
                
+               console.log('🔍 [AUDIO-VIDEO] Filtered media count:', filteredMedia.length);
+               console.log('🔍 [AUDIO-VIDEO] Filtered media types:', filteredMedia.map(m => ({ name: m.VideoName, type: m.Type, classification: m.Classification })));
+               
                if (filteredMedia.length === 0) {
+                 console.log('🔍 [AUDIO-VIDEO] No media files match current filters');
                  return (
                    <Text style={{ color: '#999', textAlign: 'center', marginTop: 20 }}>
                      No media files match your current filters. Try adjusting your search or filters.
@@ -274,26 +330,57 @@ export default function AudioVideoScreen() {
                  );
                }
                
-               return filteredMedia.map((media, idx) => (
-                 <TouchableOpacity
-                   key={media.Link || idx}
-                   style={{ marginBottom: 16, backgroundColor: '#fff', borderRadius: 8, padding: 10, elevation: 2 }}
-                   onPress={() => handlePlay(media)}
-                 >
-                   <Text style={{ fontWeight: 'bold' }}>{media.VideoName || 'Untitled'}</Text>
-                   <Text style={{ color: '#888' }}>
-                     {media.Type} | {media.Language}
-                     {media.Deity ? ` | ${media.Deity}` : ''}
-                   </Text>
-                   {(media.Duration || media.Artists) && (
-                     <Text style={{ color: '#555', fontSize: 13 }}>
-                       {media.Duration ? media.Duration : ''}
-                       {media.Duration && media.Artists ? ' | ' : ''}
-                       {media.Artists ? media.Artists : ''}
-                     </Text>
-                   )}
-                 </TouchableOpacity>
-               ));
+               return filteredMedia.map((media, idx) => {
+                 console.log(`🔍 [AUDIO-VIDEO] Rendering media item ${idx + 1}:`, {
+                   name: media.VideoName,
+                   type: media.Type,
+                   classification: media.Classification,
+                   deity: media.Deity,
+                   language: media.Language
+                 });
+                 
+                 return (
+                   <TouchableOpacity
+                     key={media.Link || idx}
+                     style={[
+                       styles.mediaTile,
+                       media.Classification === 'Audio' && styles.audioTile,
+                       media.Classification === 'Video' && styles.videoTile
+                     ]}
+                     onPress={() => handlePlay(media)}
+                   >
+                     {/* Audio/Video Icon */}
+                     <View style={styles.mediaIconContainer}>
+                       {media.Classification === 'Audio' ? (
+                         <MaterialCommunityIcons name="music-note" size={24} color="#FF6A00" />
+                       ) : (
+                         <MaterialCommunityIcons name="video" size={24} color="#FF6A00" />
+                       )}
+                     </View>
+                     
+                     {/* Media Content */}
+                     <View style={styles.mediaContent}>
+                       <Text style={styles.mediaTitle}>{media.VideoName || 'Untitled'}</Text>
+                       <Text style={styles.mediaType}>
+                         {media.Type} | {media.Language}
+                         {media.Deity ? ` | ${media.Deity}` : ''}
+                       </Text>
+                       {(media.Duration || media.Artists) && (
+                         <Text style={styles.mediaDetails}>
+                           {media.Duration ? media.Duration : ''}
+                           {media.Duration && media.Artists ? ' | ' : ''}
+                           {media.Artists ? media.Artists : ''}
+                         </Text>
+                       )}
+                     </View>
+                     
+                     {/* Play Button */}
+                     <View style={styles.playButtonContainer}>
+                       <MaterialCommunityIcons name="play-circle" size={32} color="#FF6A00" />
+                     </View>
+                   </TouchableOpacity>
+                 );
+               });
              })()}
           </>
         )}
@@ -423,7 +510,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#fff',
   },
-  deityFilterWrapper: {
+  typeFilterWrapper: {
     position: 'relative',
   },
   filterDropdown: {
@@ -436,7 +523,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    minWidth: 120,
+    minWidth: 180,
   },
   filterDropdownText: {
     fontSize: 14,
@@ -459,6 +546,20 @@ const styles = StyleSheet.create({
     elevation: 3,
     zIndex: 1000,
     marginTop: 4,
+    height: 222,
+    overflow: 'hidden',
+  },
+  dropdownOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
+  },
+  typeListContainer: {
+    height: 180,
+    flex: 1,
   },
   filterDropdownItem: {
     flexDirection: 'row',
@@ -468,10 +569,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+    width: '100%',
+    overflow: 'hidden',
   },
   filterDropdownItemText: {
     fontSize: 14,
     color: '#333',
+    flex: 1,
+    flexShrink: 1,
   },
   filterDropdownItemDisabled: {
     backgroundColor: '#f8f8f8',
@@ -480,6 +585,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#999',
     fontWeight: 'bold',
+    flex: 1,
+    flexShrink: 1,
   },
   filterDropdownItemTick: {
     marginLeft: 'auto',
@@ -501,5 +608,57 @@ const styles = StyleSheet.create({
     top: 40,
     right: 20,
     zIndex: 1,
+  },
+  // Media Tile Styles
+  mediaTile: {
+    marginBottom: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  audioTile: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#4CAF50',
+  },
+  videoTile: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#2196F3',
+  },
+  mediaIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#f8f9fa',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  mediaContent: {
+    flex: 1,
+  },
+  mediaTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  mediaType: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 2,
+  },
+  mediaDetails: {
+    fontSize: 13,
+    color: '#888',
+  },
+  playButtonContainer: {
+    marginLeft: 16,
   },
 }); 
