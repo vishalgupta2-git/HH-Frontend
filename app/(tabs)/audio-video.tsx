@@ -5,6 +5,7 @@ import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Audio } from 'expo-av';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
 interface MediaFile {
@@ -50,6 +51,11 @@ export default function AudioVideoScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
+  
+  // Audio playback state
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -111,6 +117,15 @@ export default function AudioVideoScreen() {
     fetchMedia();
   }, []);
 
+  // Cleanup audio when component unmounts
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [sound]);
+
   const handlePlay = (media: MediaFile) => {
     console.log('🎬 [AUDIO-VIDEO] ===== HANDLE PLAY CALLED =====');
     console.log('🎬 [AUDIO-VIDEO] Media file to play:', JSON.stringify(media, null, 2));
@@ -125,11 +140,90 @@ export default function AudioVideoScreen() {
     if (media.Link && (media.Link.includes('youtube.com') || media.Link.includes('youtu.be'))) {
       console.log('🎬 [AUDIO-VIDEO] YouTube link detected, setting youtubePlaying to true');
       setYoutubePlaying(true);
+    } else if (media.MediaType === 'mp3') {
+      console.log('🎵 [AUDIO-VIDEO] MP3 file detected, loading audio');
+      loadAndPlayAudio(media);
     } else {
       console.log('🎬 [AUDIO-VIDEO] Non-YouTube link, youtubePlaying remains false');
     }
     
     console.log('🎬 [AUDIO-VIDEO] Modal opened, current media set');
+  };
+
+  const loadAndPlayAudio = async (media: MediaFile) => {
+    try {
+      setIsLoading(true);
+      
+      // Unload previous sound if exists
+      if (sound) {
+        await sound.unloadAsync();
+      }
+      
+      // Get presigned URL from backend API
+      const apiUrl = getEndpointUrl('S3_AUDIO_URL');
+      const response = await axios.get(apiUrl, {
+        params: { filename: media.Link }
+      });
+      
+      if (response.data.success && response.data.presignedUrl) {
+        const presignedUrl = response.data.presignedUrl;
+        console.log('🎵 [AUDIO-VIDEO] Got presigned URL from API:', presignedUrl);
+        
+        // Load the audio using the presigned URL
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          { uri: presignedUrl },
+          { shouldPlay: false }
+        );
+        
+        setSound(newSound);
+        setIsLoading(false);
+        console.log('🎵 [AUDIO-VIDEO] MP3 loaded successfully via API');
+      } else {
+        throw new Error('Failed to get presigned URL from API');
+      }
+      
+    } catch (error) {
+      console.error('❌ [AUDIO-VIDEO] Error loading MP3:', error);
+      setIsLoading(false);
+      Alert.alert('Error', 'Failed to load audio file. Please try again.');
+    }
+  };
+
+  const playAudio = async () => {
+    try {
+      if (sound) {
+        await sound.playAsync();
+        setIsPlaying(true);
+        console.log('🎵 [AUDIO-VIDEO] Audio started playing');
+      }
+    } catch (error) {
+      console.error('❌ [AUDIO-VIDEO] Error playing audio:', error);
+      Alert.alert('Error', 'Failed to play audio');
+    }
+  };
+
+  const pauseAudio = async () => {
+    try {
+      if (sound) {
+        await sound.pauseAsync();
+        setIsPlaying(false);
+        console.log('🎵 [AUDIO-VIDEO] Audio paused');
+      }
+    } catch (error) {
+      console.error('❌ [AUDIO-VIDEO] Error pausing audio:', error);
+    }
+  };
+
+  const stopAudio = async () => {
+    try {
+      if (sound) {
+        await sound.stopAsync();
+        setIsPlaying(false);
+        console.log('🎵 [AUDIO-VIDEO] Audio stopped');
+      }
+    } catch (error) {
+      console.error('❌ [AUDIO-VIDEO] Error stopping audio:', error);
+    }
   };
 
   const handleSearchChange = (query: string) => {
@@ -364,6 +458,7 @@ export default function AudioVideoScreen() {
                        <Text style={styles.mediaType}>
                          {media.Type} | {media.Language}
                          {media.Deity ? ` | ${media.Deity}` : ''}
+                         {media.MediaType ? ` | ${media.MediaType.toUpperCase()}` : ''}
                        </Text>
                        {(media.Duration || media.Artists) && (
                          <Text style={styles.mediaDetails}>
@@ -393,6 +488,13 @@ export default function AudioVideoScreen() {
           setModalVisible(false);
           setCurrentMedia(null);
           setYoutubePlaying(false);
+          // Stop and unload audio if playing
+          if (sound) {
+            sound.unloadAsync();
+            setSound(null);
+            setIsPlaying(false);
+            setIsLoading(false);
+          }
         }}
       >
         <View style={styles.videoModalBackground}>
@@ -401,6 +503,13 @@ export default function AudioVideoScreen() {
               setModalVisible(false);
               setCurrentMedia(null);
               setYoutubePlaying(false);
+              // Stop and unload audio if playing
+              if (sound) {
+                sound.unloadAsync();
+                setSound(null);
+                setIsPlaying(false);
+                setIsLoading(false);
+              }
             }}
             style={styles.closeButton}
           >
@@ -415,8 +524,52 @@ export default function AudioVideoScreen() {
                 forceAndroidAutoplay
                 webViewProps={{ allowsInlineMediaPlayback: true }}
               />
+            ) : currentMedia.MediaType === 'mp3' ? (
+              <View style={styles.audioPlayerContainer}>
+                <View style={styles.audioInfo}>
+                  <MaterialCommunityIcons name="music-note" size={48} color="#FF6A00" />
+                  <Text style={styles.audioTitle}>{currentMedia.VideoName}</Text>
+                  <Text style={styles.audioDetails}>
+                    {currentMedia.Type} | {currentMedia.Language}
+                    {currentMedia.Deity ? ` | ${currentMedia.Deity}` : ''}
+                  </Text>
+                  {currentMedia.Artists && (
+                    <Text style={styles.audioArtist}>by {currentMedia.Artists}</Text>
+                  )}
+                </View>
+                
+                <View style={styles.audioControls}>
+                  {isLoading ? (
+                    <Text style={styles.loadingText}>Loading audio...</Text>
+                  ) : (
+                    <>
+                      <TouchableOpacity
+                        style={styles.audioControlButton}
+                        onPress={isPlaying ? pauseAudio : playAudio}
+                      >
+                        <MaterialCommunityIcons
+                          name={isPlaying ? 'pause' : 'play'}
+                          size={32}
+                          color="#FF6A00"
+                        />
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity
+                        style={styles.audioControlButton}
+                        onPress={stopAudio}
+                      >
+                        <MaterialCommunityIcons
+                          name="stop"
+                          size={32}
+                          color="#FF6A00"
+                        />
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              </View>
             ) : (
-              <Text style={{ color: '#fff', textAlign: 'center', marginTop: 100 }}>Not a YouTube link</Text>
+              <Text style={{ color: '#fff', textAlign: 'center', marginTop: 100 }}>Unsupported media type</Text>
             )
           )}
         </View>
@@ -660,5 +813,56 @@ const styles = StyleSheet.create({
   },
   playButtonContainer: {
     marginLeft: 16,
+  },
+  // Audio Player Styles
+  audioPlayerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  audioInfo: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  audioTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  audioDetails: {
+    fontSize: 16,
+    color: '#ccc',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  audioArtist: {
+    fontSize: 18,
+    color: '#FF6A00',
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  audioControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 30,
+  },
+  audioControlButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FF6A00',
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#fff',
+    textAlign: 'center',
   },
 }); 
