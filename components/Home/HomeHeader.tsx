@@ -1,4 +1,4 @@
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -45,6 +45,7 @@ export default function HomeHeader({
 }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [userName, setUserName] = useState('');
+  const [mudraCount, setMudraCount] = useState(0);
   const [topicDropdownOpen, setTopicDropdownOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -63,9 +64,11 @@ export default function HomeHeader({
           const user = JSON.parse(data);
           console.log('🔍 HomeHeader: Parsed user data:', user);
           setUserName(user.name || user.firstName || '');
+          setMudraCount(user.mudras || 0);
         } else {
           console.log('🔍 HomeHeader: No user data found');
           setUserName('');
+          setMudraCount(0);
         }
       } catch (error) {
         console.error('🔍 HomeHeader: Error loading user data:', error);
@@ -87,9 +90,11 @@ export default function HomeHeader({
             const user = JSON.parse(data);
             console.log('🔍 HomeHeader: Parsed user data for modal:', user);
             setUserName(user.name || user.firstName || '');
+            setMudraCount(user.mudras || 0);
           } else {
             console.log('🔍 HomeHeader: No user data found for modal');
             setUserName('');
+            setMudraCount(0);
           }
         } catch (error) {
           console.error('🔍 HomeHeader: Error loading user data for modal:', error);
@@ -203,13 +208,10 @@ export default function HomeHeader({
           <Feather name="menu" size={32} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.centeredTitle}>The Hindu Heritage</Text>
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={() => {}}
-          activeOpacity={0.7}
-        >
-          <MaterialCommunityIcons name="translate" size={28} color="#fff" />
-        </TouchableOpacity>
+        <View style={styles.mudraDisplay}>
+          <Text style={styles.aumSymbol}>ॐ</Text>
+          <Text style={styles.mudraCount}>{mudraCount}</Text>
+        </View>
       </View>
       {/* Search Bar */}
       {showSearchBar && (
@@ -400,6 +402,21 @@ const styles = StyleSheet.create({
   iconButton: {
     padding: 8,
     borderRadius: 20,
+  },
+  mudraDisplay: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  aumSymbol: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  mudraCount: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
   },
   centeredTitle: {
     flex: 1,
