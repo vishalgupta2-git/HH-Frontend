@@ -119,7 +119,7 @@ export default function AudioVideoScreen() {
     fetchMedia();
   }, []);
 
-  // Timer effect to track elapsed time
+  // Timer effect to track elapsed time and detect song end
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     
@@ -130,6 +130,15 @@ export default function AudioVideoScreen() {
           if (status.isLoaded) {
             setElapsedTime(status.positionMillis || 0);
             setAudioDuration(status.durationMillis || 0);
+            
+            // Check if song has ended
+            if (status.positionMillis && status.durationMillis && status.positionMillis >= status.durationMillis) {
+              console.log('🎵 [AUDIO-VIDEO] Song ended, auto-playing next song');
+              setIsPlaying(false);
+              setElapsedTime(0);
+              // Auto-play next song
+              playNextSong();
+            }
           }
         } catch (error) {
           console.error('❌ [AUDIO-VIDEO] Error getting audio status:', error);
@@ -214,7 +223,7 @@ export default function AudioVideoScreen() {
         // Load the audio using the presigned URL
         const { sound: newSound } = await Audio.Sound.createAsync(
           { uri: presignedUrl },
-          { shouldPlay: false }
+          { shouldPlay: true } // Auto-play when loaded
         );
         
         // Get initial duration
@@ -224,8 +233,9 @@ export default function AudioVideoScreen() {
         }
         
         setSound(newSound);
+        setIsPlaying(true); // Set playing state to true
         setIsLoading(false);
-        console.log('🎵 [AUDIO-VIDEO] MP3 loaded successfully via API');
+        console.log('🎵 [AUDIO-VIDEO] MP3 loaded and started playing automatically');
       } else {
         throw new Error('Failed to get presigned URL from API');
       }
@@ -326,7 +336,25 @@ export default function AudioVideoScreen() {
       if (nextMedia.MediaType === 'mp3') {
         setCurrentMedia(nextMedia);
         loadAndPlayAudio(nextMedia);
+      } else {
+        // If next media is not MP3, try to find the next MP3
+        for (let i = currentIndex + 1; i < mediaFiles.length; i++) {
+          if (mediaFiles[i].MediaType === 'mp3') {
+            setCurrentMedia(mediaFiles[i]);
+            loadAndPlayAudio(mediaFiles[i]);
+            return;
+          }
+        }
+        // No more MP3 files found
+        console.log('🎵 [AUDIO-VIDEO] No more MP3 files to play');
+        setIsPlaying(false);
+        setElapsedTime(0);
       }
+    } else {
+      // Last song ended, stop playback
+      console.log('🎵 [AUDIO-VIDEO] Last song ended, stopping playback');
+      setIsPlaying(false);
+      setElapsedTime(0);
     }
   };
 
