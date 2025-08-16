@@ -811,18 +811,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mediaTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 4,
   },
   mediaType: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#666',
     marginBottom: 2,
   },
   mediaDetails: {
-    fontSize: 13,
+    fontSize: 10,
     color: '#888',
   },
   playButtonContainer: {
