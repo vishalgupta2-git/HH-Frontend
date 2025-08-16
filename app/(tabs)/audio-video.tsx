@@ -56,6 +56,8 @@ export default function AudioVideoScreen() {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
 
   useEffect(() => {
     const fetchMedia = async () => {
@@ -116,6 +118,33 @@ export default function AudioVideoScreen() {
     };
     fetchMedia();
   }, []);
+
+  // Timer effect to track elapsed time
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    
+    if (isPlaying && sound) {
+      interval = setInterval(async () => {
+        try {
+          const status = await sound.getStatusAsync();
+          if (status.isLoaded) {
+            setElapsedTime(status.positionMillis || 0);
+            setAudioDuration(status.durationMillis || 0);
+          }
+        } catch (error) {
+          console.error('❌ [AUDIO-VIDEO] Error getting audio status:', error);
+        }
+      }, 1000); // Update every second
+    } else {
+      setElapsedTime(0);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isPlaying, sound]);
 
   // Cleanup audio when component unmounts
   useEffect(() => {
@@ -187,6 +216,12 @@ export default function AudioVideoScreen() {
           { uri: presignedUrl },
           { shouldPlay: false }
         );
+        
+        // Get initial duration
+        const status = await newSound.getStatusAsync();
+        if (status.isLoaded) {
+          setAudioDuration(status.durationMillis || 0);
+        }
         
         setSound(newSound);
         setIsLoading(false);
@@ -267,6 +302,39 @@ export default function AudioVideoScreen() {
     } catch (error) {
       console.error('❌ [AUDIO-VIDEO] Error forwarding audio:', error);
     }
+  };
+
+  const playPreviousSong = () => {
+    if (!currentMedia || !mediaFiles.length) return;
+    
+    const currentIndex = mediaFiles.findIndex(media => media.avld === currentMedia.avld);
+    if (currentIndex > 0) {
+      const previousMedia = mediaFiles[currentIndex - 1];
+      if (previousMedia.MediaType === 'mp3') {
+        setCurrentMedia(previousMedia);
+        loadAndPlayAudio(previousMedia);
+      }
+    }
+  };
+
+  const playNextSong = () => {
+    if (!currentMedia || !mediaFiles.length) return;
+    
+    const currentIndex = mediaFiles.findIndex(media => media.avld === currentMedia.avld);
+    if (currentIndex < mediaFiles.length - 1) {
+      const nextMedia = mediaFiles[currentIndex + 1];
+      if (nextMedia.MediaType === 'mp3') {
+        setCurrentMedia(nextMedia);
+        loadAndPlayAudio(nextMedia);
+      }
+    }
+  };
+
+  const formatTime = (milliseconds: number): string => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const handleSearchChange = (query: string) => {
@@ -520,52 +588,73 @@ export default function AudioVideoScreen() {
                            {currentMedia?.avld === media.avld && isLoading ? (
                              <Text style={styles.loadingTextInline}>Loading...</Text>
                            ) : currentMedia?.avld === media.avld && sound ? (
-                             <>
-                               <TouchableOpacity
-                                 style={styles.audioControlButtonInline}
-                                 onPress={rewindAudio}
-                               >
-                                 <MaterialCommunityIcons
-                                   name="rewind-10"
-                                   size={18}
-                                   color="#FF6A00"
-                                 />
-                               </TouchableOpacity>
+                             <View style={styles.audioControlsContainer}>
+                               {/* Timer Display - Above Audio Controls */}
+                               <Text style={styles.elapsedTimeText}>
+                                 {formatTime(elapsedTime)}
+                               </Text>
                                
-                               <TouchableOpacity
-                                 style={styles.audioControlButtonInline}
-                                 onPress={isPlaying ? pauseAudio : playAudio}
-                               >
-                                 <MaterialCommunityIcons
-                                   name={isPlaying ? 'pause' : 'play'}
-                                   size={24}
-                                   color="#FF6A00"
-                                 />
-                               </TouchableOpacity>
+                               {/* Main Audio Controls - Middle */}
+                               <View style={styles.audioControlsInline}>
+                                 <TouchableOpacity
+                                   style={styles.audioControlButtonInline}
+                                   onPress={rewindAudio}
+                                 >
+                                   <MaterialCommunityIcons
+                                     name="rewind-10"
+                                     size={18}
+                                     color="#FF6A00"
+                                   />
+                                 </TouchableOpacity>
+                                 
+                                 <TouchableOpacity
+                                   style={styles.audioControlButtonInline}
+                                   onPress={isPlaying ? pauseAudio : playAudio}
+                                 >
+                                   <MaterialCommunityIcons
+                                     name={isPlaying ? 'pause' : 'play'}
+                                     size={24}
+                                     color="#FF6A00"
+                                   />
+                                 </TouchableOpacity>
+                                 
+                                 <TouchableOpacity
+                                   style={styles.audioControlButtonInline}
+                                   onPress={forwardAudio}
+                                 >
+                                   <MaterialCommunityIcons
+                                     name="fast-forward-10"
+                                     size={18}
+                                     color="#FF6A00"
+                                   />
+                                 </TouchableOpacity>
+                               </View>
                                
-                               <TouchableOpacity
-                                 style={styles.audioControlButtonInline}
-                                 onPress={forwardAudio}
-                               >
-                                 <MaterialCommunityIcons
-                                   name="fast-forward-10"
-                                   size={18}
-                                   color="#FF6A00"
-                                 />
-                               </TouchableOpacity>
-                               
-                               <TouchableOpacity
-                                 style={styles.audioControlButtonInline}
-                                 onPress={stopAudio}
-                               >
-                                 <MaterialCommunityIcons
-                                   name="stop"
-                                   size={20}
-                                   color="#FF6A00"
-                                   style={{ marginLeft: 4 }}
-                                 />
-                               </TouchableOpacity>
-                             </>
+                               {/* Forward/Back Navigation - Below Audio Controls */}
+                               <View style={styles.navigationControlsInline}>
+                                 <TouchableOpacity
+                                   style={styles.navigationButtonInline}
+                                   onPress={playPreviousSong}
+                                 >
+                                   <MaterialCommunityIcons
+                                     name="skip-previous"
+                                     size={16}
+                                     color="#FF6A00"
+                                   />
+                                 </TouchableOpacity>
+                                 
+                                 <TouchableOpacity
+                                   style={styles.navigationButtonInline}
+                                   onPress={playNextSong}
+                                 >
+                                   <MaterialCommunityIcons
+                                     name="skip-next"
+                                     size={16}
+                                     color="#FF6A00"
+                                   />
+                                 </TouchableOpacity>
+                               </View>
+                             </View>
                            ) : (
                              <MaterialCommunityIcons name="play-circle" size={32} color="#FF6A00" />
                            )}
@@ -979,7 +1068,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    flexWrap: 'wrap',
     justifyContent: 'center',
   },
   audioControlButtonInline: {
@@ -997,5 +1085,36 @@ const styles = StyleSheet.create({
     color: '#FF6A00',
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  // Additional inline audio styles
+  elapsedTimeText: {
+    fontSize: 8,
+    color: '#FF6A00',
+    textAlign: 'center',
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  navigationControlsInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    justifyContent: 'center',
+    marginTop: 4,
+  },
+  navigationButtonInline: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 106, 0, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FF6A00',
+  },
+  audioControlsContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
   },
 }); 
