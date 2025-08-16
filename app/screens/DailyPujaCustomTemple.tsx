@@ -65,6 +65,11 @@ const templeStyles = [
     name: 'Temple Style 2',
     image: require('@/assets/images/temple/Temple2.png'),
   },
+  {
+    id: 'temple3', 
+    name: 'Temple Style 3',
+    image: require('@/assets/images/temple/Temple3.png'),
+  },
 ];
 
 const ArchSVG = (props: { width?: number; height?: number; style?: any }) => {
@@ -488,7 +493,7 @@ export default function DailyPujaCustomTemple() {
             // Animate flower falling using the same animation system
             const fallDuration = 3000 + (Math.random() * 1000) + (row * 500); // Stagger duration by row
             const fallDistance = 800 + (row * 100); // Increase fall distance for each row
-            const templeY = selectedStyle === 'temple1' ? 400 : 325; // Temple position
+            const templeY = selectedStyle === 'temple1' ? 400 : selectedStyle === 'temple2' ? 325 : 350; // Temple position
             const vanishY = templeY + 200; // Vanish point below temple
 
             let startTime = Date.now();
@@ -2012,7 +2017,7 @@ export default function DailyPujaCustomTemple() {
   // Dynamic style for temple scroll content positioning
   const templeScrollContentStyle = useMemo(() => ({
     ...styles.templeScrollContent,
-    paddingTop: selectedStyle === 'temple1' ? 300 : 225,
+            paddingTop: selectedStyle === 'temple1' ? 300 : selectedStyle === 'temple2' ? 225 : 475,
   }), [selectedStyle]);
 
 
@@ -2098,7 +2103,12 @@ export default function DailyPujaCustomTemple() {
           {/* Temple image chosen by user */}
           <Image
             source={templeStyles.find(t => t.id === selectedStyle)?.image}
-            style={styles.templeImage}
+            style={[
+              styles.templeImage,
+              {
+                width: selectedStyle === 'temple3' ? screenWidth * 0.9 : screenWidth * 1.38,
+              }
+            ]}
             resizeMode="contain"
           />
         </ScrollView>

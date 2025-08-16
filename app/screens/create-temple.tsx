@@ -53,6 +53,11 @@ const templeStyles = [
     name: 'Temple Style 2',
     image: require('@/assets/images/temple/Temple2.png'),
   },
+  {
+    id: 'temple3', 
+    name: 'Temple Style 3',
+    image: require('@/assets/images/temple/Temple3.png'),
+  },
 ];
 
 const gradientPresets = [
@@ -408,7 +413,7 @@ export default function CreateTempleScreen() {
   // Dynamic style for temple scroll content positioning
   const templeScrollContentStyle = useMemo(() => ({
     ...styles.templeScrollContent,
-    paddingTop: selectedStyle === 'temple1' ? 300 : 225,
+            paddingTop: selectedStyle === 'temple1' ? 300 : selectedStyle === 'temple2' ? 225 : 475,
   }), [selectedStyle]);
 
   return (
@@ -431,7 +436,12 @@ export default function CreateTempleScreen() {
         {/* Temple image chosen by user */}
         <Image
           source={templeStyles.find(t => t.id === selectedStyle)?.image}
-          style={styles.templeImage}
+          style={[
+            styles.templeImage,
+            {
+              width: selectedStyle === 'temple3' ? screenWidth * 0.9 : screenWidth * 1.38,
+            }
+          ]}
           resizeMode="contain"
         />
       </ScrollView>

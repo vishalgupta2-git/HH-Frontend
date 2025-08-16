@@ -45,6 +45,11 @@ const templeStyles = [
     name: 'Temple Style 2',
     image: require('@/assets/images/temple/Temple2.png'),
   },
+  {
+    id: 'temple3', 
+    name: 'Temple Style 3',
+    image: require('@/assets/images/temple/Temple3.png'),
+  },
 ];
 
 // Top Arch SVG Component
