@@ -443,22 +443,22 @@ export default function AudioVideoScreen() {
                      ]}
                      onPress={() => handlePlay(media)}
                    >
-                     {/* Audio/Video Icon */}
+                     {/* Audio/Video Icon with Type and Language */}
                      <View style={styles.mediaIconContainer}>
                        {media.Classification === 'Audio' ? (
-                         <MaterialCommunityIcons name="music-note" size={24} color="#FF6A00" />
+                         <MaterialCommunityIcons name="music-note" size={20} color="#FF6A00" />
                        ) : (
-                         <MaterialCommunityIcons name="video" size={24} color="#FF6A00" />
+                         <MaterialCommunityIcons name="video" size={20} color="#FF6A00" />
                        )}
+                       <Text style={styles.mediaIconType}>{media.Type}</Text>
+                       <Text style={styles.mediaIconLanguage}>{media.Language}</Text>
                      </View>
                      
                      {/* Media Content */}
                      <View style={styles.mediaContent}>
                        <Text style={styles.mediaTitle}>{media.VideoName || 'Untitled'}</Text>
                        <Text style={styles.mediaType}>
-                         {media.Type} | {media.Language}
-                         {media.Deity ? ` | ${media.Deity}` : ''}
-                         {media.MediaType ? ` | ${media.MediaType.toUpperCase()}` : ''}
+                         {media.Deity ? media.Deity : ''}
                        </Text>
                        {(media.Duration || media.Artists) && (
                          <Text style={styles.mediaDetails}>
@@ -764,10 +764,10 @@ const styles = StyleSheet.create({
   },
   // Media Tile Styles
   mediaTile: {
-    marginBottom: 16,
+    marginBottom: 12,
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
+    padding: 12,
     elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -785,13 +785,27 @@ const styles = StyleSheet.create({
     borderLeftColor: '#2196F3',
   },
   mediaIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 70,
+    height: 70,
+    borderRadius: 10,
     backgroundColor: '#f8f9fa',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    padding: 6,
+  },
+  mediaIconType: {
+    fontSize: 11,
+    color: '#FF6A00',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 3,
+  },
+  mediaIconLanguage: {
+    fontSize: 9,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 1,
   },
   mediaContent: {
     flex: 1,
