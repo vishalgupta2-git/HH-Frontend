@@ -239,6 +239,36 @@ export default function AudioVideoScreen() {
     }
   };
 
+  const rewindAudio = async () => {
+    try {
+      if (sound) {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded) {
+          const newPosition = Math.max(0, (status.positionMillis || 0) - 10000); // 10 seconds back
+          await sound.setPositionAsync(newPosition);
+          console.log('🎵 [AUDIO-VIDEO] Audio rewound by 10 seconds');
+        }
+      }
+    } catch (error) {
+      console.error('❌ [AUDIO-VIDEO] Error rewinding audio:', error);
+    }
+  };
+
+  const forwardAudio = async () => {
+    try {
+      if (sound) {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded) {
+          const newPosition = Math.min((status.durationMillis || 0), (status.positionMillis || 0) + 10000); // 10 seconds forward
+          await sound.setPositionAsync(newPosition);
+          console.log('🎵 [AUDIO-VIDEO] Audio forwarded by 10 seconds');
+        }
+      }
+    } catch (error) {
+      console.error('❌ [AUDIO-VIDEO] Error forwarding audio:', error);
+    }
+  };
+
   const handleSearchChange = (query: string) => {
     console.log('🔍 [AUDIO-VIDEO] Search query changed:', query);
     console.log('🔍 [AUDIO-VIDEO] Current media files count:', mediaFiles.length);
@@ -493,11 +523,33 @@ export default function AudioVideoScreen() {
                              <>
                                <TouchableOpacity
                                  style={styles.audioControlButtonInline}
+                                 onPress={rewindAudio}
+                               >
+                                 <MaterialCommunityIcons
+                                   name="rewind-10"
+                                   size={18}
+                                   color="#FF6A00"
+                                 />
+                               </TouchableOpacity>
+                               
+                               <TouchableOpacity
+                                 style={styles.audioControlButtonInline}
                                  onPress={isPlaying ? pauseAudio : playAudio}
                                >
                                  <MaterialCommunityIcons
                                    name={isPlaying ? 'pause' : 'play'}
                                    size={24}
+                                   color="#FF6A00"
+                                 />
+                               </TouchableOpacity>
+                               
+                               <TouchableOpacity
+                                 style={styles.audioControlButtonInline}
+                                 onPress={forwardAudio}
+                               >
+                                 <MaterialCommunityIcons
+                                   name="fast-forward-10"
+                                   size={18}
                                    color="#FF6A00"
                                  />
                                </TouchableOpacity>
@@ -510,6 +562,7 @@ export default function AudioVideoScreen() {
                                    name="stop"
                                    size={20}
                                    color="#FF6A00"
+                                   style={{ marginLeft: 4 }}
                                  />
                                </TouchableOpacity>
                              </>
@@ -925,12 +978,14 @@ const styles = StyleSheet.create({
   audioControlsInline: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
   audioControlButtonInline: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: 'rgba(255, 106, 0, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
