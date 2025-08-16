@@ -134,20 +134,31 @@ export default function AudioVideoScreen() {
     console.log('🎬 [AUDIO-VIDEO] Deity:', media.Deity);
     console.log('🎬 [AUDIO-VIDEO] Video name:', media.VideoName);
     
-    setCurrentMedia(media);
-    setModalVisible(true);
-    
     if (media.Link && (media.Link.includes('youtube.com') || media.Link.includes('youtu.be'))) {
-      console.log('🎬 [AUDIO-VIDEO] YouTube link detected, setting youtubePlaying to true');
+      console.log('🎬 [AUDIO-VIDEO] YouTube link detected, opening modal');
+      setCurrentMedia(media);
+      setModalVisible(true);
       setYoutubePlaying(true);
     } else if (media.MediaType === 'mp3') {
-      console.log('🎵 [AUDIO-VIDEO] MP3 file detected, loading audio');
-      loadAndPlayAudio(media);
+      console.log('🎵 [AUDIO-VIDEO] MP3 file detected, playing inline');
+      // For MP3 files, play inline without opening modal
+      if (currentMedia?.avld === media.avld && sound) {
+        // If same audio is already loaded, toggle play/pause
+        if (isPlaying) {
+          pauseAudio();
+        } else {
+          playAudio();
+        }
+      } else {
+        // Load new audio
+        setCurrentMedia(media);
+        loadAndPlayAudio(media);
+      }
     } else {
-      console.log('🎬 [AUDIO-VIDEO] Non-YouTube link, youtubePlaying remains false');
+      console.log('🎬 [AUDIO-VIDEO] Unsupported media type');
     }
     
-    console.log('🎬 [AUDIO-VIDEO] Modal opened, current media set');
+    console.log('🎬 [AUDIO-VIDEO] Handle play completed');
   };
 
   const loadAndPlayAudio = async (media: MediaFile) => {
@@ -157,6 +168,8 @@ export default function AudioVideoScreen() {
       // Unload previous sound if exists
       if (sound) {
         await sound.unloadAsync();
+        setSound(null);
+        setIsPlaying(false);
       }
       
       // Get presigned URL from backend API
@@ -469,9 +482,45 @@ export default function AudioVideoScreen() {
                        )}
                      </View>
                      
-                     {/* Play Button */}
+                     {/* Play Button - Different for MP3 vs Other Media */}
                      <View style={styles.playButtonContainer}>
-                       <MaterialCommunityIcons name="play-circle" size={32} color="#FF6A00" />
+                       {media.MediaType === 'mp3' ? (
+                         // Inline audio controls for MP3
+                         <View style={styles.audioControlsInline}>
+                           {currentMedia?.avld === media.avld && isLoading ? (
+                             <Text style={styles.loadingTextInline}>Loading...</Text>
+                           ) : currentMedia?.avld === media.avld && sound ? (
+                             <>
+                               <TouchableOpacity
+                                 style={styles.audioControlButtonInline}
+                                 onPress={isPlaying ? pauseAudio : playAudio}
+                               >
+                                 <MaterialCommunityIcons
+                                   name={isPlaying ? 'pause' : 'play'}
+                                   size={24}
+                                   color="#FF6A00"
+                                 />
+                               </TouchableOpacity>
+                               
+                               <TouchableOpacity
+                                 style={styles.audioControlButtonInline}
+                                 onPress={stopAudio}
+                               >
+                                 <MaterialCommunityIcons
+                                   name="stop"
+                                   size={20}
+                                   color="#FF6A00"
+                                 />
+                               </TouchableOpacity>
+                             </>
+                           ) : (
+                             <MaterialCommunityIcons name="play-circle" size={32} color="#FF6A00" />
+                           )}
+                         </View>
+                       ) : (
+                         // Regular play button for non-MP3 media
+                         <MaterialCommunityIcons name="play-circle" size={32} color="#FF6A00" />
+                       )}
                      </View>
                    </TouchableOpacity>
                  );
@@ -480,21 +529,14 @@ export default function AudioVideoScreen() {
           </>
         )}
       </ScrollView>
-      {/* YouTube Modal */}
+      {/* YouTube Modal - Only for YouTube videos */}
       <Modal
         animationType="slide"
-        visible={modalVisible}
+        visible={modalVisible && !!currentMedia?.Link && (currentMedia.Link.includes('youtube.com') || currentMedia.Link.includes('youtu.be'))}
         onRequestClose={() => {
           setModalVisible(false);
           setCurrentMedia(null);
           setYoutubePlaying(false);
-          // Stop and unload audio if playing
-          if (sound) {
-            sound.unloadAsync();
-            setSound(null);
-            setIsPlaying(false);
-            setIsLoading(false);
-          }
         }}
       >
         <View style={styles.videoModalBackground}>
@@ -878,5 +920,27 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#fff',
     textAlign: 'center',
+  },
+  // Inline Audio Controls Styles
+  audioControlsInline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  audioControlButtonInline: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 106, 0, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#FF6A00',
+  },
+  loadingTextInline: {
+    fontSize: 12,
+    color: '#FF6A00',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
 }); 
