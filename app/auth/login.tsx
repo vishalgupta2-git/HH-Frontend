@@ -263,12 +263,12 @@ export default function LoginScreen() {
               </Text>
               
               <Text style={styles.modalNormalText}>
-                Email: theheritagetour24@gmail.com
-              </Text>
-              
-              <Text style={styles.modalNormalText}>
-                Phone: +91-63614 96368
-              </Text>
+                                 Email: surbhi@hinduheritage.in
+               </Text>
+               
+               <Text style={styles.modalNormalText}>
+                 Phone: +91-63614 96368
+               </Text>
               
               <Text style={styles.modalNormalText}>
                 Please read our Refund Policy carefully to understand the conditions under which refunds are processed.
@@ -350,7 +350,7 @@ export default function LoginScreen() {
                 Contact Number: +91 63614 96368
               </Text>
               <Text style={styles.modalNormalText}>
-                Email ID: theheritagetour24@gmail.com
+                Email ID: surbhi@hinduheritage.in
               </Text>
 
               <Text style={styles.modalHeading}>YOU HAVE FULLY READ AND UNDERSTOOD THESE TERMS OF USE AND VOLUNTARILY AGREE TO ALL OF THE PROVISIONS CONTAINED ABOVE</Text>
@@ -364,7 +364,7 @@ export default function LoginScreen() {
               </Text>
               
               <Text style={styles.modalNormalText}>
-                theheritagetour24@gmail.com
+                surbhi@hinduheritage.in
               </Text>
             </ScrollView>
           </View>
@@ -803,13 +803,13 @@ export default function LoginScreen() {
               </Text>
               
               <Text style={styles.modalNormalText}>
-                Email ID: theheritagetour24@gmail.com
+                Email ID: surbhi@hinduheritage.in
               </Text>
 
               <Text style={styles.modalLevel1}>12. ADDRESS FOR PRIVACY QUESTIONS</Text>
               
               <Text style={styles.modalNormalText}>
-                Should you have questions about this Privacy Policy or Company's information collection, use and disclosure practices, you may contact us at theheritagetour24@gmail.com.
+                Should you have questions about this Privacy Policy or Company's information collection, use and disclosure practices,                 you may contact us at surbhi@hinduheritage.in.
               </Text>
               
               <Text style={styles.modalNormalText}>
