@@ -791,6 +791,44 @@ export default function DailyPujaCustomTemple() {
     }
   };
 
+  // Helper function to get deity name from folder prefix
+  const getDeityNameFromFolder = (folderPrefix: string | undefined): string => {
+    if (!folderPrefix) return 'Divine Darshan';
+    
+    // Extract folder name from prefix (e.g., "dailytemples/ganesh/" -> "ganesh")
+    const folderName = folderPrefix.split('/')[1];
+    if (!folderName) return 'Divine Darshan';
+    
+    // Try to get deity name from godNames mapping
+    let deityName = godNames[folderName];
+    if (deityName) return deityName;
+    
+    // Try different variations of the folder name
+    const variations = [
+      folderName.toLowerCase(),
+      folderName.replace(/\d+/g, ''), // Remove numbers
+      folderName.replace(/\d+/g, '').toLowerCase(), // Remove numbers and lowercase
+      folderName.replace(/[0-9]/g, ''), // Alternative number removal
+      folderName.replace(/[0-9]/g, '').toLowerCase()
+    ];
+    
+    for (const variation of variations) {
+      if (godNames[variation]) {
+        deityName = godNames[variation];
+        break;
+      }
+    }
+    
+    if (deityName) return deityName;
+    
+    // If no match found, format the folder name nicely
+    return folderName
+      .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+      .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
+      .replace(/\d+/g, '') // Remove numbers
+      .trim();
+  };
+
   const handleNextToS3Gallery = async () => {
     if (Object.keys(selectedDeities).length === 0) {
       Alert.alert('No Deities Selected', 'Please select at least one deity before proceeding.');
@@ -2539,6 +2577,15 @@ export default function DailyPujaCustomTemple() {
             </View>
           )}
 
+          {/* Header - Show Deity Name when in All Temples mode */}
+          {!isTodaySpecialMode && (
+            <View style={styles.deityNameHeader}>
+              <Text style={styles.deityNameText}>
+                {getDeityNameFromFolder(s3Folders[currentS3FolderIndex]?.prefix)}
+              </Text>
+            </View>
+          )}
+
           {/* Folder Navigation Icons - Horizontal Scroll */}
           <View style={styles.folderNavigationContainer}>
             <ScrollView 
@@ -3088,6 +3135,27 @@ const styles = StyleSheet.create({
      fontSize: 14,
      textAlign: 'center',
      opacity: 0.9,
+   },
+   // Deity Name Header Styles (for All Temples mode)
+   deityNameHeader: {
+     position: 'absolute',
+     top: 30, // 30px from top as requested
+     left: 20,
+     right: 20,
+     zIndex: 1000,
+     backgroundColor: 'transparent',
+     borderRadius: 15,
+     padding: 15,
+     alignItems: 'center',
+   },
+   deityNameText: {
+     color: '#fff',
+     fontSize: 14, // 14px text size as requested
+     fontWeight: 'bold',
+     textAlign: 'center',
+     textShadowColor: 'rgba(0, 0, 0, 0.8)',
+     textShadowOffset: { width: 1, height: 1 },
+     textShadowRadius: 2,
    },
          deityLabel: {
        color: '#fff',
