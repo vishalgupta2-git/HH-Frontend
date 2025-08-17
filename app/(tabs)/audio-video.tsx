@@ -4,7 +4,7 @@ import axios from 'axios';
 import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, AppState, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Audio } from 'expo-av';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
@@ -56,6 +56,24 @@ export default function AudioVideoScreen() {
   const [audioDuration, setAudioDuration] = useState(0);
 
   useEffect(() => {
+    // Configure audio session for background playback
+    const configureAudioSession = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+        console.log('✅ Audio session configured for background playback');
+      } catch (error) {
+        console.error('❌ Failed to configure audio session:', error);
+      }
+    };
+
+    configureAudioSession();
+    
     const fetchMedia = async () => {
       try {
         const url = getEndpointUrl('MEDIA_FILES');
@@ -137,6 +155,27 @@ export default function AudioVideoScreen() {
     };
     fetchMedia();
   }, []);
+
+  // Handle app state changes for background audio
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active') {
+        console.log('📱 App became active, resuming audio if needed');
+        // Resume audio if it was playing before going to background
+        if (sound && isPlaying) {
+          sound.playAsync();
+        }
+      } else if (nextAppState === 'background') {
+        console.log('📱 App went to background, audio should continue playing');
+        // Audio will continue playing in background due to staysActiveInBackground: true
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [sound, isPlaying]);
+
+
 
   // Timer effect to track elapsed time and detect song end
   useEffect(() => {
@@ -334,47 +373,59 @@ export default function AudioVideoScreen() {
   };
 
   const playPreviousSong = () => {
-    if (!currentMedia || !mediaFiles.length) return;
+    // Get the current filtered list for navigation
+    const currentFilteredList = getCurrentFilteredList();
+    if (!currentFilteredList || currentFilteredList.length === 0) return;
     
-    const currentIndex = mediaFiles.findIndex(media => media.avld === currentMedia.avld);
-    if (currentIndex > 0) {
-      const previousMedia = mediaFiles[currentIndex - 1];
-      if (previousMedia.MediaType === 'mp3') {
-        setCurrentMedia(previousMedia);
-        loadAndPlayAudio(previousMedia);
-      }
-    }
+    handlePreviousSong(currentFilteredList);
   };
 
   const playNextSong = () => {
-    if (!currentMedia || !mediaFiles.length) return;
+    // Get the current filtered list for navigation
+    const currentFilteredList = getCurrentFilteredList();
+    if (!currentFilteredList || currentFilteredList.length === 0) return;
     
-    const currentIndex = mediaFiles.findIndex(media => media.avld === currentMedia.avld);
-    if (currentIndex < mediaFiles.length - 1) {
-      const nextMedia = mediaFiles[currentIndex + 1];
-      if (nextMedia.MediaType === 'mp3') {
-        setCurrentMedia(nextMedia);
-        loadAndPlayAudio(nextMedia);
-      } else {
-        // If next media is not MP3, try to find the next MP3
-        for (let i = currentIndex + 1; i < mediaFiles.length; i++) {
-          if (mediaFiles[i].MediaType === 'mp3') {
-            setCurrentMedia(mediaFiles[i]);
-            loadAndPlayAudio(mediaFiles[i]);
-            return;
-          }
-        }
-        // No more MP3 files found
-        console.log('🎵 [AUDIO-VIDEO] No more MP3 files to play');
-        setIsPlaying(false);
-        setElapsedTime(0);
-      }
-    } else {
-      // Last song ended, stop playback
-      console.log('🎵 [AUDIO-VIDEO] Last song ended, stopping playback');
-      setIsPlaying(false);
-      setElapsedTime(0);
-    }
+    handleNextSong(currentFilteredList);
+  };
+
+  // Helper function to get current filtered list
+  const getCurrentFilteredList = () => {
+    return mediaFiles
+      .filter(media => !selectedDeity || media.Deity === selectedDeity)
+      .filter(media => {
+        // Filter by selected filter button
+        if (selectedFilter === 'All') return true;
+        if (selectedFilter === 'Famous') return media.famous === true;
+        return media.Type === selectedFilter;
+      })
+      .filter(media => {
+        // If both toggles are off, show nothing
+        if (!audioEnabled && !videoEnabled) return false;
+        // If only audio is enabled, show only audio items
+        if (audioEnabled && !videoEnabled) return media.Classification === 'Audio';
+        // If only video is enabled, show only video items
+        if (!audioEnabled && videoEnabled) return media.Classification === 'Video';
+        // If both are enabled, show both audio and video items
+        return media.Classification === 'Audio' || media.Classification === 'Video';
+      })
+      .filter(media => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.trim().toLowerCase();
+        return (
+          (media.VideoName && media.VideoName.toLowerCase().includes(q)) ||
+          (media.Artists && media.Artists.toLowerCase().includes(q)) ||
+          (media.Deity && media.Deity.toLowerCase().includes(q)) ||
+          (media.Language && media.Language.toLowerCase().includes(q)) ||
+          (media.Type && media.Type.toLowerCase().includes(q))
+        );
+      })
+      .sort((a, b) => {
+        // Sort audio first, then video
+        if (a.Classification === 'Audio' && b.Classification === 'Video') return -1;
+        if (a.Classification === 'Video' && b.Classification === 'Audio') return 1;
+        // If both are same type, sort by name
+        return (a.VideoName || '').localeCompare(b.VideoName || '');
+      });
   };
 
   const formatTime = (milliseconds: number): string => {
@@ -394,6 +445,46 @@ export default function AudioVideoScreen() {
     const newDeity = selectedDeity === deity ? null : deity;
     setSelectedDeity(newDeity);
     console.log('🔍 [AUDIO-VIDEO] Deity filter changed:', newDeity || 'None');
+  };
+
+  // Navigation functions for next/previous in filtered list (MP3 only)
+  const getCurrentMediaIndex = (filteredList: MediaFile[]) => {
+    if (!currentMedia) return -1;
+    return filteredList.findIndex(media => media.avld === currentMedia.avld);
+  };
+
+  const handleNextSong = (filteredList: MediaFile[]) => {
+    if (!currentMedia || filteredList.length === 0) return;
+    
+    // Get only MP3 files from the filtered list
+    const mp3OnlyList = filteredList.filter(media => media.MediaType === 'mp3');
+    if (mp3OnlyList.length === 0) return;
+    
+    const currentIndex = mp3OnlyList.findIndex(media => media.avld === currentMedia.avld);
+    if (currentIndex === -1) return;
+    
+    const nextIndex = (currentIndex + 1) % mp3OnlyList.length;
+    const nextMedia = mp3OnlyList[nextIndex];
+    
+    console.log('⏭️ [AUDIO-VIDEO] Next MP3 song:', nextMedia.VideoName);
+    handlePlay(nextMedia);
+  };
+
+  const handlePreviousSong = (filteredList: MediaFile[]) => {
+    if (!currentMedia || filteredList.length === 0) return;
+    
+    // Get only MP3 files from the filtered list
+    const mp3OnlyList = filteredList.filter(media => media.MediaType === 'mp3');
+    if (mp3OnlyList.length === 0) return;
+    
+    const currentIndex = mp3OnlyList.findIndex(media => media.avld === currentMedia.avld);
+    if (currentIndex === -1) return;
+    
+    const previousIndex = currentIndex === 0 ? mp3OnlyList.length - 1 : currentIndex - 1;
+    const previousMedia = mp3OnlyList[previousIndex];
+    
+    console.log('⏮️ [AUDIO-VIDEO] Previous MP3 song:', previousMedia.VideoName);
+    handlePlay(previousMedia);
   };
 
   const filterContent = (
@@ -718,6 +809,7 @@ export default function AudioVideoScreen() {
                console.log('🔍 [AUDIO-VIDEO] Video enabled:', videoEnabled);
                console.log('🔍 [AUDIO-VIDEO] Search query:', searchQuery);
                
+               // Create filtered media list for navigation
                const filteredMedia = mediaFiles
                  .filter(media => !selectedDeity || media.Deity === selectedDeity)
                  .filter(media => {
@@ -746,6 +838,13 @@ export default function AudioVideoScreen() {
                      (media.Language && media.Language.toLowerCase().includes(q)) ||
                      (media.Type && media.Type.toLowerCase().includes(q))
                    );
+                 })
+                 .sort((a, b) => {
+                   // Sort audio first, then video
+                   if (a.Classification === 'Audio' && b.Classification === 'Video') return -1;
+                   if (a.Classification === 'Video' && b.Classification === 'Audio') return 1;
+                   // If both are same type, sort by name
+                   return (a.VideoName || '').localeCompare(b.VideoName || '');
                  });
                
                console.log('🔍 [AUDIO-VIDEO] Filtered media count:', filteredMedia.length);
