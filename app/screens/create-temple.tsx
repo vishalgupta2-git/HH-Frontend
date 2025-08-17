@@ -460,6 +460,54 @@ export default function CreateTempleScreen() {
       {/* Arch on top */}
       <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
       
+      {/* Temple Configuration Icons - Positioned at 50px from top */}
+      <View style={styles.templeConfigIconsContainer}>
+        <View style={styles.configIconWrapper}>
+          <TouchableOpacity 
+            style={styles.configIconItem}
+            onPress={() => setModal('temple')}
+          >
+            <Image 
+              source={require('@/assets/images/temple/Temple1.png')} 
+              style={styles.configIconImage} 
+              resizeMode="contain" 
+            />
+          </TouchableOpacity>
+          <Text style={styles.configIconLabel} numberOfLines={1}>Temple Style</Text>
+        </View>
+        
+        <View style={styles.configIconWrapper}>
+          <TouchableOpacity 
+            style={styles.configIconItem}
+            onPress={() => setModal('deities')}
+          >
+            <Image 
+              source={require('@/assets/images/temple/Ganesha1.png')} 
+              style={styles.configIconImage} 
+              resizeMode="contain" 
+            />
+          </TouchableOpacity>
+          <Text style={styles.configIconLabel} numberOfLines={1}>Deity</Text>
+        </View>
+        
+        <View style={styles.configIconWrapper}>
+          <TouchableOpacity 
+            style={styles.configIconItem}
+            onPress={() => setModal('background')}
+          >
+            <View style={styles.gradientIconContainer}>
+              <LinearGradient
+                colors={bgGradient as any}
+                style={styles.gradientIcon}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.configIconLabel} numberOfLines={1}>Background</Text>
+        </View>
+      </View>
+      
       {/* Deities positioned in their saved locations */}
       <View style={styles.deityContainer}>
         {Object.keys(selectedDeities).length > 0 ? (
@@ -532,12 +580,7 @@ export default function CreateTempleScreen() {
                 <Text style={styles.backButtonText}>Save{'\n'}Temple</Text>
               </TouchableOpacity>
               
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.circleButton} onPress={() => setModal('temples-deities')}>
-                  <Image source={require('@/assets/images/temple/Temple1.png')} style={styles.circleButtonImage} resizeMode="contain" />
-                </TouchableOpacity>
-                <Text style={[styles.buttonFooter, { color: labelColor }]}>Temples/Deities</Text>
-              </View>
+
               
               <TouchableOpacity
                 style={styles.nextButton}
@@ -566,7 +609,7 @@ export default function CreateTempleScreen() {
                   router.push('/screens/temple-preview');
                 }}
               >
-                <Text style={styles.nextButtonText}>Edit{'\n'}Deities</Text>
+                <Text style={styles.nextButtonText}>Adjust Deity{'\n'}Size / Position</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -592,21 +635,25 @@ export default function CreateTempleScreen() {
                       <Text style={styles.closeButtonText}>✕</Text>
                     </TouchableOpacity>
                   </View>
-                                     <View style={styles.modalStyleList}>
-                     {templeStyles.map(style => (
-                       <TouchableOpacity
-                         key={style.id}
-                         style={[styles.modalStyleOption, selectedStyle === style.id && styles.modalStyleOptionSelected]}
-                         onPress={() => {
-                           setSelectedStyle(style.id);
-                           setModal(null);
-                         }}
-                       >
-                         <Image source={style.image} style={styles.modalTempleImage} resizeMode="contain" />
-                         <Text style={styles.modalStyleOptionText}>{style.name}</Text>
-                       </TouchableOpacity>
-                     ))}
-                   </View>
+                                     <ScrollView 
+                                       horizontal 
+                                       showsHorizontalScrollIndicator={false}
+                                       contentContainerStyle={styles.modalStyleList}
+                                     >
+                                       {templeStyles.map(style => (
+                                         <TouchableOpacity
+                                           key={style.id}
+                                           style={[styles.modalStyleOption, selectedStyle === style.id && styles.modalStyleOptionSelected]}
+                                           onPress={() => {
+                                             setSelectedStyle(style.id);
+                                             setModal(null);
+                                           }}
+                                         >
+                                           <Image source={style.image} style={styles.modalTempleImage} resizeMode="contain" />
+                                           <Text style={styles.modalStyleOptionText}>{style.name}</Text>
+                                         </TouchableOpacity>
+                                       ))}
+                                     </ScrollView>
                 </View>
               ) : modal === 'background' ? (
                 <View style={styles.modalContent}>
@@ -1026,8 +1073,9 @@ const styles = StyleSheet.create({
   },
      modalStyleList: {
      flexDirection: 'row',
-     justifyContent: 'center',
+     justifyContent: 'flex-start',
      gap: 20,
+     paddingHorizontal: 20,
    },
   modalStyleOption: {
     borderWidth: 2,
@@ -1338,33 +1386,33 @@ const styles = StyleSheet.create({
     },
      backButton: {
     backgroundColor: '#FF6A00', // Changed from '#666' to match Edit Deities button
-    borderRadius: 24,
+    borderRadius: 8, // Reduced from 24 to 8 for very lightly rounded corners
     paddingVertical: 14,
     paddingHorizontal: 20,
-    minWidth: 80,
+    width: 150, // Fixed width of 150px
     alignItems: 'center',
     justifyContent: 'center',
   },
    backButtonText: {
      color: '#fff',
      fontWeight: 'bold',
-     fontSize: 14,
+     fontSize: 14, // Restored to 14px
      textAlign: 'center',
      lineHeight: 18,
    },
    nextButton: {
      backgroundColor: '#FF6A00',
-     borderRadius: 24,
+     borderRadius: 8, // Reduced from 24 to 8 for very lightly rounded corners
      paddingVertical: 14,
      paddingHorizontal: 20,
-     minWidth: 80,
+     width: 150, // Fixed width of 150px
      alignItems: 'center',
      justifyContent: 'center',
    },
        nextButtonText: {
       color: '#fff',
       fontWeight: 'bold',
-      fontSize: 14,
+      fontSize: 14, // Restored to 14px
       textAlign: 'center',
       lineHeight: 18,
     },
@@ -1397,5 +1445,61 @@ const styles = StyleSheet.create({
       color: '#333',
       textAlign: 'center',
       fontWeight: 'bold',
+    },
+    // Temple Configuration Icons Styles
+    templeConfigIconsContainer: {
+      position: 'absolute',
+      top: 50, // Moved up 30px from 80 to 50
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+      zIndex: 15,
+      paddingHorizontal: 20,
+    },
+    configIconWrapper: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    configIconItem: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 8,
+      borderRadius: 50, // Changed to 50 for circular shape
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      borderWidth: 2,
+      borderColor: 'rgba(255, 255, 255, 0.3)',
+      width: 50, // Reduced from 60 to 50 for smaller circle
+      height: 50, // Reduced from 60 to 50 for smaller circle
+    },
+    configIconImage: {
+      width: 40,
+      height: 40,
+      marginBottom: 0, // Remove margin since text is now outside
+    },
+    configIconLabel: {
+      fontSize: 10,
+      color: '#fff',
+      fontWeight: 'bold',
+      textAlign: 'center',
+      textShadowColor: 'rgba(0, 0, 0, 0.8)',
+      textShadowOffset: { width: 1, height: 1 },
+      textShadowRadius: 2,
+      marginTop: 4, // Reduced from 8 to 4 for closer positioning
+      position: 'absolute',
+      top: 58, // Position below the icon (50px icon height + 4px margin + 4px for spacing)
+      width: 80, // Fixed width to ensure text fits in one line
+    },
+    gradientIconContainer: {
+      width: 40,
+      height: 40,
+      marginBottom: 0, // Remove margin since text is now outside
+      borderRadius: 20, // Half of width/height for circular shape
+      overflow: 'hidden',
+    },
+    gradientIcon: {
+      width: '100%',
+      height: '100%',
     },
 }); 

@@ -4,7 +4,7 @@ import axios from 'axios';
 import { getEndpointUrl } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Alert, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Audio } from 'expo-av';
 import YoutubePlayer from 'react-native-youtube-iframe';
 
@@ -20,14 +20,10 @@ interface MediaFile {
   Duration: string;
   MediaType: string;
   CreatedAt: string;
+  famous?: boolean; // Optional boolean field for famous content
 }
 
-const typeList = [
-  'Aarti',
-  'Bhajan',
-  'Chalisa',
-  'Paath / Strotam',
-];
+
 
 function extractYouTubeId(url: string): string | null {
   let videoId: string | null = null;
@@ -46,9 +42,9 @@ export default function AudioVideoScreen() {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [youtubePlaying, setYoutubePlaying] = useState(false);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
-  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDeity, setSelectedDeity] = useState<string | null>(null);
+  const [selectedFilter, setSelectedFilter] = useState<string>('All');
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
   
@@ -80,6 +76,29 @@ export default function AudioVideoScreen() {
         if (Array.isArray(res.data)) {
           console.log('📱 [AUDIO-VIDEO] First item sample:', JSON.stringify(res.data[0], null, 2));
           console.log('📱 [AUDIO-VIDEO] Total items received:', res.data.length);
+          
+          // Log the actual field names from the API response
+          if (res.data.length > 0) {
+            const firstItem = res.data[0];
+            console.log('📱 [AUDIO-VIDEO] Available fields in API response:', Object.keys(firstItem));
+            console.log('📱 [AUDIO-VIDEO] Field values from first item:', {
+              avld: firstItem.avld,
+              Type: firstItem.Type,
+              Classification: firstItem.Classification,
+              VideoName: firstItem.VideoName,
+              Link: firstItem.Link,
+              Deity: firstItem.Deity,
+              Language: firstItem.Language,
+              Artists: firstItem.Artists,
+              Duration: firstItem.Duration,
+              MediaType: firstItem.MediaType,
+              CreatedAt: firstItem.CreatedAt,
+              // Check if famous field exists
+              famous: firstItem.famous,
+              // Log any other fields that might exist
+              allFields: firstItem
+            });
+          }
           
           // Log some statistics about the data
           const audioCount = res.data.filter((item: MediaFile) => item.Type?.toLowerCase().includes('audio')).length;
@@ -371,6 +390,12 @@ export default function AudioVideoScreen() {
     setSearchQuery(query);
   };
 
+  const handleDeitySelect = (deity: string) => {
+    const newDeity = selectedDeity === deity ? null : deity;
+    setSelectedDeity(newDeity);
+    console.log('🔍 [AUDIO-VIDEO] Deity filter changed:', newDeity || 'None');
+  };
+
   const filterContent = (
     <View style={styles.filterContainer}>
       {/* Search Input */}
@@ -435,66 +460,7 @@ export default function AudioVideoScreen() {
             <Text style={styles.toggleLabel}>Video</Text>
           </TouchableOpacity>
         </View>
-        
-        {/* Type Filter */}
-        <View style={styles.typeFilterWrapper}>
-          <TouchableOpacity 
-            style={styles.filterDropdown}
-            onPress={() => setTypeDropdownOpen(!typeDropdownOpen)}
-          >
-            <Text style={styles.filterDropdownText}>
-              {selectedType || 'Select Type'}
-            </Text>
-            <MaterialCommunityIcons 
-              name={typeDropdownOpen ? "chevron-up" : "chevron-down"} 
-              size={20} 
-              color="#666" 
-            />
-          </TouchableOpacity>
-          
-          {typeDropdownOpen && (
-            <TouchableWithoutFeedback onPress={() => setTypeDropdownOpen(false)}>
-              <View style={styles.dropdownOverlay}>
-                <TouchableWithoutFeedback onPress={() => {}}>
-                  <View style={styles.filterDropdownModal}>
-                    <TouchableOpacity 
-                      style={[styles.filterDropdownItem, styles.filterDropdownItemDisabled]}
-                      disabled={true}
-                    >
-                      <Text style={styles.filterDropdownItemTextDisabled}>Type</Text>
-                    </TouchableOpacity>
-                    
-                    <ScrollView 
-                      style={styles.typeListContainer}
-                      showsVerticalScrollIndicator={true}
-                      scrollEnabled={true}
-                      nestedScrollEnabled={false}
-                      bounces={false}
-                      keyboardShouldPersistTaps="handled"
-                      contentContainerStyle={{ flexGrow: 1 }}
-                    >
-                      {typeList.map((type: string) => (
-                        <TouchableOpacity 
-                          key={type}
-                          style={styles.filterDropdownItem}
-                          onPress={() => {
-                            setSelectedType(selectedType === type ? null : type);
-                            setTypeDropdownOpen(false);
-                          }}
-                        >
-                          <Text style={styles.filterDropdownItemText}>{type}</Text>
-                          {selectedType === type && (
-                            <MaterialCommunityIcons name="check" size={16} color="#FF6A00" style={styles.filterDropdownItemTick} />
-                          )}
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                </TouchableWithoutFeedback>
-              </View>
-            </TouchableWithoutFeedback>
-          )}
-        </View>
+
       </View>
     </View>
   );
@@ -508,6 +474,230 @@ export default function AudioVideoScreen() {
         onSearchChange={handleSearchChange}
         showSearchBar={false}
       />
+      
+      {/* Deity Icons - Horizontal Scrollable */}
+      <View style={styles.deityIconsContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.deityIconsContent}
+        >
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Brahma Ji' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Brahma Ji')}
+          >
+            <Image source={require('@/assets/images/temple/Brahma1.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel} numberOfLines={1}>Brahma Ji</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Brihaspati Dev' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Brihaspati Dev')}
+          >
+            <Image source={require('@/assets/images/temple/BrihaspatiIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Brihaspati Dev</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Durga Maa' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Durga Maa')}
+          >
+            <Image source={require('@/assets/images/temple/Durga1.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Durga Maa</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Ganga Maiya' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Ganga Maiya')}
+          >
+            <Image source={require('@/assets/images/temple/gangaMaiyaaIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Ganga Maiya</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Khatu Shyam Ji' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Khatu Shyam Ji')}
+          >
+            <Image source={require('@/assets/images/temple/KhatuShyamIcon.jpg')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Khatu Shyam Ji</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Lakshmi Maa' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Lakshmi Maa')}
+          >
+            <Image source={require('@/assets/images/temple/Lakshmi1.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Lakshmi Maa</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Maa Kali' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Maa Kali')}
+          >
+            <Image source={require('@/assets/images/temple/maaKaliIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Maa Kali</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Mahadev Shiv Ji' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Mahadev Shiv Ji')}
+          >
+            <Image source={require('@/assets/images/temple/New folder/Shiv4.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Mahadev Shiv Ji</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Mahaveer Hanuman' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Mahaveer Hanuman')}
+          >
+            <Image source={require('@/assets/images/temple/Hanuman1.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Mahaveer Hanuman</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Navgrah' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Navgrah')}
+          >
+            <Image source={require('@/assets/images/temple/navgrahIcon.jpg')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Navgrah</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Rahu Ketu' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Rahu Ketu')}
+          >
+            <Image source={require('@/assets/images/temple/RahuKetuIcon.jpg')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Rahu Ketu</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Saraswati Maa' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Saraswati Maa')}
+          >
+            <Image source={require('@/assets/images/temple/Saraswati1.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Saraswati Maa</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Shani Dev' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Shani Dev')}
+          >
+            <Image source={require('@/assets/images/temple/shaniDevIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Shani Dev</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Shri Krishna' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Shri Krishna')}
+          >
+            <Image source={require('@/assets/images/temple/Krishna1.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Shri Krishna</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Shri Ram' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Shri Ram')}
+          >
+            <Image source={require('@/assets/images/temple/Rama1.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Shri Ram</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Vighnaharta Ganesh' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Vighnaharta Ganesh')}
+          >
+            <Image source={require('@/assets/images/temple/Ganesha1.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Vighnaharta Ganesh</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[
+              styles.deityIconItem,
+              selectedDeity === 'Vishnu Bhagwan' && styles.deityIconItemSelected
+            ]}
+            onPress={() => handleDeitySelect('Vishnu Bhagwan')}
+          >
+            <Image source={require('@/assets/images/temple/VishnuIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
+            <Text style={styles.deityIconLabel}>Vishnu Bhagwan</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+      
+      {/* Filter Buttons Row */}
+      <View style={styles.filterButtonsContainer}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterButtonsContent}
+        >
+          {['All', 'Aarti', 'Bhajan', 'Chalisa', 'Paath / Strotam', 'Famous'].map((filter) => (
+            <TouchableOpacity
+              key={filter}
+              style={[
+                styles.filterButton,
+                selectedFilter === filter && styles.filterButtonActive
+              ]}
+              onPress={() => setSelectedFilter(filter)}
+            >
+              <Text style={[
+                styles.filterButtonText,
+                selectedFilter === filter && styles.filterButtonTextActive
+              ]}>
+                {filter}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+      
       {/* Media List */}
       <ScrollView style={styles.content}>
          {loading ? (
@@ -522,13 +712,20 @@ export default function AudioVideoScreen() {
              {(() => {
                console.log('🔍 [AUDIO-VIDEO] ===== FILTERING MEDIA FILES =====');
                console.log('🔍 [AUDIO-VIDEO] Total media files:', mediaFiles.length);
-               console.log('🔍 [AUDIO-VIDEO] Selected type:', selectedType);
+               console.log('🔍 [AUDIO-VIDEO] Selected deity:', selectedDeity);
+               console.log('🔍 [AUDIO-VIDEO] Selected filter:', selectedFilter);
                console.log('🔍 [AUDIO-VIDEO] Audio enabled:', audioEnabled);
                console.log('🔍 [AUDIO-VIDEO] Video enabled:', videoEnabled);
                console.log('🔍 [AUDIO-VIDEO] Search query:', searchQuery);
                
                const filteredMedia = mediaFiles
-                 .filter(media => !selectedType || media.Type === selectedType)
+                 .filter(media => !selectedDeity || media.Deity === selectedDeity)
+                 .filter(media => {
+                   // Filter by selected filter button
+                   if (selectedFilter === 'All') return true;
+                   if (selectedFilter === 'Famous') return media.famous === true;
+                   return media.Type === selectedFilter;
+                 })
                  .filter(media => {
                    // If both toggles are off, show nothing
                    if (!audioEnabled && !videoEnabled) return false;
@@ -792,6 +989,103 @@ export default function AudioVideoScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
+  // Deity Icons Styles
+  deityIconsContainer: {
+    position: 'absolute',
+    top: 170, // Moved up 10px from 180 to 170
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: 'transparent',
+  },
+  deityIconsContent: {
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  deityIconItem: {
+    alignItems: 'center',
+    marginHorizontal: 8,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    minWidth: 60,
+    minHeight: 60,
+  },
+  deityIconImage: {
+    width: 40,
+    height: 40,
+    marginBottom: 4,
+  },
+  deityIconLabel: {
+    fontSize: 8,
+    color: '#fff',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  deityIconItemSelected: {
+    backgroundColor: 'rgba(255, 106, 0, 0.3)',
+    borderWidth: 2,
+    borderColor: '#FF6A00',
+  },
+  filterStatusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255, 106, 0, 0.1)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    marginHorizontal: 20,
+    marginTop: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 106, 0, 0.3)',
+  },
+  filterStatusText: {
+    fontSize: 12,
+    color: '#FF6A00',
+    fontWeight: '500',
+  },
+  clearFilterButton: {
+    backgroundColor: '#FF6A00',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  clearFilterText: {
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  filterButtonsContainer: {
+    marginVertical: 15,
+    paddingHorizontal: 20,
+  },
+  filterButtonsContent: {
+    paddingHorizontal: 10,
+  },
+  filterButton: {
+    backgroundColor: '#f5f5f5',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginHorizontal: 6,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  filterButtonActive: {
+    backgroundColor: '#FF6A00',
+    borderColor: '#FF6A00',
+  },
+  filterButtonText: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  filterButtonTextActive: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   header: {
     backgroundColor: '#fff',
     paddingTop: 50,
@@ -807,6 +1101,7 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     marginBottom: 20,
+    marginTop: -10, // Moved up 10px
     position: 'relative',
     width: '88%',
     alignSelf: 'center',
@@ -875,87 +1170,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#fff',
   },
-  typeFilterWrapper: {
-    position: 'relative',
-  },
-  filterDropdown: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    minWidth: 180,
-  },
-  filterDropdownText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-  },
-  filterDropdownModal: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    zIndex: 1000,
-    marginTop: 4,
-    height: 222,
-    overflow: 'hidden',
-  },
-  dropdownOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 999,
-  },
-  typeListContainer: {
-    height: 180,
-    flex: 1,
-  },
-  filterDropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    width: '100%',
-    overflow: 'hidden',
-  },
-  filterDropdownItemText: {
-    fontSize: 14,
-    color: '#333',
-    flex: 1,
-    flexShrink: 1,
-  },
-  filterDropdownItemDisabled: {
-    backgroundColor: '#f8f8f8',
-  },
-  filterDropdownItemTextDisabled: {
-    fontSize: 14,
-    color: '#999',
-    fontWeight: 'bold',
-    flex: 1,
-    flexShrink: 1,
-  },
-  filterDropdownItemTick: {
-    marginLeft: 'auto',
-  },
+
   content: {
     padding: 15,
   },

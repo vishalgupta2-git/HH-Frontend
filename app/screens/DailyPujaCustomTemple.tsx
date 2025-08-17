@@ -3067,7 +3067,7 @@ const styles = StyleSheet.create({
    // Today's Special Header Styles
    todaySpecialHeader: {
      position: 'absolute',
-     top: 80,
+     top: 70, // Moved down 15 pixels from 55 to 70
      left: 20,
      right: 20,
      zIndex: 1000,
@@ -3098,7 +3098,7 @@ const styles = StyleSheet.create({
      leftPujaIconsColumn: {
       position: 'absolute',
       left: 0, // Align with left edge of screen
-      top: 250, // Moved down 100 pixels from 150 to 250
+      top: 300, // Moved down 50 pixels from 250 to 300
       width: 80, // Reduced width for narrower icon bar
       zIndex: 10, // Above temple but below bells and arch
       backgroundColor: 'transparent', // Transparent background
@@ -3111,7 +3111,7 @@ const styles = StyleSheet.create({
      rightPujaIconsColumn: {
       position: 'absolute',
       right: 0, // Align with right edge of screen
-      top: 250, // Moved down 100 pixels from 150 to 250
+      top: 300, // Moved down 50 pixels from 250 to 300
       width: 80, // Same width as left column
       zIndex: 10, // Above temple but below bells and arch
       backgroundColor: 'transparent', // Transparent background
@@ -3637,7 +3637,7 @@ const styles = StyleSheet.create({
     // Folder Navigation Icons Styles
     folderNavigationContainer: {
       position: 'absolute',
-      top: 70, // Moved down to 120 pixels from top
+      top: 60, // Moved down 15 pixels from 45 to 60
       left: 0,
       right: 0,
       height: 80, // Reduced height to accommodate 35x35 icons + padding + borders
@@ -3840,7 +3840,7 @@ const styles = StyleSheet.create({
     // Main Navigation Buttons Styles (Always Visible)
     mainNavigationButtonsContainer: {
       position: 'absolute',
-      bottom: 155, // Moved 20 pixels down from 175 to 155
+      top: 700, // Moved up 60 pixels from 760 to 700
       left: 0,
       right: 0,
       flexDirection: 'row',
@@ -3882,16 +3882,17 @@ const styles = StyleSheet.create({
     // Perform Puja Button Styles
     performPujaButtonContainer: {
       position: 'absolute',
-      bottom: 205, // Moved 20 pixels down from 225 to 205
+      top: 560, // Moved up 60 pixels from 620 to 560
       left: 0,
       right: 0,
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1020,
+      marginTop: 80, // Changed from 50 to 80
     },
     performPujaButton: {
       backgroundColor: 'rgba(255, 106, 0, 0.9)', // Slightly more opaque than navigation buttons
-      width: '82%', // 82% width of screen
+      width: 320, // Width to match 3 navigation buttons: (100px + 10px margin) × 3 = 330px, reduced to 320px for better fit
       paddingVertical: 15, // Slightly taller than navigation buttons
       paddingHorizontal: 20,
       borderRadius: 8, // Slightly more rounded than navigation buttons

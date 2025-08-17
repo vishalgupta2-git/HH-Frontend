@@ -375,6 +375,9 @@ export default function SpecialPujaScreen() {
             );
           })
         )}
+        
+        {/* Bottom Spacer to prevent clipping */}
+        <View style={styles.bottomSpacer} />
       </ScrollView>
       
       {/* Puja Details Modal */}
@@ -509,6 +512,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 15,
+    paddingBottom: 50, // Added extra bottom padding to prevent last tiles from getting clipped
   },
   headline: {
     fontSize: 24,
@@ -867,5 +871,8 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: '#e0e0e0',
       borderStyle: 'dashed',
+    },
+    bottomSpacer: {
+      height: 150, // Creates white space at the bottom to prevent clipping
     },
 }); 
