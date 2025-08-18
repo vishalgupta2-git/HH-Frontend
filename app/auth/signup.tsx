@@ -13,6 +13,25 @@ function validateEmail(email: string) {
   return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/.test(email);
 }
 
+// Helper function to calculate age from date of birth
+function calculateAge(dateOfBirth: Date): number {
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  
+  // Adjust age if birthday hasn't occurred this year
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
+}
+
+// Test the age calculation function (for development only)
+// console.log('Test: 18 years ago today:', calculateAge(new Date(Date.now() - 18 * 365 * 24 * 60 * 60 * 1000)));
+// console.log('Test: 17 years ago today:', calculateAge(new Date(Date.now() - 17 * 365 * 24 * 60 * 60 * 1000)));
+
 const genderOptions = ['Male', 'Female', 'Other'];
 const rashiOptions = [
   'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
@@ -21,6 +40,135 @@ const rashiOptions = [
 const maritalStatusOptions = ['Single', 'Married', 'Divorced', 'Widowed'];
 const kidGenderOptions = ['Male', 'Female', 'Other'];
 
+// Country data with country codes - Clean version
+const countries = [
+  { name: 'India', code: 'IN', dialCode: '+91', flag: '🇮🇳' },
+  { name: 'United States', code: 'US', dialCode: '+1', flag: '🇺🇸' },
+  { name: 'United Kingdom', code: 'GB', dialCode: '+44', flag: '🇬🇧' },
+  { name: 'Canada', code: 'CA', dialCode: '+1', flag: '🇨🇦' },
+  { name: 'Australia', code: 'AU', dialCode: '+61', flag: '🇦🇺' },
+  { name: 'Germany', code: 'DE', dialCode: '+49', flag: '🇩🇪' },
+  { name: 'France', code: 'FR', dialCode: '+33', flag: '🇫🇷' },
+  { name: 'Japan', code: 'JP', dialCode: '+81', flag: '🇯🇵' },
+  { name: 'China', code: 'CN', dialCode: '+86', flag: '🇨🇳' },
+  { name: 'Brazil', code: 'BR', dialCode: '+55', flag: '🇧🇷' },
+  { name: 'Russia', code: 'RU', dialCode: '+7', flag: '🇷🇺' },
+  { name: 'South Africa', code: 'ZA', dialCode: '+27', flag: '🇿🇦' },
+  { name: 'Mexico', code: 'MX', dialCode: '+52', flag: '🇲🇽' },
+  { name: 'Singapore', code: 'SG', dialCode: '+65', flag: '🇸🇬' },
+  { name: 'UAE', code: 'AE', dialCode: '+971', flag: '🇦🇪' },
+  { name: 'Saudi Arabia', code: 'SA', dialCode: '+966', flag: '🇸🇦' },
+  { name: 'Nepal', code: 'NP', dialCode: '+977', flag: '🇳🇵' },
+  { name: 'Bangladesh', code: 'BD', dialCode: '+880', flag: '🇧🇩' },
+  { name: 'Sri Lanka', code: 'LK', dialCode: '+94', flag: '🇱🇰' },
+  { name: 'Pakistan', code: 'PK', dialCode: '+92', flag: '🇵🇰' },
+  { name: 'Afghanistan', code: 'AF', dialCode: '+93', flag: '🇦🇫' },
+  { name: 'Bhutan', code: 'BT', dialCode: '+975', flag: '🇧🇹' },
+  { name: 'Maldives', code: 'MV', dialCode: '+960', flag: '🇲🇻' },
+  { name: 'Myanmar', code: 'MM', dialCode: '+95', flag: '🇲🇲' },
+  { name: 'Thailand', code: 'TH', dialCode: '+66', flag: '🇹🇭' },
+  { name: 'Vietnam', code: 'VN', dialCode: '+84', flag: '🇻🇳' },
+  { name: 'Malaysia', code: 'MY', dialCode: '+60', flag: '🇲🇾' },
+  { name: 'Indonesia', code: 'ID', dialCode: '+62', flag: '🇮🇩' },
+  { name: 'Philippines', code: 'PH', dialCode: '+63', flag: '🇵🇭' },
+  { name: 'New Zealand', code: 'NZ', dialCode: '+64', flag: '🇳🇿' },
+  { name: 'Ireland', code: 'IE', dialCode: '+353', flag: '🇮🇪' },
+  { name: 'Netherlands', code: 'NL', dialCode: '+31', flag: '🇳🇱' },
+  { name: 'Belgium', code: 'BE', dialCode: '+32', flag: '🇧🇪' },
+  { name: 'Switzerland', code: 'CH', dialCode: '+41', flag: '🇨🇭' },
+  { name: 'Austria', code: 'AT', dialCode: '+43', flag: '🇦🇹' },
+  { name: 'Italy', code: 'IT', dialCode: '+39', flag: '🇮🇹' },
+  { name: 'Spain', code: 'ES', dialCode: '+34', flag: '🇪🇸' },
+  { name: 'Portugal', code: 'PT', dialCode: '+351', flag: '🇵🇹' },
+  { name: 'Greece', code: 'GR', dialCode: '+30', flag: '🇬🇷' },
+  { name: 'Poland', code: 'PL', dialCode: '+48', flag: '🇵🇱' },
+  { name: 'Czech Republic', code: 'CZ', dialCode: '+420', flag: '🇨🇿' },
+  { name: 'Hungary', code: 'HU', dialCode: '+36', flag: '🇭🇺' },
+  { name: 'Romania', code: 'RO', dialCode: '+40', flag: '🇷🇴' },
+  { name: 'Bulgaria', code: 'BG', dialCode: '+359', flag: '🇧🇬' },
+  { name: 'Croatia', code: 'HR', dialCode: '+385', flag: '🇭🇷' },
+  { name: 'Slovenia', code: 'SI', dialCode: '+386', flag: '🇸🇮' },
+  { name: 'Slovakia', code: 'SK', dialCode: '+421', flag: '🇸🇰' },
+  { name: 'Estonia', code: 'EE', dialCode: '+372', flag: '🇪🇪' },
+  { name: 'Latvia', code: 'LV', dialCode: '+371', flag: '🇱🇻' },
+  { name: 'Lithuania', code: 'LT', dialCode: '+370', flag: '🇱🇹' },
+  { name: 'Finland', code: 'FI', dialCode: '+358', flag: '🇫🇮' },
+  { name: 'Sweden', code: 'SE', dialCode: '+46', flag: '🇸🇪' },
+  { name: 'Norway', code: 'NO', dialCode: '+47', flag: '🇳🇴' },
+  { name: 'Denmark', code: 'DK', dialCode: '+47', flag: '🇩🇰' },
+  { name: 'Iceland', code: 'IS', dialCode: '+354', flag: '🇮🇸' },
+  { name: 'Luxembourg', code: 'LU', dialCode: '+352', flag: '🇱🇺' },
+  { name: 'Monaco', code: 'MC', dialCode: '+377', flag: '🇲🇨' },
+  { name: 'Liechtenstein', code: 'LI', dialCode: '+423', flag: '🇱🇮' },
+  { name: 'Andorra', code: 'AD', dialCode: '+376', flag: '🇦🇩' },
+  { name: 'San Marino', code: 'SM', dialCode: '+378', flag: '🇸🇲' },
+  { name: 'Vatican City', code: 'VA', dialCode: '+379', flag: '🇻🇦' },
+  { name: 'Malta', code: 'MT', dialCode: '+356', flag: '🇲🇹' },
+  { name: 'Cyprus', code: 'CY', dialCode: '+357', flag: '🇨🇾' },
+  { name: 'Turkey', code: 'TR', dialCode: '+90', flag: '🇹🇷' },
+  { name: 'Israel', code: 'IL', dialCode: '+972', flag: '🇮🇱' },
+  { name: 'Lebanon', code: 'LB', dialCode: '+961', flag: '🇱🇧' },
+  { name: 'Jordan', code: 'JO', dialCode: '+962', flag: '🇯🇴' },
+  { name: 'Syria', code: 'SY', dialCode: '+963', flag: '🇸🇾' },
+  { name: 'Iraq', code: 'IQ', dialCode: '+964', flag: '🇮🇶' },
+  { name: 'Iran', code: 'IR', dialCode: '+98', flag: '🇮🇷' },
+  { name: 'Kuwait', code: 'KW', dialCode: '+965', flag: '🇰🇼' },
+  { name: 'Qatar', code: 'QA', dialCode: '+974', flag: '🇶🇦' },
+  { name: 'Bahrain', code: 'BH', dialCode: '+973', flag: '🇧🇭' },
+  { name: 'Oman', code: 'OM', dialCode: '+968', flag: '🇴🇲' },
+  { name: 'Yemen', code: 'YE', dialCode: '+967', flag: '🇾🇪' },
+  { name: 'Egypt', code: 'EG', dialCode: '+20', flag: '🇪🇬' },
+  { name: 'Libya', code: 'LY', dialCode: '+218', flag: '🇱🇾' },
+  { name: 'Tunisia', code: 'TN', dialCode: '+216', flag: '🇹🇳' },
+  { name: 'Algeria', code: 'DZ', dialCode: '+213', flag: '🇩🇿' },
+  { name: 'Morocco', code: 'MA', dialCode: '+212', flag: '🇲🇦' },
+  { name: 'Mauritania', code: 'MR', dialCode: '+222', flag: '🇲🇷' },
+  { name: 'Senegal', code: 'SN', dialCode: '+221', flag: '🇸🇳' },
+  { name: 'Gambia', code: 'GM', dialCode: '+220', flag: '🇬🇲' },
+  { name: 'Guinea-Bissau', code: 'GW', dialCode: '+245', flag: '🇬🇼' },
+  { name: 'Guinea', code: 'GN', dialCode: '+224', flag: '🇬🇳' },
+  { name: 'Sierra Leone', code: 'SL', dialCode: '+232', flag: '🇸🇱' },
+  { name: 'Liberia', code: 'LR', dialCode: '+231', flag: '🇱🇷' },
+  { name: 'Ivory Coast', code: 'CI', dialCode: '+225', flag: '🇨🇮' },
+  { name: 'Ghana', code: 'GH', dialCode: '+233', flag: '🇬🇭' },
+  { name: 'Togo', code: 'TG', dialCode: '+228', flag: '🇹🇬' },
+  { name: 'Benin', code: 'BJ', dialCode: '+229', flag: '🇧🇯' },
+  { name: 'Niger', code: 'NE', dialCode: '+227', flag: '🇳🇪' },
+  { name: 'Burkina Faso', code: 'BF', dialCode: '+226', flag: '🇧🇫' },
+  { name: 'Mali', code: 'ML', dialCode: '+223', flag: '🇲🇱' },
+  { name: 'Chad', code: 'TD', dialCode: '+235', flag: '🇹🇩' },
+  { name: 'Central African Republic', code: 'CF', dialCode: '+236', flag: '🇨🇫' },
+  { name: 'Cameroon', code: 'CM', dialCode: '+237', flag: '🇨🇲' },
+  { name: 'Equatorial Guinea', code: 'GQ', dialCode: '+240', flag: '🇬🇶' },
+  { name: 'Gabon', code: 'GA', dialCode: '+241', flag: '🇬🇦' },
+  { name: 'Congo', code: 'CG', dialCode: '+242', flag: '🇨🇬' },
+  { name: 'Democratic Republic of Congo', code: 'CD', dialCode: '+243', flag: '🇨🇩' },
+  { name: 'Angola', code: 'AO', dialCode: '+244', flag: '🇦🇴' },
+  { name: 'Zambia', code: 'ZM', dialCode: '+260', flag: '🇿🇲' },
+  { name: 'Zimbabwe', code: 'ZW', dialCode: '+263', flag: '🇿🇼' },
+  { name: 'Botswana', code: 'BW', dialCode: '+267', flag: '🇧🇼' },
+  { name: 'Namibia', code: 'NA', dialCode: '+264', flag: '🇳🇦' },
+  { name: 'Lesotho', code: 'LS', dialCode: '+266', flag: '🇱🇸' },
+  { name: 'Eswatini', code: 'SZ', dialCode: '+268', flag: '🇸🇿' },
+  { name: 'Madagascar', code: 'MG', dialCode: '+261', flag: '🇲🇬' },
+  { name: 'Mauritius', code: 'MU', dialCode: '+230', flag: '🇲🇺' },
+  { name: 'Seychelles', code: 'SC', dialCode: '+248', flag: '🇸🇨' },
+  { name: 'Comoros', code: 'KM', dialCode: '+269', flag: '🇰🇲' },
+  { name: 'Djibouti', code: 'DJ', dialCode: '+253', flag: '🇩🇯' },
+  { name: 'Somalia', code: 'SO', dialCode: '+252', flag: '🇸🇴' },
+  { name: 'Ethiopia', code: 'ET', dialCode: '+251', flag: '🇪🇹' },
+  { name: 'Eritrea', code: 'ER', dialCode: '+291', flag: '🇪🇷' },
+  { name: 'Sudan', code: 'SD', dialCode: '+249', flag: '🇸🇩' },
+  { name: 'South Sudan', code: 'SS', dialCode: '+211', flag: '🇸🇸' },
+  { name: 'Kenya', code: 'KE', dialCode: '+254', flag: '🇰🇪' },
+  { name: 'Uganda', code: 'UG', dialCode: '+256', flag: '🇺🇬' },
+  { name: 'Tanzania', code: 'TZ', dialCode: '+255', flag: '🇹🇿' },
+  { name: 'Rwanda', code: 'RW', dialCode: '+250', flag: '🇷🇼' },
+  { name: 'Burundi', code: 'BI', dialCode: '+257', flag: '🇧🇮' },
+  { name: 'Malawi', code: 'MW', dialCode: '+265', flag: '🇲🇼' },
+  { name: 'Mozambique', code: 'MZ', dialCode: '+258', flag: '🇲🇿' },
+];
+
 export const options = { headerShown: false };
 
 export default function SignUpScreen() {
@@ -28,6 +176,8 @@ export default function SignUpScreen() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState(countries[0]); // Default to India
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
@@ -103,8 +253,15 @@ export default function SignUpScreen() {
   const handlePhoneChange = (text: string) => {
     const numbersOnly = text.replace(/[^0-9]/g, '');
     setPhone(numbersOnly);
-    if (numbersOnly.length < 7) {
-      setPhoneError('Enter a valid phone number');
+    
+    // Basic validation - different countries have different phone number lengths
+    const minLength = selectedCountry.code === 'IN' ? 10 : 7; // India: 10 digits, others: 7+
+    const maxLength = selectedCountry.code === 'IN' ? 10 : 15; // India: 10 digits, others: 15 max
+    
+    if (numbersOnly.length < minLength) {
+      setPhoneError(`Enter a valid phone number (min ${minLength} digits)`);
+    } else if (numbersOnly.length > maxLength) {
+      setPhoneError(`Phone number too long (max ${maxLength} digits)`);
     } else {
       setPhoneError('');
     }
@@ -144,13 +301,46 @@ export default function SignUpScreen() {
       setEmailError('Enter a valid email address');
       valid = false;
     }
+    
+    // Phone validation
+    if (!phone || phone.length === 0) {
+      setPhoneError('Please enter your phone number');
+      valid = false;
+    } else if (phoneError) {
+      valid = false; // Phone already has an error
+    }
+    
+    // Age validation - must be 18 or older
+    if (!dob) {
+      Alert.alert('Age Required', 'Please select your date of birth to continue.');
+      valid = false;
+    } else {
+      const age = calculateAge(dob);
+      
+      if (age < 18) {
+        const yearsUntil18 = 18 - age;
+        const message = age === 17 
+          ? 'You are currently 17 years old. You need to wait 1 year to create an account.'
+          : `You are currently ${age} years old. You need to wait ${yearsUntil18} years to create an account.`;
+          
+        Alert.alert(
+          'Age Restriction', 
+          message,
+          [{ text: 'OK' }]
+        );
+        valid = false;
+      }
+    }
+    
     if (!valid) return;
     
          const signupData = {
        firstName: trimmedFirstName,
        lastName: trimmedLastName,
        email,
-       phone,
+       phone: selectedCountry.dialCode + phone, // Include country code
+       country: selectedCountry.code,
+       countryName: selectedCountry.name,
        gender,
        dateOfBirth: dob ? dob.toISOString() : null,
        placeOfBirth,
@@ -274,20 +464,60 @@ export default function SignUpScreen() {
               autoCapitalize="none"
             />
           {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+          <Text style={styles.fieldNote}>
+            📱 Phone Number *
+          </Text>
           <View style={styles.phoneRow}>
-            <View style={styles.countryCodeBox}>
-              <Text style={styles.countryCode}>+91</Text>
-            </View>
-                                                                <TextInput
-               style={styles.phoneInput}
-               placeholder="Enter Your Phone No"
-               placeholderTextColor="#888"
-               value={phone}
-               onChangeText={handlePhoneChange}
-               keyboardType="phone-pad"
-               maxLength={10}
-             />
+            <TouchableOpacity 
+              style={styles.countryCodeBox}
+              onPress={() => setCountryDropdownOpen(true)}
+            >
+              <Text style={styles.countryFlag}>{selectedCountry.flag}</Text>
+              <Text style={styles.countryCode}>{selectedCountry.dialCode}</Text>
+            </TouchableOpacity>
+            <TextInput
+              style={styles.phoneInput}
+              placeholder="Enter Your Phone No"
+              placeholderTextColor="#888"
+              value={phone}
+              onChangeText={handlePhoneChange}
+              keyboardType="phone-pad"
+              maxLength={15}
+            />
           </View>
+          
+          {/* Country Selection Modal */}
+          <Modal
+            visible={countryDropdownOpen}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setCountryDropdownOpen(false)}
+          >
+            <TouchableWithoutFeedback onPress={() => setCountryDropdownOpen(false)}>
+              <View style={styles.countryModalOverlay}>
+                <View style={styles.modalDropdownList}>
+                  <Text style={styles.countryModalTitle}>Select Country</Text>
+                  <ScrollView style={{ maxHeight: 400, marginTop: 4 }}>
+                    {countries.map(country => (
+                      <TouchableOpacity 
+                        key={country.code} 
+                        onPress={() => { 
+                          setSelectedCountry(country); 
+                          setCountryDropdownOpen(false);
+                        }}
+                      >
+                        <View style={styles.countryOption}>
+                          <Text style={styles.countryFlag}>{country.flag}</Text>
+                          <Text style={styles.countryName}>{country.name}</Text>
+                          <Text style={styles.countryDialCode}>{country.dialCode}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
                      {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
            <Text style={styles.sectionLabel}>About Yourself</Text>
           {/* Gender and Rashi Dropdowns on the same line, no labels */}
@@ -371,9 +601,31 @@ export default function SignUpScreen() {
           </Modal>
           
                      {/* Date-Time Picker (combined, no label) */}
+           <Text style={styles.fieldNote}>
+             📅 Date & Time of Birth * (Must be 18 or older to sign up)
+           </Text>
            <TouchableOpacity style={styles.input} onPress={() => setShowDateTime(true)}>
              <Text style={styles.dropdownText}>{dob ? dob.toLocaleString() : 'Select Date & Time of Birth'}</Text>
            </TouchableOpacity>
+           
+           {/* Age Indicator */}
+           {dob && (
+             <View style={styles.ageIndicator}>
+               <Text style={styles.ageText}>
+                 Age: {calculateAge(dob)} years old
+               </Text>
+               {calculateAge(dob) < 18 ? (
+                 <Text style={styles.ageWarning}>
+                   ⚠️ Must be 18 or older to sign up
+                 </Text>
+               ) : (
+                 <Text style={styles.ageSuccess}>
+                   ✅ Age requirement met
+                 </Text>
+               )}
+             </View>
+           )}
+           
           <DateTimePickerModal
             isVisible={showDateTime}
             mode="datetime"
@@ -1732,6 +1984,85 @@ const styles = StyleSheet.create({
     color: '#222',
     backgroundColor: '#FAFAFA',
   },
+  ageIndicator: {
+    marginBottom: 14,
+    padding: 8,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#007AFF',
+  },
+  ageText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  ageWarning: {
+    fontSize: 12,
+    color: '#E74C3C',
+    fontWeight: '500',
+  },
+  ageSuccess: {
+    fontSize: 12,
+    color: '#27AE60',
+    fontWeight: '500',
+  },
+  fieldNote: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 6,
+    fontStyle: 'italic',
+  },
+  countryFlag: {
+    fontSize: 16,
+    marginRight: 4,
+  },
+  countryOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  countryName: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    marginLeft: 8,
+  },
+  countryDialCode: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+
+  searchInput: {
+    borderWidth: 1,
+    borderColor: '#DDD',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 16,
+    marginHorizontal: 16,
+    backgroundColor: '#fff',
+  },
+
+  countryModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  countryModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
   phoneRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1745,6 +2076,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginRight: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 80,
   },
   countryCode: {
     fontSize: 16,
@@ -1840,9 +2174,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#DDD',
-    paddingVertical: 8,
-    paddingHorizontal: 24,
-    minWidth: 180,
+    paddingVertical: 4,
+    paddingHorizontal: 20,
+    minWidth: 300,
+    maxWidth: '90%',
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
