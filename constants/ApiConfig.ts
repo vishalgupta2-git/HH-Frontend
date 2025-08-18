@@ -3,7 +3,7 @@
 
 export const API_CONFIG = {
   // Base URL for all API calls
-  BASE_URL: 'https://backend-ten-alpha-83.vercel.app',
+  BASE_URL: 'https://backend-jlq04ym9s-surbhi-guptas-projects-4a5bc02c.vercel.app',
   
   // API endpoints
   ENDPOINTS: {

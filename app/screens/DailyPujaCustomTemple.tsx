@@ -265,6 +265,10 @@ export default function DailyPujaCustomTemple() {
   const [todaySpecialDeities, setTodaySpecialDeities] = useState<string[]>([]);
   const [isTodaySpecialMode, setIsTodaySpecialMode] = useState(false);
   
+  // Temple Configuration State
+  const [hasTempleConfigured, setHasTempleConfigured] = useState(false);
+  const [userChoseContinueWithoutTemple, setUserChoseContinueWithoutTemple] = useState(false);
+  
   // Puja Ritual State
   const [isPujaRitualActive, setIsPujaRitualActive] = useState(false);
   const [thaliEllipseAnimation] = useState(new Animated.Value(0));
@@ -672,42 +676,84 @@ export default function DailyPujaCustomTemple() {
   };
 
   const fetchGodNames = async (): Promise<{[folderId: string]: string}> => {
-    try {
-      const presignedUrl = getApiUrl(`/api/s3/download-url?key=dailytemples/godNames.json&expiresIn=3600`);
-      
-      const res = await fetch(presignedUrl);
-      const data = await res.json();
-      
-      if (data && data.success && data.presignedUrl) {
-        const godNamesRes = await fetch(data.presignedUrl);
-        const godNamesData = await godNamesRes.json();
-        
-        // Convert array format to key-value mapping
-        if (Array.isArray(godNamesData)) {
-          const godNamesMap: {[folderId: string]: string} = {};
-          godNamesData.forEach((item: {id: string, name: string}) => {
-            godNamesMap[item.id] = item.name;
-          });
-          return godNamesMap;
-        }
-        
-        return godNamesData || {};
-      } else {
-        return {};
-      }
-    } catch (e) {
-      return {};
-    }
+    // Hardcoded deity names data
+    const hardcodedGodNames = [
+      { "id": "01ganesha", "name": "Vighnaharta Ganesh" },
+      { "id": "02shiv", "name": "Mahadev Shiv Ji" },
+      { "id": "03vishnu", "name": "Vishnu Bhagwan" },
+      { "id": "04durga", "name": "Durga Maa" },
+      { "id": "05lakshmi", "name": "Lakshmi Maa" },
+      { "id": "06hanuman", "name": "Mahaveer Hanuman" },
+      { "id": "07ram", "name": "Shri Ram" },
+      { "id": "08krishna", "name": "Shri Krishna" },
+      { "id": "09balgopal", "name": "Bal Gopal" },
+      { "id": "10kali", "name": "Maa Kali" },
+      { "id": "11saraswati", "name": "Saraswati Maa" },
+      { "id": "12ganga", "name": "Ganga Maiya" },
+      { "id": "13shani", "name": "Shani Dev" },
+      { "id": "14surya", "name": "Surya Dev" },
+      { "id": "15tirupatibalaji", "name": "Tirupati Bala Ji" },
+      { "id": "16brihaspati", "name": "Brihaspati Dev" }
+    ];
+    
+    console.log('🔍 [GODNAMES] Using hardcoded deity names data');
+    
+    // Convert array format to key-value mapping
+    const godNamesMap: {[folderId: string]: string} = {};
+    hardcodedGodNames.forEach((item: {id: string, name: string}) => {
+      godNamesMap[item.id] = item.name;
+    });
+    
+    console.log('🔍 [GODNAMES] Converted to map:', godNamesMap);
+    console.log('🔍 [GODNAMES] Available deity IDs:', Object.keys(godNamesMap));
+    
+    return godNamesMap;
   };
 
   const fetchAllImagesAndOrganize = async (godNamesData: {[folderId: string]: string}): Promise<ImageFolder[]> => {
     try {
       const apiUrl = getApiUrl('/api/s3/files?prefix=dailytemples/&maxKeys=1000');
+      console.log('🔍 [S3] Fetching from:', apiUrl);
+      
       const res = await fetch(apiUrl);
+      console.log('🔍 [S3] Response status:', res.status);
+      console.log('🔍 [S3] Response ok:', res.ok);
+      
+      if (!res.ok) {
+        console.log('❌ [S3] HTTP error:', res.status, res.statusText);
+        return [];
+      }
+      
       const data = await res.json();
+      
+      console.log('🔍 [S3] Response data:', data);
+      console.log('🔍 [S3] Files array length:', data?.files?.length || 0);
+      
+      // Check if we got a valid response
+      if (!data) {
+        console.log('❌ [S3] No response data');
+        return [];
+      }
+      
+      if (!data.success) {
+        console.log('❌ [S3] API call not successful:', data.error || 'Unknown error');
+        return [];
+      }
+      
+      if (!Array.isArray(data.files)) {
+        console.log('❌ [S3] Files is not an array:', typeof data.files, data.files);
+        return [];
+      }
+      
+      if (data.files.length === 0) {
+        console.log('❌ [S3] Files array is empty');
+        return [];
+      }
       
       if (data && data.success && Array.isArray(data.files)) {
         const folderNames = extractFolderNames(data.files);
+        console.log('🔍 [S3] Extracted folder names:', folderNames);
+        
         const organizedFolders: ImageFolder[] = [];
         
         for (const folderName of folderNames) {
@@ -715,10 +761,11 @@ export default function DailyPujaCustomTemple() {
           if (folderName.toLowerCase().includes('rahu') || 
               folderName.toLowerCase().includes('ketu') || 
               folderName.toLowerCase().includes('brihaspati')) {
+            console.log('🔍 [S3] Skipping folder:', folderName);
             continue;
           }
           
-
+          console.log('🔍 [S3] Processing folder:', folderName);
           
           const folderPrefix = `dailytemples/${folderName}/`;
           const folderImages = data.files.filter((f: any) => 
@@ -727,6 +774,9 @@ export default function DailyPujaCustomTemple() {
             f.key !== folderPrefix && 
             isImageKey(f.key)
           );
+          
+          console.log('🔍 [S3] Folder images found:', folderImages.length);
+          console.log('🔍 [S3] Sample folder images:', folderImages.slice(0, 3).map((f: any) => f.key));
           
           if (folderImages.length > 0) {
             // Separate Icon.png for folder navigation
@@ -750,6 +800,10 @@ export default function DailyPujaCustomTemple() {
             
             // Try to find matching god name from JSON
             let godName = godNamesData[folderName];
+            console.log('🔍 [DEITY] Looking for folder:', folderName, 'in godNames:', godNamesData);
+            console.log('🔍 [DEITY] Available keys in godNamesData:', Object.keys(godNamesData));
+            console.log('🔍 [DEITY] Direct lookup result:', godName);
+            
             if (!godName) {
               // Try different variations of the folder name
               const variations = [
@@ -760,15 +814,24 @@ export default function DailyPujaCustomTemple() {
                 folderName.replace(/[0-9]/g, '').toLowerCase()
               ];
               
+              console.log('🔍 [DEITY] Trying variations:', variations);
+              
               for (const variation of variations) {
                 if (godNamesData[variation]) {
                   godName = godNamesData[variation];
+                  console.log('🔍 [DEITY] Found match with variation:', variation, '->', godName);
                   break;
                 }
               }
             }
             
-            organizedFolders.push({
+            if (godName) {
+              console.log('🔍 [DEITY] Using godName from JSON:', godName);
+            } else {
+              console.log('🔍 [DEITY] No godName found, using fallback');
+            }
+            
+            const organizedFolder = {
               name: folderName.replace(/([A-Z])/g, ' $1').trim(),
               prefix: folderPrefix,
               images: mainImages, // Main images without Icon.png
@@ -779,14 +842,28 @@ export default function DailyPujaCustomTemple() {
                 size: iconImage.size || 0,
               } : null,
               godName: godName
+            };
+            
+            console.log('🔍 [DEITY] Adding organized folder:', {
+              folderName,
+              godName,
+              finalFolder: organizedFolder
             });
+            
+            organizedFolders.push(organizedFolder);
           }
         }
         
+        console.log('🔍 [S3] Final organized folders:', organizedFolders.length);
+        console.log('🔍 [S3] Sample organized folder:', organizedFolders[0]);
+        
         return organizedFolders;
       }
+      
+      console.log('❌ [S3] No files array or invalid response structure');
       return [];
     } catch (e) {
+      console.log('❌ [S3] Error in fetchAllImagesAndOrganize:', e);
       return [];
     }
   };
@@ -795,13 +872,35 @@ export default function DailyPujaCustomTemple() {
   const getDeityNameFromFolder = (folderPrefix: string | undefined): string => {
     if (!folderPrefix) return 'Divine Darshan';
     
-    // Extract folder name from prefix (e.g., "dailytemples/ganesh/" -> "ganesh")
+    // Extract folder name from prefix (e.g., "dailytemples/01ganesha/" -> "01ganesha")
     const folderName = folderPrefix.split('/')[1];
     if (!folderName) return 'Divine Darshan';
     
-    // Try to get deity name from godNames mapping
+    console.log('🔍 [DEITY NAME] Folder prefix:', folderPrefix);
+    console.log('🔍 [DEITY NAME] Extracted folder name:', folderName);
+    console.log('🔍 [DEITY NAME] Current godNames state:', godNames);
+    
+    // First, try to get deity name from the organized folders data (which has godNames from JSON)
+    if (s3Folders && s3Folders.length > 0) {
+      const folderData = s3Folders.find(folder => folder.prefix === folderPrefix);
+      if (folderData && folderData.godName) {
+        console.log('🔍 [DEITY NAME] Found in organized folders:', folderData.godName);
+        return folderData.godName;
+      }
+    }
+    
+    // Check if godNames state is ready
+    if (Object.keys(godNames).length === 0) {
+      console.log('🔍 [DEITY NAME] godNames state is empty, waiting for data...');
+      return 'Loading...';
+    }
+    
+    // Try to get deity name from godNames mapping using the exact folder name
     let deityName = godNames[folderName];
-    if (deityName) return deityName;
+    if (deityName) {
+      console.log('🔍 [DEITY NAME] Found in godNames with exact match:', folderName, '->', deityName);
+      return deityName;
+    }
     
     // Try different variations of the folder name
     const variations = [
@@ -815,25 +914,33 @@ export default function DailyPujaCustomTemple() {
     for (const variation of variations) {
       if (godNames[variation]) {
         deityName = godNames[variation];
+        console.log('🔍 [DEITY NAME] Found with variation:', variation, '->', deityName);
         break;
       }
-    }
+      }
     
     if (deityName) return deityName;
     
     // If no match found, format the folder name nicely
-    return folderName
+    const fallbackName = folderName
       .replace(/([A-Z])/g, ' $1') // Add space before capital letters
       .replace(/^./, str => str.toUpperCase()) // Capitalize first letter
       .replace(/\d+/g, '') // Remove numbers
       .trim();
+    
+    console.log('🔍 [DEITY NAME] Final deity name (fallback):', fallbackName);
+    return fallbackName;
   };
 
   const handleNextToS3Gallery = async () => {
-    if (Object.keys(selectedDeities).length === 0) {
-      Alert.alert('No Deities Selected', 'Please select at least one deity before proceeding.');
-      return;
-    }
+    console.log('🔍 [GALLERY] handleNextToS3Gallery called');
+    console.log('🔍 [GALLERY] selectedDeities:', selectedDeities);
+    console.log('🔍 [GALLERY] selectedDeities length:', Object.keys(selectedDeities).length);
+    
+    // Remove deity requirement - All Temples should work without deities
+    // since it fetches data from S3, not from local deity configuration
+    
+    console.log('✅ [GALLERY] Proceeding to load S3 gallery...');
     
     // Reset Today's Special mode when showing all temples
     setIsTodaySpecialMode(false);
@@ -841,11 +948,22 @@ export default function DailyPujaCustomTemple() {
     setS3Loading(true);
     try {
       // Fetch god names first
-      const godNamesData = await fetchGodNames();
-      setGodNames(godNamesData);
+      console.log('🔍 [GALLERY] Fetching god names...');
+      try {
+        const godNamesData = await fetchGodNames();
+        console.log('🔍 [GALLERY] Fetched godNamesData:', godNamesData);
+        console.log('🔍 [GALLERY] Setting godNames state with:', godNamesData);
+        setGodNames(godNamesData);
+      } catch (error) {
+        console.log('❌ [GALLERY] Error fetching god names:', error);
+        // Set empty state to prevent infinite loading
+        setGodNames({});
+      }
       
       console.log('🔍 [GALLERY] About to fetch and organize images...');
-      const allFolders = await fetchAllImagesAndOrganize(godNamesData);
+      const allFolders = await fetchAllImagesAndOrganize(godNames || {});
+      
+      console.log('🔍 [GALLERY] Fetched folders:', allFolders.length);
       
       if (allFolders.length > 0) {
         setS3Folders(allFolders);
@@ -853,21 +971,28 @@ export default function DailyPujaCustomTemple() {
         setCurrentS3ImageIndex(0);
         
         const firstImage = allFolders[0].images[0];
+        console.log('🔍 [GALLERY] First image:', firstImage);
+        
         const firstImageUrl = await fetchPresignedUrl(firstImage.key);
         
         if (firstImageUrl) {
           setCurrentS3ImageUrl(firstImageUrl);
           setShowS3Gallery(true);
+          console.log('✅ [GALLERY] S3 gallery loaded successfully');
         } else {
+          console.log('❌ [GALLERY] Failed to load first image URL');
           Alert.alert('Error', 'Failed to load first image. Please try again.');
         }
       } else {
+        console.log('❌ [GALLERY] No folders found');
         Alert.alert('No Images Found', 'No temple images are currently available.');
       }
     } catch (error) {
+      console.log('❌ [GALLERY] Error loading images:', error);
       Alert.alert('Error', 'Failed to load temple images. Please try again.');
     } finally {
       setS3Loading(false);
+      console.log('🔍 [GALLERY] Loading finished');
     }
   };
 
@@ -956,6 +1081,20 @@ export default function DailyPujaCustomTemple() {
       });
     }
   }, [currentS3FolderIndex, currentS3ImageIndex, s3Folders, showS3Gallery]);
+
+  // Debug: Log when godNames changes
+  useEffect(() => {
+    console.log('🔍 [GODNAMES] State updated:', godNames);
+    console.log('🔍 [GODNAMES] State keys:', Object.keys(godNames));
+    console.log('🔍 [GODNAMES] State size:', Object.keys(godNames).length);
+    
+    // Check if state is being reset
+    if (Object.keys(godNames).length === 0) {
+      console.log('⚠️ [GODNAMES] WARNING: godNames state is empty - this might indicate a reset');
+    } else {
+      console.log('✅ [GODNAMES] godNames state has data:', Object.keys(godNames).length, 'entries');
+    }
+  }, [godNames]);
 
   // Mark that user has visited daily puja screen today and play welcome bell
   useEffect(() => {
@@ -1472,6 +1611,7 @@ export default function DailyPujaCustomTemple() {
         
         if (templeConfig) {
           // Load from configuration
+          setHasTempleConfigured(true);
           if (templeConfig.selectedDeities) {
             setSelectedDeities(templeConfig.selectedDeities);
           }
@@ -1485,16 +1625,28 @@ export default function DailyPujaCustomTemple() {
             setDeityState(templeConfig.deityState);
           }
         } else {
+          // No temple configured - show options to user
+          setHasTempleConfigured(false);
           Alert.alert(
             'No Temple Configured',
-            'Please go to "My Virtual Temple" on the home page to create a temple.',
+            'You can continue without a custom temple or create your own virtual temple.',
             [
               {
-                text: 'OK',
+                text: 'Continue Without Temple',
                 onPress: () => {
-                  router.replace('/(tabs)');
+                  setUserChoseContinueWithoutTemple(true);
+                  // Start directly in All Temples mode - no deities needed
+                  setShowS3Gallery(true);
+                  setIsTodaySpecialMode(false);
+                  handleNextToS3Gallery();
                 }
-              }
+              },
+                           {
+               text: 'Create My Virtual Temple',
+               onPress: () => {
+                 router.push('/screens/create-temple');
+               }
+             }
             ]
           );
         }
@@ -2479,23 +2631,32 @@ export default function DailyPujaCustomTemple() {
 
         {/* Navigation Buttons - Always Visible */}
         <View style={styles.mainNavigationButtonsContainer}>
-          <TouchableOpacity 
-            style={[
-              styles.mainNavigationButton,
-              !showS3Gallery && styles.mainNavigationButtonActive
-            ]}
-            onPress={() => {
-              setShowS3Gallery(false); // Close S3 gallery if open
-              setIsTodaySpecialMode(false); // Reset Today's Special mode
-              // Add your navigation logic here for temple deities
-            }}
-            activeOpacity={0.7}
-          >
-            <Text style={[
-              styles.mainNavigationButtonText,
-              !showS3Gallery && styles.mainNavigationButtonTextActive
-            ]} numberOfLines={1}>My Temple</Text>
-          </TouchableOpacity>
+                       <TouchableOpacity 
+               style={[
+                 styles.mainNavigationButton,
+                 !showS3Gallery && styles.mainNavigationButtonActive,
+                 !hasTempleConfigured && styles.createTempleButton
+               ]}
+               onPress={() => {
+                 if (hasTempleConfigured) {
+                   setShowS3Gallery(false); // Close S3 gallery if open
+                   setIsTodaySpecialMode(false); // Reset Today's Special mode
+                   // Add your navigation logic here for temple deities
+                 } else {
+                   // Navigate to create temple page if no temple configured
+                   router.push('/screens/create-temple');
+                 }
+               }}
+               activeOpacity={0.7}
+             >
+               <Text style={[
+                 styles.mainNavigationButtonText,
+                 !showS3Gallery && styles.mainNavigationButtonTextActive,
+                 !hasTempleConfigured && { color: 'white', fontWeight: '700' }
+               ]} numberOfLines={2}>
+                 {hasTempleConfigured ? 'My Temple' : 'Create\nmy temple'}
+               </Text>
+             </TouchableOpacity>
           
           <TouchableOpacity 
             style={[
@@ -2567,7 +2728,7 @@ export default function DailyPujaCustomTemple() {
           <SwingableBell position="left" swingValue={leftBellSwing} />
           <SwingableBell position="right" swingValue={rightBellSwing} />
           
-          {/* Header - Show Today's Special indicator */}
+          {/* Header - Show Today's Special indicator or No Temple message */}
           {isTodaySpecialMode && (
             <View style={styles.todaySpecialHeader}>
               <Text style={styles.todaySpecialTitle}>🕉️ Today's Special Pujas</Text>
@@ -2576,6 +2737,8 @@ export default function DailyPujaCustomTemple() {
               </Text>
             </View>
           )}
+          
+
 
           {/* Header - Show Deity Name when in All Temples mode */}
           {!isTodaySpecialMode && (
@@ -3946,6 +4109,44 @@ const styles = StyleSheet.create({
       color: 'white',
       fontSize: 11, // Slightly larger font when active
       fontWeight: '700', // Bolder when active
+    },
+    mainNavigationButtonDisabled: {
+      backgroundColor: 'rgba(128, 128, 128, 0.5)', // Grayed out when disabled
+      opacity: 0.6,
+    },
+    mainNavigationButtonTextDisabled: {
+      color: 'rgba(255, 255, 255, 0.6)', // Dimmed text when disabled
+    },
+    createTempleButton: {
+      backgroundColor: '#4CAF50', // Green color for create action
+      borderWidth: 2,
+      borderColor: '#45a049',
+    },
+    disabledButtonInfo: {
+      color: 'rgba(255, 255, 255, 0.7)',
+      fontSize: 8,
+      textAlign: 'center',
+      marginTop: 2,
+      fontStyle: 'italic',
+    },
+    noTempleMessage: {
+      position: 'absolute',
+      top: 80,
+      left: 20,
+      right: 20,
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      paddingHorizontal: 15,
+      paddingVertical: 8,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+    },
+    noTempleMessageText: {
+      color: 'rgba(255, 255, 255, 0.9)',
+      fontSize: 12,
+      textAlign: 'center',
+      fontWeight: '500',
     },
     // Perform Puja Button Styles
     performPujaButtonContainer: {

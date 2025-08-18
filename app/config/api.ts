@@ -3,7 +3,7 @@
 
 export const API_CONFIG = {
   // Your Vercel backend URL
-  baseUrl: 'backend-8fg90smbh-surbhi-guptas-projects-4a5bc02c.vercel.app',
+  baseUrl: 'https://backend-jlq04ym9s-surbhi-guptas-projects-4a5bc02c.vercel.app',
   
   // API Key for authentication (store this securely)
   apiKey: '034d55f1add309a2a3cf3794eb8669a3175aaf0ba2290a1c6c3f2f8091084a00',
