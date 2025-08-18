@@ -276,68 +276,195 @@ export default function LoginScreen() {
 
               <Text style={styles.modalLevel1}>9. CONDITIONS TO USE</Text>
               
+              <Text style={styles.modalLevel2}>9.1</Text>
               <Text style={styles.modalNormalText}>
-                (Sections remain as described in your original text, with references updated to "The Hindu Heritage" and "Audguide Heritage Travel Private Limited" as appropriate.)
+                The Services will be provided on a best-efforts basis. We will make reasonable efforts and shall endeavor that you are able to use the Services without undue disruption, interruption or delay.
+              </Text>
+
+              <Text style={styles.modalLevel2}>9.2</Text>
+              <Text style={styles.modalNormalText}>
+                Once you login on the Platform, you may receive updates, promotional materials and other information we may send with regards to the Service, or new services we may offer. You hereby consent to receiving all such commercial communications from us. You may opt out of receiving any, or all, of these commercial communications by writing to us at surbhi@hinduheritage.in.
+              </Text>
+               
+              <Text style={styles.modalNormalText}>
+                By agreeing to these Terms of Use, you also hereby unconditionally consent to us arranging a call with you on your mobile number although such number may be availing the DND service provided by your mobile service provider.
+              </Text>
+
+              <Text style={styles.modalLevel2}>9.3</Text>
+              <Text style={styles.modalNormalText}>
+                We disclaim any responsibility for any harm resulting from anyone's use of or access to the Services. If you avail our Services, you are responsible for taking precautions as necessary to protect yourself and your device (s) from malware, viruses, spyware, trojan horses, worms or trap doors, and other such harmful or destructive software.
+              </Text>
+
+              <Text style={styles.modalLevel2}>9.4</Text>
+              <Text style={styles.modalNormalText}>
+                We disclaim any responsibility for any harm resulting from anyone's use of or access to the Services. If you avail our Services, you are responsible for taking precautions as necessary to protect yourself and your device (s) from malware, viruses, spyware, trojan horses, worms or trap doors, and other such harmful or destructive software. You also agree that we shall not be liable to you for any damages that may result from your use and/or misuse of our Platform.
               </Text>
 
               <Text style={styles.modalLevel1}>10. INTELLECTUAL PROPERTY</Text>
               
+              <Text style={styles.modalLevel2}>10.1</Text>
               <Text style={styles.modalNormalText}>
-                (Ownership and rights now explicitly apply to Audguide Heritage Travel Private Limited.)
+                You agree and acknowledge that we are and we will remain the owner of the Platform and the Services thereunder at all times. You acknowledge that copyright in works contained on the Platform and the Services, including but not limited to all the features, functionality software, design, text, sound recordings and images, are our exclusive property, or licensed by us, except as otherwise expressly stated. You may access the Platform as a bona fide visitor or only for your use of the Services offered.
+              </Text>
+
+              <Text style={styles.modalLevel2}>10.2</Text>
+              <Text style={styles.modalNormalText}>
+                All trademarks, service marks, trade names, trade dress, and other forms of intellectual property are proprietary to us. No information, code, algorithms, content or material from the Platform or the Services may be copied, reproduced, republished, uploaded, posted, transmitted or distributed in any way without our express written permission.
               </Text>
 
               <Text style={styles.modalLevel1}>11. THIRD-PARTY LINKS</Text>
               
+              <Text style={styles.modalLevel2}>11.1</Text>
               <Text style={styles.modalNormalText}>
-                (References to the company are updated accordingly.)
+                The Platform includes links to third-party websites and/or applications. You acknowledge that when you access a third-party link that leaves the Platform:
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                • 11.1.1 the website or application you enter into is not controlled by the Company and different terms of use and privacy policies may apply;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                • 11.1.2 the inclusion of a link does not imply any endorsement by the Company of the third-party website and/or application, the website's and/or application's provider, or the information on the third-party website and/or application; and
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                • 11.1.3 if you submit any information or details on any of those websites and/or applications, such information is governed by the terms of use and privacy policies of such third-party websites and/or applications and the Company disclaims all responsibility or liability with respect to these terms of use, policies or the websites and/or applications
+              </Text>
+
+              <Text style={styles.modalLevel2}>11.2</Text>
+              <Text style={styles.modalNormalText}>
+                You are encouraged to carefully read the terms of use and privacy policy of any third-party website and/or application that you visit. The Company reserves the right to disable third-party links from the Platform, although the Company is under no obligation to do so.
               </Text>
 
               <Text style={styles.modalLevel1}>12. INDEMNITY AND LIMITATION OF LIABILITY</Text>
               
+              <Text style={styles.modalLevel2}>12.1</Text>
               <Text style={styles.modalNormalText}>
-                (Audguide Heritage Travel Private Limited defined throughout.)
+                To the extent permitted by law, you agree to indemnify the Company, its officers, directors and employees from and against any losses, damages, costs, expenses and claims arising out of (i) your use of the Services; (ii) any breach of these Terms of Use or Privacy Policy by you; (iii) any infringement of any intellectual property or other rights of the Company or any third- party or (iv) your breach of any applicable laws.
+              </Text>
+
+              <Text style={styles.modalLevel2}>12.2</Text>
+              <Text style={styles.modalNormalText}>
+                To the fullest extent permitted by law, in no event will the Company or its affiliates be liable in respect of the Platform and/or the Services for any direct, indirect, special, incidental, punitive, exemplary or consequential damages whether based on warranty, contract, tort (including negligence) or any other legal theory, whether or not the Company has been warned of the possibility of such damages. You expressly understand that under no circumstances, including negligence, will the Company be liable to you or any other person or entity for any direct, indirect, incidental, special, remote or consequential damages, including, but not limited to damages for loss of profits, goodwill, use, data or other intangible losses, resulting from circumstances, including with respect to:
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                • 12.2.1 the use or the inability to use the Platform and/or the Services;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                • 12.2.2 your reliance on the statements or claims made by us in the course of rendering our Services; or
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                • 12.2.3 any other matter relating to the Platform and/or Services.
+              </Text>
+
+              <Text style={styles.modalLevel2}>12.3</Text>
+              <Text style={styles.modalNormalText}>
+                Additionally, by using the Platform or any of the Services, you acknowledge and agree that internet transmissions are never completely private or secure. You understand that any message or information you send using the Platform or any of the Services may be read or intercepted by others, even if there is a special notice that a particular transmission is encrypted.
               </Text>
 
               <Text style={styles.modalLevel1}>13. TERMINATION</Text>
               
+              <Text style={styles.modalLevel2}>13.1</Text>
               <Text style={styles.modalNormalText}>
-                (Returns, deletions, and all service cessation actions apply to The Hindu Heritage and Audguide Heritage Travel Private Limited.)
+                We may terminate your access to all or any part of the Service at any time, with or without cause, with or without notice, effective immediately. Any suspected illegal, fraudulent or abusive activity will also be grounds for terminating your access to the Platform and/or Services.
+              </Text>
+
+              <Text style={styles.modalLevel2}>13.2</Text>
+              <Text style={styles.modalNormalText}>
+                We reserve the right to, at our sole discretion, (a) cease operating the Platform or any of the Services at any time without notice, and/or (b) terminate these Terms of Use.
+              </Text>
+
+              <Text style={styles.modalLevel2}>13.3</Text>
+              <Text style={styles.modalNormalText}>
+                All provisions of these Terms of Use which by their nature survive termination shall survive termination, including, without limitation, intellectual property (Clause 10), indemnity and limitation of liability (Clause 12) and disclaimer (Clause 14).
               </Text>
 
               <Text style={styles.modalLevel1}>14. DISCLAIMER</Text>
               
+              <Text style={styles.modalLevel2}>14.1</Text>
               <Text style={styles.modalNormalText}>
-                (Service refers only to The Hindu Heritage and Company or Platform is Audguide Heritage Travel Private Limited.)
+                We hereby expressly state that the Services provided on the Platform are solely in relation to the Sanatana Dharma. You hereby agree and acknowledge that such restriction of Services to the Sanatana Dharma is in no manner discriminatory towards other religions or religious practices and shall not, under any circumstances whatsoever be deemed to be a disrespect of other religions or be deemed as favouring of Sanatana Dharma over other religions or religious practices.
+              </Text>
+
+              <Text style={styles.modalLevel2}>14.2</Text>
+              <Text style={styles.modalNormalText}>
+                We do not in any manner represent or warrant nor do we undertake any responsibility or liability about the reality or reliability of the astrological effects on human physiology or any other products or services represented and sold on the Platform. No advice or information, whether oral or written, obtained by you through the Platform while availing the Services (including from any third-party service provider) shall create any warranty by the Company. We do not encourage or tolerate any content that promotes actions involving black magic, witchcraft, voodoo or tantrism in any manner. We do not commit to treating or providing solutions for users experiencing weak physical and/or mental health nor do we provide any medical advice. Users are advised to seek appropriate medical advice for any issues relating to physical or mental health.
+              </Text>
+
+              <Text style={styles.modalLevel2}>14.3</Text>
+              <Text style={styles.modalNormalText}>
+                The advisors/consultants/astrologers are not employees of the Platform or the Company and are third party service providers. You agree and acknowledge that you are connecting with third party service providers at your own risk, and we undertake no responsibility or liability with respect to such third-party service providers. We do not refer, endorse, recommend, verify, evaluate or guarantee any advice, information or other services provided by the third-party service providers or by the Company, nor do we warrant the validity, accuracy, completeness, safety, legality, quality, or applicability of the content, anything said or written by, or any advice provided by such third-party service providers. You further agree that in no event will we be made a party to or have any liability with respect to any dispute between you and any third-party service provider. We may terminate the services of any third-party service provider at any time and without any liability, at our sole discretion.
+              </Text>
+
+              <Text style={styles.modalLevel2}>14.4</Text>
+              <Text style={styles.modalNormalText}>
+                Save to the extent required by law, we have no special relationship with or fiduciary duty to you. You acknowledge that we have no control over, and no duty to take any action regarding the effects the Services may have on you.
+              </Text>
+
+              <Text style={styles.modalLevel2}>14.5</Text>
+              <Text style={styles.modalNormalText}>
+                You agree and acknowledge that the Services are provided on an "as is" basis, and that we hereby do not guarantee or warrant to the accuracy, adequacy, correctness, validity, completeness, or suitability for any purpose, of the Services and accept no liability or responsibility with respect to your reliance on the statements or claims made by us in the course of rendering our Services.
+              </Text>
+
+              <Text style={styles.modalLevel2}>14.6</Text>
+              <Text style={styles.modalNormalText}>
+                The Company makes no representation or warranty that the content on the Platform is appropriate to be used or accessed outside the Republic of India. Any users who use or access the Platform or avail the Services from outside the Republic of India, do so at their own risk and are responsible for compliance with the laws of such jurisdiction.
+              </Text>
+
+              <Text style={styles.modalLevel2}>14.7</Text>
+              <Text style={styles.modalNormalText}>
+                The Hindu Heritage acts as a service provider, facilitating services on behalf of users. Payments charged are solely for fulfilling these services, including but not limited to offerings, puja, and daan services. Payments made to The Hindu Heritage for such services are not eligible for 80G tax deductions.
+              </Text>
+
+              <Text style={styles.modalLevel2}>14.8</Text>
+              <Text style={styles.modalNormalText}>
+                The Company provides digital spiritual audio and visual content spanning a range of topics, traditions, and practices, including but not limited to meditation, chanting, discourses, and related materials. While we strive to ensure our content is broadly suitable, the nature of spiritual exploration may encompass diverse perspectives and potentially sensitive themes. In accordance with the spirit of Rule 11(4) of the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021, and its Schedule, we advise users to exercise their own discretion and judgment in selecting and consuming the content. By accessing our platform(s), you acknowledge the diverse nature of our content and agree to engage with it responsibly.
               </Text>
 
               <Text style={styles.modalLevel1}>15. GOVERNING LAW</Text>
               
+              <Text style={styles.modalLevel2}>15.1</Text>
               <Text style={styles.modalNormalText}>
-                (The platform and company are as updated.)
+                A printed version of these Terms of Use and of any notice given in electronic form shall be admissible in judicial or administrative proceedings based upon or relating to these Terms of Use to the same extent and subject to the same conditions as other business documents and records originally generated and maintained in printed form.
+              </Text>
+
+              <Text style={styles.modalLevel2}>15.2</Text>
+              <Text style={styles.modalNormalText}>
+                These Terms of Use shall be governed by and construed in accordance with the laws of India. For all purposes of these Terms of Use, you consent to the exclusive jurisdiction of the courts located in New Delhi, India. Use of the Service is not authorized in any jurisdiction that does not give effect to all provisions of these Terms of Use, including without limitation, this section.
               </Text>
 
               <Text style={styles.modalLevel1}>16. SEVERABILITY</Text>
               
               <Text style={styles.modalNormalText}>
-                (Content to be added)
+                If any provision of these Terms of Use is found to be unenforceable or invalid, that provision will be limited or eliminated to the minimum extent necessary so that these Terms of Use will otherwise remain in full force and effect and enforceable. The failure of either party to exercise, in any respect any right provided for herein shall not be deemed a waiver of any further rights hereunder. Waiver of compliance in any particular instance does not mean that we will waive compliance in the future. In order for any waiver of compliance with these Terms of Use to be binding, we must provide you with written notice of such waiver through one of our authorized representatives.
               </Text>
 
               <Text style={styles.modalLevel1}>17. MODIFICATION OF TERMS OF USE</Text>
               
               <Text style={styles.modalNormalText}>
-                (Content to be added)
+                We reserve the right, at our sole discretion, to modify or replace any of these Terms of Use, or change, suspend, or discontinue the Services (including without limitation, the availability of any feature, database, or content) or its usage at any time by posting a notice or by sending you notice through our Service or via email/contact details provided as Login Details. We may also impose limits on certain features and services or restrict your access to parts or all of the Services without notice or liability. It is your responsibility to check these Terms of Use periodically for changes. Your continued use of the Services following the posting of any changes to these Terms of Use shall constitute an acceptance of those changes.
               </Text>
 
               <Text style={styles.modalLevel1}>18. MISCELLANEOUS</Text>
               
+              <Text style={styles.modalLevel2}>18.1</Text>
               <Text style={styles.modalNormalText}>
-                (Content to be added)
+                Unless otherwise specified in these Terms of Use, all notices hereunder will be in writing and will be deemed to have been duly given when received or when receipt is electronically confirmed, if transmitted by e-mail.
+              </Text>
+
+              <Text style={styles.modalLevel2}>18.2</Text>
+              <Text style={styles.modalNormalText}>
+                In respect of these Terms of Use and your use of these Services, nothing in these Terms of Use shall be deemed to grant any rights or benefits to any person, other than us and you, or entitle any third party to enforce any provision hereof, and it is agreed that we do not intend that any provision of these Terms of Use should be enforceable by a third party as per any applicable law.
               </Text>
 
               <Text style={styles.modalLevel1}>19. CONTACT</Text>
               
+              <Text style={styles.modalLevel2}>19.1</Text>
               <Text style={styles.modalNormalText}>
-                In the event that you wish to raise a query or complaint with us, please contact our Grievance Officer as listed below. This is now under Audguide Heritage Travel Private Limited and The Hindu Heritage:
+                In the event that you wish to raise a query or complaint with us, please contact our Grievance Officer (contact details set out below) who shall acknowledge your complaint within 24 (twenty four) hours from the time of receipt of such complaint. Kindly note that once your complaint is received, we shall use our best efforts to redress it within a period of 15 (fifteen) days from the date of receipt of such complaint:
               </Text>
               
               <Text style={styles.modalNormalText}>
@@ -353,14 +480,18 @@ export default function LoginScreen() {
                 Email ID: surbhi@hinduheritage.in
               </Text>
 
+              <Text style={styles.modalNormalText}>
+                Latest Grievance Report is available here.
+              </Text>
+
               <Text style={styles.modalHeading}>YOU HAVE FULLY READ AND UNDERSTOOD THESE TERMS OF USE AND VOLUNTARILY AGREE TO ALL OF THE PROVISIONS CONTAINED ABOVE</Text>
               
               <Text style={styles.modalNormalText}>
-                Last updated on 12th March 2025
+                Last updated on 17th August 2025
               </Text>
               
               <Text style={styles.modalNormalText}>
-                Audguide Heritage Travel Private Limited
+                AUDGUIDE HERITAGE TRAVEL PRIVATE LIMITED
               </Text>
               
               <Text style={styles.modalNormalText}>
