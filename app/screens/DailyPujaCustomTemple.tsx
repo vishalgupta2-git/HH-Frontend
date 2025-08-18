@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder, Alert, Easing } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
@@ -1095,6 +1096,42 @@ export default function DailyPujaCustomTemple() {
       console.log('✅ [GODNAMES] godNames state has data:', Object.keys(godNames).length, 'entries');
     }
   }, [godNames]);
+
+  // Check temple availability when screen comes into focus (e.g., returning from create temple)
+  useFocusEffect(
+    React.useCallback(() => {
+      const checkTempleAvailability = async () => {
+        try {
+          console.log('🔍 [TEMPLE] Checking temple availability on screen focus...');
+          
+          // Load temple configuration from AsyncStorage
+          const templeConfig = await loadTempleConfiguration();
+          console.log('🔍 [TEMPLE] Temple config loaded:', templeConfig);
+          
+          if (templeConfig && templeConfig.deities && Object.keys(templeConfig.deities).length > 0) {
+            console.log('✅ [TEMPLE] Temple found with deities, updating state...');
+            setHasTempleConfigured(true);
+            setUserChoseContinueWithoutTemple(false);
+            
+            // Also update selectedDeities if needed
+            if (templeConfig.deities) {
+              setSelectedDeities(templeConfig.deities);
+              console.log('🔍 [TEMPLE] Updated selectedDeities:', Object.keys(templeConfig.deities));
+            }
+            
+            // Show a brief success message
+            console.log('🎉 [TEMPLE] Welcome back! Your temple is now configured and ready.');
+          } else {
+            console.log('❌ [TEMPLE] No temple configured, keeping current state');
+          }
+        } catch (error) {
+          console.log('❌ [TEMPLE] Error checking temple availability:', error);
+        }
+      };
+      
+      checkTempleAvailability();
+    }, [])
+  );
 
   // Mark that user has visited daily puja screen today and play welcome bell
   useEffect(() => {
