@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 
 // Mudra earning activity types
 export const MUDRA_ACTIVITIES = {
@@ -84,7 +84,9 @@ export const awardMudras = async (
     };
     console.log('🏆 [DEBUG] Sending request to backend:', requestData);
 
-    const response = await axios.post(getEndpointUrl('AWARD_MUDRAS'), requestData);
+    const response = await axios.post(getEndpointUrl('AWARD_MUDRAS'), requestData, {
+      headers: getAuthHeaders()
+    });
 
     console.log('🏆 [DEBUG] Backend response:', response.data);
     
@@ -125,7 +127,8 @@ export const hasEarnedDailyMudras = async (
     const today = new Date().toISOString().split('T')[0];
 
     const response = await axios.get(getEndpointUrl('MUDRAS_HISTORY'), {
-      params: { email: user.email }
+      params: { email: user.email },
+      headers: getAuthHeaders()
     });
 
     if (response.data.success) {
@@ -154,7 +157,8 @@ export const getMudraHistory = async (): Promise<{ success: boolean; history?: a
 
     const user = JSON.parse(userData);
     const response = await axios.get(getEndpointUrl('MUDRAS_HISTORY'), {
-      params: { email: user.email }
+      params: { email: user.email },
+      headers: getAuthHeaders()
     });
 
     if (response.data.success) {

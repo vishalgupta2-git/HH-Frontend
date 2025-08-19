@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 
 // Check if user has booked a specific puja in the last 30 days
 export const hasBookedPujaRecently = async (pujaName: string): Promise<boolean> => {
@@ -26,7 +26,8 @@ export const hasBookedPujaRecently = async (pujaName: string): Promise<boolean> 
       params: {
         phone: userPhone,
         pujaName: pujaName
-      }
+      },
+      headers: getAuthHeaders()
     });
 
     const { hasBooked, bookingCount } = response.data;

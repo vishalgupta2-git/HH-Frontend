@@ -1,6 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 
 // Check if user is authenticated
 export const checkUserAuthentication = async (): Promise<{ isAuthenticated: boolean; userData?: any }> => {
@@ -45,7 +45,8 @@ export const getUserId = async (): Promise<string | null> => {
 
     console.log('🔄 [USER ID] Getting userId from database for email:', user.email);
     const userResponse = await axios.get(getEndpointUrl('USER'), {
-      params: { email: user.email }
+      params: { email: user.email },
+      headers: getAuthHeaders()
     });
 
     if (!userResponse.data || !userResponse.data.user || !userResponse.data.user.userId) {
@@ -79,11 +80,17 @@ export const loadTempleFromDatabase = async (): Promise<any | null> => {
 
     console.log('🔄 [DB LOAD] Loading temple configuration for userId:', userId);
     const response = await axios.get(getEndpointUrl('GET_USER_TEMPLE'), {
-      params: { userId }
+      params: { userId },
+      headers: getAuthHeaders()
     });
 
     console.log('✅ [DB LOAD] Temple loaded successfully from database');
-    return response.data.temple.templeInformation;
+    console.log('🔍 [DB LOAD] Response data structure:', JSON.stringify(response.data, null, 2));
+    console.log('🔍 [DB LOAD] Temple object:', response.data.temple);
+    console.log('🔍 [DB LOAD] Temple information:', response.data.temple?.templeInformation);
+    
+    // Return the entire temple object, not just templeInformation
+    return response.data.temple;
   } catch (error: any) {
     if (error.response?.status === 404) {
       console.log('🔍 [DB LOAD] No temple configuration found in database');
@@ -100,7 +107,9 @@ export const loadTempleFromAsyncStorage = async (): Promise<any | null> => {
     const templeConfig = await AsyncStorage.getItem('templeConfig');
     if (templeConfig) {
       console.log('✅ [STORAGE LOAD] Temple configuration loaded from AsyncStorage');
-      return JSON.parse(templeConfig);
+      const parsed = JSON.parse(templeConfig);
+      console.log('🔍 [STORAGE LOAD] Parsed temple config:', JSON.stringify(parsed, null, 2));
+      return parsed;
     }
     console.log('🔍 [STORAGE LOAD] No temple configuration found in AsyncStorage');
     return null;
@@ -123,6 +132,8 @@ export const saveTempleToDatabase = async (templeConfig: any): Promise<boolean> 
     const response = await axios.post(getEndpointUrl('SAVE_USER_TEMPLE'), {
       userId,
       templeInformation: templeConfig
+    }, {
+      headers: getAuthHeaders()
     });
 
     console.log('✅ [DB SAVE] Temple saved successfully to database');
