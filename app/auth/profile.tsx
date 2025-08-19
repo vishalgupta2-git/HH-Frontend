@@ -77,7 +77,19 @@ export default function ProfileScreen() {
   const [genderDropdownOpen, setGenderDropdownOpen] = useState(false);
   const [rashiDropdownOpen, setRashiDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showMudraModal, setShowMudraModal] = useState(false);
+  const [mudrasEarned, setMudrasEarned] = useState(0);
   const router = useRouter();
+
+  // Cleanup mudra modal timeout on unmount
+  useEffect(() => {
+    return () => {
+      // Clear any pending timeouts when component unmounts
+      if (showMudraModal) {
+        setShowMudraModal(false);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // Load user data from AsyncStorage and fetch latest from backend
@@ -283,7 +295,12 @@ export default function ProfileScreen() {
         const mudraResult = await awardMudras('COMPLETE_PROFILE_PHONE');
         if (mudraResult.success) {
           console.log('✅ Mudras awarded for profile completion:', mudraResult.mudrasEarned);
-          Alert.alert('Success', `Profile updated successfully! You earned ${mudraResult.mudrasEarned} mudras!`);
+          setMudrasEarned(mudraResult.mudrasEarned || 0);
+          setShowMudraModal(true);
+          // Auto-dismiss modal after 3 seconds
+          setTimeout(() => {
+            setShowMudraModal(false);
+          }, 3000);
         } else {
           console.log('⚠️ Failed to award mudras for profile completion:', mudraResult.error);
           Alert.alert('Success', 'Profile updated successfully!');
@@ -833,6 +850,27 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </ScrollView>
       </View>
+      
+      {/* Mudra Earning Modal */}
+      <Modal
+        visible={showMudraModal}
+        transparent={true}
+        animationType="fade"
+      >
+        <TouchableWithoutFeedback onPress={() => setShowMudraModal(false)}>
+          <View style={styles.mudraModalOverlay}>
+            <View style={styles.mudraModalContent}>
+              <View style={styles.mudraIconContainer}>
+                <Text style={styles.mudraIcon}>🏆</Text>
+              </View>
+              <Text style={styles.mudraTitle}>Congratulations!</Text>
+              <Text style={styles.mudraMessage}>
+                Profile updated successfully! You earned {mudrasEarned} mudras!
+              </Text>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
@@ -1187,5 +1225,54 @@ const styles = StyleSheet.create({
    kidRow: {
      flexDirection: 'row',
      marginBottom: 14,
+   },
+   // Mudra Modal Styles
+   mudraModalOverlay: {
+     flex: 1,
+     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+     justifyContent: 'center',
+     alignItems: 'center',
+   },
+   mudraModalContent: {
+     backgroundColor: '#fff',
+     borderRadius: 20,
+     padding: 30,
+     alignItems: 'center',
+     marginHorizontal: 20,
+     shadowColor: '#000',
+     shadowOffset: { width: 0, height: 4 },
+     shadowOpacity: 0.25,
+     shadowRadius: 10,
+     elevation: 8,
+   },
+   mudraIconContainer: {
+     width: 80,
+     height: 80,
+     borderRadius: 40,
+     backgroundColor: '#FFD700',
+     justifyContent: 'center',
+     alignItems: 'center',
+     marginBottom: 20,
+     shadowColor: '#FFD700',
+     shadowOffset: { width: 0, height: 4 },
+     shadowOpacity: 0.3,
+     shadowRadius: 8,
+     elevation: 6,
+   },
+   mudraIcon: {
+     fontSize: 40,
+   },
+   mudraTitle: {
+     fontSize: 24,
+     fontWeight: 'bold',
+     color: '#222',
+     marginBottom: 15,
+     textAlign: 'center',
+   },
+   mudraMessage: {
+     fontSize: 16,
+     color: '#666',
+     textAlign: 'center',
+     lineHeight: 22,
    },
 }); 
