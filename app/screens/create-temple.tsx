@@ -576,7 +576,8 @@ export default function CreateTempleScreen() {
                     console.error('❌ Error saving temple configuration:', error);
                   }
                   
-                  router.back();
+                  // Navigate to homepage instead of back to daily puja
+                  router.push('/');
                 }}
               >
                 <Text style={styles.backButtonText}>Save{'\n'}Temple</Text>
