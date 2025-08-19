@@ -13,6 +13,14 @@ function validateEmail(email: string) {
   return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/.test(email);
 }
 
+// Function to validate referral code format
+function validateReferralCode(code: string) {
+  // UUID V4 format: 8-4-4-4-12 characters with hyphens
+  // Example: cf4e8f42-2b45-4a1f-9c61-31525d644e4a
+  const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidV4Regex.test(code);
+}
+
 // Helper function to calculate age from date of birth
 function calculateAge(dateOfBirth: Date): number {
   const today = new Date();
@@ -176,6 +184,8 @@ export default function SignUpScreen() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [referralCode, setReferralCode] = useState('');
+  const [referralCodeError, setReferralCodeError] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(countries[0]); // Default to India
   const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
   const [nameError, setNameError] = useState('');
@@ -371,6 +381,12 @@ export default function SignUpScreen() {
         }, 500);
       }
     }
+
+    // Referral code validation
+    if (referralCode.trim() && !validateReferralCode(referralCode.trim())) {
+      setReferralCodeError('Invalid referral code format');
+      valid = false;
+    }
     
     if (!valid) {
       // Scroll to the first field with an error
@@ -385,6 +401,7 @@ export default function SignUpScreen() {
        phone: selectedCountry.dialCode + phone, // Include country code
        country: selectedCountry.code,
        countryName: selectedCountry.name,
+       referralCode: referralCode.trim() || null, // Include referral code if provided
        gender,
        dateOfBirth: dob ? dob.toISOString() : null,
        placeOfBirth,
@@ -566,7 +583,31 @@ export default function SignUpScreen() {
             </TouchableWithoutFeedback>
           </Modal>
                      {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
-           <Text style={styles.sectionLabel}>About Yourself</Text>
+          
+          {/* Referral Code Field */}
+          <Text style={styles.fieldNote}>
+            🎯 Referral Code (Optional)
+          </Text>
+          <TextInput
+            style={[styles.input, referralCodeError ? styles.inputError : null]}
+            placeholder="Enter referral code if you have one"
+            placeholderTextColor="#888"
+            value={referralCode}
+            onChangeText={(text) => {
+              setReferralCode(text);
+              // Clear error when user starts typing
+              if (referralCodeError) setReferralCodeError('');
+            }}
+            autoCapitalize="none"
+          />
+          {referralCodeError ? <Text style={styles.errorText}>{referralCodeError}</Text> : null}
+          {referralCode && !referralCodeError && (
+            <Text style={styles.helpText}>
+              Referral code should be in UUID format (e.g., cf4e8f42-2b45-4a1f-9c61-31525d644e4a)
+            </Text>
+          )}
+          
+          <Text style={styles.sectionLabel}>About Yourself</Text>
           {/* Gender and Rashi Dropdowns on the same line, no labels */}
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
                          <TouchableOpacity
@@ -2475,5 +2516,14 @@ const styles = StyleSheet.create({
        fontSize: 14,
        color: '#D32F2F',
        lineHeight: 20,
+     },
+     inputError: {
+       borderColor: '#FF6A00',
+       borderWidth: 2,
+     },
+     helpText: {
+       color: '#666',
+       fontSize: 12,
+       marginBottom: 6,
      },
 }); 

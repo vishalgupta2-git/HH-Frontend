@@ -41,6 +41,10 @@ export const API_CONFIG = {
     MUDRAS_HISTORY: '/api/mudra-history',
     TEST_DB: '/api/test-db',
     
+    // Referral System
+    VERIFY_REFERRAL_CODE: '/api/verify-referral-code',
+    PROCESS_REFERRAL: '/api/process-referral',
+    
     // User Temple Management
     SAVE_USER_TEMPLE: '/api/save-user-temple',
     GET_USER_TEMPLE: '/api/get-user-temple',
