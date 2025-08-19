@@ -5,7 +5,7 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View, ScrollView, TextInput,
 import DateTimePicker from 'react-native-modal-datetime-picker';
 import { UpcomingPuja, formatPujaDate, getDaysUntilText } from '@/utils/specialDaysUtils';
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 
 interface SpecialDaysModalProps {
   visible: boolean;
@@ -78,7 +78,9 @@ export default function SpecialDaysModal({
     
     try {
       console.log('🔄 Submitting special puja booking:', bookingData);
-      const response = await axios.post(getEndpointUrl('SPECIAL_PUJA'), bookingData);
+      const response = await axios.post(getEndpointUrl('SPECIAL_PUJA'), bookingData, {
+        headers: getAuthHeaders()
+      });
       console.log('✅ Booking response:', response.data);
       setBookingModalVisible(false);
       setName('');

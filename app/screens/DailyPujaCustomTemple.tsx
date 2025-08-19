@@ -10,7 +10,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 import { markDailyPujaVisited } from '@/utils/dailyPujaUtils';
 import { loadTempleConfiguration } from '@/utils/templeUtils';
-import { getApiUrl, getEndpointUrl } from '@/constants/ApiConfig';
+import { getApiUrl, getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const TEMPLE_CONFIG_KEY = 'templeConfig';
@@ -676,7 +676,9 @@ export default function DailyPujaCustomTemple() {
   const fetchPresignedUrl = async (key: string): Promise<string | null> => {
     try {
       const presignedUrl = getApiUrl(`/api/s3/download-url?key=${encodeURIComponent(key)}&expiresIn=3600`);
-      const res = await fetch(presignedUrl);
+      const res = await fetch(presignedUrl, {
+        headers: getAuthHeaders()
+      });
       const data = await res.json();
       if (data && data.success && data.presignedUrl) {
         return data.presignedUrl;
@@ -728,7 +730,9 @@ export default function DailyPujaCustomTemple() {
       const apiUrl = getApiUrl('/api/s3/files?prefix=dailytemples/&maxKeys=1000');
       console.log('🔍 [S3] Fetching from:', apiUrl);
       
-      const res = await fetch(apiUrl);
+      const res = await fetch(apiUrl, {
+        headers: getAuthHeaders()
+      });
       console.log('🔍 [S3] Response status:', res.status);
       console.log('🔍 [S3] Response ok:', res.ok);
       
@@ -1408,7 +1412,9 @@ export default function DailyPujaCustomTemple() {
       
       console.log('🔍 Fetching today\'s special pujas for:', today);
       
-      const response = await fetch(getApiUrl(`/api/temples-by-day?dayOfWeek=${today.toLowerCase()}`));
+      const response = await fetch(getApiUrl(`/api/temples-by-day?dayOfWeek=${today.toLowerCase()}`), {
+        headers: getAuthHeaders()
+      });
       const data = await response.json();
       
       if (data.success && data.temples && data.temples.length > 0) {
@@ -2279,7 +2285,9 @@ export default function DailyPujaCustomTemple() {
       const url = getEndpointUrl('MEDIA_FILES');
       console.log('🎵 [MUSIC] Fetching from:', url);
       
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: getAuthHeaders()
+      });
       console.log('🎵 [MUSIC] Response status:', res.status);
       
       if (!res.ok) {
@@ -2361,7 +2369,9 @@ export default function DailyPujaCustomTemple() {
 
       // Get presigned URL from backend API (same as audio-video screen)
       const apiUrl = getEndpointUrl('S3_AUDIO_URL');
-      const response = await fetch(`${apiUrl}?filename=${encodeURIComponent(metadata.link)}`);
+      const response = await fetch(`${apiUrl}?filename=${encodeURIComponent(metadata.link)}`, {
+        headers: getAuthHeaders()
+      });
       
       if (!response.ok) {
         throw new Error('Failed to get presigned URL from API');

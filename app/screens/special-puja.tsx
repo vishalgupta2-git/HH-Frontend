@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, Image } from 'react-native';
@@ -64,7 +64,9 @@ export default function SpecialPujaScreen() {
     const fetchPujas = async () => {
       try {
         console.log('🔄 Fetching special pujas from:', getEndpointUrl('SPECIAL_PUJA'));
-        const res = await axios.get(getEndpointUrl('SPECIAL_PUJA'));
+        const res = await axios.get(getEndpointUrl('SPECIAL_PUJA'), {
+          headers: getAuthHeaders()
+        });
         console.log('✅ Special puja API response:', res.data);
         
         // Filter out any items with null/undefined values that might cause rendering issues
@@ -119,7 +121,9 @@ export default function SpecialPujaScreen() {
     
     try {
       console.log('🔄 Submitting special puja booking:', bookingData);
-      const response = await axios.post(getEndpointUrl('SPECIAL_PUJA'), bookingData);
+      const response = await axios.post(getEndpointUrl('SPECIAL_PUJA'), bookingData, {
+        headers: getAuthHeaders()
+      });
       console.log('✅ Booking response:', response.data);
       setBookingModalVisible(false);
       setName('');

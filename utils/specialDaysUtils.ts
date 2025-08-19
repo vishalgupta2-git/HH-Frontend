@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 
 export interface UpcomingPuja {
   pujaName: string;
@@ -13,7 +13,9 @@ export interface UpcomingPuja {
 export const getUpcomingSpecialPujas = async (): Promise<UpcomingPuja[]> => {
   try {
     console.log('🔍 [DEBUG] Fetching special pujas for upcoming check...');
-    const response = await axios.get(getEndpointUrl('SPECIAL_PUJA'));
+    const response = await axios.get(getEndpointUrl('SPECIAL_PUJA'), {
+      headers: getAuthHeaders()
+    });
     const pujas = response.data || [];
     
     console.log('🔍 [DEBUG] Total pujas fetched:', pujas.length);

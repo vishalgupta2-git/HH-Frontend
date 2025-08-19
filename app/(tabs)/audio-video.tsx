@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { Alert, AppState, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -82,7 +82,9 @@ export default function AudioVideoScreen() {
         console.log('🔍 [AUDIO-VIDEO] Full URL:', url);
         console.log('🔍 [AUDIO-VIDEO] Request timestamp:', new Date().toISOString());
         
-        const res = await axios.get(url);
+        const res = await axios.get(url, {
+          headers: getAuthHeaders()
+        });
         console.log('📱 [AUDIO-VIDEO] ===== API RESPONSE RECEIVED =====');
         console.log('📱 [AUDIO-VIDEO] Response status:', res.status);
         console.log('📱 [AUDIO-VIDEO] Response headers:', JSON.stringify(res.headers, null, 2));
@@ -271,7 +273,8 @@ export default function AudioVideoScreen() {
       // Get presigned URL from backend API
       const apiUrl = getEndpointUrl('S3_AUDIO_URL');
       const response = await axios.get(apiUrl, {
-        params: { filename: media.Link }
+        params: { filename: media.Link },
+        headers: getAuthHeaders()
       });
       
       if (response.data.success && response.data.presignedUrl) {

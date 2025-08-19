@@ -9,7 +9,7 @@ import Animated, { useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, 
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { Audio } from 'expo-av';
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { loadTempleConfiguration, saveTempleConfiguration } from '@/utils/templeUtils';
 
 export const options = { headerShown: false };
@@ -388,7 +388,9 @@ export default function CreateTempleScreen() {
   useEffect(() => {
     const fetchDeityData = async () => {
       try {
-        const res = await axios.get(getEndpointUrl('DEITY_STATUES'));
+        const res = await axios.get(getEndpointUrl('DEITY_STATUES'), {
+          headers: getAuthHeaders()
+        });
         setDeityData(res.data);
       } catch (e: any) {
         Alert.alert(

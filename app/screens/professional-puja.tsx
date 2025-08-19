@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -89,7 +89,9 @@ export default function ProfessionalPujaScreen() {
   useEffect(() => {
     const fetchPujas = async () => {
       try {
-        const res = await axios.get(getEndpointUrl('PROFESSIONAL_PUJAS'));
+        const res = await axios.get(getEndpointUrl('PROFESSIONAL_PUJAS'), {
+          headers: getAuthHeaders()
+        });
         // Filter out any items with null/undefined values that might cause rendering issues
         const filteredData = res.data.filter((puja: any) => puja && typeof puja === 'object');
         setPujaFiles(filteredData);
@@ -145,7 +147,9 @@ export default function ProfessionalPujaScreen() {
     };
     
     try {
-      const response = await axios.post(getEndpointUrl('PROFESSIONAL_PUJA_BOOKING'), bookingData);
+      const response = await axios.post(getEndpointUrl('PROFESSIONAL_PUJA_BOOKING'), bookingData, {
+        headers: getAuthHeaders()
+      });
       setBookingModalVisible(false);
       setName('');
       setPhone('');

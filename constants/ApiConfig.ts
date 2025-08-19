@@ -3,7 +3,10 @@
 
 export const API_CONFIG = {
   // Base URL for all API calls
-  BASE_URL: 'https://backend-jlq04ym9s-surbhi-guptas-projects-4a5bc02c.vercel.app',
+  BASE_URL: 'https://backend-ten-alpha-83.vercel.app',
+  
+  // API Key for authentication
+  API_KEY: '034d55f1add309a2a3cf3794eb8669a3175aaf0ba2290a1c6c3f2f8091084a00',
   
   // API endpoints
   ENDPOINTS: {
@@ -59,4 +62,20 @@ export const getApiUrl = (endpoint: string): string => {
 // Helper function to get endpoint URL
 export const getEndpointUrl = (endpointKey: keyof typeof API_CONFIG.ENDPOINTS): string => {
   return getApiUrl(API_CONFIG.ENDPOINTS[endpointKey]);
+};
+
+// Helper function to get authenticated headers
+export const getAuthHeaders = (): Record<string, string> => {
+  return {
+    'Content-Type': 'application/json',
+    'x-api-key': API_CONFIG.API_KEY,
+  };
+};
+
+// Helper function to get authenticated headers with custom content type
+export const getAuthHeadersWithContentType = (contentType: string): Record<string, string> => {
+  return {
+    'Content-Type': contentType,
+    'x-api-key': API_CONFIG.API_KEY,
+  };
 }; 

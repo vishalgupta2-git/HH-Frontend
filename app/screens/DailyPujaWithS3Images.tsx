@@ -7,7 +7,7 @@ import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'reac
 import { Audio } from 'expo-av';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 import { markDailyPujaVisited } from '@/utils/dailyPujaUtils';
-import { getApiUrl } from '@/constants/ApiConfig';
+import { getApiUrl, getAuthHeaders } from '@/constants/ApiConfig';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -250,7 +250,9 @@ export default function DailyPujaWithS3Images() {
     try {
       const presignedUrl = getApiUrl(`/api/s3/download-url?key=${encodeURIComponent(key)}&expiresIn=3600`);
       
-      const res = await fetch(presignedUrl);
+      const res = await fetch(presignedUrl, {
+        headers: getAuthHeaders()
+      });
       
       const data = await res.json();
       if (data && data.success && data.presignedUrl) {
@@ -268,7 +270,9 @@ export default function DailyPujaWithS3Images() {
     try {
       const apiUrl = getApiUrl('/api/s3/files?prefix=dailytemples/&maxKeys=1000');
       
-      const res = await fetch(apiUrl);
+      const res = await fetch(apiUrl, {
+        headers: getAuthHeaders()
+      });
       
       const data = await res.json();
       

@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState, useRef, useEffect } from 'react';
@@ -100,6 +100,8 @@ export default function OTPScreen() {
         email,
         otp: otpString,
         name
+      }, {
+        headers: getAuthHeaders()
       });
 
       console.log('OTP verification response:', response.data);
@@ -209,7 +211,9 @@ export default function OTPScreen() {
     console.log('🔄 Resending OTP to:', email);
     
     try {
-      const response = await axios.post(getEndpointUrl('SEND_OTP'), { email });
+      const response = await axios.post(getEndpointUrl('SEND_OTP'), { email }, {
+        headers: getAuthHeaders()
+      });
       console.log('✅ Resend response:', response.data);
       setResendTimer(10);
       setMessage('OTP has been resent to your email');

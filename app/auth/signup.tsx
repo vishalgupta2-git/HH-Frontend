@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -378,7 +378,9 @@ export default function SignUpScreen() {
     
     try {
       console.log('Calling signup endpoint...');
-      const signupRes = await axios.post(getEndpointUrl('SIGNUP'), signupData);
+      const signupRes = await axios.post(getEndpointUrl('SIGNUP'), signupData, {
+        headers: getAuthHeaders()
+      });
       console.log('Signup response:', signupRes.data);
       
       if (signupRes.data && signupRes.data.error === 'Email already registered.') {
@@ -387,7 +389,9 @@ export default function SignUpScreen() {
       }
       
       console.log('Calling send OTP endpoint...');
-      const otpRes = await axios.post(getEndpointUrl('SEND_OTP'), { email });
+      const otpRes = await axios.post(getEndpointUrl('SEND_OTP'), { email }, {
+        headers: getAuthHeaders()
+      });
       console.log('OTP response:', otpRes.data);
       
       // Award mudras for signup

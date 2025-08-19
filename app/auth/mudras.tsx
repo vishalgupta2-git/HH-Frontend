@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 
 const { width } = Dimensions.get('window');
 
@@ -24,7 +24,8 @@ export default function MudrasScreen() {
         if (userData) {
           const user = JSON.parse(userData);
           const response = await axios.get(getEndpointUrl('USER_MUDRAS'), {
-            params: { email: user.email }
+            params: { email: user.email },
+            headers: getAuthHeaders()
           });
           
           if (response.data.success) {

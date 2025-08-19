@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -93,7 +93,9 @@ export default function ProfileScreen() {
       }
       if (emailToFetch) {
         try {
-          const res = await axios.get(`${getEndpointUrl('USER')}?email=${encodeURIComponent(emailToFetch)}`);
+          const res = await axios.get(`${getEndpointUrl('USER')}?email=${encodeURIComponent(emailToFetch)}`, {
+            headers: getAuthHeaders()
+          });
           const user = res.data.user;
           console.log('📱 Profile data received:', user);
           
@@ -264,7 +266,9 @@ export default function ProfileScreen() {
       
       console.log('💾 Saving complete profile:', profileData);
       
-      const response = await axios.post(getEndpointUrl('UPDATE_COMPLETE_PROFILE'), profileData);
+      const response = await axios.post(getEndpointUrl('UPDATE_COMPLETE_PROFILE'), profileData, {
+        headers: getAuthHeaders()
+      });
       
       console.log('✅ Backend response:', response.data);
       

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getEndpointUrl } from '@/constants/ApiConfig';
+import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -34,7 +34,9 @@ export default function LoginScreen() {
     }
     if (!valid) return;
     try {
-              await axios.post(getEndpointUrl('SEND_OTP'), { email });
+              await axios.post(getEndpointUrl('SEND_OTP'), { email }, {
+                headers: getAuthHeaders()
+              });
       router.push({ pathname: '/auth/otp', params: { email, from: 'login' } });
     } catch (err: any) {
       if (err.response?.status === 429) {
