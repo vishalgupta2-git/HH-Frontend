@@ -10,7 +10,7 @@ import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'reac
 import { Audio } from 'expo-av';
 import axios from 'axios';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
-import { loadTempleConfiguration, saveTempleConfiguration } from '@/utils/templeUtils';
+import { loadTempleConfiguration, saveTempleConfiguration, checkUserAuthentication, saveTempleToDatabase, loadTempleFromDatabase } from '@/utils/templeUtils';
 
 export const options = { headerShown: false };
 
@@ -346,28 +346,159 @@ export default function CreateTempleScreen() {
     }
   };
 
-  // Function to load temple configuration
+  // Function to load temple configuration with proper priority: DB -> AsyncStorage -> Defaults
   const loadTempleConfig = useCallback(async () => {
     try {
       console.log('🔄 [CREATE TEMPLE] Loading temple configuration...');
       
-      const templeConfig = await loadTempleConfiguration();
-      if (templeConfig) {
-        console.log('✅ [CREATE TEMPLE] Temple configuration loaded:', templeConfig);
-        if (templeConfig.selectedStyle) setSelectedStyle(templeConfig.selectedStyle);
-        if (templeConfig.bgGradient) setBgGradient(templeConfig.bgGradient);
-        if (templeConfig.selectedDeities) setSelectedDeities(templeConfig.selectedDeities);
-        if (templeConfig.deityState) setDeityState(templeConfig.deityState);
+      // First check if user is authenticated
+      const { isAuthenticated, userData } = await checkUserAuthentication();
+      console.log('🔍 [CREATE TEMPLE] Authentication check:', { isAuthenticated, userEmail: userData?.email });
+      
+      let templeConfig = null;
+      
+      if (isAuthenticated) {
+        // User is logged in - try to load from database first
+        console.log('🔄 [CREATE TEMPLE] User authenticated, trying database first...');
+        try {
+          const dbTemple = await loadTempleFromDatabase();
+          if (dbTemple) {
+            console.log('✅ [CREATE TEMPLE] Temple found in database');
+            templeConfig = dbTemple;
+          } else {
+            console.log('⚠️ [CREATE TEMPLE] No temple in database, falling back to AsyncStorage');
+          }
+        } catch (error) {
+          console.log('⚠️ [CREATE TEMPLE] Database load failed, falling back to AsyncStorage:', error);
+        }
+      }
+      
+      // If no database temple, try AsyncStorage
+      if (!templeConfig) {
+        console.log('🔄 [CREATE TEMPLE] Loading from AsyncStorage...');
+        templeConfig = await loadTempleConfiguration();
+      }
+      
+              if (templeConfig) {
+          console.log('✅ [CREATE TEMPLE] Temple configuration loaded successfully');
+          console.log('🔍 [CREATE TEMPLE] Raw temple config:', JSON.stringify(templeConfig, null, 2));
+          console.log('🔍 [CREATE TEMPLE] Config structure analysis:', {
+            hasSelectedStyle: !!templeConfig.selectedStyle,
+            hasBgGradient: !!templeConfig.bgGradient,
+            hasDeityState: !!templeConfig.deityState,
+            hasTempleInformation: !!templeConfig.templeInformation,
+            templeInfoKeys: templeConfig.templeInformation ? Object.keys(templeConfig.templeInformation) : [],
+            rootKeys: Object.keys(templeConfig)
+          });
+          
+          // Check for deities in different possible locations
+          let deities = null;
+          if (templeConfig.deities) {
+            deities = templeConfig.deities;
+          } else if (templeConfig.selectedDeities) {
+            deities = templeConfig.selectedDeities;
+          } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedDeities) {
+            deities = templeConfig.templeInformation.selectedDeities;
+          }
+          
+          if (deities && Object.keys(deities).length > 0) {
+            setSelectedDeities(deities);
+            console.log('🔍 [CREATE TEMPLE] Loaded deities:', Object.keys(deities));
+            
+            // Debug: Check if deityState keys match selectedDeities keys
+            if (templeConfig.deityState && Array.isArray(templeConfig.deityState)) {
+              const deityStateKeys = templeConfig.deityState.map((d: any) => d.key);
+              const selectedDeityKeys = Object.keys(deities);
+              console.log('🔍 [CREATE TEMPLE] Key matching check:', {
+                deityStateKeys,
+                selectedDeityKeys,
+                matches: selectedDeityKeys.every(key => deityStateKeys.includes(key))
+              });
+            }
+          }
+          
+          // Load temple style - check both root and nested locations
+          let templeStyle = null;
+          if (templeConfig.selectedStyle) {
+            templeStyle = templeConfig.selectedStyle;
+          } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedStyle) {
+            templeStyle = templeConfig.templeInformation.selectedStyle;
+          }
+          
+          if (templeStyle) {
+            setSelectedStyle(templeStyle);
+            console.log('🔍 [CREATE TEMPLE] Loaded temple style:', templeStyle);
+          } else {
+            console.log('⚠️ [CREATE TEMPLE] No temple style found');
+          }
+          
+          // Load background gradient - check both root and nested locations
+          let backgroundGradient = null;
+          if (templeConfig.bgGradient) {
+            backgroundGradient = templeConfig.bgGradient;
+          } else if (templeConfig.templeInformation && templeConfig.templeInformation.bgGradient) {
+            backgroundGradient = templeConfig.templeInformation.bgGradient;
+          }
+          
+          if (backgroundGradient) {
+            setBgGradient(backgroundGradient);
+            console.log('🔍 [CREATE TEMPLE] Loaded background gradient');
+          } else {
+            console.log('⚠️ [CREATE TEMPLE] No background gradient found');
+          }
+          
+          // Load deity state (positions, scales, sizes) - this is crucial for deity positioning
+          if (templeConfig.deityState && Array.isArray(templeConfig.deityState)) {
+            setDeityState(templeConfig.deityState);
+            console.log('🔍 [CREATE TEMPLE] Loaded deity state with', templeConfig.deityState.length, 'deities');
+            templeConfig.deityState.forEach((deity: any, index: number) => {
+              console.log(`🔍 [CREATE TEMPLE] Deity ${index}:`, {
+                key: deity.key,
+                x: deity.x,
+                y: deity.y,
+                scale: deity.scale
+              });
+            });
+          } else if (templeConfig.templeInformation && templeConfig.templeInformation.deityState && Array.isArray(templeConfig.templeInformation.deityState)) {
+            // Check if deityState is nested in templeInformation (database structure)
+            setDeityState(templeConfig.templeInformation.deityState);
+            console.log('🔍 [CREATE TEMPLE] Loaded deity state from templeInformation with', templeConfig.templeInformation.deityState.length, 'deities');
+            templeConfig.templeInformation.deityState.forEach((deity: any, index: number) => {
+              console.log(`🔍 [CREATE TEMPLE] Deity ${index}:`, {
+                key: deity.key,
+                x: deity.x,
+                y: deity.y,
+                scale: deity.scale
+              });
+            });
+          } else {
+            console.log('⚠️ [CREATE TEMPLE] No deity state found or invalid format');
+            console.log('🔍 [CREATE TEMPLE] deityState value:', templeConfig.deityState);
+            console.log('🔍 [CREATE TEMPLE] templeInformation.deityState value:', templeConfig.templeInformation?.deityState);
+          }
+          
+          console.log('🎉 [CREATE TEMPLE] Temple configuration applied successfully');
       } else {
-        console.log('🔍 [CREATE TEMPLE] No temple configuration found, using defaults');
+        console.log('🔍 [CREATE TEMPLE] No temple configuration found anywhere, using defaults');
+        // Set default values
+        setSelectedStyle('temple1');
+        setBgGradient(['#8B5CF6', '#7C3AED', '#6D28D9']);
+        setSelectedDeities({});
+        setDeityState([]);
       }
     } catch (error) {
       console.error('❌ [CREATE TEMPLE] Error loading temple configuration:', error);
+      // Set default values on error
+      setSelectedStyle('temple1');
+      setBgGradient(['#8B5CF6', '#7C3AED', '#6D28D9']);
+      setSelectedDeities({});
+      setDeityState([]);
     }
   }, []);
 
   // Load config on mount
   useEffect(() => {
+    console.log('🚀 [CREATE TEMPLE] Component mounted, starting temple configuration load...');
     loadTempleConfig();
     
     // Play welcome bell after a short delay
@@ -409,6 +540,34 @@ export default function CreateTempleScreen() {
   useEffect(() => {
     // Modal state changed
   }, [modal, selectedDeityForStatues]);
+
+  // Debug state changes after loading (only log when there are actual changes)
+  useEffect(() => {
+    if (Object.keys(selectedDeities).length > 0 || deityState.length > 0) {
+      console.log('🔍 [CREATE TEMPLE] State updated:', {
+        selectedStyle,
+        bgGradient: bgGradient?.length || 0,
+        selectedDeities: Object.keys(selectedDeities),
+        selectedDeitiesCount: Object.keys(selectedDeities).length,
+        deityStateCount: deityState.length
+      });
+    }
+  }, [selectedStyle, bgGradient, selectedDeities, deityState]);
+
+  // Handle deityState changes to ensure proper rendering
+  useEffect(() => {
+    if (deityState.length > 0) {
+      console.log('🔍 [CREATE TEMPLE] DeityState updated, re-rendering deities with positions and scales');
+      deityState.forEach((deity: any, index: number) => {
+        console.log(`🔍 [CREATE TEMPLE] Deity ${index} ready for rendering:`, {
+          key: deity.key,
+          x: deity.x,
+          y: deity.y,
+          scale: deity.scale
+        });
+      });
+    }
+  }, [deityState]);
 
   const labelColor = getLabelColor(bgGradient);
 
@@ -520,6 +679,19 @@ export default function CreateTempleScreen() {
             // Find saved position and scale for this deity
             const savedDeity = deityState.find(d => d.key === key);
             
+            // Debug: Log what we found for this deity
+            if (savedDeity) {
+              console.log(`🔍 [CREATE TEMPLE] Rendering deity ${key}:`, {
+                foundInDeityState: true,
+                savedPosition: { x: savedDeity.x, y: savedDeity.y, scale: savedDeity.scale }
+              });
+            } else {
+              console.log(`🔍 [CREATE TEMPLE] Rendering deity ${key}:`, {
+                foundInDeityState: false,
+                usingDefaultPosition: { x: 50 + idx * 100, y: 300 + idx * 100, scale: 2 }
+              });
+            }
+            
             // Use saved coordinates or default
             const initialX = savedDeity?.x ?? (50 + idx * 100);
             const initialY = savedDeity?.y ?? (300 + idx * 100);
@@ -555,7 +727,7 @@ export default function CreateTempleScreen() {
               <TouchableOpacity
                 style={styles.backButton}
                 onPress={async () => {
-                  // Save current configuration to database
+                  // Save current configuration with dual saving logic
                   try {
                     const templeConfig = {
                       selectedStyle,
@@ -564,16 +736,66 @@ export default function CreateTempleScreen() {
                       deityState,
                     };
                     
-                    console.log('🔄 Saving temple configuration to database...');
-                    const success = await saveTempleConfiguration(templeConfig);
+                    console.log('🔍 [SAVE TEMPLE] Temple config to save:', {
+                      selectedStyle,
+                      bgGradient: bgGradient?.length || 0,
+                      selectedDeities: Object.keys(selectedDeities),
+                      selectedDeitiesCount: Object.keys(selectedDeities).length,
+                      deityStateCount: deityState.length
+                    });
                     
-                    if (success) {
-                      console.log('✅ Temple configuration saved to database');
+                    console.log('🔄 [SAVE TEMPLE] Starting dual save process...');
+                    
+                    // Always save to AsyncStorage first
+                    console.log('🔄 [SAVE TEMPLE] Saving to AsyncStorage...');
+                    const asyncStorageSuccess = await saveTempleConfiguration(templeConfig);
+                    
+                    if (asyncStorageSuccess) {
+                      console.log('✅ [SAVE TEMPLE] Successfully saved to AsyncStorage');
+                      
+                      // Verify what was actually saved by reading it back
+                      try {
+                        const savedConfig = await AsyncStorage.getItem('templeConfig');
+                        if (savedConfig) {
+                          const parsed = JSON.parse(savedConfig);
+                          console.log('🔍 [SAVE TEMPLE] Verification - What was saved to AsyncStorage:', {
+                            keys: Object.keys(parsed),
+                            hasSelectedDeities: !!parsed.selectedDeities,
+                            selectedDeitiesKeys: parsed.selectedDeities ? Object.keys(parsed.selectedDeities) : [],
+                            selectedDeitiesCount: parsed.selectedDeities ? Object.keys(parsed.selectedDeities).length : 0
+                          });
+                        }
+                      } catch (verifyError) {
+                        console.log('⚠️ [SAVE TEMPLE] Could not verify saved data:', verifyError);
+                      }
                     } else {
-                      console.log('⚠️ Failed to save to database, but saved to local storage');
+                      console.log('❌ [SAVE TEMPLE] Failed to save to AsyncStorage');
                     }
+                    
+                    // Check if user is authenticated for database save
+                    const { isAuthenticated, userData } = await checkUserAuthentication();
+                    console.log('🔍 [SAVE TEMPLE] Authentication check:', { isAuthenticated, userEmail: userData?.email });
+                    
+                    if (isAuthenticated) {
+                      // User is logged in - also save to database
+                      console.log('🔄 [SAVE TEMPLE] User authenticated, saving to database...');
+                      try {
+                        const dbSuccess = await saveTempleToDatabase(templeConfig);
+                        if (dbSuccess) {
+                          console.log('✅ [SAVE TEMPLE] Successfully saved to database');
+                        } else {
+                          console.log('⚠️ [SAVE TEMPLE] Failed to save to database');
+                        }
+                      } catch (dbError) {
+                        console.error('❌ [SAVE TEMPLE] Database save error:', dbError);
+                      }
+                    } else {
+                      console.log('ℹ️ [SAVE TEMPLE] User not authenticated, skipping database save');
+                    }
+                    
+                    console.log('🎉 [SAVE TEMPLE] Dual save process completed');
                   } catch (error) {
-                    console.error('❌ Error saving temple configuration:', error);
+                    console.error('❌ [SAVE TEMPLE] Error in dual save process:', error);
                   }
                   
                   // Navigate to homepage instead of back to daily puja
@@ -588,7 +810,7 @@ export default function CreateTempleScreen() {
               <TouchableOpacity
                 style={styles.nextButton}
                 onPress={async () => {
-                  // Save current configuration before navigating
+                  // Save current configuration with dual saving logic before navigating
                   try {
                     const templeConfig = {
                       selectedStyle,
@@ -597,16 +819,66 @@ export default function CreateTempleScreen() {
                       deityState,
                     };
                     
-                    console.log('🔄 [CREATE TEMPLE] Saving temple configuration before editing deities...');
-                    const success = await saveTempleConfiguration(templeConfig);
+                    console.log('🔍 [ADJUST DEITIES] Temple config to save:', {
+                      selectedStyle,
+                      bgGradient: bgGradient?.length || 0,
+                      selectedDeities: Object.keys(selectedDeities),
+                      selectedDeitiesCount: Object.keys(selectedDeities).length,
+                      deityStateCount: deityState.length
+                    });
                     
-                    if (success) {
-                      console.log('✅ [CREATE TEMPLE] Temple configuration saved successfully');
+                    console.log('🔄 [ADJUST DEITIES] Starting dual save process...');
+                    
+                    // Always save to AsyncStorage first
+                    console.log('🔄 [ADJUST DEITIES] Saving to AsyncStorage...');
+                    const asyncStorageSuccess = await saveTempleConfiguration(templeConfig);
+                    
+                    if (asyncStorageSuccess) {
+                      console.log('✅ [ADJUST DEITIES] Successfully saved to AsyncStorage');
+                      
+                      // Verify what was actually saved by reading it back
+                      try {
+                        const savedConfig = await AsyncStorage.getItem('templeConfig');
+                        if (savedConfig) {
+                          const parsed = JSON.parse(savedConfig);
+                          console.log('🔍 [ADJUST DEITIES] Verification - What was saved to AsyncStorage:', {
+                            keys: Object.keys(parsed),
+                            hasSelectedDeities: !!parsed.selectedDeities,
+                            selectedDeitiesKeys: parsed.selectedDeities ? Object.keys(parsed.selectedDeities) : [],
+                            selectedDeitiesCount: parsed.selectedDeities ? Object.keys(parsed.selectedDeities).length : 0
+                          });
+                        }
+                      } catch (verifyError) {
+                        console.log('⚠️ [ADJUST DEITIES] Could not verify saved data:', verifyError);
+                      }
                     } else {
-                      console.log('⚠️ [CREATE TEMPLE] Failed to save temple configuration');
+                      console.log('❌ [ADJUST DEITIES] Failed to save to AsyncStorage');
                     }
+                    
+                    // Check if user is authenticated for database save
+                    const { isAuthenticated, userData } = await checkUserAuthentication();
+                    console.log('🔍 [ADJUST DEITIES] Authentication check:', { isAuthenticated, userEmail: userData?.email });
+                    
+                    if (isAuthenticated) {
+                      // User is logged in - also save to database
+                      console.log('🔄 [ADJUST DEITIES] User authenticated, saving to database...');
+                      try {
+                        const dbSuccess = await saveTempleToDatabase(templeConfig);
+                        if (dbSuccess) {
+                          console.log('✅ [ADJUST DEITIES] Successfully saved to database');
+                        } else {
+                          console.log('⚠️ [ADJUST DEITIES] Failed to save to database');
+                        }
+                      } catch (dbError) {
+                        console.error('❌ [ADJUST DEITIES] Database save error:', dbError);
+                      }
+                    } else {
+                      console.log('ℹ️ [ADJUST DEITIES] User not authenticated, skipping database save');
+                    }
+                    
+                    console.log('🎉 [ADJUST DEITIES] Dual save process completed');
                   } catch (error) {
-                    console.error('❌ [CREATE TEMPLE] Error saving temple configuration:', error);
+                    console.error('❌ [ADJUST DEITIES] Error in dual save process:', error);
                   }
                   
                   router.push('/screens/temple-preview');

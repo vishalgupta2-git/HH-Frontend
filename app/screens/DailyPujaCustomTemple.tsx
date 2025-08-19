@@ -9,7 +9,7 @@ import { Audio } from 'expo-av';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 import { markDailyPujaVisited } from '@/utils/dailyPujaUtils';
-import { loadTempleConfiguration } from '@/utils/templeUtils';
+import { loadTempleConfiguration, checkUserAuthentication, loadTempleFromDatabase } from '@/utils/templeUtils';
 import { getApiUrl, getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -1120,28 +1120,78 @@ export default function DailyPujaCustomTemple() {
         try {
           console.log('🔍 [TEMPLE] Checking temple availability on screen focus...');
           
-          // Load temple configuration from AsyncStorage
-          const templeConfig = await loadTempleConfiguration();
-          console.log('🔍 [TEMPLE] Temple config loaded:', templeConfig);
+          // First check if user is authenticated
+          const { isAuthenticated, userData } = await checkUserAuthentication();
+          console.log('🔍 [TEMPLE] Focus check - Authentication:', { isAuthenticated, userEmail: userData?.email });
           
-          if (templeConfig && templeConfig.deities && Object.keys(templeConfig.deities).length > 0) {
-            console.log('✅ [TEMPLE] Temple found with deities, updating state...');
-            setHasTempleConfigured(true);
-            setUserChoseContinueWithoutTemple(false);
+          let templeConfig = null;
+          
+          if (isAuthenticated) {
+            // User is logged in - try to load from database first
+            console.log('🔄 [TEMPLE] Focus check - User authenticated, trying database first...');
+            try {
+              const dbTemple = await loadTempleFromDatabase();
+              if (dbTemple) {
+                console.log('✅ [TEMPLE] Focus check - Temple found in database');
+                templeConfig = dbTemple;
+              } else {
+                console.log('⚠️ [TEMPLE] Focus check - No temple in database, falling back to AsyncStorage');
+              }
+            } catch (error) {
+              console.log('⚠️ [TEMPLE] Focus check - Database load failed, falling back to AsyncStorage:', error);
+            }
+          }
+          
+          // If no database temple, try AsyncStorage
+          if (!templeConfig) {
+            console.log('🔄 [TEMPLE] Focus check - Loading from AsyncStorage...');
+            templeConfig = await loadTempleConfiguration();
+          }
+          
+          if (templeConfig) {
+            console.log('🔍 [TEMPLE] Config structure analysis:', {
+              hasSelectedStyle: !!templeConfig.selectedStyle,
+              hasBgGradient: !!templeConfig.bgGradient,
+              hasDeityState: !!templeConfig.deityState,
+              hasTempleInformation: !!templeConfig.templeInformation,
+              templeInfoKeys: templeConfig.templeInformation ? Object.keys(templeConfig.templeInformation) : [],
+              rootKeys: Object.keys(templeConfig)
+            });
             
-            // Also update selectedDeities if needed
+            // Check for deities in different possible locations
+            let deities = null;
             if (templeConfig.deities) {
-              setSelectedDeities(templeConfig.deities);
-              console.log('🔍 [TEMPLE] Updated selectedDeities:', Object.keys(templeConfig.deities));
+              deities = templeConfig.deities;
+              console.log('🔍 [TEMPLE] Focus check - Found deities in templeConfig.deities');
+            } else if (templeConfig.selectedDeities) {
+              deities = templeConfig.selectedDeities;
+              console.log('🔍 [TEMPLE] Focus check - Found deities in templeConfig.selectedDeities');
+            } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedDeities) {
+              deities = templeConfig.templeInformation.selectedDeities;
+              console.log('🔍 [TEMPLE] Focus check - Found deities in templeConfig.templeInformation.selectedDeities');
             }
             
-            // Show a brief success message
-            console.log('🎉 [TEMPLE] Welcome back! Your temple is now configured and ready.');
+            if (deities && Object.keys(deities).length > 0) {
+              console.log('✅ [TEMPLE] Focus check - Temple found with deities, updating state...');
+              setHasTempleConfigured(true);
+              setUserChoseContinueWithoutTemple(false);
+              
+              // Update selectedDeities
+              setSelectedDeities(deities);
+              console.log('🔍 [TEMPLE] Focus check - Updated selectedDeities:', Object.keys(deities));
+              
+              // Show a brief success message
+              console.log('🎉 [TEMPLE] Focus check - Welcome back! Your temple is now configured and ready.');
+            } else {
+              console.log('❌ [TEMPLE] Focus check - No deities found in temple config');
+              setHasTempleConfigured(false);
+            }
           } else {
-            console.log('❌ [TEMPLE] No temple configured, keeping current state');
+            console.log('❌ [TEMPLE] Focus check - No temple configuration found anywhere');
+            setHasTempleConfigured(false);
           }
         } catch (error) {
-          console.log('❌ [TEMPLE] Error checking temple availability:', error);
+          console.log('❌ [TEMPLE] Focus check - Error checking temple availability:', error);
         }
       };
       
@@ -1662,25 +1712,106 @@ export default function DailyPujaCustomTemple() {
   useEffect(() => {
     (async () => {
       try {
-        const templeConfig = await loadTempleConfiguration();
+        console.log('🚀 [TEMPLE] Component mounted - Starting temple load...');
+        
+        // First check if user is authenticated
+        const { isAuthenticated, userData } = await checkUserAuthentication();
+        console.log('🔍 [TEMPLE] Authentication check:', { isAuthenticated, userEmail: userData?.email });
+        
+        let templeConfig = null;
+        
+        if (isAuthenticated) {
+          // User is logged in - try to load from database first
+          console.log('🔄 [TEMPLE] User authenticated, trying database first...');
+          try {
+            const dbTemple = await loadTempleFromDatabase();
+            if (dbTemple) {
+              console.log('✅ [TEMPLE] Temple found in database');
+              templeConfig = dbTemple;
+            } else {
+              console.log('⚠️ [TEMPLE] No temple in database, falling back to AsyncStorage');
+            }
+          } catch (error) {
+            console.log('⚠️ [TEMPLE] Database load failed, falling back to AsyncStorage:', error);
+          }
+        }
+        
+        // If no database temple, try AsyncStorage
+        if (!templeConfig) {
+          console.log('🔄 [TEMPLE] Loading from AsyncStorage...');
+          templeConfig = await loadTempleConfiguration();
+        }
         
         if (templeConfig) {
           // Load from configuration
+          console.log('✅ [TEMPLE] Temple configuration loaded successfully');
           setHasTempleConfigured(true);
-          if (templeConfig.selectedDeities) {
-            setSelectedDeities(templeConfig.selectedDeities);
+          
+          // Check for deities in different possible locations
+          let deities = null;
+          if (templeConfig.deities) {
+            deities = templeConfig.deities;
+            console.log('🔍 [TEMPLE] Found deities in templeConfig.deities');
+          } else if (templeConfig.selectedDeities) {
+            deities = templeConfig.selectedDeities;
+            console.log('🔍 [TEMPLE] Found deities in templeConfig.selectedDeities');
+          } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedDeities) {
+            deities = templeConfig.templeInformation.selectedDeities;
+            console.log('🔍 [TEMPLE] Found deities in templeConfig.templeInformation.selectedDeities');
           }
+          
+          if (deities && Object.keys(deities).length > 0) {
+            setSelectedDeities(deities);
+            console.log('🔍 [TEMPLE] Updated selectedDeities:', Object.keys(deities));
+          }
+          
+          // Load temple style - check both root and nested locations
+          let templeStyle = null;
           if (templeConfig.selectedStyle) {
-            setSelectedStyle(templeConfig.selectedStyle);
+            templeStyle = templeConfig.selectedStyle;
+          } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedStyle) {
+            templeStyle = templeConfig.templeInformation.selectedStyle;
           }
+          
+          if (templeStyle) {
+            setSelectedStyle(templeStyle);
+            console.log('🔍 [TEMPLE] Loaded temple style:', templeStyle);
+          } else {
+            console.log('⚠️ [TEMPLE] No temple style found');
+          }
+          
+          // Load background gradient - check both root and nested locations
+          let backgroundGradient = null;
           if (templeConfig.bgGradient) {
-            setBgGradient(templeConfig.bgGradient);
+            backgroundGradient = templeConfig.bgGradient;
+          } else if (templeConfig.templeInformation && templeConfig.templeInformation.bgGradient) {
+            backgroundGradient = templeConfig.templeInformation.bgGradient;
           }
+          
+          if (backgroundGradient) {
+            setBgGradient(backgroundGradient);
+            console.log('🔍 [TEMPLE] Loaded background gradient');
+          } else {
+            console.log('⚠️ [TEMPLE] No background gradient found');
+          }
+          
+          // Load deity state - check both root and nested locations
+          let deityStateData = null;
           if (templeConfig.deityState) {
-            setDeityState(templeConfig.deityState);
+            deityStateData = templeConfig.deityState;
+          } else if (templeConfig.templeInformation && templeConfig.templeInformation.deityState) {
+            deityStateData = templeConfig.templeInformation.deityState;
+          }
+          
+          if (deityStateData) {
+            setDeityState(deityStateData);
+            console.log('🔍 [TEMPLE] Loaded deity state');
+          } else {
+            console.log('⚠️ [TEMPLE] No deity state found');
           }
         } else {
           // No temple configured - show options to user
+          console.log('❌ [TEMPLE] No temple configuration found anywhere');
           setHasTempleConfigured(false);
           Alert.alert(
             'No Temple Configured',
@@ -1696,18 +1827,19 @@ export default function DailyPujaCustomTemple() {
                   handleNextToS3Gallery();
                 }
               },
-                           {
-               text: 'Create My Virtual Temple',
-               onPress: () => {
-                 router.push('/screens/create-temple');
-               }
-             }
+              {
+                text: 'Create My Virtual Temple',
+                onPress: () => {
+                  router.push('/screens/create-temple');
+                }
+              }
             ]
           );
         }
         
         setLoading(false);
       } catch (error) {
+        console.error('❌ [TEMPLE] Error in main temple load:', error);
         setLoading(false);
       }
     })();
