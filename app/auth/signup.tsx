@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { awardMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
@@ -230,6 +230,38 @@ export default function SignUpScreen() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
+  // ScrollView ref for scrolling to errors
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Function to scroll to the first field with an error
+  const scrollToFirstError = () => {
+    // Use setTimeout to ensure the scroll happens after the current execution cycle
+    setTimeout(() => {
+      if (nameError) {
+        // Scroll to first name field (top of form)
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      } else if (emailError) {
+        // Scroll to email field
+        scrollViewRef.current?.scrollTo({ y: 120, animated: true });
+      } else if (phoneError) {
+        // Scroll to phone field
+        scrollViewRef.current?.scrollTo({ y: 220, animated: true });
+      } else if (!dob) {
+        // Scroll to date of birth field
+        scrollViewRef.current?.scrollTo({ y: 450, animated: true });
+      }
+    }, 100);
+  };
+
+  // Function to get the first error message for display
+  const getFirstErrorMessage = () => {
+    if (nameError) return nameError;
+    if (emailError) return emailError;
+    if (phoneError) return phoneError;
+    if (!dob) return 'Please select your date of birth';
+    return null;
+  };
+
   const handleFirstNameChange = (text: string) => {
     // Only trim leading spaces automatically, allow spaces between words
     const trimmedLeading = text.replace(/^\s+/, '');
@@ -314,6 +346,10 @@ export default function SignUpScreen() {
     if (!dob) {
       Alert.alert('Age Required', 'Please select your date of birth to continue.');
       valid = false;
+      // Scroll to date of birth field after alert is dismissed
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: 400, animated: true });
+      }, 500);
     } else {
       const age = calculateAge(dob);
       
@@ -329,10 +365,18 @@ export default function SignUpScreen() {
           [{ text: 'OK' }]
         );
         valid = false;
+        // Scroll to date of birth field after alert is dismissed
+        setTimeout(() => {
+          scrollViewRef.current?.scrollTo({ y: 400, animated: true });
+        }, 500);
       }
     }
     
-    if (!valid) return;
+    if (!valid) {
+      // Scroll to the first field with an error
+      scrollToFirstError();
+      return;
+    }
     
          const signupData = {
        firstName: trimmedFirstName,
@@ -439,8 +483,20 @@ export default function SignUpScreen() {
       </View>
       {/* Single card with all fields, scrollable content inside */}
       <View style={[styles.card, { marginTop: CARD_TOP + CARD_MARGIN_TOP, marginBottom: 12, zIndex: 2, flex: 1 }]}> 
-                 <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 400 }} keyboardShouldPersistTaps="handled">
-           <Text style={styles.sectionLabel}>Contact Information</Text>
+                                  <ScrollView 
+                   ref={scrollViewRef}
+                   contentContainerStyle={{ flexGrow: 1, paddingBottom: 400 }} 
+                   keyboardShouldPersistTaps="handled"
+                 >
+                   {/* Error Summary - Show when there are validation errors */}
+                   {(nameError || emailError || phoneError || !dob) && (
+                     <View style={styles.errorSummary}>
+                       <Text style={styles.errorSummaryTitle}>⚠️ Please fix the following errors:</Text>
+                       <Text style={styles.errorSummaryText}>{getFirstErrorMessage()}</Text>
+                     </View>
+                   )}
+                   
+                   <Text style={styles.sectionLabel}>Contact Information</Text>
            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
                            <TextInput
                 style={[styles.input, { flex: 1 }]}
@@ -2412,5 +2468,25 @@ const styles = StyleSheet.create({
        color: '#333',
        lineHeight: 16,
        marginBottom: 4,
+     },
+     // Error Summary Styles
+     errorSummary: {
+       backgroundColor: '#FFEBEE',
+       borderLeftWidth: 4,
+       borderLeftColor: '#F44336',
+       padding: 16,
+       marginBottom: 20,
+       borderRadius: 8,
+     },
+     errorSummaryTitle: {
+       fontSize: 16,
+       fontWeight: 'bold',
+       color: '#D32F2F',
+       marginBottom: 8,
+     },
+     errorSummaryText: {
+       fontSize: 14,
+       color: '#D32F2F',
+       lineHeight: 20,
      },
 }); 
