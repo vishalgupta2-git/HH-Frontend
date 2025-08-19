@@ -276,13 +276,9 @@ export default function ProfileScreen() {
         }
       };
       
-      console.log('💾 Saving complete profile:', profileData);
-      
       const response = await axios.post(getEndpointUrl('UPDATE_COMPLETE_PROFILE'), profileData, {
         headers: getAuthHeaders()
       });
-      
-      console.log('✅ Backend response:', response.data);
       
       // Save to AsyncStorage
       await AsyncStorage.setItem('user', JSON.stringify({
@@ -294,7 +290,6 @@ export default function ProfileScreen() {
       try {
         const mudraResult = await awardMudras('COMPLETE_PROFILE_PHONE');
         if (mudraResult.success) {
-          console.log('✅ Mudras awarded for profile completion:', mudraResult.mudrasEarned);
           setMudrasEarned(mudraResult.mudrasEarned || 0);
           setShowMudraModal(true);
           // Auto-dismiss modal after 3 seconds
@@ -302,11 +297,9 @@ export default function ProfileScreen() {
             setShowMudraModal(false);
           }, 3000);
         } else {
-          console.log('⚠️ Failed to award mudras for profile completion:', mudraResult.error);
           Alert.alert('Success', 'Profile updated successfully!');
         }
       } catch (mudraError) {
-        console.log('⚠️ Error awarding mudras for profile completion:', mudraError);
         Alert.alert('Success', 'Profile updated successfully!');
       }
     } catch (err: any) {

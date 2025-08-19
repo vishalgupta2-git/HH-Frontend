@@ -33,11 +33,11 @@ export function useSpiritualSearch(): UseSpiritualSearchReturn {
   );
 
   const handleSearch = useCallback((query: string) => {
-    console.log('🔍 useSpiritualSearch: Starting search for:', query);
+    // Starting search for query
     setSearchQuery(query);
     
     if (!query.trim()) {
-      console.log('🔍 useSpiritualSearch: Empty query, clearing results');
+      // Empty query, clearing results
       setSearchResults([]);
       setCurrentResultIndex(0);
       setIsSearching(false);
@@ -45,14 +45,12 @@ export function useSpiritualSearch(): UseSpiritualSearchReturn {
     }
 
     setIsSearching(true);
-    console.log('🔍 useSpiritualSearch: Searching...');
+    // Searching...
     
     // Simulate search delay for better UX
     setTimeout(() => {
       const results = searchSpiritualContent(query);
-      console.log('🔍 useSpiritualSearch: Search results:', results);
-      console.log('🔍 useSpiritualSearch: Number of results:', results.length);
-      console.log('🔍 useSpiritualSearch: Total matches:', getTotalMatchCount(results));
+      // Search results processed
       setSearchResults(results);
       setCurrentResultIndex(0);
       setIsSearching(false);

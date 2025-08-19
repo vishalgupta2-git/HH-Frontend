@@ -16,10 +16,7 @@ import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function RootLayout() {
-  console.log('🔍 [DEBUG] RootLayout: Starting...');
-  
   const colorScheme = useColorScheme();
-  console.log('🔍 [DEBUG] RootLayout: ColorScheme =', colorScheme);
   
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
@@ -62,48 +59,41 @@ export default function RootLayout() {
   // Function to handle daily puja modal close
   const handleDailyPujaModalClose = () => {
     setShowDailyPujaModal(false);
-    // Show special puja modal after daily puja modal closes (if there are upcoming pujas)
-    if (upcomingPujas.length > 0) {
-      setTimeout(() => {
-        console.log('🔍 [DEBUG] Showing special puja modal after daily puja modal closed');
-        setShowSpecialPujaModal(true);
-      }, 1000); // 1 second delay after daily puja modal closes
-    }
+          // Show special puja modal after daily puja modal closes (if there are upcoming pujas)
+      if (upcomingPujas.length > 0) {
+        setTimeout(() => {
+          setShowSpecialPujaModal(true);
+        }, 1000); // 1 second delay after daily puja modal closes
+      }
   };
 
   // Function to check and show modals
   const checkAndShowModals = async () => {
     try {
-      console.log('🔍 [DEBUG] Checking modals to show...');
-      
       // Get user first name
       const firstName = await getUserFirstName();
       setUserFirstName(firstName);
       
       // Check if user has visited daily puja today
       const hasVisitedToday = await hasVisitedDailyPujaToday();
-      console.log('🔍 [DEBUG] Has visited daily puja today:', hasVisitedToday);
       
       // Check for upcoming special pujas
       const specialPujas = await getUpcomingSpecialPujas();
       setUpcomingPujas(specialPujas);
-      console.log('🔍 [DEBUG] Upcoming special pujas:', specialPujas.length);
       
-      // Show modals with delay to ensure app is fully loaded
-      setTimeout(() => {
-        // Show daily puja modal first if user hasn't visited today
-        if (!hasVisitedToday) {
-          console.log('🔍 [DEBUG] Showing daily puja modal');
-          setShowDailyPujaModal(true);
-          setDailyPujaShown(true);
-        } else {
-          // If daily puja already done, show special puja modal immediately
-          if (specialPujas.length > 0) {
-            console.log('🔍 [DEBUG] Showing special puja modal (daily puja already done)');
-            setShowSpecialPujaModal(true);
+              // Show modals with delay to ensure app is fully loaded
+        setTimeout(() => {
+          // Show daily puja modal first if user hasn't visited today
+          if (!hasVisitedToday) {
+            setShowDailyPujaModal(true);
+            setDailyPujaShown(true);
+          } else {
+            // If daily puja already done, show special puja modal immediately
+            if (specialPujas.length > 0) {
+              setShowSpecialPujaModal(true);
+            }
           }
-        }
-      }, 2000); // 2 second delay after app initialization
+        }, 2000); // 2 second delay after app initialization
       
     } catch (error) {
       console.error('🔍 [DEBUG] Error checking modals:', error);
@@ -118,7 +108,6 @@ export default function RootLayout() {
         await playWelcomeBell();
         
         const userData = await AsyncStorage.getItem('user');
-        console.log('🔍 [DEBUG] RootLayout: Checking auth, user data:', userData ? 'exists' : 'none');
         setIsAuthenticated(!!userData);
         
         // Award daily login mudras if user is authenticated
@@ -160,16 +149,10 @@ export default function RootLayout() {
     }
   }, [appInitialized]);
   
-  console.log('🔍 [DEBUG] RootLayout: Fonts loaded =', loaded);
-  console.log('🔍 [DEBUG] RootLayout: Is authenticated =', isAuthenticated);
-
   if (!loaded) {
-    console.log('🔍 [DEBUG] RootLayout: Fonts not loaded, returning null');
     // Async font loading only occurs in development.
     return null;
   }
-  
-  console.log('🔍 [DEBUG] RootLayout: Rendering main layout');
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

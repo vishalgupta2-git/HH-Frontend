@@ -21,20 +21,14 @@ export default function SearchResults({
   onNext,
   visible
 }: SearchResultsProps) {
-  console.log('🔍 SearchResults: Component rendered with:', {
-    visible,
-    resultsLength: results.length,
-    totalResults,
-    shouldShow: results.length > 0
-  });
+  // Component rendered with search results
   
   // Temporarily show when there are results, regardless of visible prop
   if (results.length === 0) {
-    console.log('🔍 SearchResults: No results, returning null');
     return null;
   }
 
-  console.log('🔍 SearchResults: Showing results');
+  // Showing results
   const currentMatch = getCurrentMatch(results, currentResultIndex);
 
   return (

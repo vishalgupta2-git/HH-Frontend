@@ -66,7 +66,6 @@ export default function AudioVideoScreen() {
           shouldDuckAndroid: true,
           playThroughEarpieceAndroid: false,
         });
-        console.log('✅ Audio session configured for background playback');
       } catch (error) {
         console.error('❌ Failed to configure audio session:', error);
       }
@@ -77,82 +76,27 @@ export default function AudioVideoScreen() {
     const fetchMedia = async () => {
       try {
         const url = getEndpointUrl('MEDIA_FILES');
-        console.log('🔍 [AUDIO-VIDEO] ===== STARTING API CALL =====');
-        console.log('🔍 [AUDIO-VIDEO] Fetching media files from:', url);
-        console.log('🔍 [AUDIO-VIDEO] Full URL:', url);
-        console.log('🔍 [AUDIO-VIDEO] Request timestamp:', new Date().toISOString());
         
         const res = await axios.get(url, {
           headers: getAuthHeaders()
         });
-        console.log('📱 [AUDIO-VIDEO] ===== API RESPONSE RECEIVED =====');
-        console.log('📱 [AUDIO-VIDEO] Response status:', res.status);
-        console.log('📱 [AUDIO-VIDEO] Response headers:', JSON.stringify(res.headers, null, 2));
-        console.log('📱 [AUDIO-VIDEO] Response data type:', typeof res.data);
-        console.log('📱 [AUDIO-VIDEO] Response data length:', res.data?.length || 0);
-        console.log('📱 [AUDIO-VIDEO] Is array?', Array.isArray(res.data));
-        console.log('📱 [AUDIO-VIDEO] Full response data:', JSON.stringify(res.data, null, 2));
         
         if (Array.isArray(res.data)) {
-          console.log('📱 [AUDIO-VIDEO] First item sample:', JSON.stringify(res.data[0], null, 2));
-          console.log('📱 [AUDIO-VIDEO] Total items received:', res.data.length);
-          
-          // Log the actual field names from the API response
-          if (res.data.length > 0) {
-            const firstItem = res.data[0];
-            console.log('📱 [AUDIO-VIDEO] Available fields in API response:', Object.keys(firstItem));
-            console.log('📱 [AUDIO-VIDEO] Field values from first item:', {
-              avld: firstItem.avld,
-              Type: firstItem.Type,
-              Classification: firstItem.Classification,
-              VideoName: firstItem.VideoName,
-              Link: firstItem.Link,
-              Deity: firstItem.Deity,
-              Language: firstItem.Language,
-              Artists: firstItem.Artists,
-              Duration: firstItem.Duration,
-              MediaType: firstItem.MediaType,
-              CreatedAt: firstItem.CreatedAt,
-              // Check if famous field exists
-              famous: firstItem.famous,
-              // Log any other fields that might exist
-              allFields: firstItem
-            });
-          }
-          
-          // Log some statistics about the data
-          const audioCount = res.data.filter((item: MediaFile) => item.Type?.toLowerCase().includes('audio')).length;
-          const videoCount = res.data.filter((item: MediaFile) => item.Type?.toLowerCase().includes('video')).length;
-          console.log('📱 [AUDIO-VIDEO] Audio files count:', audioCount);
-          console.log('📱 [AUDIO-VIDEO] Video files count:', videoCount);
+          // Process the media files
+          setMediaFiles(res.data || []);
         } else {
           console.log('📱 [AUDIO-VIDEO] Response is not an array, actual type:', typeof res.data);
-          console.log('📱 [AUDIO-VIDEO] Response structure:', Object.keys(res.data || {}));
         }
-        
-        setMediaFiles(res.data || []);
-        console.log('📱 [AUDIO-VIDEO] ===== API CALL COMPLETED SUCCESSFULLY =====');
       } catch (e: any) {
-        console.error('❌ [AUDIO-VIDEO] ===== API CALL FAILED =====');
-        console.error('❌ [AUDIO-VIDEO] Error type:', typeof e);
-        console.error('❌ [AUDIO-VIDEO] Error message:', e.message);
-        console.error('❌ [AUDIO-VIDEO] Error name:', e.name);
-        console.error('❌ [AUDIO-VIDEO] Error stack:', e.stack);
+        console.error('❌ [AUDIO-VIDEO] Failed to fetch media files:', e.message);
         
         if (e.response) {
-          console.error('❌ [AUDIO-VIDEO] Error response status:', e.response.status);
-          console.error('❌ [AUDIO-VIDEO] Error response data:', JSON.stringify(e.response.data, null, 2));
-          console.error('❌ [AUDIO-VIDEO] Error response headers:', JSON.stringify(e.response.headers, null, 2));
-        } else if (e.request) {
-          console.error('❌ [AUDIO-VIDEO] No response received, request details:', e.request);
-        } else {
-          console.error('❌ [AUDIO-VIDEO] Error setting up request:', e.message);
+          console.error('❌ [AUDIO-VIDEO] Response status:', e.response.status);
         }
         
         Alert.alert('Failed to fetch media files', e.response?.data?.error || e.message);
       } finally {
         setLoading(false);
-        console.log('📱 [AUDIO-VIDEO] Loading state set to false');
       }
     };
     fetchMedia();
@@ -162,15 +106,12 @@ export default function AudioVideoScreen() {
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === 'active') {
-        console.log('📱 App became active, resuming audio if needed');
         // Resume audio if it was playing before going to background
         if (sound && isPlaying) {
           sound.playAsync();
         }
-      } else if (nextAppState === 'background') {
-        console.log('📱 App went to background, audio should continue playing');
-        // Audio will continue playing in background due to staysActiveInBackground: true
       }
+      // Audio will continue playing in background due to staysActiveInBackground: true
     };
 
     const subscription = AppState.addEventListener('change', handleAppStateChange);
@@ -193,7 +134,6 @@ export default function AudioVideoScreen() {
             
             // Check if song has ended
             if (status.positionMillis && status.durationMillis && status.positionMillis >= status.durationMillis) {
-              console.log('🎵 [AUDIO-VIDEO] Song ended, auto-playing next song');
               setIsPlaying(false);
               setElapsedTime(0);
               // Auto-play next song
@@ -225,20 +165,11 @@ export default function AudioVideoScreen() {
   }, [sound]);
 
   const handlePlay = (media: MediaFile) => {
-    console.log('🎬 [AUDIO-VIDEO] ===== HANDLE PLAY CALLED =====');
-    console.log('🎬 [AUDIO-VIDEO] Media file to play:', JSON.stringify(media, null, 2));
-    console.log('🎬 [AUDIO-VIDEO] Media type:', media.Type);
-    console.log('🎬 [AUDIO-VIDEO] Media link:', media.Link);
-    console.log('🎬 [AUDIO-VIDEO] Deity:', media.Deity);
-    console.log('🎬 [AUDIO-VIDEO] Video name:', media.VideoName);
-    
     if (media.Link && (media.Link.includes('youtube.com') || media.Link.includes('youtu.be'))) {
-      console.log('🎬 [AUDIO-VIDEO] YouTube link detected, opening modal');
       setCurrentMedia(media);
       setModalVisible(true);
       setYoutubePlaying(true);
     } else if (media.MediaType === 'mp3') {
-      console.log('🎵 [AUDIO-VIDEO] MP3 file detected, playing inline');
       // For MP3 files, play inline without opening modal
       if (currentMedia?.avld === media.avld && sound) {
         // If same audio is already loaded, toggle play/pause
@@ -252,11 +183,7 @@ export default function AudioVideoScreen() {
         setCurrentMedia(media);
         loadAndPlayAudio(media);
       }
-    } else {
-      console.log('🎬 [AUDIO-VIDEO] Unsupported media type');
     }
-    
-    console.log('🎬 [AUDIO-VIDEO] Handle play completed');
   };
 
   const loadAndPlayAudio = async (media: MediaFile) => {
@@ -277,9 +204,8 @@ export default function AudioVideoScreen() {
         headers: getAuthHeaders()
       });
       
-      if (response.data.success && response.data.presignedUrl) {
-        const presignedUrl = response.data.presignedUrl;
-        console.log('🎵 [AUDIO-VIDEO] Got presigned URL from API:', presignedUrl);
+              if (response.data.success && response.data.presignedUrl) {
+          const presignedUrl = response.data.presignedUrl;
         
         // Load the audio using the presigned URL
         const { sound: newSound } = await Audio.Sound.createAsync(
@@ -296,7 +222,6 @@ export default function AudioVideoScreen() {
         setSound(newSound);
         setIsPlaying(true); // Set playing state to true
         setIsLoading(false);
-        console.log('🎵 [AUDIO-VIDEO] MP3 loaded and started playing automatically');
       } else {
         throw new Error('Failed to get presigned URL from API');
       }
@@ -313,7 +238,6 @@ export default function AudioVideoScreen() {
       if (sound) {
         await sound.playAsync();
         setIsPlaying(true);
-        console.log('🎵 [AUDIO-VIDEO] Audio started playing');
       }
     } catch (error) {
       console.error('❌ [AUDIO-VIDEO] Error playing audio:', error);
@@ -326,7 +250,6 @@ export default function AudioVideoScreen() {
       if (sound) {
         await sound.pauseAsync();
         setIsPlaying(false);
-        console.log('🎵 [AUDIO-VIDEO] Audio paused');
       }
     } catch (error) {
       console.error('❌ [AUDIO-VIDEO] Error pausing audio:', error);
@@ -338,7 +261,6 @@ export default function AudioVideoScreen() {
       if (sound) {
         await sound.stopAsync();
         setIsPlaying(false);
-        console.log('🎵 [AUDIO-VIDEO] Audio stopped');
       }
     } catch (error) {
       console.error('❌ [AUDIO-VIDEO] Error stopping audio:', error);
@@ -352,7 +274,6 @@ export default function AudioVideoScreen() {
         if (status.isLoaded) {
           const newPosition = Math.max(0, (status.positionMillis || 0) - 10000); // 10 seconds back
           await sound.setPositionAsync(newPosition);
-          console.log('🎵 [AUDIO-VIDEO] Audio rewound by 10 seconds');
         }
       }
     } catch (error) {
@@ -367,7 +288,6 @@ export default function AudioVideoScreen() {
         if (status.isLoaded) {
           const newPosition = Math.min((status.durationMillis || 0), (status.positionMillis || 0) + 10000); // 10 seconds forward
           await sound.setPositionAsync(newPosition);
-          console.log('🎵 [AUDIO-VIDEO] Audio forwarded by 10 seconds');
         }
       }
     } catch (error) {
@@ -439,15 +359,12 @@ export default function AudioVideoScreen() {
   };
 
   const handleSearchChange = (query: string) => {
-    console.log('🔍 [AUDIO-VIDEO] Search query changed:', query);
-    console.log('🔍 [AUDIO-VIDEO] Current media files count:', mediaFiles.length);
     setSearchQuery(query);
   };
 
   const handleDeitySelect = (deity: string) => {
     const newDeity = selectedDeity === deity ? null : deity;
     setSelectedDeity(newDeity);
-    console.log('🔍 [AUDIO-VIDEO] Deity filter changed:', newDeity || 'None');
   };
 
   // Navigation functions for next/previous in filtered list (MP3 only)
@@ -469,7 +386,6 @@ export default function AudioVideoScreen() {
     const nextIndex = (currentIndex + 1) % mp3OnlyList.length;
     const nextMedia = mp3OnlyList[nextIndex];
     
-    console.log('⏭️ [AUDIO-VIDEO] Next MP3 song:', nextMedia.VideoName);
     handlePlay(nextMedia);
   };
 
@@ -486,7 +402,6 @@ export default function AudioVideoScreen() {
     const previousIndex = currentIndex === 0 ? mp3OnlyList.length - 1 : currentIndex - 1;
     const previousMedia = mp3OnlyList[previousIndex];
     
-    console.log('⏮️ [AUDIO-VIDEO] Previous MP3 song:', previousMedia.VideoName);
     handlePlay(previousMedia);
   };
 
@@ -804,13 +719,6 @@ export default function AudioVideoScreen() {
                </Text>
              )}
              {(() => {
-               console.log('🔍 [AUDIO-VIDEO] ===== FILTERING MEDIA FILES =====');
-               console.log('🔍 [AUDIO-VIDEO] Total media files:', mediaFiles.length);
-               console.log('🔍 [AUDIO-VIDEO] Selected deity:', selectedDeity);
-               console.log('🔍 [AUDIO-VIDEO] Selected filter:', selectedFilter);
-               console.log('🔍 [AUDIO-VIDEO] Audio enabled:', audioEnabled);
-               console.log('🔍 [AUDIO-VIDEO] Video enabled:', videoEnabled);
-               console.log('🔍 [AUDIO-VIDEO] Search query:', searchQuery);
                
                // Create filtered media list for navigation
                const filteredMedia = mediaFiles
@@ -850,11 +758,7 @@ export default function AudioVideoScreen() {
                    return (a.VideoName || '').localeCompare(b.VideoName || '');
                  });
                
-               console.log('🔍 [AUDIO-VIDEO] Filtered media count:', filteredMedia.length);
-               console.log('🔍 [AUDIO-VIDEO] Filtered media types:', filteredMedia.map(m => ({ name: m.VideoName, type: m.Type, classification: m.Classification })));
-               
                if (filteredMedia.length === 0) {
-                 console.log('🔍 [AUDIO-VIDEO] No media files match current filters');
                  return (
                    <Text style={{ color: '#999', textAlign: 'center', marginTop: 20 }}>
                      No media files match your current filters. Try adjusting your search or filters.
@@ -863,14 +767,6 @@ export default function AudioVideoScreen() {
                }
                
                return filteredMedia.map((media, idx) => {
-                 console.log(`🔍 [AUDIO-VIDEO] Rendering media item ${idx + 1}:`, {
-                   name: media.VideoName,
-                   type: media.Type,
-                   classification: media.Classification,
-                   deity: media.Deity,
-                   language: media.Language
-                 });
-                 
                  return (
                    <TouchableOpacity
                      key={media.Link || idx}

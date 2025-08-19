@@ -55,26 +55,26 @@ export const awardMudras = async (
   customAmount?: number
 ): Promise<{ success: boolean; mudrasEarned?: number; newTotal?: number; error?: string }> => {
   try {
-    console.log('🏆 [DEBUG] awardMudras called with activityType:', activityType);
+    // Awarding mudras for activity
     
     const userData = await AsyncStorage.getItem('user');
-    console.log('🏆 [DEBUG] userData from AsyncStorage:', userData ? 'exists' : 'null');
+          // User data retrieved from AsyncStorage
     
-    if (!userData) {
-      console.log('🏆 [DEBUG] No user data found in AsyncStorage');
-      return { success: false, error: 'User not logged in' };
-    }
+          if (!userData) {
+        // No user data found in AsyncStorage
+        return { success: false, error: 'User not logged in' };
+      }
 
     const user = JSON.parse(userData);
-    console.log('🏆 [DEBUG] Parsed user data:', { email: user.email, currentMudras: user.mudras });
+          // User data parsed successfully
     
     const mudrasToAward = customAmount || MUDRA_AMOUNTS[MUDRA_ACTIVITIES[activityType]] || 0;
-    console.log('🏆 [DEBUG] Mudras to award:', mudrasToAward);
+          // Mudras to award calculated
 
-    if (mudrasToAward <= 0) {
-      console.log('🏆 [DEBUG] Invalid mudra amount:', mudrasToAward);
-      return { success: false, error: 'Invalid mudra amount' };
-    }
+          if (mudrasToAward <= 0) {
+        // Invalid mudra amount
+        return { success: false, error: 'Invalid mudra amount' };
+      }
 
     const requestData = {
       email: user.email,
@@ -82,19 +82,19 @@ export const awardMudras = async (
       mudrasEarned: mudrasToAward,
       activityDate: new Date().toISOString().split('T')[0]
     };
-    console.log('🏆 [DEBUG] Sending request to backend:', requestData);
+          // Sending request to backend
 
     const response = await axios.post(getEndpointUrl('AWARD_MUDRAS'), requestData, {
       headers: getAuthHeaders()
     });
 
-    console.log('🏆 [DEBUG] Backend response:', response.data);
+          // Backend response received
     
     if (response.data.success) {
       // Update local user data with new mudras count
       const updatedUser = { ...user, mudras: response.data.newTotal };
       await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-      console.log('🏆 [DEBUG] Updated user data in AsyncStorage:', updatedUser);
+              // Updated user data in AsyncStorage
       
       return {
         success: true,
@@ -102,15 +102,11 @@ export const awardMudras = async (
         newTotal: response.data.newTotal
       };
     } else {
-      console.log('🏆 [DEBUG] Backend returned success: false');
+      // Backend returned success: false
       return { success: false, error: 'Failed to award mudras' };
     }
   } catch (error) {
-    console.error('🏆 [DEBUG] Error awarding mudras:', error);
-    if (error.response) {
-      console.error('🏆 [DEBUG] Error response data:', error.response.data);
-      console.error('🏆 [DEBUG] Error response status:', error.response.status);
-    }
+    // Error awarding mudras
     return { success: false, error: 'Network error' };
   }
 };

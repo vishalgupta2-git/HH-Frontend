@@ -21,8 +21,6 @@ export default function OTPScreen() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log('⏰ Timer effect - resendTimer:', resendTimer, 'isLockedOut:', isLockedOut);
-    
     if (resendTimer > 0) {
       const timer = setTimeout(() => setResendTimer(resendTimer - 1), 1000);
       return () => clearTimeout(timer);
@@ -30,7 +28,6 @@ export default function OTPScreen() {
       // Check if lockout has expired
       const now = new Date();
       if (now >= lockoutUntil) {
-        console.log('🔓 Lockout expired, clearing state');
         setIsLockedOut(false);
         setLockoutUntil(null);
         setMessage('');
@@ -39,7 +36,6 @@ export default function OTPScreen() {
         // Calculate remaining time and set timer
         const remainingMs = lockoutUntil.getTime() - now.getTime();
         const remainingSeconds = Math.ceil(remainingMs / 1000);
-        console.log('🔒 Setting timer for remaining lockout time:', remainingSeconds);
         setResendTimer(remainingSeconds);
       }
     }
@@ -84,7 +80,6 @@ export default function OTPScreen() {
     }
 
     if (isLockedOut) {
-      console.log('🔒 Frontend preventing verification - user is locked out');
       setMessage('Account is temporarily locked. Please wait before trying again.');
       setMessageType('error');
       return;
@@ -95,7 +90,6 @@ export default function OTPScreen() {
     setMessageType('');
     
     try {
-      console.log('Sending OTP verification request:', { email, otp: otpString, name });
       const response = await axios.post(getEndpointUrl('VERIFY_OTP'), {
         email,
         otp: otpString,
@@ -104,11 +98,7 @@ export default function OTPScreen() {
         headers: getAuthHeaders()
       });
 
-      console.log('OTP verification response:', response.data);
-      console.log('OTP verification response user:', response.data.user);
-
       if (response.data.success) {
-        console.log('OTP verification successful, storing user data');
         
         // Get user data from response or create basic user object
         const userData = response.data.user || { email, name: name || 'User' };
@@ -138,45 +128,24 @@ export default function OTPScreen() {
         await AsyncStorage.setItem('user', JSON.stringify(completeUserData));
         console.log('User data stored in AsyncStorage:', completeUserData);
         
-        // Verify the data was stored correctly
-        const storedData = await AsyncStorage.getItem('user');
-        console.log('Verified stored data:', storedData);
-        
         // Force a re-render of the HomeHeader by triggering a storage event
         // This ensures the HomeHeader component updates its user state
-        setTimeout(async () => {
-          const currentUser = await AsyncStorage.getItem('user');
-          console.log('Current user data after navigation:', currentUser);
-          
-          // Test if the user is properly logged in
-          if (currentUser) {
-            const parsedUser = JSON.parse(currentUser);
-            console.log('✅ User successfully logged in:', parsedUser.name || parsedUser.firstName);
-          } else {
-            console.log('❌ User data not found after login');
-          }
-        }, 1000);
         
         setMessage('Login successful! Redirecting...');
         setMessageType('success');
         
         // Navigate after a short delay
         setTimeout(() => {
-          console.log('🔄 Navigating to tabs...');
           router.replace('/(tabs)');
         }, 1500);
       } else {
-        console.log('OTP verification failed:', response.data.message);
         setMessage(response.data.message || 'Invalid OTP');
         setMessageType('error');
       }
     } catch (error: any) {
-      console.log('OTP verification error:', error.response?.data || error.message);
-      
       if (error.response?.status === 429) {
         // Lockout error
         const lockoutMessage = error.response?.data?.error || 'Too many failed attempts. Please try again in 30 minutes.';
-        console.log('🔒 Lockout detected during verification:', lockoutMessage);
         setMessage(lockoutMessage);
         setMessageType('error');
         
@@ -184,18 +153,15 @@ export default function OTPScreen() {
         setIsLockedOut(true);
         if (error.response?.data?.lockoutUntil) {
           setLockoutUntil(new Date(error.response.data.lockoutUntil));
-          console.log('🔒 Lockout until:', error.response.data.lockoutUntil);
         } else {
           // Set 30 minutes from now if lockoutUntil not provided
           const lockoutTime = new Date();
           lockoutTime.setMinutes(lockoutTime.getMinutes() + 30);
           setLockoutUntil(lockoutTime);
-          console.log('🔒 Set lockout until:', lockoutTime);
         }
         
         // Set timer to 30 minutes
         setResendTimer(1800);
-        console.log('🔒 Set resend timer to 1800 seconds');
       } else {
         setMessage(error.response?.data?.message || 'Failed to verify OTP');
         setMessageType('error');
@@ -208,23 +174,15 @@ export default function OTPScreen() {
   const handleResendOTP = async () => {
     if (resendTimer > 0 || isLockedOut) return;
     
-    console.log('🔄 Resending OTP to:', email);
-    
     try {
       const response = await axios.post(getEndpointUrl('SEND_OTP'), { email }, {
         headers: getAuthHeaders()
       });
-      console.log('✅ Resend response:', response.data);
       setResendTimer(10);
       setMessage('OTP has been resent to your email');
       setMessageType('success');
     } catch (error: any) {
-      console.error('❌ Resend error:', error);
-      console.error('❌ Resend error response:', error.response?.data);
-      console.error('❌ Resend error status:', error.response?.status);
-      
       const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to resend OTP';
-      console.error('❌ Resend error message:', errorMessage);
       setMessage(errorMessage);
       setMessageType('error');
     }

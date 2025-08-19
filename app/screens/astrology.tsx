@@ -103,16 +103,10 @@ export default function AstrologyScreen() {
       const hasEarnedToday = await hasEarnedDailyMudras('CHECK_RASHIFAL');
       if (!hasEarnedToday) {
         const mudraResult = await awardMudras('CHECK_RASHIFAL');
-        if (mudraResult.success) {
-          console.log('✅ Mudras awarded for checking rashifal:', mudraResult.mudrasEarned);
-        } else {
-          console.log('⚠️ Failed to award mudras for checking rashifal:', mudraResult.error);
-        }
-      } else {
-        console.log('✅ Daily rashifal checking mudras already earned today');
+        // Silent mudra awarding
       }
     } catch (mudraError) {
-      console.log('⚠️ Error awarding mudras for checking rashifal:', mudraError);
+      // Silent error handling
     }
 
     setLoading(true);
@@ -126,15 +120,7 @@ export default function AstrologyScreen() {
       const endpoint = getEndpoint(frequency);
       const apiUrl = `https://horoscope-app-api.vercel.app/api/v1/get-horoscope/${endpoint}?sign=${zodiacSign}&day=today`;
       
-      console.log('=== RASHIFAL API REQUEST ===');
-      console.log('Zodiac Sign:', zodiacSign);
-      console.log('Frequency:', frequency);
-      console.log('Endpoint:', endpoint);
-      console.log('Selected Rashi:', selectedRashi);
-      console.log('API URL:', apiUrl);
-      
-      // Try minimal fetch to match curl behavior exactly
-      console.log('Starting fetch request...');
+      // API request details removed for cleaner logging
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
@@ -143,14 +129,7 @@ export default function AstrologyScreen() {
       });
       
       clearTimeout(timeoutId);
-      console.log('Fetch completed successfully');
-
-      console.log('=== API RESPONSE DETAILS ===');
-      console.log('Response Status:', response.status);
-      console.log('Response OK:', response.ok);
-      console.log('Response Status Text:', response.statusText);
-      console.log('Response Headers:', JSON.stringify(response.headers, null, 2));
-      console.log('Response URL:', response.url);
+      // API response details removed for cleaner logging
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -163,13 +142,7 @@ export default function AstrologyScreen() {
       }
 
       const data = await response.json();
-      console.log('=== API RESPONSE DATA ===');
-      console.log('Full Response:', JSON.stringify(data, null, 2));
-      console.log('Data Object:', data.data);
-      console.log('Date:', data.data?.date);
-      console.log('Horoscope Data:', data.data?.horoscope_data);
-      console.log('Status:', data.status);
-      console.log('Success:', data.success);
+      // API response data details removed for cleaner logging
       
       // Transform the API response to match our expected format
       const transformedData = {
@@ -183,8 +156,7 @@ export default function AstrologyScreen() {
         description: data.data?.horoscope_data || 'No horoscope data available'
       };
       
-      console.log('=== TRANSFORMED DATA ===');
-      console.log('Transformed Data:', JSON.stringify(transformedData, null, 2));
+      // Transformed data details removed for cleaner logging
       
       setRashifalData(transformedData);
       

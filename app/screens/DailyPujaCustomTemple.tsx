@@ -467,7 +467,6 @@ export default function DailyPujaCustomTemple() {
 
       // 3. Drop mixed flowers in parallel
       const dropMixedFlowers = async () => {
-        console.log('🌸 Starting flower drop...');
         const flowerTypes = ['rose', 'jasmine', 'lotus', 'marigold', 'tulsi'];
         let flowerCounter = 0; // Counter for unique flower IDs
         
@@ -711,16 +710,11 @@ export default function DailyPujaCustomTemple() {
       { "id": "16brihaspati", "name": "Brihaspati Dev" }
     ];
     
-    console.log('🔍 [GODNAMES] Using hardcoded deity names data');
-    
     // Convert array format to key-value mapping
     const godNamesMap: {[folderId: string]: string} = {};
     hardcodedGodNames.forEach((item: {id: string, name: string}) => {
       godNamesMap[item.id] = item.name;
     });
-    
-    console.log('🔍 [GODNAMES] Converted to map:', godNamesMap);
-    console.log('🔍 [GODNAMES] Available deity IDs:', Object.keys(godNamesMap));
     
     return godNamesMap;
   };
@@ -728,72 +722,54 @@ export default function DailyPujaCustomTemple() {
   const fetchAllImagesAndOrganize = async (godNamesData: {[folderId: string]: string}): Promise<ImageFolder[]> => {
     try {
       const apiUrl = getApiUrl('/api/s3/files?prefix=dailytemples/&maxKeys=1000');
-      console.log('🔍 [S3] Fetching from:', apiUrl);
       
       const res = await fetch(apiUrl, {
         headers: getAuthHeaders()
       });
-      console.log('🔍 [S3] Response status:', res.status);
-      console.log('🔍 [S3] Response ok:', res.ok);
       
       if (!res.ok) {
-        console.log('❌ [S3] HTTP error:', res.status, res.statusText);
         return [];
       }
       
       const data = await res.json();
       
-      console.log('🔍 [S3] Response data:', data);
-      console.log('🔍 [S3] Files array length:', data?.files?.length || 0);
-      
       // Check if we got a valid response
       if (!data) {
-        console.log('❌ [S3] No response data');
         return [];
       }
       
       if (!data.success) {
-        console.log('❌ [S3] API call not successful:', data.error || 'Unknown error');
         return [];
       }
       
       if (!Array.isArray(data.files)) {
-        console.log('❌ [S3] Files is not an array:', typeof data.files, data.files);
         return [];
       }
       
       if (data.files.length === 0) {
-        console.log('❌ [S3] Files array is empty');
         return [];
       }
       
-      if (data && data.success && Array.isArray(data.files)) {
-        const folderNames = extractFolderNames(data.files);
-        console.log('🔍 [S3] Extracted folder names:', folderNames);
-        
-        const organizedFolders: ImageFolder[] = [];
-        
-        for (const folderName of folderNames) {
-          // Skip rahu-ketu and brihaspati folders
-          if (folderName.toLowerCase().includes('rahu') || 
-              folderName.toLowerCase().includes('ketu') || 
-              folderName.toLowerCase().includes('brihaspati')) {
-            console.log('🔍 [S3] Skipping folder:', folderName);
-            continue;
-          }
+              if (data && data.success && Array.isArray(data.files)) {
+          const folderNames = extractFolderNames(data.files);
           
-          console.log('🔍 [S3] Processing folder:', folderName);
+          const organizedFolders: ImageFolder[] = [];
           
-          const folderPrefix = `dailytemples/${folderName}/`;
-          const folderImages = data.files.filter((f: any) => 
-            f && typeof f.key === 'string' && 
-            f.key.startsWith(folderPrefix) && 
-            f.key !== folderPrefix && 
-            isImageKey(f.key)
-          );
-          
-          console.log('🔍 [S3] Folder images found:', folderImages.length);
-          console.log('🔍 [S3] Sample folder images:', folderImages.slice(0, 3).map((f: any) => f.key));
+          for (const folderName of folderNames) {
+            // Skip rahu-ketu and brihaspati folders
+            if (folderName.toLowerCase().includes('rahu') || 
+                folderName.toLowerCase().includes('ketu') || 
+                folderName.toLowerCase().includes('brihaspati')) {
+              continue;
+            }
+            
+            const folderPrefix = `dailytemples/${folderName}/`;
+            const folderImages = data.files.filter((f: any) => 
+              f && typeof f.key === 'string' && 
+              f.key.startsWith(folderPrefix) && 
+              f.key !== folderPrefix && 
+              isImageKey(f.key)
+            );
           
           if (folderImages.length > 0) {
             // Separate Icon.png for folder navigation
@@ -893,29 +869,22 @@ export default function DailyPujaCustomTemple() {
     const folderName = folderPrefix.split('/')[1];
     if (!folderName) return 'Divine Darshan';
     
-    console.log('🔍 [DEITY NAME] Folder prefix:', folderPrefix);
-    console.log('🔍 [DEITY NAME] Extracted folder name:', folderName);
-    console.log('🔍 [DEITY NAME] Current godNames state:', godNames);
-    
     // First, try to get deity name from the organized folders data (which has godNames from JSON)
     if (s3Folders && s3Folders.length > 0) {
       const folderData = s3Folders.find(folder => folder.prefix === folderPrefix);
       if (folderData && folderData.godName) {
-        console.log('🔍 [DEITY NAME] Found in organized folders:', folderData.godName);
         return folderData.godName;
       }
     }
     
     // Check if godNames state is ready
     if (Object.keys(godNames).length === 0) {
-      console.log('🔍 [DEITY NAME] godNames state is empty, waiting for data...');
       return 'Loading...';
     }
     
     // Try to get deity name from godNames mapping using the exact folder name
     let deityName = godNames[folderName];
     if (deityName) {
-      console.log('🔍 [DEITY NAME] Found in godNames with exact match:', folderName, '->', deityName);
       return deityName;
     }
     
@@ -931,7 +900,6 @@ export default function DailyPujaCustomTemple() {
     for (const variation of variations) {
       if (godNames[variation]) {
         deityName = godNames[variation];
-        console.log('🔍 [DEITY NAME] Found with variation:', variation, '->', deityName);
         break;
       }
       }
@@ -945,7 +913,6 @@ export default function DailyPujaCustomTemple() {
       .replace(/\d+/g, '') // Remove numbers
       .trim();
     
-    console.log('🔍 [DEITY NAME] Final deity name (fallback):', fallbackName);
     return fallbackName;
   };
 
@@ -980,36 +947,28 @@ export default function DailyPujaCustomTemple() {
       console.log('🔍 [GALLERY] About to fetch and organize images...');
       const allFolders = await fetchAllImagesAndOrganize(godNames || {});
       
-      console.log('🔍 [GALLERY] Fetched folders:', allFolders.length);
-      
       if (allFolders.length > 0) {
         setS3Folders(allFolders);
         setCurrentS3FolderIndex(0);
         setCurrentS3ImageIndex(0);
         
         const firstImage = allFolders[0].images[0];
-        console.log('🔍 [GALLERY] First image:', firstImage);
         
         const firstImageUrl = await fetchPresignedUrl(firstImage.key);
         
         if (firstImageUrl) {
           setCurrentS3ImageUrl(firstImageUrl);
           setShowS3Gallery(true);
-          console.log('✅ [GALLERY] S3 gallery loaded successfully');
         } else {
-          console.log('❌ [GALLERY] Failed to load first image URL');
           Alert.alert('Error', 'Failed to load first image. Please try again.');
         }
       } else {
-        console.log('❌ [GALLERY] No folders found');
         Alert.alert('No Images Found', 'No temple images are currently available.');
       }
     } catch (error) {
-      console.log('❌ [GALLERY] Error loading images:', error);
       Alert.alert('Error', 'Failed to load temple images. Please try again.');
     } finally {
       setS3Loading(false);
-      console.log('🔍 [GALLERY] Loading finished');
     }
   };
 
@@ -1101,16 +1060,7 @@ export default function DailyPujaCustomTemple() {
 
   // Debug: Log when godNames changes
   useEffect(() => {
-    console.log('🔍 [GODNAMES] State updated:', godNames);
-    console.log('🔍 [GODNAMES] State keys:', Object.keys(godNames));
-    console.log('🔍 [GODNAMES] State size:', Object.keys(godNames).length);
-    
-    // Check if state is being reset
-    if (Object.keys(godNames).length === 0) {
-      console.log('⚠️ [GODNAMES] WARNING: godNames state is empty - this might indicate a reset');
-    } else {
-      console.log('✅ [GODNAMES] godNames state has data:', Object.keys(godNames).length, 'entries');
-    }
+    // Silent godNames state monitoring
   }, [godNames]);
 
   // Check temple availability when screen comes into focus (e.g., returning from create temple)
@@ -1118,80 +1068,65 @@ export default function DailyPujaCustomTemple() {
     React.useCallback(() => {
       const checkTempleAvailability = async () => {
         try {
-          console.log('🔍 [TEMPLE] Checking temple availability on screen focus...');
-          
           // First check if user is authenticated
           const { isAuthenticated, userData } = await checkUserAuthentication();
-          console.log('🔍 [TEMPLE] Focus check - Authentication:', { isAuthenticated, userEmail: userData?.email });
           
           let templeConfig = null;
           
           if (isAuthenticated) {
             // User is logged in - try to load from database first
-            console.log('🔄 [TEMPLE] Focus check - User authenticated, trying database first...');
             try {
               const dbTemple = await loadTempleFromDatabase();
               if (dbTemple) {
-                console.log('✅ [TEMPLE] Focus check - Temple found in database');
                 templeConfig = dbTemple;
-              } else {
-                console.log('⚠️ [TEMPLE] Focus check - No temple in database, falling back to AsyncStorage');
               }
             } catch (error) {
-              console.log('⚠️ [TEMPLE] Focus check - Database load failed, falling back to AsyncStorage:', error);
+              // Silent error handling
             }
           }
           
           // If no database temple, try AsyncStorage
           if (!templeConfig) {
-            console.log('🔄 [TEMPLE] Focus check - Loading from AsyncStorage...');
             templeConfig = await loadTempleConfiguration();
           }
           
           if (templeConfig) {
-            console.log('🔍 [TEMPLE] Config structure analysis:', {
-              hasSelectedStyle: !!templeConfig.selectedStyle,
-              hasBgGradient: !!templeConfig.bgGradient,
-              hasDeityState: !!templeConfig.deityState,
-              hasTempleInformation: !!templeConfig.templeInformation,
-              templeInfoKeys: templeConfig.templeInformation ? Object.keys(templeConfig.templeInformation) : [],
-              rootKeys: Object.keys(templeConfig)
-            });
+            // Config structure analysis removed for cleaner logging
             
             // Check for deities in different possible locations
             let deities = null;
             if (templeConfig.deities) {
               deities = templeConfig.deities;
-              console.log('🔍 [TEMPLE] Focus check - Found deities in templeConfig.deities');
+
             } else if (templeConfig.selectedDeities) {
               deities = templeConfig.selectedDeities;
-              console.log('🔍 [TEMPLE] Focus check - Found deities in templeConfig.selectedDeities');
+
             } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedDeities) {
               deities = templeConfig.templeInformation.selectedDeities;
-              console.log('🔍 [TEMPLE] Focus check - Found deities in templeConfig.templeInformation.selectedDeities');
+
             }
             
             if (deities && Object.keys(deities).length > 0) {
-              console.log('✅ [TEMPLE] Focus check - Temple found with deities, updating state...');
+
               setHasTempleConfigured(true);
               setUserChoseContinueWithoutTemple(false);
               
               // Update selectedDeities
               setSelectedDeities(deities);
-              console.log('🔍 [TEMPLE] Focus check - Updated selectedDeities:', Object.keys(deities));
+
               
               // Show a brief success message
-              console.log('🎉 [TEMPLE] Focus check - Welcome back! Your temple is now configured and ready.');
+
             } else {
-              console.log('❌ [TEMPLE] Focus check - No deities found in temple config');
+
               setHasTempleConfigured(false);
             }
           } else {
-            console.log('❌ [TEMPLE] Focus check - No temple configuration found anywhere');
+
             setHasTempleConfigured(false);
           }
         } catch (error) {
-          console.log('❌ [TEMPLE] Focus check - Error checking temple availability:', error);
+          // Silent error handling
         }
       };
       
@@ -1460,24 +1395,18 @@ export default function DailyPujaCustomTemple() {
       setS3Loading(true);
       const today = getTodayDayOfWeek();
       
-      console.log('🔍 Fetching today\'s special pujas for:', today);
-      
       const response = await fetch(getApiUrl(`/api/temples-by-day?dayOfWeek=${today.toLowerCase()}`), {
         headers: getAuthHeaders()
       });
       const data = await response.json();
       
       if (data.success && data.temples && data.temples.length > 0) {
-        console.log('✅ Found special pujas for today:', data.temples.length);
-        
         // Extract deity names from today's pujas and normalize them
         const todayDeityNames = data.temples.map((puja: any) => {
           const normalizedName = puja.deityName.toLowerCase().trim();
           return normalizedName;
         });
         setTodaySpecialDeities(todayDeityNames);
-        
-        console.log('🔍 Today\'s special deities:', todayDeityNames);
         
         // Fetch god names first
         const godNamesData = await fetchGodNames();
@@ -1503,15 +1432,6 @@ export default function DailyPujaCustomTemple() {
               const deityNameWithoutNumbers = deityName.replace(/[0-9]/g, '').toLowerCase().trim();
               
               // Debug logging for better understanding
-              console.log(`🔍 Comparing folder "${folder.name}" with deity "${deityName}":`);
-              console.log(`  Folder normalized: "${folderNameNormalized}"`);
-              console.log(`  Folder no spaces: "${folderNameWithoutSpaces}"`);
-              console.log(`  Folder no special: "${folderNameWithoutSpecialChars}"`);
-              console.log(`  Folder no numbers: "${folderNameWithoutNumbers}"`);
-              console.log(`  Deity normalized: "${normalizedDeityName}"`);
-              console.log(`  Deity no spaces: "${deityNameWithoutSpaces}"`);
-              console.log(`  Deity no special: "${deityNameWithoutSpecialChars}"`);
-              console.log(`  Deity no numbers: "${deityNameWithoutNumbers}"`);
               
               // Multiple comparison strategies for better matching
               const isMatch = (
@@ -1555,12 +1475,11 @@ export default function DailyPujaCustomTemple() {
                 })()
               );
               
-              console.log(`  Match result: ${isMatch ? '✅ MATCH' : '❌ NO MATCH'}`);
               return isMatch;
             });
           });
           
-          console.log('🔍 Filtered folders for today\'s special:', filteredFolders.length);
+
           
           if (filteredFolders.length > 0) {
             setS3Folders(filteredFolders);
@@ -1712,57 +1631,44 @@ export default function DailyPujaCustomTemple() {
   useEffect(() => {
     (async () => {
       try {
-        console.log('🚀 [TEMPLE] Component mounted - Starting temple load...');
-        
         // First check if user is authenticated
         const { isAuthenticated, userData } = await checkUserAuthentication();
-        console.log('🔍 [TEMPLE] Authentication check:', { isAuthenticated, userEmail: userData?.email });
         
         let templeConfig = null;
         
         if (isAuthenticated) {
           // User is logged in - try to load from database first
-          console.log('🔄 [TEMPLE] User authenticated, trying database first...');
           try {
             const dbTemple = await loadTempleFromDatabase();
             if (dbTemple) {
-              console.log('✅ [TEMPLE] Temple found in database');
               templeConfig = dbTemple;
-            } else {
-              console.log('⚠️ [TEMPLE] No temple in database, falling back to AsyncStorage');
             }
           } catch (error) {
-            console.log('⚠️ [TEMPLE] Database load failed, falling back to AsyncStorage:', error);
+            // Silent error handling
           }
         }
         
         // If no database temple, try AsyncStorage
         if (!templeConfig) {
-          console.log('🔄 [TEMPLE] Loading from AsyncStorage...');
           templeConfig = await loadTempleConfiguration();
         }
         
         if (templeConfig) {
           // Load from configuration
-          console.log('✅ [TEMPLE] Temple configuration loaded successfully');
           setHasTempleConfigured(true);
           
           // Check for deities in different possible locations
           let deities = null;
           if (templeConfig.deities) {
             deities = templeConfig.deities;
-            console.log('🔍 [TEMPLE] Found deities in templeConfig.deities');
           } else if (templeConfig.selectedDeities) {
             deities = templeConfig.selectedDeities;
-            console.log('🔍 [TEMPLE] Found deities in templeConfig.selectedDeities');
           } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedDeities) {
             deities = templeConfig.templeInformation.selectedDeities;
-            console.log('🔍 [TEMPLE] Found deities in templeConfig.templeInformation.selectedDeities');
           }
           
           if (deities && Object.keys(deities).length > 0) {
             setSelectedDeities(deities);
-            console.log('🔍 [TEMPLE] Updated selectedDeities:', Object.keys(deities));
           }
           
           // Load temple style - check both root and nested locations
@@ -1775,9 +1681,6 @@ export default function DailyPujaCustomTemple() {
           
           if (templeStyle) {
             setSelectedStyle(templeStyle);
-            console.log('🔍 [TEMPLE] Loaded temple style:', templeStyle);
-          } else {
-            console.log('⚠️ [TEMPLE] No temple style found');
           }
           
           // Load background gradient - check both root and nested locations
@@ -1790,9 +1693,6 @@ export default function DailyPujaCustomTemple() {
           
           if (backgroundGradient) {
             setBgGradient(backgroundGradient);
-            console.log('🔍 [TEMPLE] Loaded background gradient');
-          } else {
-            console.log('⚠️ [TEMPLE] No background gradient found');
           }
           
           // Load deity state - check both root and nested locations
@@ -1805,13 +1705,9 @@ export default function DailyPujaCustomTemple() {
           
           if (deityStateData) {
             setDeityState(deityStateData);
-            console.log('🔍 [TEMPLE] Loaded deity state');
-          } else {
-            console.log('⚠️ [TEMPLE] No deity state found');
           }
         } else {
           // No temple configured - show options to user
-          console.log('❌ [TEMPLE] No temple configuration found anywhere');
           setHasTempleConfigured(false);
           Alert.alert(
             'No Temple Configured',
@@ -1939,7 +1835,6 @@ export default function DailyPujaCustomTemple() {
             
             // Restart music if it was playing before
             if (currentlyPlaying && !sound) {
-              console.log('🎵 [MUSIC] Restarting music after ghanti...');
               const currentFile = musicFiles.find(f => f.avld === currentlyPlaying);
               if (currentFile) {
                 await playMusicFile(currentFile);
@@ -2087,7 +1982,6 @@ export default function DailyPujaCustomTemple() {
           
           // Restart music if it was playing before
           if (currentlyPlaying && !sound) {
-            console.log('🎵 [MUSIC] Restarting music after conch...');
             const currentFile = musicFiles.find(f => f.avld === currentlyPlaying);
             if (currentFile) {
               await playMusicFile(currentFile);
@@ -2100,7 +1994,6 @@ export default function DailyPujaCustomTemple() {
 
     } catch (error) {
       // Error playing conch sound
-      console.log('❌ Error playing conch sound:', error);
     }
   };
 
@@ -2273,16 +2166,11 @@ export default function DailyPujaCustomTemple() {
       const hasEarnedToday = await hasEarnedDailyMudras('OFFER_FLOWERS');
       if (!hasEarnedToday) {
         const mudraResult = await awardMudras('OFFER_FLOWERS');
-        if (mudraResult.success) {
-          console.log('✅ Mudras awarded for offering flowers:', mudraResult.mudrasEarned);
-        } else {
-          console.log('⚠️ Failed to award mudras for offering flowers:', mudraResult.error);
-        }
-      } else {
-        console.log('✅ Daily flower offering mudras already earned today - but still dropping flowers for testing');
+        // Silent mudra awarding
       }
+      // Silent error handling
     } catch (mudraError) {
-      console.log('⚠️ Error awarding mudras for offering flowers:', mudraError);
+      // Silent error handling
     }
     
     setIsFlowerAnimationRunning(true);
@@ -2397,16 +2285,11 @@ export default function DailyPujaCustomTemple() {
       const hasEarnedToday = await hasEarnedDailyMudras('DO_AARTI');
       if (!hasEarnedToday) {
         const mudraResult = await awardMudras('DO_AARTI');
-        if (mudraResult.success) {
-          console.log('✅ Mudras awarded for doing aarti:', mudraResult.mudrasEarned);
-        } else {
-          console.log('⚠️ Failed to award mudras for doing aarti:', mudraResult.error);
-        }
-      } else {
-        console.log('✅ Daily aarti mudras already earned today');
+        // Silent mudra awarding
       }
+      // Silent error handling
     } catch (mudraError) {
-      console.log('⚠️ Error awarding mudras for doing aarti:', mudraError);
+      // Silent error handling
     }
   };
 
@@ -2415,20 +2298,16 @@ export default function DailyPujaCustomTemple() {
     try {
       setMusicLoading(true);
       const url = getEndpointUrl('MEDIA_FILES');
-      console.log('🎵 [MUSIC] Fetching from:', url);
       
       const res = await fetch(url, {
         headers: getAuthHeaders()
       });
-      console.log('🎵 [MUSIC] Response status:', res.status);
       
       if (!res.ok) {
-        console.log('❌ [MUSIC] HTTP error:', res.status, res.statusText);
         return;
       }
       
       const data = await res.json();
-      console.log('🎵 [MUSIC] Response data:', data);
       
       if (Array.isArray(data)) {
         // Filter for audio files based on Classification or Type
@@ -2438,15 +2317,11 @@ export default function DailyPujaCustomTemple() {
                          file.Type?.toLowerCase().includes('audio') ||
                          file.MediaType?.toLowerCase() === 'mp3';
           
-          console.log('🎵 [MUSIC] File:', file.VideoName, 'Classification:', file.Classification, 'Type:', file.Type, 'MediaType:', file.MediaType, 'isAudio:', isAudio);
-          
           return isAudio;
         });
         
-        console.log('🎵 [MUSIC] Audio files found:', audioFiles.length);
         setMusicFiles(audioFiles);
       } else {
-        console.log('❌ [MUSIC] Response is not an array');
         setMusicFiles([]);
       }
     } catch (error) {
@@ -2470,7 +2345,6 @@ export default function DailyPujaCustomTemple() {
     
     const nextSong = currentPlaylist[nextIndex];
     if (nextSong) {
-      console.log('🎵 [MUSIC] Auto-playing next song:', nextSong.VideoName);
       await playMusicFile(nextSong);
     }
   };
@@ -2481,8 +2355,6 @@ export default function DailyPujaCustomTemple() {
       setLoadingMusicId(file.avld);
       const metadata = extractMusicMetadata(file);
       
-      console.log('🎵 [MUSIC] Playing:', metadata.title);
-      
       // Stop any currently playing sound
       if (sound) {
         await sound.stopAsync();
@@ -2491,13 +2363,10 @@ export default function DailyPujaCustomTemple() {
 
       // Use the Link field from the API response (contains S3 filename)
       if (!metadata.link) {
-        console.log('❌ [MUSIC] No link found in metadata');
         Alert.alert('Error', 'No audio link available for this file');
         setLoadingMusicId(null);
         return;
       }
-
-      console.log('🎵 [MUSIC] S3 filename:', metadata.link);
 
       // Get presigned URL from backend API (same as audio-video screen)
       const apiUrl = getEndpointUrl('S3_AUDIO_URL');
@@ -2516,7 +2385,6 @@ export default function DailyPujaCustomTemple() {
       }
       
       const presignedUrl = responseData.presignedUrl;
-      console.log('🎵 [MUSIC] Got presigned URL:', presignedUrl);
 
       // Load and play the music using the presigned URL
       const { sound: newSound } = await Audio.Sound.createAsync(
@@ -2527,7 +2395,6 @@ export default function DailyPujaCustomTemple() {
       setSound(newSound);
       setCurrentlyPlaying(file.avld);
       setLoadingMusicId(null);
-      console.log('🎵 [MUSIC] Started playing:', metadata.title);
 
       // Set up auto-play next song when current ends (using proper completion detection)
       newSound.setOnPlaybackStatusUpdate((status) => {

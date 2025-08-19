@@ -7,20 +7,20 @@ export const hasBookedPujaRecently = async (pujaName: string): Promise<boolean> 
   try {
     // Get user data from AsyncStorage
     const userData = await AsyncStorage.getItem('user');
-    if (!userData) {
-      console.log('🔍 [DEBUG] No user data found, cannot check booking history');
-      return false;
-    }
+      if (!userData) {
+    // No user data found, cannot check booking history
+    return false;
+  }
 
     const user = JSON.parse(userData);
     const userPhone = user.phone;
 
     if (!userPhone) {
-      console.log('🔍 [DEBUG] No phone number found in user data');
+      // No phone number found in user data
       return false;
     }
 
-    console.log('🔍 [DEBUG] Checking booking history for:', { pujaName, userPhone });
+    // Checking booking history
 
     const response = await axios.get(getEndpointUrl('CHECK_PUJA_BOOKING'), {
       params: {
@@ -32,11 +32,7 @@ export const hasBookedPujaRecently = async (pujaName: string): Promise<boolean> 
 
     const { hasBooked, bookingCount } = response.data;
     
-    console.log('🔍 [DEBUG] Booking check result:', { 
-      pujaName, 
-      hasBooked, 
-      bookingCount 
-    });
+    // Booking check result processed
 
     return hasBooked;
   } catch (error) {
@@ -51,7 +47,7 @@ export const shouldShowSpecialDaysModal = async (pujaName: string): Promise<bool
     const hasBooked = await hasBookedPujaRecently(pujaName);
     const shouldShow = !hasBooked;
     
-    console.log('🔍 [DEBUG] Should show special days modal for', pujaName, ':', shouldShow);
+    // Modal display decision processed
     
     return shouldShow;
   } catch (error) {

@@ -418,43 +418,30 @@ export default function SignUpScreen() {
        }
      };
     
-    console.log('Sending signup data:', signupData);
-    
     try {
-      console.log('Calling signup endpoint...');
       const signupRes = await axios.post(getEndpointUrl('SIGNUP'), signupData, {
         headers: getAuthHeaders()
       });
-      console.log('Signup response:', signupRes.data);
       
       if (signupRes.data && signupRes.data.error === 'Email already registered.') {
         setEmailError('An account already exists with this ID. Please go to login screen to access your account.');
         return;
       }
       
-      console.log('Calling send OTP endpoint...');
       const otpRes = await axios.post(getEndpointUrl('SEND_OTP'), { email }, {
         headers: getAuthHeaders()
       });
-      console.log('OTP response:', otpRes.data);
       
       // Award mudras for signup
       try {
         const mudraResult = await awardMudras('SIGN_UP');
-        if (mudraResult.success) {
-          console.log('✅ Mudras awarded for signup:', mudraResult.mudrasEarned);
-        } else {
-          console.log('⚠️ Failed to award mudras for signup:', mudraResult.error);
-        }
+        // Silent mudra awarding
       } catch (mudraError) {
-        console.log('⚠️ Error awarding mudras for signup:', mudraError);
+        // Silent error handling
       }
       
       router.push({ pathname: '/auth/otp', params: { email, name: trimmedFirstName + ' ' + trimmedLastName, from: 'signup' } });
     } catch (err: any) {
-      console.error('Signup error:', err);
-      console.error('Error response:', err.response?.data);
-      
       if (err.response && err.response.data && err.response.data.error === 'Email already registered.') {
         setEmailError('An account already exists with this ID. Please go to login screen to access your account.');
         return;

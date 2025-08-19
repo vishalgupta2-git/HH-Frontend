@@ -77,11 +77,11 @@ export default function SpecialDaysModal({
     setLoading(true);
     
     try {
-      console.log('🔄 Submitting special puja booking:', bookingData);
+      // Submitting special puja booking
       const response = await axios.post(getEndpointUrl('SPECIAL_PUJA'), bookingData, {
         headers: getAuthHeaders()
       });
-      console.log('✅ Booking response:', response.data);
+              // Booking response received
       setBookingModalVisible(false);
       setName('');
       setPhone('');

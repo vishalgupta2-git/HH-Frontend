@@ -9,9 +9,7 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
-  console.log('🔍 [DEBUG] TabLayout: Starting...');
   const colorScheme = useColorScheme();
-  console.log('🔍 [DEBUG] TabLayout: ColorScheme =', colorScheme);
 
   return (
     <Tabs

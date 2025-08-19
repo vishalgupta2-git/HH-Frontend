@@ -63,15 +63,15 @@ export default function SpecialPujaScreen() {
   useEffect(() => {
     const fetchPujas = async () => {
       try {
-        console.log('🔄 Fetching special pujas from:', getEndpointUrl('SPECIAL_PUJA'));
+        // Fetching special pujas
         const res = await axios.get(getEndpointUrl('SPECIAL_PUJA'), {
           headers: getAuthHeaders()
         });
-        console.log('✅ Special puja API response:', res.data);
+        // Special puja API response received
         
         // Filter out any items with null/undefined values that might cause rendering issues
         const filteredData = res.data.filter((puja: any) => puja && typeof puja === 'object');
-        console.log('📊 Filtered special puja data:', filteredData.length, 'records');
+        // Filtered special puja data processed
         setPujaFiles(filteredData);
       } catch (e: any) {
         console.error('❌ Error fetching special pujas:', e.message);
@@ -120,11 +120,11 @@ export default function SpecialPujaScreen() {
     };
     
     try {
-      console.log('🔄 Submitting special puja booking:', bookingData);
+      // Submitting special puja booking
       const response = await axios.post(getEndpointUrl('SPECIAL_PUJA'), bookingData, {
         headers: getAuthHeaders()
       });
-      console.log('✅ Booking response:', response.data);
+              // Booking response received
       setBookingModalVisible(false);
       setName('');
       setPhone('');

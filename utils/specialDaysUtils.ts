@@ -12,124 +12,50 @@ export interface UpcomingPuja {
 // Check for upcoming special pujas in the next 30 days
 export const getUpcomingSpecialPujas = async (): Promise<UpcomingPuja[]> => {
   try {
-    console.log('🔍 [DEBUG] Fetching special pujas for upcoming check...');
     const response = await axios.get(getEndpointUrl('SPECIAL_PUJA'), {
       headers: getAuthHeaders()
     });
     const pujas = response.data || [];
     
-    console.log('🔍 [DEBUG] Total pujas fetched:', pujas.length);
-    
     const today = new Date();
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(today.getDate() + 30);
     
-    console.log('🔍 [DEBUG] Date range:', {
-      today: today.toISOString().split('T')[0],
-      thirtyDaysFromNow: thirtyDaysFromNow.toISOString().split('T')[0]
-    });
-    
     const upcomingPujas: UpcomingPuja[] = [];
     
-         pujas.forEach((puja: any, index: number) => {
-               console.log(`🔍 [DEBUG] Checking puja ${index + 1}:`, {
-          pujaName: puja.pujaName,
-          dateMapping: puja.dateMapping,
-          dateMappingTrimmed: puja.dateMapping?.trim(),
-          nextDate: puja.nextDate,
-          hasDateMapping: !!puja.dateMapping,
-          hasNextDate: !!puja.nextDate,
-          hasPujaName: !!puja.pujaName,
-          isFixedDate: puja.dateMapping?.trim() === 'fixed'
-        });
-       
-               // Check if this is a fixed date puja and has a nextDate
-        const isFixedDate = puja.dateMapping?.trim() === 'fixed';
-        
-                 // Special debug for puja 14 (Raksha Bandhan)
-         if (puja.pujaName === 'Raksha Bandhan') {
-           const pujaDate = new Date(puja.nextDate);
-           const daysUntil = Math.ceil((pujaDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-           
-           console.log(`🔍 [DEBUG] 🎯 SPECIAL CHECK for Raksha Bandhan:`, {
-             originalDateMapping: puja.dateMapping,
-             trimmedDateMapping: puja.dateMapping?.trim(),
-             trimmedLength: puja.dateMapping?.trim()?.length,
-             isFixedDate,
-             hasNextDate: !!puja.nextDate,
-             nextDate: puja.nextDate,
-             pujaDate: pujaDate.toISOString().split('T')[0],
-             today: today.toISOString().split('T')[0],
-             thirtyDaysFromNow: thirtyDaysFromNow.toISOString().split('T')[0],
-             daysUntil,
-             isInRange: pujaDate >= today && pujaDate <= thirtyDaysFromNow
-           });
-         }
-        
-        if (isFixedDate && puja.nextDate && puja.pujaName) {
-         try {
-           const pujaDate = new Date(puja.nextDate);
-           
-           // Check if the date is valid
-           if (isNaN(pujaDate.getTime())) {
-             console.log(`🔍 [DEBUG] ⚠️ Invalid nextDate for ${puja.pujaName}:`, {
-               originalNextDate: puja.nextDate,
-               error: 'Invalid date format'
-             });
-             return; // Skip this puja
-           }
-           
-           console.log(`🔍 [DEBUG] Puja date for ${puja.pujaName}:`, {
-             originalNextDate: puja.nextDate,
-             parsedDate: pujaDate.toISOString().split('T')[0],
-             isValidDate: !isNaN(pujaDate.getTime())
-           });
-           
-           // Check if puja date is in the next 30 days
-           if (pujaDate >= today && pujaDate <= thirtyDaysFromNow) {
-             const daysUntil = Math.ceil((pujaDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-             
-             console.log(`🔍 [DEBUG] ✅ Found upcoming puja: ${puja.pujaName} in ${daysUntil} days`);
-             
-             upcomingPujas.push({
-               pujaName: puja.pujaName,
-               dateMapping: puja.dateMapping,
-               nextDate: puja.nextDate,
-               pujaDetails: puja.pujaDetails,
-               daysUntil
-             });
-           } else {
-             console.log(`🔍 [DEBUG] ❌ Puja ${puja.pujaName} not in range:`, {
-               pujaDate: pujaDate.toISOString().split('T')[0],
-               isAfterToday: pujaDate >= today,
-               isBeforeThirtyDays: pujaDate <= thirtyDaysFromNow
-             });
-           }
-         } catch (dateError) {
-           console.log(`🔍 [DEBUG] ❌ Date parsing error for ${puja.pujaName}:`, {
-             originalNextDate: puja.nextDate,
-             error: dateError.message
-           });
-         }
-       } else {
-                   console.log(`🔍 [DEBUG] ⚠️ Puja ${index + 1} not a fixed date puja or missing fields:`, {
-            dateMapping: puja.dateMapping,
-            dateMappingTrimmed: puja.dateMapping?.trim(),
-            hasDateMapping: !!puja.dateMapping,
-            hasNextDate: !!puja.nextDate,
-            hasPujaName: !!puja.pujaName,
-            isFixedDate: puja.dateMapping?.trim() === 'fixed'
-          });
-       }
-     });
+    pujas.forEach((puja: any) => {
+      // Check if this is a fixed date puja and has a nextDate
+      const isFixedDate = puja.dateMapping?.trim() === 'fixed';
+      
+      if (isFixedDate && puja.nextDate && puja.pujaName) {
+        try {
+          const pujaDate = new Date(puja.nextDate);
+          
+          // Check if the date is valid
+          if (isNaN(pujaDate.getTime())) {
+            return; // Skip this puja
+          }
+          
+          // Check if puja date is in the next 30 days
+          if (pujaDate >= today && pujaDate <= thirtyDaysFromNow) {
+            const daysUntil = Math.ceil((pujaDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+            
+            upcomingPujas.push({
+              pujaName: puja.pujaName,
+              dateMapping: puja.dateMapping,
+              nextDate: puja.nextDate,
+              pujaDetails: puja.pujaDetails,
+              daysUntil
+            });
+          }
+        } catch (dateError) {
+          // Silent error handling for date parsing
+        }
+      }
+    });
     
     // Sort by date (closest first)
     upcomingPujas.sort((a, b) => a.daysUntil - b.daysUntil);
-    
-    console.log('🔍 [DEBUG] Final upcoming pujas found:', upcomingPujas.length);
-    upcomingPujas.forEach(puja => {
-      console.log(`🔍 [DEBUG] - ${puja.pujaName}: ${puja.daysUntil} days`);
-    });
     
     return upcomingPujas;
   } catch (error) {

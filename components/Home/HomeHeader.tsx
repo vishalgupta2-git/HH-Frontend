@@ -59,14 +59,11 @@ export default function HomeHeader({
     const loadUserData = async () => {
       try {
         const data = await AsyncStorage.getItem('user');
-        console.log('🔍 HomeHeader: Loading user data:', data);
         if (data) {
           const user = JSON.parse(data);
-          console.log('🔍 HomeHeader: Parsed user data:', user);
           setUserName(user.name || user.firstName || '');
           setMudraCount(user.mudras || 0);
         } else {
-          console.log('🔍 HomeHeader: No user data found');
           setUserName('');
           setMudraCount(0);
         }
@@ -85,14 +82,11 @@ export default function HomeHeader({
       const loadUserData = async () => {
         try {
           const data = await AsyncStorage.getItem('user');
-          console.log('🔍 HomeHeader: Reloading user data for modal:', data);
           if (data) {
             const user = JSON.parse(data);
-            console.log('🔍 HomeHeader: Parsed user data for modal:', user);
             setUserName(user.name || user.firstName || '');
             setMudraCount(user.mudras || 0);
           } else {
-            console.log('🔍 HomeHeader: No user data found for modal');
             setUserName('');
             setMudraCount(0);
           }
@@ -113,14 +107,11 @@ export default function HomeHeader({
   };
 
   const handleSearch = (query: string) => {
-    console.log('🔍 HomeHeader: Search query:', query);
-    
     // Show suggestions when typing, hide when query is empty
     setShowSuggestions(query.length > 0);
     
     if (enableSpiritualSearch) {
       spiritualSearch.handleSearch(query);
-      console.log('🔍 HomeHeader: Spiritual search enabled, calling hook');
     }
     onSearchChange?.(query);
   };
@@ -140,7 +131,6 @@ export default function HomeHeader({
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
-    console.log('🔍 HomeHeader: Suggestion selected:', suggestion);
     setShowSuggestions(false);
     
     if (enableSpiritualSearch) {
@@ -270,13 +260,6 @@ export default function HomeHeader({
       {/* Search Results Display */}
       {enableSpiritualSearch && (
         <>
-          {console.log('🔍 HomeHeader: SearchResults props:', {
-            results: spiritualSearch.searchResults,
-            currentResultIndex: spiritualSearch.currentResultIndex,
-            totalResults: spiritualSearch.totalResults,
-            hasResults: spiritualSearch.hasResults,
-            visible: spiritualSearch.hasResults
-          })}
           <SearchResults
             results={spiritualSearch.searchResults}
             currentResultIndex={spiritualSearch.currentResultIndex}
