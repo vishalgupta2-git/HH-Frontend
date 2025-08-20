@@ -10,6 +10,7 @@ const { width } = Dimensions.get('window');
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const router = useRouter();
@@ -33,6 +34,7 @@ export default function LoginScreen() {
       valid = false;
     }
     if (!valid) return;
+    setIsLoading(true);
     try {
               await axios.post(getEndpointUrl('SEND_OTP'), { email }, {
                 headers: getAuthHeaders()
@@ -45,6 +47,8 @@ export default function LoginScreen() {
       } else {
         setEmailError('Failed to send OTP. Please try again.');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,8 +79,14 @@ export default function LoginScreen() {
           autoCapitalize="none"
         />
         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Send OTP</Text>
+        <TouchableOpacity 
+          style={[styles.button, isLoading && styles.buttonDisabled]} 
+          onPress={handleLogin} 
+          disabled={isLoading}
+        >
+          <Text style={[styles.buttonText, isLoading && styles.buttonTextDisabled]}>
+            {isLoading ? 'Sending OTP...' : 'Send OTP'}
+          </Text>
         </TouchableOpacity>
         
         {/* Terms and Privacy Policy Text */}
@@ -1186,5 +1196,12 @@ const styles = StyleSheet.create({
     color: '#333',
     lineHeight: 16,
     marginBottom: 4,
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+    opacity: 0.7,
+  },
+  buttonTextDisabled: {
+    color: '#888',
   },
 }); 

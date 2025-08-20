@@ -239,6 +239,7 @@ export default function SignUpScreen() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // ScrollView ref for scrolling to errors
   const scrollViewRef = useRef<ScrollView>(null);
@@ -330,6 +331,7 @@ export default function SignUpScreen() {
 
   const handleCreateAccount = async () => {
     let valid = true;
+    setIsLoading(true);
     
     // Trim trailing spaces and check overall name validation on submit
     const trimmedFirstName = firstName.trim();
@@ -398,10 +400,10 @@ export default function SignUpScreen() {
        firstName: trimmedFirstName,
        lastName: trimmedLastName,
        email,
-       phone: selectedCountry.dialCode + phone, // Include country code
-       country: selectedCountry.code,
+       phone: phone, // Send only the phone number without ISD code
+       countryCode: selectedCountry.code, // Send country code (e.g., "IN")
        countryName: selectedCountry.name,
-       referralCode: referralCode.trim() || null, // Include referral code if provided
+       referrer: referralCode.trim() || null, // Send as referrer field
        gender,
        dateOfBirth: dob ? dob.toISOString() : null,
        placeOfBirth,
@@ -466,6 +468,8 @@ export default function SignUpScreen() {
       
       const errorMessage = err.response?.data?.error || err.message || 'Failed to create account or send OTP. Please try again.';
       Alert.alert('Error', errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1114,10 +1118,13 @@ export default function SignUpScreen() {
            </View>
            
            <TouchableOpacity 
-             style={styles.button} 
+             style={[styles.button, isLoading && styles.buttonDisabled]} 
              onPress={handleCreateAccount}
+             disabled={isLoading}
            >
-             <Text style={styles.buttonText}>Create Account</Text>
+             <Text style={[styles.buttonText, isLoading && styles.buttonTextDisabled]}>
+               {isLoading ? 'Creating Account...' : 'Create Account'}
+             </Text>
            </TouchableOpacity>
           <Text style={styles.loginText}>
             Already have an account?{' '}
@@ -2525,5 +2532,8 @@ const styles = StyleSheet.create({
        color: '#666',
        fontSize: 12,
        marginBottom: 6,
+     },
+     buttonTextDisabled: {
+       color: '#999',
      },
 }); 
