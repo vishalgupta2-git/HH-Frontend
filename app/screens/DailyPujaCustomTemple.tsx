@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder, Alert, Easing, TextInput } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder, Alert, Easing, TextInput, AppState } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { Audio } from 'expo-av';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -347,6 +347,43 @@ export default function DailyPujaCustomTemple() {
   );
 
   const router = useRouter();
+
+  // Configure audio session for background playback
+  useEffect(() => {
+    const configureAudioSession = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+      } catch (error) {
+        console.error('Failed to configure audio session:', error);
+      }
+    };
+
+    configureAudioSession();
+  }, []);
+
+  // Handle app state changes for background audio
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active') {
+        // Resume audio if it was playing before going to background
+        if (sound && currentlyPlaying) {
+          sound.playAsync().catch(error => {
+            console.error('Error resuming audio:', error);
+          });
+        }
+      }
+      // Audio will continue playing in background due to staysActiveInBackground: true
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [sound, currentlyPlaying]);
 
   // Function to play welcome bell sound
   const playWelcomeBell = async () => {
