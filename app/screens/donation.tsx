@@ -1,7 +1,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, ActivityIndicator, RefreshControl } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, ActivityIndicator, RefreshControl, Modal } from 'react-native';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import axios from 'axios';
 
@@ -34,18 +34,24 @@ export default function DonationScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<TempleCharity | null>(null);
+  const [modalImages, setModalImages] = useState<Array<{key: string, url: string}>>([]);
+  const [modalLoading, setModalLoading] = useState(false);
+  
+  // Image viewer modal state
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Fetch temples and charities data
   const fetchData = async () => {
     try {
-      console.log('🔍 DonationScreen: Starting to fetch data...');
       setLoading(true);
       setError(null);
       
       const endpoint = getEndpointUrl('TEMPLES_CHARITIES');
-      console.log('🔍 DonationScreen: API endpoint:', endpoint);
-      console.log('🔍 DonationScreen: Request params:', { limit: 100, offset: 0 });
-      
       const response = await axios.get(endpoint, {
         headers: getAuthHeaders(),
         params: {
@@ -54,74 +60,37 @@ export default function DonationScreen() {
         }
       });
 
-      console.log('🔍 DonationScreen: API response received:', {
-        status: response.status,
-        success: response.data.success,
-        dataLength: response.data.data?.length || 0,
-        pagination: response.data.pagination
-      });
-
       if (response.data.success) {
         const fetchedData = response.data.data || [];
-        console.log('🔍 DonationScreen: Data fetched successfully:', {
-          totalItems: fetchedData.length,
-          firstItem: fetchedData[0] || 'No items',
-          types: [...new Set(fetchedData.map((item: TempleCharity) => item.type))],
-          sampleNames: fetchedData.slice(0, 3).map((item: TempleCharity) => item.name)
-        });
         setData(fetchedData);
       } else {
-        console.error('❌ DonationScreen: API returned success: false');
         setError('Failed to fetch data');
       }
     } catch (err: any) {
-      console.error('❌ DonationScreen: Error fetching data:', {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        config: {
-          url: err.config?.url,
-          headers: err.config?.headers,
-          params: err.config?.params
-        }
-      });
       setError(err.response?.data?.error || 'Failed to fetch data');
     } finally {
-      console.log('🔍 DonationScreen: Setting loading to false');
       setLoading(false);
     }
   };
 
   // Filter data based on search query and toggle states
   useEffect(() => {
-    console.log('🔍 DonationScreen: Filtering data...', {
-      totalData: data.length,
-      searchQuery,
-      templesEnabled,
-      charitiesEnabled
-    });
-
     let filtered = data;
 
     // Filter by type (Temple or Charity)
     if (templesEnabled && charitiesEnabled) {
-      console.log('🔍 DonationScreen: Both types enabled, showing all items');
       // Show all
     } else if (templesEnabled) {
       filtered = filtered.filter(item => item.type === 'Temple');
-      console.log('🔍 DonationScreen: Only temples enabled, filtered to:', filtered.length, 'items');
     } else if (charitiesEnabled) {
       filtered = filtered.filter(item => item.type === 'Charity');
-      console.log('🔍 DonationScreen: Only charities enabled, filtered to:', filtered.length, 'items');
     } else {
-      console.log('🔍 DonationScreen: Both types disabled, showing no items');
       filtered = []; // Both disabled
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      console.log('🔍 DonationScreen: Applying search filter for query:', query);
       
       const beforeSearch = filtered.length;
       filtered = filtered.filter(item =>
@@ -134,36 +103,10 @@ export default function DonationScreen() {
         item.zip_pinCode?.includes(query)
       );
       
-      console.log('🔍 DonationScreen: Search filter applied:', {
-        beforeSearch,
-        afterSearch: filtered.length,
-        searchQuery: query
-      });
     }
 
-    console.log('🔍 DonationScreen: Final filtered data:', {
-      totalFiltered: filtered.length,
-      sampleItems: filtered.slice(0, 2).map(item => ({
-        name: item.name,
-        type: item.type,
-        city: item.city
-      }))
-    });
-
-    console.log('🔍 DonationScreen: Setting filteredData state to:', filtered.length, 'items');
     setFilteredData(filtered);
   }, [data, searchQuery, templesEnabled, charitiesEnabled]);
-
-  // Add logging for filteredData state changes
-  useEffect(() => {
-    console.log('🔍 DonationScreen: filteredData state changed:', {
-      length: filteredData.length,
-      sampleItems: filteredData.slice(0, 2).map(item => ({
-        name: item.name,
-        type: item.type
-      }))
-    });
-  }, [filteredData]);
 
   // Initial data fetch
   useEffect(() => {
@@ -175,6 +118,69 @@ export default function DonationScreen() {
     setRefreshing(true);
     await fetchData();
     setRefreshing(false);
+  };
+
+  // Handle tile click - fetch images and open modal
+  const handleTileClick = async (item: TempleCharity) => {
+    try {
+      setModalLoading(true);
+      setSelectedItem(item);
+      setShowModal(true);
+      
+      console.log('Fetching images for item:', item.id, item.name);
+      
+      // Fetch images from S3
+      const response = await axios.get(getEndpointUrl('TEMPLES_CHARITIES_IMAGES') + `/${item.id}`, {
+        headers: getAuthHeaders()
+      });
+      
+      console.log('S3 response:', response.data);
+      
+      if (response.data.success) {
+        setModalImages(response.data.images || []);
+        console.log('Images set:', response.data.images);
+      } else {
+        setModalImages([]);
+      }
+    } catch (err: any) {
+      console.error('Error fetching images:', err);
+      setModalImages([]);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedItem(null);
+    setModalImages([]);
+  };
+
+  // Handle image click to open viewer
+  const handleImageClick = (index: number) => {
+    setSelectedImageIndex(index);
+    setShowImageViewer(true);
+  };
+
+  // Handle next image
+  const handleNextImage = () => {
+    setSelectedImageIndex((prev) => 
+      prev === modalImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  // Handle previous image
+  const handlePrevImage = () => {
+    setSelectedImageIndex((prev) => 
+      prev === 0 ? modalImages.length - 1 : prev - 1
+    );
+  };
+
+  // Handle image viewer close
+  const handleCloseImageViewer = () => {
+    setShowImageViewer(false);
+    setSelectedImageIndex(0);
   };
 
   // Handle toggle changes
@@ -234,11 +240,6 @@ export default function DonationScreen() {
 
   // Render individual tile
   const renderTile = (item: TempleCharity) => {
-    console.log('🔍 DonationScreen: renderTile called for item:', {
-      id: item.id,
-      name: item.name,
-      type: item.type
-    });
     
     return (
       <View key={item.id} style={{
@@ -298,20 +299,25 @@ export default function DonationScreen() {
                 justifyContent: 'space-between'
               }}>
                 {filteredData.map((item, index) => (
-                  <View key={item.id} style={{
-                    width: '48%',
-                    backgroundColor: '#fff',
-                    padding: 15,
-                    marginBottom: 15,
-                    borderRadius: 12,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                    elevation: 3,
-                    borderWidth: 1,
-                    borderColor: '#e0e0e0'
-                  }}>
+                  <TouchableOpacity 
+                    key={item.id} 
+                    style={{
+                      width: '48%',
+                      backgroundColor: '#fff',
+                      padding: 15,
+                      marginBottom: 15,
+                      borderRadius: 12,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 4,
+                      elevation: 3,
+                      borderWidth: 1,
+                      borderColor: '#e0e0e0'
+                    }}
+                    onPress={() => handleTileClick(item)}
+                    activeOpacity={0.8}
+                  >
                     {/* Header with type icon */}
                     <View style={{
                       flexDirection: 'row',
@@ -407,7 +413,7 @@ export default function DonationScreen() {
                         📍 {[item.city, item.state, item.country].filter(Boolean).join(', ')}
                       </Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </View>
             </ScrollView>
@@ -473,6 +479,297 @@ export default function DonationScreen() {
           </View>
         )}
       </View>
+
+      {/* Temple/Charity Details Modal */}
+      <Modal
+        visible={showModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={handleCloseModal}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 20,
+            padding: 20,
+            width: '90%',
+            maxHeight: '80%',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 5
+          }}>
+            {/* Header */}
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 20
+            }}>
+              <Text style={{
+                fontSize: 24,
+                fontWeight: 'bold',
+                color: '#FF6A00'
+              }}>
+                {selectedItem?.name}
+              </Text>
+              <TouchableOpacity onPress={handleCloseModal}>
+                <Text style={{
+                  fontSize: 24,
+                  color: '#666',
+                  fontWeight: 'bold'
+                }}>
+                  ×
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* About Section */}
+            {selectedItem?.about && (
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: '#333',
+                  marginBottom: 10
+                }}>
+                  About
+                </Text>
+                <Text style={{
+                  fontSize: 14,
+                  color: '#666',
+                  lineHeight: 20,
+                  textAlign: 'justify'
+                }}>
+                  {selectedItem.about}
+                </Text>
+              </View>
+            )}
+
+            {/* Donate Button */}
+            <TouchableOpacity style={{
+              backgroundColor: '#FF6A00',
+              paddingVertical: 15,
+              paddingHorizontal: 30,
+              borderRadius: 8,
+              alignItems: 'center',
+              marginBottom: 20
+            }}>
+              <Text style={{
+                color: '#fff',
+                fontSize: 18,
+                fontWeight: 'bold'
+              }}>
+                Donate
+              </Text>
+            </TouchableOpacity>
+
+            {/* Image Gallery */}
+            <View>
+              <Text style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: 15
+              }}>
+                Gallery
+              </Text>
+              
+              {modalLoading ? (
+                <View style={{
+                  alignItems: 'center',
+                  padding: 20
+                }}>
+                  <ActivityIndicator size="large" color="#FF6A00" />
+                  <Text style={{
+                    marginTop: 10,
+                    color: '#666'
+                  }}>
+                    Loading images...
+                  </Text>
+                </View>
+              ) : modalImages.length > 0 ? (
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{
+                    paddingRight: 20
+                  }}
+                >
+                  {modalImages.map((image, index) => (
+                    <TouchableOpacity 
+                      key={index}
+                      style={{
+                        marginRight: 15,
+                        borderRadius: 10,
+                        overflow: 'hidden',
+                        alignItems: 'center'
+                      }}
+                      onPress={() => handleImageClick(index)}
+                    >
+                      <Image
+                        source={{ uri: image.url }}
+                        style={{
+                          width: 120,
+                          height: 120,
+                          borderRadius: 10
+                        }}
+                        resizeMode="cover"
+                      />
+                      <Text style={{
+                        marginTop: 8,
+                        fontSize: 12,
+                        color: '#666',
+                        textAlign: 'center',
+                        maxWidth: 120
+                      }} numberOfLines={2}>
+                        {image.key.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'Image'}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              ) : (
+                <View style={{
+                  alignItems: 'center',
+                  padding: 20,
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: 10
+                }}>
+                  <Text style={{
+                    color: '#666',
+                    fontSize: 14
+                  }}>
+                    No images available
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Image Viewer Modal */}
+      <Modal
+        visible={showImageViewer}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={handleCloseImageViewer}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          {/* Close button */}
+          <TouchableOpacity 
+            style={{
+              position: 'absolute',
+              top: 50,
+              right: 20,
+              zIndex: 10
+            }}
+            onPress={handleCloseImageViewer}
+          >
+            <Text style={{
+              color: '#fff',
+              fontSize: 30,
+              fontWeight: 'bold'
+            }}>
+              ×
+            </Text>
+          </TouchableOpacity>
+
+          {/* Image counter */}
+          <Text style={{
+            position: 'absolute',
+            top: 50,
+            left: 20,
+            color: '#fff',
+            fontSize: 16,
+            zIndex: 10
+          }}>
+            {selectedImageIndex + 1} / {modalImages.length}
+          </Text>
+
+          {/* Main image */}
+          <Image
+            source={{ uri: modalImages[selectedImageIndex]?.url }}
+            style={{
+              width: '90%',
+              height: '70%',
+              borderRadius: 10,
+              resizeMode: 'contain'
+            }}
+          />
+
+          {/* Image name */}
+          <Text style={{
+            color: '#fff',
+            fontSize: 16,
+            marginTop: 20,
+            textAlign: 'center',
+            paddingHorizontal: 20
+          }} numberOfLines={2}>
+            {modalImages[selectedImageIndex]?.key.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'Image'}
+          </Text>
+
+          {/* Navigation buttons */}
+          <View style={{
+            flexDirection: 'row',
+            position: 'absolute',
+            bottom: 50,
+            justifyContent: 'space-between',
+            width: '80%'
+          }}>
+            <TouchableOpacity 
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                paddingVertical: 12,
+                paddingHorizontal: 20,
+                borderRadius: 25,
+                borderWidth: 1,
+                borderColor: '#fff'
+              }}
+              onPress={handlePrevImage}
+            >
+              <Text style={{
+                color: '#fff',
+                fontSize: 16,
+                fontWeight: 'bold'
+              }}>
+                ← Previous
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                paddingVertical: 12,
+                paddingHorizontal: 20,
+                borderRadius: 25,
+                borderWidth: 1,
+                borderColor: '#fff'
+              }}
+              onPress={handleNextImage}
+            >
+              <Text style={{
+                color: '#fff',
+                fontSize: 16,
+                fontWeight: 'bold'
+              }}>
+                Next →
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
