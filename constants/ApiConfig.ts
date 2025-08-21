@@ -51,12 +51,20 @@ export const API_CONFIG = {
     
     // Temples and Charities
     TEMPLES_CHARITIES: '/api/temples-charities',
-    TEMPLES_CHARITIES_BY_ID: '/api/temples-charities', // Note: ID is appended to this base path
+    TEMPLES_CHARITIES_BY_ID: '/api/temples-charities', // Note: ID is appended to this base path 
     TEMPLES_CHARITIES_FILTERS: '/api/temples-charities/filters/options',
     TEMPLES_CHARITIES_BY_TYPE: '/api/temples-charities/type', // Type is appended
     TEMPLES_CHARITIES_BY_LOCATION: '/api/temples-charities/location',
     TEMPLES_CHARITIES_SEARCH: '/api/temples-charities/search',
     TEMPLES_CHARITIES_IMAGES: '/api/s3/temples-charities-images', // Note: ID is appended to this base path
+    
+    // Upcoming Pujas
+    UPCOMING_PUJAS: '/api/upcoming-pujas',
+    UPCOMING_PUJAS_BY_ID: '/api/upcoming-pujas', // Note: ID is appended to this base path
+    UPCOMING_PUJAS_FILTERS: '/api/upcoming-pujas/filters/options',
+    UPCOMING_PUJAS_BY_TEMPLE: '/api/upcoming-pujas/temple', // Temple ID is appended
+    UPCOMING_PUJAS_BY_DATE: '/api/upcoming-pujas/date',
+    UPCOMING_PUJAS_SEARCH: '/api/upcoming-pujas/search',
     
     // Media & Content
     MEDIA_FILES: '/api/media-files',
