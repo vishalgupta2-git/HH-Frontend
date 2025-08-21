@@ -49,6 +49,14 @@ export const API_CONFIG = {
     SAVE_USER_TEMPLE: '/api/save-user-temple',
     GET_USER_TEMPLE: '/api/get-user-temple',
     
+    // Temples and Charities
+    TEMPLES_CHARITIES: '/api/temples-charities',
+    TEMPLES_CHARITIES_BY_ID: '/api/temples-charities',
+    TEMPLES_CHARITIES_FILTERS: '/api/temples-charities/filters/options',
+    TEMPLES_CHARITIES_BY_TYPE: '/api/temples-charities/type',
+    TEMPLES_CHARITIES_BY_LOCATION: '/api/temples-charities/location',
+    TEMPLES_CHARITIES_SEARCH: '/api/temples-charities/search',
+    
     // Media & Content
     MEDIA_FILES: '/api/media-files',
     S3_AUDIO_URL: '/api/s3/audio-url',
