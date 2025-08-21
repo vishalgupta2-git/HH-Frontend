@@ -1,3 +1,20 @@
+/**
+ * Donation Screen - Optimized for Performance
+ * 
+ * Architecture:
+ * 1. Initial Load: Uses base /api/temples-charities endpoint to fetch 100 records
+ * 2. Local Filtering: Type (Temple/Charity) filtering done locally for instant response
+ * 3. Local Search: Text search performed on loaded data for fast results
+ * 4. Specific Endpoints: Type and location filtering use dedicated endpoints when needed
+ * 5. Pagination: Loads more data as user scrolls (100 records per page)
+ * 
+ * Performance Benefits:
+ * - Faster initial load (single API call)
+ * - Instant filtering and search (no API delays)
+ * - Progressive loading (only load what's needed)
+ * - Reduced server load (fewer API calls)
+ */
+
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect } from 'react';
@@ -34,6 +51,12 @@ export default function DonationScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState({
+    limit: 100,
+    offset: 0,
+    total: 0,
+    hasMore: false
+  });
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -45,24 +68,36 @@ export default function DonationScreen() {
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  // Fetch temples and charities data
-  const fetchData = async () => {
+  // Fetch temples and charities data - always use base endpoint
+  const fetchData = async (offset = 0, append = false) => {
     try {
-      setLoading(true);
+      if (!append) {
+        setLoading(true);
+      }
       setError(null);
       
       const endpoint = getEndpointUrl('TEMPLES_CHARITIES');
       const response = await axios.get(endpoint, {
         headers: getAuthHeaders(),
         params: {
-          limit: 100, // Get more items for better user experience
-          offset: 0
+          limit: 100,
+          offset: offset
         }
       });
 
       if (response.data.success) {
         const fetchedData = response.data.data || [];
-        setData(fetchedData);
+        const newPagination = response.data.pagination;
+        
+        if (append) {
+          // Append new data for pagination
+          setData(prev => [...prev, ...fetchedData]);
+        } else {
+          // Replace data for fresh load
+          setData(fetchedData);
+        }
+        
+        setPagination(newPagination);
       } else {
         setError('Failed to fetch data');
       }
@@ -73,8 +108,17 @@ export default function DonationScreen() {
     }
   };
 
-  // Filter data based on search query and toggle states
+  // Load more data for pagination
+  const loadMoreData = async () => {
+    if (pagination.hasMore && !loading) {
+      await fetchData(pagination.offset + pagination.limit, true);
+    }
+  };
+
+  // Filter data based on search query and toggle states - LOCAL FILTERING
   useEffect(() => {
+    console.log('🔍 Filtering data:', { searchQuery, templesEnabled, charitiesEnabled, dataLength: data.length });
+    
     let filtered = data;
 
     // Filter by type (Temple or Charity)
@@ -88,11 +132,11 @@ export default function DonationScreen() {
       filtered = []; // Both disabled
     }
 
-    // Filter by search query
+    // Filter by search query - LOCAL SEARCH
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
+      console.log('🔍 Applying search filter:', query);
       
-      const beforeSearch = filtered.length;
       filtered = filtered.filter(item =>
         item.name?.toLowerCase().includes(query) ||
         item.about?.toLowerCase().includes(query) ||
@@ -103,6 +147,7 @@ export default function DonationScreen() {
         item.zip_pinCode?.includes(query)
       );
       
+      console.log('🔍 Search results:', filtered.length);
     }
 
     setFilteredData(filtered);
@@ -113,10 +158,15 @@ export default function DonationScreen() {
     fetchData();
   }, []);
 
+  // Handle retry
+  const handleRetry = () => {
+    fetchData(0, false);
+  };
+
   // Handle refresh
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchData();
+    await fetchData(0, false); // Reset to first page
     setRefreshing(false);
   };
 
@@ -177,13 +227,152 @@ export default function DonationScreen() {
     setSelectedImageIndex(0);
   };
 
-  // Handle toggle changes
-  const handleTemplesToggle = () => {
-    setTemplesEnabled(!templesEnabled);
+  // Handle toggle changes - use specific endpoints for type filtering
+  const handleTemplesToggle = async () => {
+    const newTemplesEnabled = !templesEnabled;
+    setTemplesEnabled(newTemplesEnabled);
+    
+    // If only temples are enabled, fetch temple-specific data
+    if (newTemplesEnabled && !charitiesEnabled) {
+      try {
+        setLoading(true);
+        const response = await axios.get(getEndpointUrl('TEMPLES_CHARITIES_BY_TYPE') + '/Temple', {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.data.success) {
+          setData(response.data.data || []);
+          setPagination({
+            limit: response.data.count || 0,
+            offset: 0,
+            total: response.data.count || 0,
+            hasMore: false
+          });
+        }
+      } catch (err: any) {
+        console.error('Error fetching temples:', err);
+        // Fallback to local filtering
+      } finally {
+        setLoading(false);
+      }
+    } else if (!newTemplesEnabled && charitiesEnabled) {
+      // If only charities are enabled, fetch charity-specific data
+      try {
+        setLoading(true);
+        const response = await axios.get(getEndpointUrl('TEMPLES_CHARITIES_BY_TYPE') + '/Charity', {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.data.success) {
+          setData(response.data.data || []);
+          setPagination({
+            limit: response.data.count || 0,
+            offset: 0,
+            total: response.data.count || 0,
+            hasMore: false
+          });
+        }
+      } catch (err: any) {
+        console.error('Error fetching charities:', err);
+        // Fallback to local filtering
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Both or neither enabled, reload all data
+      fetchData(0, false);
+    }
   };
 
-  const handleCharitiesToggle = () => {
-    setCharitiesEnabled(!charitiesEnabled);
+  const handleCharitiesToggle = async () => {
+    const newCharitiesEnabled = !charitiesEnabled;
+    setCharitiesEnabled(newCharitiesEnabled);
+    
+    // Similar logic as temples toggle
+    if (newCharitiesEnabled && !templesEnabled) {
+      try {
+        setLoading(true);
+        const response = await axios.get(getEndpointUrl('TEMPLES_CHARITIES_BY_TYPE') + '/Charity', {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.data.success) {
+          setData(response.data.data || []);
+          setPagination({
+            limit: response.data.count || 0,
+            offset: 0,
+            total: response.data.count || 0,
+            hasMore: false
+          });
+        }
+      } catch (err: any) {
+        console.error('Error fetching charities:', err);
+        // Fallback to local filtering
+      } finally {
+        setLoading(false);
+      }
+    } else if (!newCharitiesEnabled && templesEnabled) {
+      try {
+        setLoading(true);
+        const response = await axios.get(getEndpointUrl('TEMPLES_CHARITIES_BY_TYPE') + '/Temple', {
+          headers: getAuthHeaders()
+        });
+        
+        if (response.data.success) {
+          setData(response.data.data || []);
+          setPagination({
+            limit: response.data.count || 0,
+            offset: 0,
+            total: response.data.count || 0,
+            hasMore: false
+          });
+        }
+      } catch (err: any) {
+        console.error('Error fetching temples:', err);
+        // Fallback to local filtering
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Both or neither enabled, reload all data
+      fetchData(0, false);
+    }
+  };
+
+  // Handle location filtering using dedicated endpoint
+  const handleLocationFilter = async (country?: string, state?: string, city?: string) => {
+    try {
+      setLoading(true);
+      
+      const params = new URLSearchParams();
+      if (country) params.append('country', country);
+      if (state) params.append('state', state);
+      if (city) params.append('city', city);
+      
+      const response = await axios.get(getEndpointUrl('TEMPLES_CHARITIES_BY_LOCATION') + '?' + params.toString(), {
+        headers: getAuthHeaders()
+      });
+      
+      if (response.data.success) {
+        setData(response.data.data || []);
+        setPagination({
+          limit: response.data.count || 0,
+          offset: 0,
+          total: response.data.count || 0,
+          hasMore: false
+        });
+      }
+    } catch (err: any) {
+      console.error('Error fetching by location:', err);
+      // Fallback to local filtering
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reset to show all data
+  const handleResetFilters = () => {
+    fetchData(0, false);
   };
 
   const toggleControls = (
@@ -228,6 +417,14 @@ export default function DonationScreen() {
           />
         </LinearGradient>
         <Text style={styles.toggleLabel}>Charities</Text>
+      </TouchableOpacity>
+
+      {/* Reset Filters Button */}
+      <TouchableOpacity 
+        style={styles.resetButton}
+        onPress={handleResetFilters}
+      >
+        <Text style={styles.resetButtonText}>Reset</Text>
       </TouchableOpacity>
     </View>
   );
@@ -277,15 +474,37 @@ export default function DonationScreen() {
               <Text style={styles.statsText}>
                 Showing {filteredData.length} {filteredData.length === 1 ? 'item' : 'items'}
                 {searchQuery && ` for "${searchQuery}"`}
+                {pagination.total > 0 && ` of ${pagination.total} total`}
               </Text>
+              {pagination.hasMore && (
+                <Text style={[styles.statsText, { color: '#FF6A00', fontSize: 12 }]}>
+                  Scroll down to load more
+                </Text>
+              )}
             </View>
             
             {/* Grid layout */}
             <ScrollView
               showsVerticalScrollIndicator={false}
               refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl 
+                  refreshing={refreshing} 
+                  onRefresh={onRefresh}
+                  colors={['#FF6A00']}
+                  tintColor="#FF6A00"
+                  title="Pull to refresh"
+                  titleColor="#666"
+                />
               }
+              onScroll={({ nativeEvent }) => {
+                const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+                const paddingToBottom = 20;
+                if (layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom) {
+                  // User has scrolled to the bottom, load more data
+                  loadMoreData();
+                }
+              }}
+              scrollEventThrottle={400}
             >
               <View style={{
                 flexDirection: 'row',
@@ -408,6 +627,24 @@ export default function DonationScreen() {
                     </View>
                   </TouchableOpacity>
                 ))}
+                
+                {/* Pagination loading indicator */}
+                {pagination.hasMore && (
+                  <View style={{
+                    width: '100%',
+                    padding: 20,
+                    alignItems: 'center'
+                  }}>
+                    <ActivityIndicator size="small" color="#FF6A00" />
+                    <Text style={{
+                      color: '#666',
+                      fontSize: 14,
+                      marginTop: 10
+                    }}>
+                      Loading more...
+                    </Text>
+                  </View>
+                )}
               </View>
             </ScrollView>
           </View>
@@ -432,14 +669,18 @@ export default function DonationScreen() {
         {/* Show loading state */}
         {loading && (
           <View style={{ 
-            backgroundColor: 'blue', 
-            padding: 20, 
-            borderRadius: 8,
-            alignItems: 'center'
+            padding: 40, 
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
-            <ActivityIndicator size="large" color="white" />
-            <Text style={{ color: 'white', fontSize: 16, marginTop: 10 }}>
-              Loading...
+            <ActivityIndicator size="large" color="#FF6A00" />
+            <Text style={{ 
+              color: '#666', 
+              fontSize: 16, 
+              marginTop: 15,
+              textAlign: 'center'
+            }}>
+              {pagination.hasMore ? 'Loading more...' : 'Loading temples and charities...'}
             </Text>
           </View>
         )}
@@ -465,7 +706,7 @@ export default function DonationScreen() {
                 borderRadius: 5, 
                 marginTop: 10 
               }} 
-              onPress={fetchData}
+              onPress={handleRetry}
             >
               <Text style={{ color: 'red', fontWeight: 'bold' }}>Retry</Text>
             </TouchableOpacity>
@@ -1013,5 +1254,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
+  },
+  resetButton: {
+    backgroundColor: '#FF6A00',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginLeft: 15,
+  },
+  resetButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 }); 
