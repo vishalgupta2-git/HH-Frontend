@@ -18,7 +18,7 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, ActivityIndicator, RefreshControl, Modal } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, ActivityIndicator, RefreshControl, Modal, TextInput } from 'react-native';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import axios from 'axios';
 
@@ -67,6 +67,11 @@ export default function DonationScreen() {
   // Image viewer modal state
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+  // Debug search query changes
+  useEffect(() => {
+    console.log('🔍 Search query changed:', searchQuery);
+  }, [searchQuery]);
 
   // Fetch temples and charities data - always use base endpoint
   const fetchData = async (offset = 0, append = false) => {
@@ -417,14 +422,6 @@ export default function DonationScreen() {
           />
         </LinearGradient>
         <Text style={styles.toggleLabel}>Charities</Text>
-      </TouchableOpacity>
-
-      {/* Reset Filters Button */}
-      <TouchableOpacity 
-        style={styles.resetButton}
-        onPress={handleResetFilters}
-      >
-        <Text style={styles.resetButtonText}>Reset</Text>
       </TouchableOpacity>
     </View>
   );

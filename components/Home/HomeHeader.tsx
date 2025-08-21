@@ -49,6 +49,7 @@ export default function HomeHeader({
   const [topicDropdownOpen, setTopicDropdownOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchInputValue, setSearchInputValue] = useState('');
   const router = useRouter();
   
   // Use spiritual search hook if enabled
@@ -107,21 +108,33 @@ export default function HomeHeader({
   };
 
   const handleSearch = (query: string) => {
+    // Update local search input state
+    setSearchInputValue(query);
+    
     // Show suggestions when typing, hide when query is empty
     setShowSuggestions(query.length > 0);
     
     if (enableSpiritualSearch) {
       spiritualSearch.handleSearch(query);
     }
-    onSearchChange?.(query);
+    
+    // Call the parent's onSearchChange callback
+    if (onSearchChange) {
+      onSearchChange(query);
+    }
   };
 
   const handleSearchClear = () => {
     setShowSuggestions(false);
+    setSearchInputValue('');
+    
     if (enableSpiritualSearch) {
       spiritualSearch.clearSearch();
     }
-    onSearchChange?.('');
+    
+    if (onSearchChange) {
+      onSearchChange('');
+    }
   };
 
   const handleResultSelect = (result: any, matchIndex: number) => {
@@ -228,7 +241,7 @@ export default function HomeHeader({
                 style={styles.searchInput}
                 placeholder={searchPlaceholder || "Search for 'puja '"}
                 placeholderTextColor="#fff"
-                value=""
+                value={searchInputValue}
                 onChangeText={handleSearch}
               />
               <TouchableOpacity style={styles.micButton}>
