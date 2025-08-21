@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Alert } from 'react-native';
 import { PanGestureHandler, PinchGestureHandler } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
@@ -280,6 +280,107 @@ export default function TemplePreviewScreen() {
         return require('@/assets/images/temple/Ganesha1.png');
     }
   };
+
+  // Function to load temple configuration with proper priority: DB -> AsyncStorage -> Defaults
+  const loadTempleConfig = useCallback(async () => {
+    try {
+      // Loading temple configuration
+      
+      // First check if user is authenticated
+      const { isAuthenticated, userData } = await checkUserAuthentication();
+      
+      let templeConfig = null;
+      
+      if (isAuthenticated) {
+        // User is logged in - try to load from database first
+        try {
+          const dbTemple = await loadTempleFromDatabase();
+          if (dbTemple) {
+            // Temple found in database
+            templeConfig = dbTemple;
+          } else {
+            // No temple in database, falling back to AsyncStorage
+          }
+        } catch (error) {
+          // Database load failed, falling back to AsyncStorage
+        }
+      }
+      
+      // If no database temple, try AsyncStorage
+      if (!templeConfig) {
+        // Loading from AsyncStorage
+        templeConfig = await loadTempleConfiguration();
+      }
+      
+      if (templeConfig) {
+        // Temple configuration loaded successfully
+        
+        // Check for deities in different possible locations
+        let deities = null;
+        if (templeConfig.deities) {
+          deities = templeConfig.deities;
+        } else if (templeConfig.selectedDeities) {
+          deities = templeConfig.selectedDeities;
+        } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedDeities) {
+          deities = templeConfig.templeInformation.selectedDeities;
+        }
+        
+        if (deities && Object.keys(deities).length > 0) {
+          setSelectedDeities(deities);
+          
+          // Debug: Check if deityState keys match selectedDeities keys
+          if (templeConfig.deityState && Array.isArray(templeConfig.deityState)) {
+            const deityStateKeys = templeConfig.deityState.map((d: any) => d.key);
+            const selectedDeityKeys = Object.keys(deities);
+          }
+        }
+        
+        // Load temple style - check both root and nested locations
+        let templeStyle = null;
+        if (templeConfig.selectedStyle) {
+          templeStyle = templeConfig.selectedStyle;
+        } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedStyle) {
+          templeStyle = templeConfig.templeInformation.selectedStyle;
+        }
+        
+        if (templeStyle) {
+          setSelectedStyle(templeStyle);
+        } else {
+          // No temple style found
+        }
+        
+        // Load background gradient - check both root and nested locations
+        let backgroundGradient = null;
+        if (templeConfig.bgGradient) {
+          backgroundGradient = templeConfig.bgGradient;
+        } else if (templeConfig.templeInformation && templeConfig.templeInformation.bgGradient) {
+          backgroundGradient = templeConfig.templeInformation.bgGradient;
+        }
+        
+        if (backgroundGradient) {
+          setBgGradient(backgroundGradient);
+        } else {
+          // No background gradient found
+        }
+        
+        // Load deity state (positions, scales, sizes) - this is crucial for deity positioning
+        if (templeConfig.deityState && Array.isArray(templeConfig.deityState)) {
+          setDeityState(templeConfig.deityState);
+        } else if (templeConfig.templeInformation && templeConfig.templeInformation.deityState && Array.isArray(templeConfig.templeInformation.deityState)) {
+          // Check if deityState is nested in templeInformation (database structure)
+          setDeityState(templeConfig.templeInformation.deityState);
+        } else {
+          // No deity state found or invalid format
+        }
+        
+        // Temple configuration applied successfully
+      } else {
+        // No temple configuration found anywhere, using defaults
+      }
+    } catch (error) {
+      console.error('Error loading temple configuration:', error);
+    }
+  }, []);
 
   // On mount, load and merge state with enhanced loading logic
   useEffect(() => {

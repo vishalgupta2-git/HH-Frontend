@@ -353,100 +353,97 @@ export default function CreateTempleScreen() {
       
       // First check if user is authenticated
       const { isAuthenticated, userData } = await checkUserAuthentication();
-              // Authentication check completed
       
       let templeConfig = null;
       
       if (isAuthenticated) {
         // User is logged in - try to load from database first
-                  // User authenticated, trying database first
         try {
           const dbTemple = await loadTempleFromDatabase();
-                      if (dbTemple) {
-              // Temple found in database
-              templeConfig = dbTemple;
-            } else {
-              // No temple in database, falling back to AsyncStorage
-            }
-          } catch (error) {
-            // Database load failed, falling back to AsyncStorage
+          if (dbTemple) {
+            // Temple found in database
+            templeConfig = dbTemple;
+          } else {
+            // No temple in database, falling back to AsyncStorage
           }
+        } catch (error) {
+          // Database load failed, falling back to AsyncStorage
+        }
       }
       
-              // If no database temple, try AsyncStorage
-        if (!templeConfig) {
-          // Loading from AsyncStorage
-          templeConfig = await loadTempleConfiguration();
-        }
+      // If no database temple, try AsyncStorage
+      if (!templeConfig) {
+        // Loading from AsyncStorage
+        templeConfig = await loadTempleConfiguration();
+      }
       
-              if (templeConfig) {
-          // Temple configuration loaded successfully
+      if (templeConfig) {
+        // Temple configuration loaded successfully
+        
+        // Check for deities in different possible locations
+        let deities = null;
+        if (templeConfig.deities) {
+          deities = templeConfig.deities;
+        } else if (templeConfig.selectedDeities) {
+          deities = templeConfig.selectedDeities;
+        } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedDeities) {
+          deities = templeConfig.templeInformation.selectedDeities;
+        }
+        
+        if (deities && Object.keys(deities).length > 0) {
+          setSelectedDeities(deities);
+          // Loaded deities
           
-          // Check for deities in different possible locations
-          let deities = null;
-          if (templeConfig.deities) {
-            deities = templeConfig.deities;
-          } else if (templeConfig.selectedDeities) {
-            deities = templeConfig.selectedDeities;
-          } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedDeities) {
-            deities = templeConfig.templeInformation.selectedDeities;
-          }
-          
-          if (deities && Object.keys(deities).length > 0) {
-            setSelectedDeities(deities);
-            // Loaded deities
-            
-            // Debug: Check if deityState keys match selectedDeities keys
-            if (templeConfig.deityState && Array.isArray(templeConfig.deityState)) {
-              const deityStateKeys = templeConfig.deityState.map((d: any) => d.key);
-              const selectedDeityKeys = Object.keys(deities);
-                          // Key matching check completed
-            }
-          }
-          
-          // Load temple style - check both root and nested locations
-          let templeStyle = null;
-          if (templeConfig.selectedStyle) {
-            templeStyle = templeConfig.selectedStyle;
-          } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedStyle) {
-            templeStyle = templeConfig.templeInformation.selectedStyle;
-          }
-          
-          if (templeStyle) {
-            setSelectedStyle(templeStyle);
-            // Loaded temple style
-          } else {
-            // No temple style found
-          }
-          
-          // Load background gradient - check both root and nested locations
-          let backgroundGradient = null;
-          if (templeConfig.bgGradient) {
-            backgroundGradient = templeConfig.bgGradient;
-          } else if (templeConfig.templeInformation && templeConfig.templeInformation.bgGradient) {
-            backgroundGradient = templeConfig.templeInformation.bgGradient;
-          }
-          
-          if (backgroundGradient) {
-            setBgGradient(backgroundGradient);
-            // Loaded background gradient
-          } else {
-            // No background gradient found
-          }
-          
-          // Load deity state (positions, scales, sizes) - this is crucial for deity positioning
+          // Debug: Check if deityState keys match selectedDeities keys
           if (templeConfig.deityState && Array.isArray(templeConfig.deityState)) {
-            setDeityState(templeConfig.deityState);
-            // Loaded deity state
-          } else if (templeConfig.templeInformation && templeConfig.templeInformation.deityState && Array.isArray(templeConfig.templeInformation.deityState)) {
-            // Check if deityState is nested in templeInformation (database structure)
-            setDeityState(templeConfig.templeInformation.deityState);
-            // Loaded deity state from templeInformation
-          } else {
-            // No deity state found or invalid format
+            const deityStateKeys = templeConfig.deityState.map((d: any) => d.key);
+            const selectedDeityKeys = Object.keys(deities);
           }
-          
-          // Temple configuration applied successfully
+        }
+        
+        // Load temple style - check both root and nested locations
+        let templeStyle = null;
+        if (templeConfig.selectedStyle) {
+          templeStyle = templeConfig.selectedStyle;
+        } else if (templeConfig.templeInformation && templeConfig.templeInformation.selectedStyle) {
+          templeStyle = templeConfig.templeInformation.selectedStyle;
+        }
+        
+        if (templeStyle) {
+          setSelectedStyle(templeStyle);
+          // Loaded temple style
+        } else {
+          // No temple style found
+        }
+        
+        // Load background gradient - check both root and nested locations
+        let backgroundGradient = null;
+        if (templeConfig.bgGradient) {
+          backgroundGradient = templeConfig.bgGradient;
+        } else if (templeConfig.templeInformation && templeConfig.templeInformation.bgGradient) {
+          backgroundGradient = templeConfig.templeInformation.bgGradient;
+        }
+        
+        if (backgroundGradient) {
+          setBgGradient(backgroundGradient);
+          // Loaded background gradient
+        } else {
+          // No background gradient found
+        }
+        
+        // Load deity state (positions, scales, sizes) - this is crucial for deity positioning
+        if (templeConfig.deityState && Array.isArray(templeConfig.deityState)) {
+          setDeityState(templeConfig.deityState);
+          // Loaded deity state
+        } else if (templeConfig.templeInformation && templeConfig.templeInformation.deityState && Array.isArray(templeConfig.templeInformation.deityState)) {
+          // Check if deityState is nested in templeInformation (database structure)
+          setDeityState(templeConfig.templeInformation.deityState);
+          // Loaded deity state from templeInformation
+        } else {
+          // No deity state found or invalid format
+        }
+        
+        // Temple configuration applied successfully
       } else {
         // No temple configuration found anywhere, using defaults
         // Set default values
@@ -479,7 +476,7 @@ export default function CreateTempleScreen() {
   // Reload config when screen comes into focus (e.g., returning from preview screen)
   useFocusEffect(
     useCallback(() => {
-              // Screen focused, reloading temple configuration
+      // Screen focused, reloading temple configuration
       loadTempleConfig();
     }, [loadTempleConfig])
   );
@@ -749,32 +746,17 @@ export default function CreateTempleScreen() {
                       deityState,
                     };
                     
-                    console.log('🔍 [ADJUST DEITIES] Temple config to save:', {
-                      selectedStyle,
-                      bgGradient: bgGradient?.length || 0,
-                      selectedDeities: Object.keys(selectedDeities),
-                      selectedDeitiesCount: Object.keys(selectedDeities).length,
-                      deityStateCount: deityState.length
-                    });
-                    
-                    console.log('🔄 [ADJUST DEITIES] Starting dual save process...');
-                    
                     // Always save to AsyncStorage first
-                    console.log('🔄 [ADJUST DEITIES] Saving to AsyncStorage...');
                     const asyncStorageSuccess = await saveTempleConfiguration(templeConfig);
                     
                     if (asyncStorageSuccess) {
-                      console.log('✅ [ADJUST DEITIES] Successfully saved to AsyncStorage');
                       
                       // Verify what was actually saved by reading it back
-                      try {
-                        const savedConfig = await AsyncStorage.getItem('templeConfig');
-                        if (savedConfig) {
-                          const parsed = JSON.parse(savedConfig);
-                          // Verification completed
-                        }
-                      } catch (verifyError) {
-                        // Could not verify saved data
+                      const savedConfig = await loadTempleConfiguration();
+                      if (savedConfig) {
+                        // Successfully saved and verified
+                      } else {
+                        // Failed to verify saved configuration
                       }
                     } else {
                       // Failed to save to AsyncStorage

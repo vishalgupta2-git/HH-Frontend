@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View, ScrollView, Modal, Animated, PanResponder, Alert, Easing, TextInput, AppState } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient } from 'react-native-svg';
 import { Audio } from 'expo-av';
@@ -233,14 +233,14 @@ const StaticDeity: React.FC<{
 };
 
 export default function DailyPujaCustomTemple() {
-  const [selectedDeities, setSelectedDeities] = useState<{[deityId: string]: string}>({});
-  const [selectedStyle, setSelectedStyle] = useState<string>(templeStyles[0].id);
+  const [selectedDeities, setSelectedDeities] = useState<{[key: string]: string}>({});
+  const [selectedStyle, setSelectedStyle] = useState<string>('');
   const [deityState, setDeityState] = useState<{ key: string; x: number; y: number; scale: number }[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [assetPreloading, setAssetPreloading] = useState(true);
   const [preloadProgress, setPreloadProgress] = useState(0);
-  const [bgGradient, setBgGradient] = useState(["#8B5CF6", "#7C3AED", "#6D28D9"]);
+  const [bgGradient, setBgGradient] = useState<string[]>(["#8B5CF6", "#7C3AED", "#6D28D9"]);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [ghantiSound, setGhantiSound] = useState<Audio.Sound | null>(null);
   const [flowers, setFlowers] = useState<Flower[]>([]);
@@ -787,116 +787,93 @@ export default function DailyPujaCustomTemple() {
         return [];
       }
       
-              if (data && data.success && Array.isArray(data.files)) {
-          const folderNames = extractFolderNames(data.files);
+      if (data && data.success && Array.isArray(data.files)) {
+        const folderNames = extractFolderNames(data.files);
+        
+        const organizedFolders: ImageFolder[] = [];
+        
+        for (const folderName of folderNames) {
+          // Skip rahu-ketu and brihaspati folders
+          if (folderName.toLowerCase().includes('rahu') || 
+              folderName.toLowerCase().includes('ketu') || 
+              folderName.toLowerCase().includes('brihaspati')) {
+            continue;
+          }
           
-          const organizedFolders: ImageFolder[] = [];
+          const folderPrefix = `dailytemples/${folderName}/`;
+          const folderImages = data.files.filter((f: any) => 
+            f && typeof f.key === 'string' && 
+            f.key.startsWith(folderPrefix) && 
+            f.key !== folderPrefix && 
+            isImageKey(f.key)
+          );
+        
+        if (folderImages.length > 0) {
+          // Separate Icon.png for folder navigation
+          const iconImage = folderImages.find((f: any) => {
+            const fileName = f.key.split('/').pop() || f.key;
+            return fileName === 'Icon.png';
+          });
           
-          for (const folderName of folderNames) {
-            // Skip rahu-ketu and brihaspati folders
-            if (folderName.toLowerCase().includes('rahu') || 
-                folderName.toLowerCase().includes('ketu') || 
-                folderName.toLowerCase().includes('brihaspati')) {
-              continue;
-            }
-            
-            const folderPrefix = `dailytemples/${folderName}/`;
-            const folderImages = data.files.filter((f: any) => 
-              f && typeof f.key === 'string' && 
-              f.key.startsWith(folderPrefix) && 
-              f.key !== folderPrefix && 
-              isImageKey(f.key)
-            );
-          
-          if (folderImages.length > 0) {
-            // Separate Icon.png for folder navigation
-            const iconImage = folderImages.find((f: any) => {
+          // Filter out Icon.png for main images
+          const mainImages: S3Image[] = folderImages
+            .filter((f: any) => {
               const fileName = f.key.split('/').pop() || f.key;
-              return fileName === 'Icon.png';
-            });
+              return fileName !== 'Icon.png'; // Filter out Icon.png files
+            })
+            .map((f: any) => ({
+            key: f.key,
+            name: f.key.split('/').pop() || f.key,
+            url: '',
+            size: f.size || 0,
+          }));
+          
+          // Try to find matching god name from JSON
+          let godName = godNamesData[folderName];
+          
+          if (!godName) {
+            // Try different variations of the folder name
+            const variations = [
+              folderName.toLowerCase(),
+              folderName.replace(/\d+/g, ''), // Remove numbers
+              folderName.replace(/\d+/g, '').toLowerCase(), // Remove numbers and lowercase
+              folderName.replace(/[0-9]/g, ''), // Alternative number removal
+              folderName.replace(/[0-9]/g, '').toLowerCase()
+            ];
             
-            // Filter out Icon.png for main images
-            const mainImages: S3Image[] = folderImages
-              .filter((f: any) => {
-                const fileName = f.key.split('/').pop() || f.key;
-                return fileName !== 'Icon.png'; // Filter out Icon.png files
-              })
-              .map((f: any) => ({
-              key: f.key,
-              name: f.key.split('/').pop() || f.key,
-              url: '',
-              size: f.size || 0,
-            }));
-            
-            // Try to find matching god name from JSON
-            let godName = godNamesData[folderName];
-            console.log('🔍 [DEITY] Looking for folder:', folderName, 'in godNames:', godNamesData);
-            console.log('🔍 [DEITY] Available keys in godNamesData:', Object.keys(godNamesData));
-            console.log('🔍 [DEITY] Direct lookup result:', godName);
-            
-            if (!godName) {
-              // Try different variations of the folder name
-              const variations = [
-                folderName.toLowerCase(),
-                folderName.replace(/\d+/g, ''), // Remove numbers
-                folderName.replace(/\d+/g, '').toLowerCase(), // Remove numbers and lowercase
-                folderName.replace(/[0-9]/g, ''), // Alternative number removal
-                folderName.replace(/[0-9]/g, '').toLowerCase()
-              ];
-              
-              console.log('🔍 [DEITY] Trying variations:', variations);
-              
-              for (const variation of variations) {
-                if (godNamesData[variation]) {
-                  godName = godNamesData[variation];
-                  console.log('🔍 [DEITY] Found match with variation:', variation, '->', godName);
-                  break;
-                }
+            for (const variation of variations) {
+              if (godNamesData[variation]) {
+                godName = godNamesData[variation];
+                break;
               }
             }
-            
-            if (godName) {
-              console.log('🔍 [DEITY] Using godName from JSON:', godName);
-            } else {
-              console.log('🔍 [DEITY] No godName found, using fallback');
-            }
-            
-            const organizedFolder = {
-              name: folderName.replace(/([A-Z])/g, ' $1').trim(),
-              prefix: folderPrefix,
-              images: mainImages, // Main images without Icon.png
-              iconImage: iconImage ? { // Separate icon image for navigation
-                key: iconImage.key,
-                name: iconImage.key.split('/').pop() || iconImage.key,
-                url: '',
-                size: iconImage.size || 0,
-              } : null,
-              godName: godName
-            };
-            
-            console.log('🔍 [DEITY] Adding organized folder:', {
-              folderName,
-              godName,
-              finalFolder: organizedFolder
-            });
-            
-            organizedFolders.push(organizedFolder);
           }
+          
+          const organizedFolder = {
+            name: folderName.replace(/([A-Z])/g, ' $1').trim(),
+            prefix: folderPrefix,
+            images: mainImages, // Main images without Icon.png
+            iconImage: iconImage ? { // Separate icon image for navigation
+              key: iconImage.key,
+              name: iconImage.key.split('/').pop() || iconImage.key,
+              url: '',
+              size: iconImage.size || 0,
+            } : null,
+            godName: godName
+          };
+          
+          organizedFolders.push(organizedFolder);
         }
-        
-        console.log('🔍 [S3] Final organized folders:', organizedFolders.length);
-        console.log('🔍 [S3] Sample organized folder:', organizedFolders[0]);
-        
-        return organizedFolders;
       }
       
-      console.log('❌ [S3] No files array or invalid response structure');
-      return [];
-    } catch (e) {
-      console.log('❌ [S3] Error in fetchAllImagesAndOrganize:', e);
-      return [];
+      return organizedFolders;
     }
-  };
+    
+    return [];
+  } catch (e) {
+    return [];
+  }
+};
 
   // Helper function to get deity name from folder prefix
   const getDeityNameFromFolder = (folderPrefix: string | undefined): string => {
@@ -954,14 +931,8 @@ export default function DailyPujaCustomTemple() {
   };
 
   const handleNextToS3Gallery = async () => {
-    console.log('🔍 [GALLERY] handleNextToS3Gallery called');
-    console.log('🔍 [GALLERY] selectedDeities:', selectedDeities);
-    console.log('🔍 [GALLERY] selectedDeities length:', Object.keys(selectedDeities).length);
-    
     // Remove deity requirement - All Temples should work without deities
     // since it fetches data from S3, not from local deity configuration
-    
-    console.log('✅ [GALLERY] Proceeding to load S3 gallery...');
     
     // Reset Today's Special mode when showing all temples
     setIsTodaySpecialMode(false);
@@ -969,19 +940,13 @@ export default function DailyPujaCustomTemple() {
     setS3Loading(true);
     try {
       // Fetch god names first
-      console.log('🔍 [GALLERY] Fetching god names...');
       try {
         const godNamesData = await fetchGodNames();
-        console.log('🔍 [GALLERY] Fetched godNamesData:', godNamesData);
-        console.log('🔍 [GALLERY] Setting godNames state with:', godNamesData);
         setGodNames(godNamesData);
       } catch (error) {
-        console.log('❌ [GALLERY] Error fetching god names:', error);
         // Set empty state to prevent infinite loading
         setGodNames({});
       }
-      
-      console.log('🔍 [GALLERY] About to fetch and organize images...');
       const allFolders = await fetchAllImagesAndOrganize(godNames || {});
       
       if (allFolders.length > 0) {
@@ -1418,7 +1383,7 @@ export default function DailyPujaCustomTemple() {
         ]).start();
       }, 200);
     }, 1000);
-  }, []);
+  }, [fetchAllImagesAndOrganize]);
 
   // Function to get today's day of the week
   const getTodayDayOfWeek = () => {

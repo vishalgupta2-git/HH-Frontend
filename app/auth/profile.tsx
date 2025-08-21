@@ -109,9 +109,6 @@ export default function ProfileScreen() {
             headers: getAuthHeaders()
           });
           const user = res.data.user;
-          console.log('📱 Profile data received:', user);
-          
-          // Basic Information
           setFirstName(user.firstName || user.name?.split(' ')[0] || '');
           setLastName(user.lastName || user.name?.split(' ').slice(1).join(' ') || '');
           setPhone(user.phone?.toString() || '');

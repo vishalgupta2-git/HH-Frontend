@@ -127,23 +127,17 @@ export default function DonationScreen() {
       setSelectedItem(item);
       setShowModal(true);
       
-      console.log('Fetching images for item:', item.id, item.name);
-      
       // Fetch images from S3
       const response = await axios.get(getEndpointUrl('TEMPLES_CHARITIES_IMAGES') + `/${item.id}`, {
         headers: getAuthHeaders()
       });
       
-      console.log('S3 response:', response.data);
-      
       if (response.data.success) {
         setModalImages(response.data.images || []);
-        console.log('Images set:', response.data.images);
       } else {
         setModalImages([]);
       }
     } catch (err: any) {
-      console.error('Error fetching images:', err);
       setModalImages([]);
     } finally {
       setModalLoading(false);
@@ -378,20 +372,19 @@ export default function DonationScreen() {
                       {item.name}
                     </Text>
                     
-                    {/* Deity */}
-                    {item.deity && (
+                    {/* Show deity for temples, cause for charities */}
+                    {item.type === 'Temple' && item.deity && (
                       <Text style={{
                         fontSize: 13,
                         color: '#666',
-                        marginBottom: 4,
+                        marginBottom: 6,
                         fontWeight: '500'
                       }} numberOfLines={1}>
                         🕉️ {item.deity}
                       </Text>
                     )}
                     
-                    {/* Cause */}
-                    {item.cause && (
+                    {item.type === 'Charity' && item.cause && (
                       <Text style={{
                         fontSize: 13,
                         color: '#4CAF50',
@@ -487,24 +480,32 @@ export default function DonationScreen() {
         transparent={true}
         onRequestClose={handleCloseModal}
       >
-        <View style={{
-          flex: 1,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-          <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 20,
-            padding: 20,
-            width: '90%',
-            maxHeight: '80%',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5
-          }}>
+        <TouchableOpacity 
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+          activeOpacity={1}
+          onPress={handleCloseModal}
+        >
+          <TouchableOpacity 
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: 20,
+              padding: 20,
+              width: '90%',
+              maxHeight: '80%',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5
+            }}
+            activeOpacity={1}
+            onPress={() => {}} // Prevent closing when clicking inside the modal
+          >
             {/* Header */}
             <View style={{
               flexDirection: 'row',
@@ -650,8 +651,8 @@ export default function DonationScreen() {
                 </View>
               )}
             </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       {/* Image Viewer Modal */}

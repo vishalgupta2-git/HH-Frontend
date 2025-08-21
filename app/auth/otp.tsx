@@ -127,35 +127,9 @@ export default function OTPScreen() {
         
         // Store user data in AsyncStorage
         await AsyncStorage.setItem('user', JSON.stringify(completeUserData));
-        console.log('User data stored in AsyncStorage:', completeUserData);
         
-        // Process referral if user came from signup with referral code
-        if (from === 'signup') {
-          try {
-            // Check if user has a referral code in their data
-            const userData = await AsyncStorage.getItem('user');
-            if (userData) {
-              const user = JSON.parse(userData);
-              if (user.referralCode) {
-                // Process the referral
-                const referralResult = await processReferral(user.referralCode, user.email);
-                if (referralResult.success) {
-                  // Store referral status to show success modal on homepage
-                  await AsyncStorage.setItem('referralStatus', JSON.stringify({
-                    fromSignup: true,
-                    mudrasEarned: referralResult.mudrasAwarded || 1000
-                  }));
-                }
-              }
-            }
-          } catch (referralError) {
-            // Silent error handling for referral processing
-            console.error('Referral processing error:', referralError);
-          }
-        }
-        
-        // Force a re-render of the HomeHeader by triggering a storage event
-        // This ensures the HomeHeader component updates its user state
+        // Note: Referral processing is now handled in the signup endpoint
+        // No need to process referrals here since mudras are awarded immediately after user creation
         
         setMessage('Login successful! Redirecting...');
         setMessageType('success');

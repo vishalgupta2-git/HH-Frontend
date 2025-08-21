@@ -33,11 +33,8 @@ export default function RootLayout() {
   // Function to play welcome bell sound
   const playWelcomeBell = async () => {
     try {
-      console.log('🔔 Playing welcome bell sound...');
-      
-      // Load and play the temple bell sound
       const { sound } = await Audio.Sound.createAsync(
-        require('../assets/sounds/TempleBell.mp3'),
+        require('@/assets/sounds/TempleBell.mp3'),
         { shouldPlay: true, isLooping: false }
       );
       
@@ -47,12 +44,12 @@ export default function RootLayout() {
           await sound.stopAsync();
           await sound.unloadAsync();
         } catch (error) {
-          console.log('🔔 Error stopping bell sound:', error);
+          // Error stopping sound
         }
       }, 2000);
-      
+
     } catch (error) {
-      console.log('🔔 Error playing welcome bell sound:', error);
+      console.error('Error playing welcome bell sound:', error);
     }
   };
 
@@ -110,23 +107,16 @@ export default function RootLayout() {
         const userData = await AsyncStorage.getItem('user');
         setIsAuthenticated(!!userData);
         
-        // Award daily login mudras if user is authenticated
-        if (userData) {
-          const hasEarnedToday = await hasEarnedDailyMudras('DAILY_LOGIN');
-          if (!hasEarnedToday) {
-            try {
-              const mudraResult = await awardMudras('DAILY_LOGIN');
-              if (mudraResult.success) {
-                console.log('✅ Daily login mudras awarded:', mudraResult.mudrasEarned);
-              } else {
-                console.log('⚠️ Failed to award daily login mudras:', mudraResult.error);
-              }
-            } catch (mudraError) {
-              console.log('⚠️ Error awarding daily login mudras:', mudraError);
-            }
+        // Award daily login mudras
+        try {
+          const mudraResult = await awardMudras('DAILY_LOGIN');
+          if (mudraResult.success) {
+            // Daily login mudras awarded successfully
           } else {
-            console.log('✅ Daily login mudras already earned today');
+            // Failed to award mudras
           }
+        } catch (mudraError) {
+          // Error awarding mudras
         }
         
         // Mark app as initialized
