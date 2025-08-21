@@ -386,47 +386,38 @@ export default function TemplePreviewScreen() {
   useEffect(() => {
     (async () => {
       try {
-        console.log('🔄 [TEMPLE PREVIEW] Loading temple configuration...');
+
         
         // First check if user is authenticated
         const { isAuthenticated, userData } = await checkUserAuthentication();
-        console.log('🔍 [TEMPLE PREVIEW] Authentication check:', { isAuthenticated, userEmail: userData?.email });
+
         
         let templeConfig = null;
         
         if (isAuthenticated) {
           // User is logged in - try to load from database first
-          console.log('🔄 [TEMPLE PREVIEW] User authenticated, trying database first...');
+
           try {
             const dbTemple = await loadTempleFromDatabase();
             if (dbTemple) {
-              console.log('✅ [TEMPLE PREVIEW] Temple found in database');
+
               templeConfig = dbTemple;
             } else {
-              console.log('⚠️ [TEMPLE PREVIEW] No temple in database, falling back to AsyncStorage');
+
             }
           } catch (error) {
-            console.log('⚠️ [TEMPLE PREVIEW] Database load failed, falling back to AsyncStorage:', error);
+
           }
         }
         
         // If no database temple, try AsyncStorage
         if (!templeConfig) {
-          console.log('🔄 [TEMPLE PREVIEW] Loading from AsyncStorage...');
+
           templeConfig = await loadTempleConfiguration();
         }
         
         if (templeConfig) {
-          console.log('✅ [TEMPLE PREVIEW] Temple configuration loaded successfully');
-          console.log('🔍 [TEMPLE PREVIEW] Raw temple config:', JSON.stringify(templeConfig, null, 2));
-          console.log('🔍 [TEMPLE PREVIEW] Config structure analysis:', {
-            hasSelectedStyle: !!templeConfig.selectedStyle,
-            hasBgGradient: !!templeConfig.bgGradient,
-            hasDeityState: !!templeConfig.deityState,
-            hasTempleInformation: !!templeConfig.templeInformation,
-            templeInfoKeys: templeConfig.templeInformation ? Object.keys(templeConfig.templeInformation) : [],
-            rootKeys: Object.keys(templeConfig)
-          });
+
           
           // Load from configuration - check multiple possible locations for deities
           let deities = null;
@@ -442,17 +433,13 @@ export default function TemplePreviewScreen() {
           
           if (deities && Object.keys(deities).length > 0) {
             setSelectedDeities(deities);
-            console.log('🔍 [TEMPLE PREVIEW] Loaded deities:', Object.keys(deities));
+
             
             // Debug: Check if deityState keys match selectedDeities keys
             if (templeConfig.deityState && Array.isArray(templeConfig.deityState)) {
               const deityStateKeys = templeConfig.deityState.map((d: any) => d.key);
               const selectedDeityKeys = Object.keys(deities);
-              console.log('🔍 [TEMPLE PREVIEW] Key matching check:', {
-                deityStateKeys,
-                selectedDeityKeys,
-                matches: selectedDeityKeys.every(key => deityStateKeys.includes(key))
-              });
+
             }
           }
           
@@ -466,9 +453,9 @@ export default function TemplePreviewScreen() {
           
           if (templeStyle) {
             setSelectedStyle(templeStyle);
-            console.log('🔍 [TEMPLE PREVIEW] Loaded temple style:', templeStyle);
+
           } else {
-            console.log('⚠️ [TEMPLE PREVIEW] No temple style found');
+
           }
           
           // Load background gradient - check both root and nested locations
@@ -481,44 +468,26 @@ export default function TemplePreviewScreen() {
           
           if (backgroundGradient) {
             setBgGradient(backgroundGradient);
-            console.log('🔍 [TEMPLE PREVIEW] Loaded background gradient');
+
           } else {
-            console.log('⚠️ [TEMPLE PREVIEW] No background gradient found');
+
           }
           
           // Load deity state (positions, scales, sizes) - this is crucial for deity positioning
           if (templeConfig.deityState && Array.isArray(templeConfig.deityState)) {
             setDeityState(templeConfig.deityState);
-            console.log('🔍 [TEMPLE PREVIEW] Loaded deity state with', templeConfig.deityState.length, 'deities');
-            templeConfig.deityState.forEach((deity: any, index: number) => {
-              console.log(`🔍 [TEMPLE PREVIEW] Deity ${index}:`, {
-                key: deity.key,
-                x: deity.x,
-                y: deity.y,
-                scale: deity.scale
-              });
-            });
+
           } else if (templeConfig.templeInformation && templeConfig.templeInformation.deityState && Array.isArray(templeConfig.templeInformation.deityState)) {
             // Check if deityState is nested in templeInformation (database structure)
             setDeityState(templeConfig.templeInformation.deityState);
-            console.log('🔍 [TEMPLE PREVIEW] Loaded deity state from templeInformation with', templeConfig.templeInformation.deityState.length, 'deities');
-            templeConfig.templeInformation.deityState.forEach((deity: any, index: number) => {
-              console.log(`🔍 [TEMPLE PREVIEW] Deity ${index}:`, {
-                key: deity.key,
-                x: deity.x,
-                y: deity.y,
-                scale: deity.scale
-              });
-            });
+
           } else {
-            console.log('⚠️ [TEMPLE PREVIEW] No deity state found or invalid format');
-            console.log('🔍 [TEMPLE PREVIEW] deityState value:', templeConfig.deityState);
-            console.log('🔍 [TEMPLE PREVIEW] templeInformation.deityState value:', templeConfig.templeInformation?.deityState);
+
           }
           
-          console.log('🎉 [TEMPLE PREVIEW] Temple configuration applied successfully');
+
         } else {
-          console.log('🔍 [TEMPLE PREVIEW] No temple configuration found anywhere, using defaults');
+
           // Set default values
           setSelectedStyle('temple1');
           setBgGradient(['#8B5CF6', '#7C3AED', '#6D28D9']);
@@ -528,7 +497,7 @@ export default function TemplePreviewScreen() {
         
         setLoading(false);
       } catch (error) {
-        console.error('❌ [TEMPLE PREVIEW] Error loading temple configuration:', error);
+        console.error('Error loading temple configuration:', error);
         setLoading(false);
       }
     })();
@@ -558,17 +527,7 @@ export default function TemplePreviewScreen() {
 
    // Handle deityState changes to ensure proper rendering
    useEffect(() => {
-     if (deityState.length > 0) {
-       console.log('🔍 [TEMPLE PREVIEW] DeityState updated, re-rendering deities with positions and scales');
-       deityState.forEach((deity: any, index: number) => {
-         console.log(`🔍 [TEMPLE PREVIEW] Deity ${index} ready for rendering:`, {
-           key: deity.key,
-           x: deity.x,
-           y: deity.y,
-           scale: deity.scale
-         });
-       });
-     }
+
    }, [deityState]);
 
   // Note: No automatic saving - only save when user clicks "Done, Go back" button
@@ -615,11 +574,7 @@ export default function TemplePreviewScreen() {
 
       const success = await saveTempleConfiguration(templeConfig);
       
-      if (success) {
-        console.log('✅ [TEMPLE PREVIEW] Temple configuration saved successfully');
-      } else {
-        console.log('⚠️ [TEMPLE PREVIEW] Failed to save temple configuration');
-      }
+
       
       router.back();
          } catch (error: any) {
@@ -648,18 +603,7 @@ export default function TemplePreviewScreen() {
             // Find saved position and scale for this deity
             const savedDeity = deityState.find(d => d.key === key);
             
-            // Debug: Log what we found for this deity
-            if (savedDeity) {
-              console.log(`🔍 [TEMPLE PREVIEW] Rendering deity ${key}:`, {
-                foundInDeityState: true,
-                savedPosition: { x: savedDeity.x, y: savedDeity.y, scale: savedDeity.scale }
-              });
-            } else {
-              console.log(`🔍 [TEMPLE PREVIEW] Rendering deity ${key}:`, {
-                foundInDeityState: false,
-                usingDefaultPosition: { x: 50 + idx * 100, y: 300 + idx * 100, scale: 2 }
-              });
-            }
+
             
             // Use saved coordinates or default
             const initialX = savedDeity?.x ?? (50 + idx * 100);
@@ -765,7 +709,7 @@ export default function TemplePreviewScreen() {
          <TouchableOpacity
            style={styles.saveButton}
            onPress={() => {
-             console.log('🎯 [TEMPLE PREVIEW] "Done, Go back" button pressed');
+         
              handleSaveTemple();
            }}
          >
