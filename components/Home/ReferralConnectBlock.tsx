@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import React, { useState, useEffect } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View, Linking, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
@@ -10,6 +10,7 @@ export default function ReferralConnectBlock() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -63,6 +64,15 @@ export default function ReferralConnectBlock() {
     router.push('/auth/signup');
   };
 
+  const handleInviteButton = () => {
+    setShowReferralModal(true);
+  };
+
+  const handleCopyReferralCode = async () => {
+    await Clipboard.setStringAsync(referralCode);
+    setShowReferralModal(false);
+  };
+
   if (!isLoggedIn) {
     return (
       <View style={styles.card}>
@@ -108,14 +118,56 @@ export default function ReferralConnectBlock() {
           <Feather name="copy" size={20} color="#FF9800" />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.inviteButton}>
+      <TouchableOpacity style={styles.inviteButton} onPress={handleInviteButton}>
         <Text style={styles.inviteButtonText}>Invite and Earn 1000 Mudras</Text>
       </TouchableOpacity>
       
       {/* Toast message */}
       {showToast && (
         <View style={styles.toast}>
-          <Text style={styles.toastText}>Referral code copied to clipboard!</Text>
+          <Text style={styles.toastText}>Referral code copied!</Text>
+        </View>
+      )}
+      
+      {/* Referral Modal */}
+      {showReferralModal && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Refer and Earn Mudras</Text>
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={() => setShowReferralModal(false)}
+              >
+                <Text style={styles.closeButtonText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <Text style={styles.modalText}>
+                When you refer someone, you not only help them progress on their spiritual journey, both you and them earn Mudras
+              </Text>
+              
+              <Text style={styles.modalText}>
+                Please copy the Referral code and share with the person you want to refer.
+              </Text>
+              
+              <Text style={styles.modalText}>
+                Request them to download the app and use the referral code during Sign Up
+              </Text>
+              
+              <Text style={styles.modalNote}>
+                Please note that the bonus Mudras will be awarded within 3 days of Sign Up
+              </Text>
+            </View>
+            
+            <TouchableOpacity 
+              style={styles.modalButton}
+              onPress={handleCopyReferralCode}
+            >
+              <Text style={styles.modalButtonText}>Copy referral code!</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
     </View>
@@ -141,16 +193,61 @@ export function SocialRow() {
     });
   };
   
+  // YouTube function to open your channel
+  const openYouTubeChannel = () => {
+    // Your actual YouTube channel URL
+    const youtubeUrl = 'https://www.youtube.com/@TheHinduHeritage_YT';
+    
+    // Try to open YouTube app first
+    const appUrl = `youtube://channel/${youtubeUrl.split('/').pop()}`;
+    
+    Linking.openURL(appUrl).catch(() => {
+      // Fallback: open in browser if app not installed
+      Linking.openURL(youtubeUrl);
+    });
+  };
+  
+  // Twitter function to open your profile
+  const openTwitterProfile = () => {
+    // Your actual X (Twitter) profile URL
+    const twitterUrl = 'https://x.com/HinduHeritage_x';
+    
+    // Try to open X app first
+    const appUrl = `twitter://user?screen_name=HinduHeritage_x`;
+    
+    Linking.openURL(appUrl).catch(() => {
+      // Fallback: open in browser if app not installed
+      Linking.openURL(twitterUrl);
+    });
+  };
+  
+  // LinkedIn function to open your company page
+  const openLinkedInCompany = () => {
+    // Your LinkedIn company page URL
+    const linkedinUrl = 'https://www.linkedin.com/company/thehinduheritage';
+    
+    // Try to open LinkedIn app first
+    const appUrl = `linkedin://company/thehinduheritage`;
+    
+    Linking.openURL(appUrl).catch(() => {
+      // Fallback: open in browser if app not installed
+      Linking.openURL(linkedinUrl);
+    });
+  };
+  
   return (
-    <View style={styles.connectRow}>
+    <View style={styles.socialContainer}>
       <TouchableOpacity style={styles.socialIcon}>
         <FontAwesome name="facebook" size={26} color="#1877F3" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.socialIcon}>
+      <TouchableOpacity style={styles.socialIcon} onPress={openYouTubeChannel}>
         <FontAwesome name="youtube-play" size={26} color="#FF0000" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.socialIcon}>
+      <TouchableOpacity style={styles.socialIcon} onPress={openTwitterProfile}>
         <MaterialCommunityIcons name="alpha-x-circle" size={26} color="#000" />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.socialIcon} onPress={openLinkedInCompany}>
+        <FontAwesome name="linkedin" size={26} color="#0077B5" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.socialIcon} onPress={openWhatsAppChat}>
         <FontAwesome name="whatsapp" size={26} color="#25D366" />
@@ -248,7 +345,7 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   inviteButton: {
-    backgroundColor: '#3A3939',
+    backgroundColor: '#FF9800',
     borderRadius: 6,
     paddingVertical: 10,
     paddingHorizontal: 18,
@@ -269,11 +366,21 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     marginHorizontal: 12,
   },
+  socialContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    marginTop: 16,
+    marginBottom: 2,
+  },
   socialIcon: {
     backgroundColor: '#F5F5F5',
     borderRadius: 20,
     padding: 8,
+    flex: 1,
     marginHorizontal: 2,
+    alignItems: 'center',
   },
   toast: {
     position: 'absolute',
@@ -289,5 +396,82 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     textAlign: 'center',
+  },
+  // Modal styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    maxWidth: '90%',
+    marginTop: -200, // Move modal 200 pixels up
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    flex: 1,
+  },
+  closeButton: {
+    padding: 4,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    color: '#999',
+    fontWeight: 'bold',
+  },
+  modalBody: {
+    marginBottom: 20,
+  },
+  modalText: {
+    fontSize: 15,
+    color: '#555',
+    lineHeight: 22,
+    marginBottom: 12,
+  },
+  modalNote: {
+    fontSize: 14,
+    color: '#FF9800',
+    fontStyle: 'italic',
+    lineHeight: 20,
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF9800',
+  },
+  modalButton: {
+    backgroundColor: '#FF9800',
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 }); 
