@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import React, { useState, useEffect } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TouchableOpacity, View, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
@@ -125,6 +125,22 @@ export default function ReferralConnectBlock() {
 export function SocialRow() {
   // Use the same icon row as before
   const { FontAwesome, MaterialCommunityIcons, Ionicons } = require('@expo/vector-icons');
+  
+  // WhatsApp function to open chat with your number
+  const openWhatsAppChat = () => {
+    const phoneNumber = '916361496368'; // Your number: 91 (India) + 6361496368
+    
+    // Create WhatsApp URL
+    const whatsappUrl = `whatsapp://send?phone=${phoneNumber}`;
+    
+    // Try to open WhatsApp app
+    Linking.openURL(whatsappUrl).catch(() => {
+      // Fallback: open WhatsApp in browser if app not installed
+      const webUrl = `https://wa.me/${phoneNumber}`;
+      Linking.openURL(webUrl);
+    });
+  };
+  
   return (
     <View style={styles.connectRow}>
       <TouchableOpacity style={styles.socialIcon}>
@@ -136,7 +152,7 @@ export function SocialRow() {
       <TouchableOpacity style={styles.socialIcon}>
         <MaterialCommunityIcons name="alpha-x-circle" size={26} color="#000" />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.socialIcon}>
+      <TouchableOpacity style={styles.socialIcon} onPress={openWhatsAppChat}>
         <FontAwesome name="whatsapp" size={26} color="#25D366" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.socialIcon}>
