@@ -243,6 +243,8 @@ export default function DailyPujaCustomTemple() {
   const [bgGradient, setBgGradient] = useState<string[]>(["#8B5CF6", "#7C3AED", "#6D28D9"]);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [ghantiSound, setGhantiSound] = useState<Audio.Sound | null>(null);
+  const [isPlayingGhanti, setIsPlayingGhanti] = useState(false);
+  const [welcomeBellPlayed, setWelcomeBellPlayed] = useState(false);
   const [flowers, setFlowers] = useState<Flower[]>([]);
   const [flowerAnimations, setFlowerAnimations] = useState<{[key: string]: Animated.Value}>({});
   const [isFlowerAnimationRunning, setIsFlowerAnimationRunning] = useState(false);
@@ -387,15 +389,33 @@ export default function DailyPujaCustomTemple() {
 
   // Function to play welcome bell sound
   const playWelcomeBell = async () => {
+    // Prevent multiple welcome bell calls
+    if (welcomeBellPlayed) {
+      console.log('🔔 [WELCOME] Welcome bell already played, skipping...');
+      return;
+    }
+
+    // Prevent multiple simultaneous sounds
+    if (isPlayingGhanti) {
+      console.log('🔔 [WELCOME] Already playing ghanti sound, skipping...');
+      return;
+    }
+
     let newGhantiSound: any = null;
     try {
+      setIsPlayingGhanti(true);
+      
       // Stop any currently playing ghanti sound
       if (ghantiSound) {
         try {
-          await ghantiSound.stopAsync();
-          await ghantiSound.unloadAsync();
+          const status = await ghantiSound.getStatusAsync();
+          if (status.isLoaded) {
+            await ghantiSound.stopAsync();
+            await ghantiSound.unloadAsync();
+            console.log('🔔 [WELCOME] Stopped existing ghanti sound');
+          }
         } catch (error) {
-          // Ignore errors when stopping/unloading existing sound
+          console.error('🔔 [WELCOME] Error stopping existing ghanti sound:', error);
         }
       }
 
@@ -414,22 +434,31 @@ export default function DailyPujaCustomTemple() {
       await newGhantiSound.playAsync();
       
       setGhantiSound(newGhantiSound);
+      setWelcomeBellPlayed(true);
+      console.log('🔔 [WELCOME] Welcome bell started playing');
 
       // Stop the sound after 2 seconds
       setTimeout(async () => {
         try {
           if (newGhantiSound) {
-            await newGhantiSound.stopAsync();
-            await newGhantiSound.unloadAsync();
+            const status = await newGhantiSound.getStatusAsync();
+            if (status.isLoaded) {
+              await newGhantiSound.stopAsync();
+              await newGhantiSound.unloadAsync();
+              console.log('🔔 [WELCOME] Welcome bell stopped and unloaded');
+            }
           }
           setGhantiSound(null);
+          setIsPlayingGhanti(false);
         } catch (error) {
-          // Error stopping sound - ignore
+          console.error('🔔 [WELCOME] Error stopping welcome bell:', error);
+          setIsPlayingGhanti(false);
         }
       }, 2000);
 
     } catch (error) {
-      console.error('Error playing welcome bell sound:', error);
+      console.error('🔔 [WELCOME] Error playing welcome bell sound:', error);
+      setIsPlayingGhanti(false);
       // Don't set sound state if there's an error
     }
   };
@@ -1320,6 +1349,13 @@ export default function DailyPujaCustomTemple() {
           setAssetPreloading(false);
         }, 3000);
         
+        // Ultra-aggressive fallback: force transition after 5 seconds
+        setTimeout(() => {
+          console.log('🚨 ULTRA-AGGRESSIVE: forcing assetPreloading to false');
+          setAssetPreloading(false);
+          setPreloadProgress(0); // Reset progress
+        }, 5000);
+        
       } catch (error) {
         console.error('Error in asset preloading:', error);
         setAssetPreloading(false);
@@ -1329,52 +1365,60 @@ export default function DailyPujaCustomTemple() {
       // Start preloading all assets
       console.log('useEffect: Starting preloadAllAssets...');
       preloadAllAssets();
-  
-  // Play welcome bell after a short delay
-  setTimeout(() => {
-    playWelcomeBell();
-    
-    // Swing left bell
-    Animated.sequence([
-      Animated.timing(leftBellSwing, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(leftBellSwing, {
-        toValue: -1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(leftBellSwing, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    }, []); // Remove dependency to prevent multiple executions
 
-    // Swing right bell with slight delay
-    setTimeout(() => {
+  // Separate useEffect for welcome bell and animations - runs only once
+  useEffect(() => {
+    // Play welcome bell after a short delay
+    const welcomeBellTimer = setTimeout(() => {
+      playWelcomeBell();
+      
+      // Swing left bell
       Animated.sequence([
-        Animated.timing(rightBellSwing, {
+        Animated.timing(leftBellSwing, {
           toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }),
-        Animated.timing(rightBellSwing, {
+        Animated.timing(leftBellSwing, {
           toValue: -1,
           duration: 600,
           useNativeDriver: true,
         }),
-        Animated.timing(rightBellSwing, {
+        Animated.timing(leftBellSwing, {
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
         }),
       ]).start();
-    }, 200);
-  }, 1000);
-}, []); // Remove dependency to prevent multiple executions
+
+      // Swing right bell with slight delay
+      setTimeout(() => {
+        Animated.sequence([
+          Animated.timing(rightBellSwing, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rightBellSwing, {
+            toValue: -1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(rightBellSwing, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 200);
+    }, 1000);
+
+    // Cleanup timer on unmount
+    return () => {
+      clearTimeout(welcomeBellTimer);
+    };
+  }, []); // Empty dependency array - runs only once
 
   // Function to get today's day of the week
   const getTodayDayOfWeek = () => {
@@ -1797,6 +1841,12 @@ export default function DailyPujaCustomTemple() {
 
 
   const swingBothBells = async () => {
+    // Prevent multiple simultaneous sounds
+    if (isPlayingGhanti) {
+      console.log('🔔 [BELL] Already playing ghanti sound, skipping...');
+      return;
+    }
+
     // Award mudras for ringing the bell
     try {
       const hasEarnedToday = await hasEarnedDailyMudras('RING_BELL');
@@ -1858,6 +1908,7 @@ export default function DailyPujaCustomTemple() {
         );
         
         setGhantiSound(newBellSound);
+        setIsPlayingGhanti(true);
 
         // Stop the sound after 2 seconds
         setTimeout(async () => {
@@ -1884,6 +1935,7 @@ export default function DailyPujaCustomTemple() {
               }
             }
             setGhantiSound(null);
+            setIsPlayingGhanti(false);
             
             // Restart music if it was playing before bell sound
             if (wasMusicPlaying && musicFileToRestart) {
@@ -2016,6 +2068,12 @@ export default function DailyPujaCustomTemple() {
   };
 
   const playConchSound = async () => {
+    // Prevent multiple simultaneous sounds
+    if (isPlayingGhanti) {
+      console.log('🔔 [CONCH] Already playing ghanti sound, skipping...');
+      return;
+    }
+
     // Award mudras for playing shankh
     try {
       const hasEarnedToday = await hasEarnedDailyMudras('PLAY_SHANKH');
@@ -2077,6 +2135,7 @@ export default function DailyPujaCustomTemple() {
       );
       
       setGhantiSound(newConchSound);
+      setIsPlayingGhanti(true);
 
       // Stop the sound after 5 seconds
       setTimeout(async () => {
@@ -2101,10 +2160,11 @@ export default function DailyPujaCustomTemple() {
                 console.error('🔔 [CONCH] Error unloading conch sound after status check failure:', unloadError);
               }
             }
-          }
-          setGhantiSound(null);
-          
-          // Restart music if it was playing before conch sound
+                      }
+            setGhantiSound(null);
+            setIsPlayingGhanti(false);
+            
+            // Restart music if it was playing before conch sound
           if (wasMusicPlaying && musicFileToRestart) {
             console.log('🔔 [CONCH] Restarting music after conch sound...');
             console.log('🔔 [CONCH] Music file to restart:', musicFileToRestart);
@@ -2677,7 +2737,7 @@ export default function DailyPujaCustomTemple() {
     );
   }
 
-  console.log('Render check: assetPreloading =', assetPreloading, 'preloadProgress =', preloadProgress);
+  console.log('🔍 [RENDER] assetPreloading =', assetPreloading, 'preloadProgress =', preloadProgress, 'welcomeBellPlayed =', welcomeBellPlayed);
   if (assetPreloading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -2712,11 +2772,67 @@ export default function DailyPujaCustomTemple() {
                 {preloadProgress === 100 && '🎉 Ready for divine puja!'}
               </Text>
             </View>
+            
+            {/* Debug button to force transition */}
+            {preloadProgress === 100 && (
+              <TouchableOpacity 
+                style={styles.debugButton}
+                onPress={() => {
+                  console.log('🔧 [DEBUG] Manual force transition');
+                  setAssetPreloading(false);
+                }}
+              >
+                <Text style={styles.debugButtonText}>Continue to Puja</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </LinearGradient>
       </View>
     );
   }
+
+  // Force stop all sounds (emergency function)
+  const forceStopAllSounds = async () => {
+    try {
+      console.log('🔔 [EMERGENCY] Force stopping all sounds...');
+      
+      if (ghantiSound) {
+        try {
+          const status = await ghantiSound.getStatusAsync();
+          if (status.isLoaded) {
+            await ghantiSound.stopAsync();
+            await ghantiSound.unloadAsync();
+            console.log('🔔 [EMERGENCY] Stopped ghanti sound');
+          }
+        } catch (error) {
+          console.error('🔔 [EMERGENCY] Error stopping ghanti sound:', error);
+        }
+      }
+      
+      if (sound) {
+        try {
+          const status = await sound.getStatusAsync();
+          if (status.isLoaded) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+            console.log('🔔 [EMERGENCY] Stopped music sound');
+          }
+        } catch (error) {
+          console.error('🔔 [EMERGENCY] Error stopping music sound:', error);
+        }
+      }
+      
+      setGhantiSound(null);
+      setIsPlayingGhanti(false);
+      setCurrentlyPlaying(null);
+      setSound(null);
+      setWelcomeBellPlayed(false); // Reset welcome bell flag
+      
+      console.log('🔔 [EMERGENCY] All sounds stopped');
+    } catch (error) {
+      console.error('🔔 [EMERGENCY] Error in force stop:', error);
+    }
+  };
 
   const handleSaveTemple = async () => {
     await AsyncStorage.setItem('templeConfig', JSON.stringify({
@@ -2770,6 +2886,8 @@ export default function DailyPujaCustomTemple() {
       )}
              {/* Arch on top */}
        <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
+       
+
        
                {/* Flowers dropped in front of temple */}
          {flowers.map((flower) => (
@@ -5028,6 +5146,28 @@ const styles = StyleSheet.create({
       zIndex: 9999, // Very high zIndex to ensure visibility
       alignItems: 'center',
       justifyContent: 'center',
+    },
+
+
+
+    // Debug Button Styles
+    debugButton: {
+      backgroundColor: '#FF6A00',
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderRadius: 25,
+      marginTop: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    debugButtonText: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: 'bold',
+      textAlign: 'center',
     },
 
   }); // End of StyleSheet
