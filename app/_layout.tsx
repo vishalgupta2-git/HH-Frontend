@@ -30,29 +30,6 @@ export default function RootLayout() {
   const [appInitialized, setAppInitialized] = useState(false);
   const [dailyPujaShown, setDailyPujaShown] = useState(false);
   
-  // Function to play welcome bell sound
-  const playWelcomeBell = async () => {
-    try {
-      const { sound } = await Audio.Sound.createAsync(
-        require('@/assets/sounds/TempleBell.mp3'),
-        { shouldPlay: true, isLooping: false }
-      );
-      
-      // Stop the sound after 2 seconds
-      setTimeout(async () => {
-        try {
-          await sound.stopAsync();
-          await sound.unloadAsync();
-        } catch (error) {
-          // Error stopping sound
-        }
-      }, 2000);
-
-    } catch (error) {
-      console.error('Error playing welcome bell sound:', error);
-    }
-  };
-
   // Function to handle daily puja modal close
   const handleDailyPujaModalClose = () => {
     setShowDailyPujaModal(false);
@@ -99,10 +76,29 @@ export default function RootLayout() {
   
   // Check authentication status, award daily login mudras, and play welcome bell
   useEffect(() => {
+    let sound: any = null;
+    
     const initializeApp = async () => {
       try {
         // Play welcome bell sound
-        await playWelcomeBell();
+        const { sound: newSound } = await Audio.Sound.createAsync(
+          require('@/assets/sounds/TempleBell.mp3'),
+          { shouldPlay: true, isLooping: false }
+        );
+        
+        sound = newSound;
+        
+        // Stop the sound after 2 seconds
+        setTimeout(async () => {
+          try {
+            if (sound) {
+              await sound.stopAsync();
+              await sound.unloadAsync();
+            }
+          } catch (error) {
+            // Error stopping sound - ignore as sound might have already finished
+          }
+        }, 2000);
         
         const userData = await AsyncStorage.getItem('user');
         setIsAuthenticated(!!userData);
@@ -130,6 +126,17 @@ export default function RootLayout() {
     };
     
     initializeApp();
+    
+    // Cleanup function to unload sound if component unmounts
+    return () => {
+      if (sound) {
+        try {
+          sound.unloadAsync();
+        } catch (error) {
+          // Ignore cleanup errors
+        }
+      }
+    };
   }, []);
 
   // Check and show modals after app is initialized

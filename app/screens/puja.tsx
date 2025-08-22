@@ -605,80 +605,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  modalContent: {
+  textModalContent: {
     backgroundColor: '#fff',
     borderRadius: 16,
     width: '100%',
     maxWidth: 400,
     maxHeight: '80%',
   },
-  modalBody: {
+  textModalBody: {
     padding: 24,
   },
-  modalHeader: {
+  textModalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
   },
-  modalTitle: {
+  textModalTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#333',
     flex: 1,
     marginRight: 16,
   },
-  closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F0F0F0',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeButtonText: {
-    fontSize: 20,
-    color: '#666',
-    fontWeight: '600',
-  },
-  modalInfo: {
-    marginBottom: 20,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  infoLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
-  },
-  infoValue: {
-    fontSize: 14,
-    color: '#333',
-    flex: 1,
-    textAlign: 'right',
-  },
-  descriptionContainer: {
-    marginBottom: 24,
-  },
-  descriptionLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
-  },
-  bookButton: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  bookButtonText: {
-    color: '#fff',
+  textModalText: {
     fontSize: 16,
-    fontWeight: '600',
+    color: '#333',
+    lineHeight: 22,
   },
   expandButton: {
     flexDirection: 'row',
@@ -790,32 +743,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 12,
   },
-  textModalContent: {
-    backgroundColor: '#fff',
+  closeButton: {
+    width: 32,
+    height: 32,
     borderRadius: 16,
-    width: '100%',
-    maxWidth: 400,
-    maxHeight: '80%',
-  },
-  textModalBody: {
-    padding: 24,
-  },
-  textModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: '#F0F0F0',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
   },
-  textModalTitle: {
+  closeButtonText: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#333',
-    flex: 1,
-    marginRight: 16,
-  },
-  textModalText: {
-    fontSize: 16,
-    color: '#333',
-    lineHeight: 22,
+    color: '#666',
+    fontWeight: '600',
   },
 }); 

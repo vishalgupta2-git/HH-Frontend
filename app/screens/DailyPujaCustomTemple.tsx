@@ -238,7 +238,7 @@ export default function DailyPujaCustomTemple() {
   const [deityState, setDeityState] = useState<{ key: string; x: number; y: number; scale: number }[]>([]);
   
   const [loading, setLoading] = useState(true);
-  const [assetPreloading, setAssetPreloading] = useState(true);
+  const [assetPreloading, setAssetPreloading] = useState(false);
   const [preloadProgress, setPreloadProgress] = useState(0);
   const [bgGradient, setBgGradient] = useState<string[]>(["#8B5CF6", "#7C3AED", "#6D28D9"]);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -387,6 +387,7 @@ export default function DailyPujaCustomTemple() {
 
   // Function to play welcome bell sound
   const playWelcomeBell = async () => {
+    let newGhantiSound: any = null;
     try {
       // Stop any currently playing ghanti sound
       if (ghantiSound) {
@@ -399,10 +400,12 @@ export default function DailyPujaCustomTemple() {
       }
 
       // Load the temple bell sound first
-      const { sound: newGhantiSound } = await Audio.Sound.createAsync(
+      const { sound: soundObject } = await Audio.Sound.createAsync(
         require('@/assets/sounds/TempleBell.mp3'),
         { shouldPlay: false, isLooping: false } // Don't auto-play, load first
       );
+      
+      newGhantiSound = soundObject;
       
       // Wait a moment for the sound to be fully loaded
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -1148,10 +1151,18 @@ export default function DailyPujaCustomTemple() {
     
     markVisit();
     
-    // Comprehensive preloading of all essential assets for smooth daily puja experience
+    // Simplified preloading of essential assets for smooth daily puja experience
     const preloadAllAssets = async () => {
+      // Prevent multiple executions
+      if (assetPreloading) {
+        console.log('Preloading already in progress, skipping...');
+        return;
+      }
+      
+      console.log('Starting asset preloading...');
       setAssetPreloading(true);
       setPreloadProgress(0);
+      console.log('State updated: assetPreloading = true, preloadProgress = 0');
       
       // Helper function to safely preload images
       const safePrefetchImage = async (imagePath: any, description: string) => {
@@ -1170,11 +1181,12 @@ export default function DailyPujaCustomTemple() {
       
       try {
         let completedSteps = 0;
-        const totalSteps = 8; // Total number of preloading steps (added S3 preloading)
+        const totalSteps = 6; // Reduced total steps for faster loading
         
         const updateProgress = () => {
           completedSteps++;
           const progress = Math.min(Math.round((completedSteps / totalSteps) * 100), 100);
+          console.log(`Progress update: ${completedSteps}/${totalSteps} = ${progress}%`);
           setPreloadProgress(progress);
         };
         
@@ -1188,17 +1200,14 @@ export default function DailyPujaCustomTemple() {
           require('@/assets/images/icons/own temple/RedShevanthi.png'),
         ];
         
-
-        const flowerResults = await Promise.all(flowerImages.map(async (image, index) => {
+        await Promise.all(flowerImages.map(async (image, index) => {
           const flowerNames = ['rose', 'whiterose', 'jasmine', 'YellowShevanthi', 'WhiteShevanthi', 'RedShevanthi'];
           return await safePrefetchImage(image, `flower ${flowerNames[index]}`);
         }));
-        const successfulFlowers = flowerResults.filter(result => result).length;
-
         updateProgress();
         
         // Preload arti thali
-        const thaliSuccess = await safePrefetchImage(
+        await safePrefetchImage(
           require('@/assets/images/icons/own temple/PujaThali1.png'),
           'arti thali'
         );
@@ -1209,21 +1218,17 @@ export default function DailyPujaCustomTemple() {
           require('@/assets/images/temple/templeBellIcon2.png'),
         ];
         
-        const bellResults = await Promise.all(bellImages.map(async (image, index) => {
+        await Promise.all(bellImages.map(async (image, index) => {
           const bellNames = ['templeBellIcon2'];
           return await safePrefetchImage(image, `bell ${bellNames[index]}`);
         }));
-        const successfulBells = bellResults.filter(result => result).length;
         updateProgress();
         
         // Preload shankh image
-        const shankhSuccess = await safePrefetchImage(
+        await safePrefetchImage(
           require('@/assets/images/icons/own temple/sankha.png'),
           'shankh'
         );
-        updateProgress();
-        
-        
         updateProgress();
         
         // Preload essential deity images for better performance
@@ -1237,11 +1242,10 @@ export default function DailyPujaCustomTemple() {
           require('@/assets/images/temple/Hanuman1.png'),
         ];
         
-        const deityResults = await Promise.all(essentialDeityImages.map(async (image, index) => {
+        await Promise.all(essentialDeityImages.map(async (image, index) => {
           const deityNames = ['VishnuIcon', 'Ganesha1', 'Krishna1', 'Lakshmi1', 'Saraswati1', 'Durga1', 'Hanuman1'];
           return await safePrefetchImage(image, `deity ${deityNames[index]}`);
         }));
-        const successfulDeities = deityResults.filter(result => result).length;
         updateProgress();
         
         // Preload temple background images
@@ -1250,14 +1254,15 @@ export default function DailyPujaCustomTemple() {
           require('@/assets/images/temple/Temple2.png'),
         ];
         
-        const templeResults = await Promise.all(templeImages.map(async (image, index) => {
+        await Promise.all(templeImages.map(async (image, index) => {
           const templeNames = ['Temple1', 'Temple2'];
           return await safePrefetchImage(image, `temple ${templeNames[index]}`);
         }));
-        const successfulTemples = templeResults.filter(result => result).length;
         updateProgress();
         
-        // Preload sound files
+        console.log('All asset preloading completed, setting up timeouts...');
+        
+        // Preload sound files (non-blocking)
         try {
           // Preload temple bell sound
           const templeBellSound = new Audio.Sound();
@@ -1271,11 +1276,9 @@ export default function DailyPujaCustomTemple() {
         } catch (error) {
           // Silent error handling
         }
-        updateProgress();
         
-        // Preload S3 images in background for faster gallery experience
-        try {
-          // Start S3 preloading without blocking the UI
+        // Start S3 preloading in background without blocking the UI
+        setTimeout(() => {
           const preloadS3Images = async () => {
             try {
               const godNamesData = await fetchGodNames();
@@ -1285,30 +1288,8 @@ export default function DailyPujaCustomTemple() {
                 const allFolders = await fetchAllImagesAndOrganize(godNamesData);
                 
                 if (allFolders.length > 0) {
-                  // Preload first few images from each folder for instant gallery access
-                  let totalPreloadedImages = 0;
-                  const maxImagesPerFolder = 3; // Preload first 3 images from each folder
-                  
-                  for (const folder of allFolders.slice(0, 5)) { // Limit to first 5 folders
-                    if (folder.images && folder.images.length > 0) {
-                      const imagesToPreload = folder.images.slice(0, maxImagesPerFolder);
-                      
-                      for (const image of imagesToPreload) {
-                        try {
-                          const url = await fetchPresignedUrl(image.key);
-                          if (url) {
-                            totalPreloadedImages++;
-                          }
-                        } catch (error) {
-                          // Silent fail for preloading
-                        }
-                      }
-                    }
-                  }
-                  
                   // Store the organized data for immediate use when gallery opens
                   setS3Folders(allFolders);
-                  
                 }
               }
             } catch (error) {
@@ -1316,74 +1297,84 @@ export default function DailyPujaCustomTemple() {
             }
           };
           
-          // Start S3 preloading in background without awaiting
           preloadS3Images();
-          
-        } catch (error) {
-          // Silent fail for preloading
-        }
-        updateProgress();
-        
-
+        }, 100);
         
         // Show completion message for a moment before transitioning
         setTimeout(() => {
+          console.log('Setting assetPreloading to false after timeout');
           setAssetPreloading(false);
-        }, 1000);
+        }, 200);
+        
+        // Progress-based fallback: if progress reaches 100%, hide loading after 1 second
+        if (preloadProgress === 100) {
+          setTimeout(() => {
+            console.log('Progress-based fallback: forcing assetPreloading to false');
+            setAssetPreloading(false);
+          }, 1000);
+        }
+        
+        // Absolute fallback: ensure loading is hidden after 3 seconds maximum
+        setTimeout(() => {
+          console.log('Absolute fallback: forcing assetPreloading to false');
+          setAssetPreloading(false);
+        }, 3000);
         
       } catch (error) {
+        console.error('Error in asset preloading:', error);
         setAssetPreloading(false);
       }
     };
     
-    // Start preloading all assets
-    preloadAllAssets();
+      // Start preloading all assets
+      console.log('useEffect: Starting preloadAllAssets...');
+      preloadAllAssets();
+  
+  // Play welcome bell after a short delay
+  setTimeout(() => {
+    playWelcomeBell();
     
-    // Play welcome bell after a short delay
+    // Swing left bell
+    Animated.sequence([
+      Animated.timing(leftBellSwing, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(leftBellSwing, {
+        toValue: -1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(leftBellSwing, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Swing right bell with slight delay
     setTimeout(() => {
-      playWelcomeBell();
-      
-      // Swing left bell
       Animated.sequence([
-        Animated.timing(leftBellSwing, {
+        Animated.timing(rightBellSwing, {
           toValue: 1,
           duration: 300,
           useNativeDriver: true,
         }),
-        Animated.timing(leftBellSwing, {
+        Animated.timing(rightBellSwing, {
           toValue: -1,
           duration: 600,
           useNativeDriver: true,
         }),
-        Animated.timing(leftBellSwing, {
+        Animated.timing(rightBellSwing, {
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
         }),
       ]).start();
-
-      // Swing right bell with slight delay
-      setTimeout(() => {
-        Animated.sequence([
-          Animated.timing(rightBellSwing, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rightBellSwing, {
-            toValue: -1,
-            duration: 600,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rightBellSwing, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }, 200);
-    }, 1000);
-  }, [fetchAllImagesAndOrganize]);
+    }, 200);
+  }, 1000);
+}, []); // Remove dependency to prevent multiple executions
 
   // Function to get today's day of the week
   const getTodayDayOfWeek = () => {
@@ -1779,10 +1770,22 @@ export default function DailyPujaCustomTemple() {
   useEffect(() => {
     return () => {
       if (sound) {
-        sound.unloadAsync();
+        try {
+          sound.unloadAsync().catch(error => {
+            console.error('❌ [MUSIC] Error unloading sound in cleanup:', error);
+          });
+        } catch (error) {
+          console.error('❌ [MUSIC] Error accessing sound in cleanup:', error);
+        }
       }
       if (ghantiSound) {
-        ghantiSound.unloadAsync();
+        try {
+          ghantiSound.unloadAsync().catch(error => {
+            console.error('❌ [MUSIC] Error unloading ghantiSound in cleanup:', error);
+          });
+        } catch (error) {
+          console.error('❌ [MUSIC] Error accessing ghantiSound in cleanup:', error);
+        }
       }
     };
   }, [sound, ghantiSound]);
@@ -1814,42 +1817,112 @@ export default function DailyPujaCustomTemple() {
     // Play temple bell sound twice and start animations
     const playTempleBellSound = async () => {
       try {
+        // Remember if music was playing before bell sound
+        const wasMusicPlaying = sound && currentlyPlaying;
+        const musicFileToRestart = wasMusicPlaying ? musicFiles.find(f => f.avld === currentlyPlaying) : null;
+        
+        console.log('🔔 [BELL] Music state before bell:');
+        console.log('🔔 [BELL] - sound:', !!sound);
+        console.log('🔔 [BELL] - currentlyPlaying:', currentlyPlaying);
+        console.log('🔔 [BELL] - wasMusicPlaying:', wasMusicPlaying);
+        console.log('🔔 [BELL] - musicFileToRestart:', musicFileToRestart);
+        console.log('🔔 [BELL] - musicFiles length:', musicFiles.length);
+        
         // Stop any currently playing ghanti sound
         if (ghantiSound) {
-          await ghantiSound.stopAsync();
-          await ghantiSound.unloadAsync();
+          try {
+            // Check if ghantiSound is loaded before attempting to stop it
+            const status = await ghantiSound.getStatusAsync();
+            if (status.isLoaded) {
+              await ghantiSound.stopAsync();
+              await ghantiSound.unloadAsync();
+              console.log('🔔 [BELL] Successfully stopped and unloaded ghanti sound');
+            } else {
+              console.log('🔔 [BELL] Ghanti sound was not loaded, skipping stop/unload');
+            }
+          } catch (error) {
+            console.error('🔔 [BELL] Error stopping ghanti sound:', error);
+            // Try to unload anyway to clean up the state
+            try {
+              await ghantiSound.unloadAsync();
+            } catch (unloadError) {
+              console.error('🔔 [BELL] Error unloading ghanti sound after stop failure:', unloadError);
+            }
+          }
         }
 
         // Load and play the temple bell sound
-        const { sound: newGhantiSound } = await Audio.Sound.createAsync(
+        const { sound: newBellSound } = await Audio.Sound.createAsync(
           require('@/assets/sounds/TempleBell.mp3'),
           { shouldPlay: true, isLooping: false }
         );
         
-        setGhantiSound(newGhantiSound);
+        setGhantiSound(newBellSound);
 
         // Stop the sound after 2 seconds
         setTimeout(async () => {
           try {
-            await newGhantiSound.stopAsync();
-            await newGhantiSound.unloadAsync();
-            setGhantiSound(null);
-            
-            // Restart music if it was playing before
-            if (currentlyPlaying && !sound) {
-              const currentFile = musicFiles.find(f => f.avld === currentlyPlaying);
-              if (currentFile) {
-                await playMusicFile(currentFile);
+            if (newBellSound) {
+              // Check if bell sound is loaded before attempting to stop it
+              try {
+                const status = await newBellSound.getStatusAsync();
+                if (status.isLoaded) {
+                  await newBellSound.stopAsync();
+                  await newBellSound.unloadAsync();
+                  console.log('🔔 [BELL] Successfully stopped and unloaded bell sound');
+                } else {
+                  console.log('🔔 [BELL] Bell sound was not loaded, skipping stop/unload');
+                }
+              } catch (stopError) {
+                console.error('🔔 [BELL] Error checking bell sound status:', stopError);
+                // Try to unload anyway to clean up the state
+                try {
+                  await newBellSound.unloadAsync();
+                } catch (unloadError) {
+                  console.error('🔔 [BELL] Error unloading bell sound after status check failure:', unloadError);
+                }
               }
             }
+            setGhantiSound(null);
+            
+            // Restart music if it was playing before bell sound
+            if (wasMusicPlaying && musicFileToRestart) {
+              console.log('🔔 [BELL] Restarting music after bell sound...');
+              console.log('🔔 [BELL] Music file to restart:', musicFileToRestart);
+              try {
+                await playMusicFile(musicFileToRestart);
+              } catch (error) {
+                console.error('🔔 [BELL] Error restarting music after bell:', error);
+              }
+            } else {
+              console.log('🔔 [BELL] Not restarting music - wasMusicPlaying:', wasMusicPlaying, 'musicFileToRestart:', musicFileToRestart);
+            }
           } catch (error) {
-            // Error stopping sound
+            console.error('🔔 [BELL] Error in bell sound timeout:', error);
+            // Still try to restart music even if stopping bell fails
+            if (wasMusicPlaying && musicFileToRestart) {
+              try {
+                await playMusicFile(musicFileToRestart);
+              } catch (error) {
+                console.error('🔔 [BELL] Error restarting music after bell error:', error);
+              }
+            }
           }
         }, 2000);
 
       } catch (error) {
-        // Error playing temple bell sound
         console.error('Error playing temple bell sound:', error);
+        // If bell fails to play, still try to restart music if it was playing
+        if (sound && currentlyPlaying) {
+          const currentFile = musicFiles.find(f => f.avld === currentlyPlaying);
+          if (currentFile) {
+            try {
+              await playMusicFile(currentFile);
+            } catch (error) {
+              console.error('Error restarting music after bell failure:', error);
+            }
+          }
+        }
       }
     };
 
@@ -1961,41 +2034,114 @@ export default function DailyPujaCustomTemple() {
     }
 
     try {
+      // Remember if music was playing before conch sound
+      const wasMusicPlaying = sound && currentlyPlaying;
+      const musicFileToRestart = wasMusicPlaying ? musicFiles.find(f => f.avld === currentlyPlaying) : null;
+      
+      console.log('🔔 [CONCH] Music state before conch:');
+      console.log('🔔 [CONCH] - sound:', !!sound);
+      console.log('🔔 [CONCH] - currentlyPlaying:', currentlyPlaying);
+      console.log('🔔 [CONCH] - wasMusicPlaying:', wasMusicPlaying);
+      console.log('🔔 [CONCH] - musicFileToRestart:', musicFileToRestart);
+      console.log('🔔 [CONCH] - musicFiles length:', musicFiles.length);
+      
       // Stop any currently playing ghanti sound
       if (ghantiSound) {
-        await ghantiSound.stopAsync();
-        await ghantiSound.unloadAsync();
+        try {
+          // Check if ghantiSound is loaded before attempting to stop it
+          const status = await ghantiSound.getStatusAsync();
+          if (status.isLoaded) {
+            await ghantiSound.stopAsync();
+            await ghantiSound.unloadAsync();
+            console.log('🔔 [CONCH] Successfully stopped and unloaded ghanti sound');
+          } else {
+            console.log('🔔 [CONCH] Ghanti sound was not loaded, skipping stop/unload');
+            setGhantiSound(null);
+          }
+        } catch (error) {
+          console.error('🔔 [CONCH] Error stopping ghanti sound:', error);
+          // Try to unload anyway to clean up the state
+          try {
+            await ghantiSound.unloadAsync();
+          } catch (unloadError) {
+            console.error('🔔 [CONCH] Error unloading ghanti sound after stop failure:', unloadError);
+          }
+          setGhantiSound(null);
+        }
       }
 
       // Load and play the conch sound
-      const { sound: newGhantiSound } = await Audio.Sound.createAsync(
+      const { sound: newConchSound } = await Audio.Sound.createAsync(
         require('@/assets/sounds/conch.mp3'),
         { shouldPlay: true, isLooping: false }
       );
       
-      setGhantiSound(newGhantiSound);
+      setGhantiSound(newConchSound);
 
       // Stop the sound after 5 seconds
       setTimeout(async () => {
         try {
-          await newGhantiSound.stopAsync();
-          await newGhantiSound.unloadAsync();
-          setGhantiSound(null);
-          
-          // Restart music if it was playing before
-          if (currentlyPlaying && !sound) {
-            const currentFile = musicFiles.find(f => f.avld === currentlyPlaying);
-            if (currentFile) {
-              await playMusicFile(currentFile);
+          if (newConchSound) {
+            // Check if conch sound is loaded before attempting to stop it
+            try {
+              const status = await newConchSound.getStatusAsync();
+              if (status.isLoaded) {
+                await newConchSound.stopAsync();
+                await newConchSound.unloadAsync();
+                console.log('🔔 [CONCH] Successfully stopped and unloaded conch sound');
+              } else {
+                console.log('🔔 [CONCH] Conch sound was not loaded, skipping stop/unload');
+              }
+            } catch (stopError) {
+              console.error('🔔 [CONCH] Error checking conch sound status:', stopError);
+              // Try to unload anyway to clean up the state
+              try {
+                await newConchSound.unloadAsync();
+              } catch (unloadError) {
+                console.error('🔔 [CONCH] Error unloading conch sound after status check failure:', unloadError);
+              }
             }
           }
+          setGhantiSound(null);
+          
+          // Restart music if it was playing before conch sound
+          if (wasMusicPlaying && musicFileToRestart) {
+            console.log('🔔 [CONCH] Restarting music after conch sound...');
+            console.log('🔔 [CONCH] Music file to restart:', musicFileToRestart);
+            try {
+              await playMusicFile(musicFileToRestart);
+            } catch (error) {
+              console.error('🔔 [CONCH] Error restarting music after conch:', error);
+            }
+          } else {
+            console.log('🔔 [CONCH] Not restarting music - wasMusicPlaying:', wasMusicPlaying, 'musicFileToRestart:', musicFileToRestart);
+          }
         } catch (error) {
-          // Error stopping sound
+          console.error('🔔 [CONCH] Error in conch sound timeout:', error);
+          // Still try to restart music even if stopping conch fails
+          if (wasMusicPlaying && musicFileToRestart) {
+            try {
+              await playMusicFile(musicFileToRestart);
+            } catch (error) {
+              console.error('🔔 [CONCH] Error restarting music after conch error:', error);
+            }
+          }
         }
       }, 5000);
 
     } catch (error) {
-      // Error playing conch sound
+      console.error('Error playing conch sound:', error);
+      // If conch fails to play, still try to restart music if it was playing
+      if (sound && currentlyPlaying) {
+        const currentFile = musicFiles.find(f => f.avld === currentlyPlaying);
+        if (currentFile) {
+          try {
+            await playMusicFile(currentFile);
+          } catch (error) {
+            console.error('Error restarting music after conch failure:', error);
+          }
+        }
+      }
     }
   };
 
@@ -2354,45 +2500,80 @@ export default function DailyPujaCustomTemple() {
   // Function to play a specific music file
   const playMusicFile = async (file: any) => {
     try {
+      // Validate file object
+      if (!file || !file.avld) {
+        console.error('❌ [MUSIC] Invalid file object:', file);
+        return;
+      }
+
+      console.log('🎵 [MUSIC] Attempting to play file:', file.avld, 'File object:', file);
+      
       setLoadingMusicId(file.avld);
       const metadata = extractMusicMetadata(file);
       
+      console.log('🎵 [MUSIC] Extracted metadata:', metadata);
+      
       // Stop any currently playing sound
       if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
+        try {
+          // Check if sound is loaded before attempting to stop it
+          const status = await sound.getStatusAsync();
+          if (status.isLoaded) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+            console.log('🎵 [MUSIC] Successfully stopped and unloaded current sound');
+          } else {
+            console.log('🎵 [MUSIC] Sound was not loaded, skipping stop/unload');
+          }
+        } catch (error) {
+          console.error('❌ [MUSIC] Error stopping current sound:', error);
+          // Try to unload anyway to clean up the state
+          try {
+            await sound.unloadAsync();
+          } catch (unloadError) {
+            console.error('❌ [MUSIC] Error unloading sound after stop failure:', unloadError);
+          }
+        }
       }
 
       // Use the Link field from the API response (contains S3 filename)
       if (!metadata.link) {
-        Alert.alert('Error', 'No audio link available for this file');
+        console.error('❌ [MUSIC] No audio link available for file:', file.avld);
+        console.error('❌ [MUSIC] File object:', file);
+        console.error('❌ [MUSIC] Metadata:', metadata);
         setLoadingMusicId(null);
         return;
       }
 
       // Get presigned URL from backend API (same as audio-video screen)
       const apiUrl = getEndpointUrl('S3_AUDIO_URL');
+      console.log('🎵 [MUSIC] Fetching presigned URL for:', metadata.link);
+      
       const response = await fetch(`${apiUrl}?filename=${encodeURIComponent(metadata.link)}`, {
         headers: getAuthHeaders()
       });
       
       if (!response.ok) {
-        throw new Error('Failed to get presigned URL from API');
+        throw new Error(`Failed to get presigned URL from API: ${response.status} ${response.statusText}`);
       }
       
       const responseData = await response.json();
+      console.log('🎵 [MUSIC] API response:', responseData);
       
       if (!responseData.success || !responseData.presignedUrl) {
-        throw new Error('Failed to get presigned URL from API');
+        throw new Error(`Invalid API response: ${JSON.stringify(responseData)}`);
       }
       
       const presignedUrl = responseData.presignedUrl;
+      console.log('🎵 [MUSIC] Got presigned URL, loading audio...');
 
       // Load and play the music using the presigned URL
       const { sound: newSound } = await Audio.Sound.createAsync(
         { uri: presignedUrl },
         { shouldPlay: true }
       );
+      
+      console.log('🎵 [MUSIC] Audio loaded successfully, setting up playback...');
       
       setSound(newSound);
       setCurrentlyPlaying(file.avld);
@@ -2409,9 +2590,18 @@ export default function DailyPujaCustomTemple() {
         }
       });
 
+      console.log('🎵 [MUSIC] Music playback setup complete');
+
     } catch (error) {
       console.error('❌ [MUSIC] Error playing music:', error);
-      Alert.alert('Error', 'Failed to play music file');
+      console.error('❌ [MUSIC] File that failed:', file);
+      console.error('❌ [MUSIC] Error details:', error instanceof Error ? error.message : String(error), error instanceof Error ? error.stack : 'No stack trace');
+      
+      // Don't show alert for background music restart attempts
+      if (!file.avld.includes('background')) {
+        Alert.alert('Error', 'Failed to play music file');
+      }
+      
       setLoadingMusicId(null);
     }
   };
@@ -2433,8 +2623,25 @@ export default function DailyPujaCustomTemple() {
   const stopCurrentMusic = async () => {
     try {
       if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
+        try {
+          // Check if sound is loaded before attempting to stop it
+          const status = await sound.getStatusAsync();
+          if (status.isLoaded) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+            console.log('🎵 [MUSIC] Successfully stopped and unloaded music');
+          } else {
+            console.log('🎵 [MUSIC] Music was not loaded, skipping stop/unload');
+          }
+        } catch (error) {
+          console.error('❌ [MUSIC] Error stopping music:', error);
+          // Try to unload anyway to clean up the state
+          try {
+            await sound.unloadAsync();
+          } catch (unloadError) {
+            console.error('❌ [MUSIC] Error unloading music after stop failure:', unloadError);
+          }
+        }
       }
       setSound(null);
       setCurrentlyPlaying(null);
@@ -2470,6 +2677,7 @@ export default function DailyPujaCustomTemple() {
     );
   }
 
+  console.log('Render check: assetPreloading =', assetPreloading, 'preloadProgress =', preloadProgress);
   if (assetPreloading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -2495,13 +2703,12 @@ export default function DailyPujaCustomTemple() {
             
             <View style={styles.loadingSteps}>
               <Text style={styles.loadingStepText}>
-                {preloadProgress < 15 && '🌸 Loading sacred flowers...'}
-                {preloadProgress >= 15 && preloadProgress < 30 && '🪔 Preparing arti thali...'}
-                {preloadProgress >= 30 && preloadProgress < 45 && '🔔 Loading divine bells...'}
-                {preloadProgress >= 45 && preloadProgress < 60 && '🐚 Preparing shankh...'}
-        
-                {preloadProgress >= 75 && preloadProgress < 90 && '🙏 Loading deities...'}
-                {preloadProgress >= 90 && preloadProgress < 100 && '🏛️ Preparing temple...'}
+                {preloadProgress < 17 && '🌸 Loading sacred flowers...'}
+                {preloadProgress >= 17 && preloadProgress < 33 && '🪔 Preparing arti thali...'}
+                {preloadProgress >= 33 && preloadProgress < 50 && '🔔 Loading divine bells...'}
+                {preloadProgress >= 50 && preloadProgress < 67 && '🐚 Preparing shankh...'}
+                {preloadProgress >= 67 && preloadProgress < 83 && '🙏 Loading deities...'}
+                {preloadProgress >= 83 && preloadProgress < 100 && '🏛️ Preparing temple...'}
                 {preloadProgress === 100 && '🎉 Ready for divine puja!'}
               </Text>
             </View>
@@ -3621,34 +3828,7 @@ export default function DailyPujaCustomTemple() {
       </Modal>
 
       {/* Mini Music Player - Shows when music is playing */}
-      {currentlyPlaying && (
-        <View style={styles.miniMusicPlayer}>
-          <View style={styles.miniMusicPlayerContent}>
-            <View style={styles.miniMusicPlayerInfo}>
-              <MaterialCommunityIcons name="music-note" size={20} color="#FF6A00" />
-              <Text style={styles.miniMusicPlayerTitle} numberOfLines={1}>
-                {musicFiles.find(f => f.avld === currentlyPlaying)?.VideoName || 'Now Playing'}
-              </Text>
-            </View>
-            <View style={styles.miniMusicPlayerControls}>
-              <TouchableOpacity 
-                style={styles.miniMusicPlayerButton}
-                onPress={async () => {
-                  await stopCurrentMusic();
-                }}
-              >
-                <MaterialCommunityIcons name="stop" size={20} color="#FF6A00" />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.miniMusicPlayerButton}
-                onPress={() => setShowMusicModal(true)}
-              >
-                <MaterialCommunityIcons name="playlist-music" size={20} color="#FF6A00" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
+
 
        
        {/* Aarti Modal */}

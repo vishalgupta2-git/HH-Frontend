@@ -315,29 +315,37 @@ export default function CreateTempleScreen() {
 
   // Function to play welcome bell sound
   const playWelcomeBell = async () => {
+    let newSound: any = null;
     try {
       // Stop any currently playing sound
       if (sound) {
-        await sound.stopAsync();
-        await sound.unloadAsync();
+        try {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        } catch (error) {
+          // Ignore errors when stopping/unloading existing sound
+        }
       }
 
       // Load and play the temple bell sound
-      const { sound: newSound } = await Audio.Sound.createAsync(
+      const { sound: soundObject } = await Audio.Sound.createAsync(
         require('@/assets/sounds/TempleBell.mp3'),
         { shouldPlay: true, isLooping: false }
       );
       
+      newSound = soundObject;
       setSound(newSound);
 
       // Stop the sound after 2 seconds
       setTimeout(async () => {
         try {
-          await newSound.stopAsync();
-          await newSound.unloadAsync();
+          if (newSound) {
+            await newSound.stopAsync();
+            await newSound.unloadAsync();
+          }
           setSound(null);
         } catch (error) {
-          // Error stopping sound
+          // Error stopping sound - ignore
         }
       }, 2000);
 

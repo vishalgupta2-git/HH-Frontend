@@ -273,14 +273,20 @@ export default function DailyPujaForYatra() {
 
   // Play welcome bell sound
   const playWelcomeBell = async () => {
+    let soundObject: any = null;
     try {
       const { sound } = await Audio.Sound.createAsync(
         require('@/assets/sounds/TempleBell.mp3')
       );
-      await sound.playAsync();
-      sound.setOnPlaybackStatusUpdate((status) => {
+      soundObject = sound;
+      await soundObject.playAsync();
+      soundObject.setOnPlaybackStatusUpdate((status: any) => {
         if (status.isLoaded && status.didJustFinish) {
-          sound.unloadAsync();
+          try {
+            soundObject.unloadAsync();
+          } catch (error) {
+            // Ignore cleanup errors
+          }
         }
       });
     } catch (error) {
