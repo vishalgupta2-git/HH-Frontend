@@ -6,19 +6,23 @@ import DailyPujaReminderModal from '@/components/Home/DailyPujaReminderModal';
 import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
 import ReferralSuccessModal from '@/components/Home/ReferralSuccessModal';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Text } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { hasVisitedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUtils';
 import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
 import { shouldShowSpecialDaysModal } from '@/utils/bookingUtils';
+import { useRouter } from 'expo-router';
 
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [showDailyPujaModal, setShowDailyPujaModal] = useState(false);
   const [showSpecialDaysModal, setShowSpecialDaysModal] = useState(false);
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [upcomingPujas, setUpcomingPujas] = useState<UpcomingPuja[]>([]);
+  const [buttonBackgroundColor, setButtonBackgroundColor] = useState('#FF9800');
+  const [buttonTextColor, setButtonTextColor] = useState('#fff');
   
   // Check if user should see daily puja reminder and special days
   useEffect(() => {
@@ -77,6 +81,20 @@ export default function HomeScreen() {
     const timer = setTimeout(checkReferralStatus, 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  // Color animation for Eco friendly Ganesha button
+  useEffect(() => {
+    const colorInterval = setInterval(() => {
+      setButtonBackgroundColor(prevColor => 
+        prevColor === '#FF9800' ? '#FFB74D' : '#FF9800'
+      );
+      setButtonTextColor(prevColor => 
+        prevColor === '#fff' ? '#000' : '#fff'
+      );
+    }, 3000); // Change every 3 seconds
+
+    return () => clearInterval(colorInterval);
+  }, []);
   
   const handleCloseDailyPujaModal = () => {
     setShowDailyPujaModal(false);
@@ -97,6 +115,14 @@ export default function HomeScreen() {
         <HomeIconGrid />
       </View>
       <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        <View style={styles.section}>
+          <TouchableOpacity 
+            style={[styles.ecoGaneshaButton, { backgroundColor: buttonBackgroundColor }]}
+            onPress={() => router.push('/screens/eco-friendly-ganesha')}
+          >
+            <Text style={[styles.ecoGaneshaButtonText, { color: buttonTextColor }]}>Eco friendly Ganesha</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.section}>
           <SpiritualAstrologyBlock />
         </View>
@@ -142,5 +168,23 @@ const styles = StyleSheet.create({
   },
   referralSection: {
     marginTop: 6,
+  },
+  ecoGaneshaButton: {
+    width: '82%',
+    alignSelf: 'center',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  ecoGaneshaButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
