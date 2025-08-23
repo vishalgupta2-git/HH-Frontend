@@ -138,7 +138,7 @@ export default function LoginScreen() {
               <Text style={styles.modalLevel1}>1. INTRODUCTION</Text>
               
               <Text style={styles.modalNormalText}>
-                The mobile applications on Android and iOS Platforms 'The Hindu Heritage' (together "Platform") are owned and operated by Audguide Heritage Travel Private Limited, a private company incorporated in India under the Companies Act, 2013 and having its registered office at #C-127 NDMC SOCIETY, NDMC EMPLOYEES CGHS LTD, Vikas Puri, New Delhi, West Delhi, Delhi, India, 110018. This includes any of our affiliates, associates, assignees or successors-in-interest as determined by us at our sole discretion and without requiring any prior notice or intimation to you ("Company", "we" or "us" or "our"). Your ("you", "your" or "user") use of the Services (as defined herein) is subject to these terms and conditions ("Terms of Use").
+                The website 'hinduheritage.in', mobile applications on Android and iOS Platforms 'The Hindu Heritage' (together "Platform") are owned and operated by Audguide Heritage Travel Private Limited, a private company incorporated in India under the Companies Act, 2013 and having its registered office at #C-127 NDMC SOCIETY, NDMC EMPLOYEES CGHS LTD, Vikas Puri, New Delhi, West Delhi, Delhi, India, 110018. This includes any of our affiliates, associates, assignees or successors-in-interest as determined by us at our sole discretion and without requiring any prior notice or intimation to you ("Company", "we" or "us" or "our"). Your ("you", "your" or "user") use of the Services (as defined herein) is subject to these terms and conditions ("Terms of Use").
               </Text>
 
               <Text style={styles.modalLevel2}>1.2</Text>
