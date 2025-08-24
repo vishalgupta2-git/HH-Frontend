@@ -1,8 +1,10 @@
 // GaneshaTint.js
-import React, { useState, useMemo } from "react";
-import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
+import React, { useState, useMemo, useEffect } from "react";
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert } from "react-native";
 import { Canvas, Image as SkiaImage, useImage, ColorMatrix, Group } from "@shopify/react-native-skia";
 import { useWindowDimensions } from 'react-native';
+import { getApiUrl, getAuthHeaders } from '../../constants/ApiConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function GaneshaTint() {
   const [tintColor, setTintColor] = useState("gold");
@@ -11,9 +13,28 @@ export default function GaneshaTint() {
   const [imageX, setImageX] = useState(0); // -100 to 100 range
   const [imageY, setImageY] = useState(0); // -100 to 100 range
   const [activePanel, setActivePanel] = useState<string | null>(null); // null, 'tint', 'size', 'position'
+  const [templeName, setTempleName] = useState("My Ganesha Temple");
+  const [userId, setUserId] = useState<string | null>(null);
   
   // Get device dimensions
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
+  // Load userId from AsyncStorage when component mounts
+  useEffect(() => {
+    const loadUserId = async () => {
+      try {
+        const userStr = await AsyncStorage.getItem('user');
+        if (userStr) {
+          const userData = JSON.parse(userStr);
+          setUserId(userData.userId);
+        }
+      } catch (error) {
+        console.error('Error loading userId:', error);
+      }
+    };
+    
+    loadUserId();
+  }, []);
   
   // Load the PNG
   const image = useImage(require("../../assets/images/temple/Ganesha1.png"));
@@ -83,6 +104,125 @@ export default function GaneshaTint() {
     }
   };
 
+    // Handle saving temple
+  const handleSaveTemple = async () => {
+    if (!userId) {
+      alert('Please log in to save your temple configuration');
+      return;
+    }
+
+    try {
+      const templeData = {
+        userId: userId,
+        templeName: templeName,
+        templeInformation: {
+          tintColor,
+          tintIntensity,
+          imageSize,
+          imageX,
+          imageY,
+          createdAt: new Date().toISOString()
+        }
+      };
+      
+      const response = await fetch(getApiUrl('/api/save-temple'), {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(templeData)
+      });
+      
+      if (response.ok) {
+        alert('Temple saved successfully!');
+      } else {
+        alert('Failed to save temple');
+      }
+    } catch (error) {
+      console.error('Error saving temple:', error);
+      alert('Error saving temple');
+    }
+  };
+
+  // Handle back button with save confirmation
+  const handleBackButton = () => {
+    Alert.alert(
+      "Save Changes?",
+      "Do you want to save your temple changes before going back?",
+      [
+        {
+          text: "Don't Save",
+          style: "destructive",
+          onPress: () => {
+            // Go back without saving
+            console.log('Going back without saving');
+            // Navigate to previous screen
+            if (typeof window !== 'undefined' && window.history) {
+              window.history.back();
+            }
+          }
+        },
+        {
+          text: "Save",
+          onPress: async () => {
+            // Save first, then go back
+            if (!userId) {
+              alert('Please log in to save your temple configuration');
+              // Still go back even without saving
+              if (typeof window !== 'undefined' && window.history) {
+                window.history.back();
+              }
+              return;
+            }
+
+            try {
+              const templeData = {
+                userId: userId,
+                templeName: templeName,
+                templeInformation: {
+                  tintColor,
+                  tintIntensity,
+                  imageSize,
+                  imageX,
+                  imageY,
+                  createdAt: new Date().toISOString()
+                }
+              };
+              
+              const response = await fetch(getApiUrl('/api/save-temple'), {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(templeData),
+              });
+              
+              if (response.ok) {
+                console.log('✅ Temple saved successfully, going back');
+                // Navigate to previous screen after successful save
+                if (typeof window !== 'undefined' && window.history) {
+                  window.history.back();
+                }
+              } else {
+                console.error('❌ Failed to save temple');
+                // Still go back even if save fails
+                if (typeof window !== 'undefined' && window.history) {
+                  window.history.back();
+                }
+              }
+            } catch (error) {
+              console.error('❌ Error saving temple:', error);
+              // Still go back even if save fails
+              if (typeof window !== 'undefined' && window.history) {
+                window.history.back();
+              }
+            }
+          }
+        },
+        {
+          text: "Cancel",
+          style: "cancel"
+        }
+      ]
+    );
+  };
+
   // Don't render until image is loaded
   if (!image) {
     return (
@@ -114,29 +254,55 @@ export default function GaneshaTint() {
         </Group>
       </Canvas>
       
-      {/* Top Icon Bar */}
-      <View style={styles.topIconBar}>
-        <TouchableOpacity
-          style={[styles.iconButton, activePanel === 'tint' && styles.activeIconButton]}
-          onPress={() => setActivePanel(activePanel === 'tint' ? null : 'tint')}
-        >
-          <Text style={styles.iconText}>🎨</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.iconButton, activePanel === 'size' && styles.activeIconButton]}
-          onPress={() => setActivePanel(activePanel === 'size' ? null : 'size')}
-        >
-          <Text style={styles.iconText}>📏</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.iconButton, activePanel === 'position' && styles.activeIconButton]}
-          onPress={() => setActivePanel(activePanel === 'position' ? null : 'position')}
-        >
-          <Text style={styles.iconText}>📍</Text>
-        </TouchableOpacity>
-      </View>
+             {/* Top Icon Bar */}
+       <View style={styles.topIconBar}>
+         <TouchableOpacity
+           style={[styles.iconButton, activePanel === 'tint' && styles.activeIconButton]}
+           onPress={() => setActivePanel(activePanel === 'tint' ? null : 'tint')}
+         >
+           <Text style={styles.iconText}>🎨</Text>
+         </TouchableOpacity>
+         
+         <TouchableOpacity
+           style={[styles.iconButton, activePanel === 'size' && styles.activeIconButton]}
+           onPress={() => setActivePanel(activePanel === 'size' ? null : 'size')}
+         >
+           <Text style={styles.iconText}>📏</Text>
+         </TouchableOpacity>
+         
+         <TouchableOpacity
+           style={[styles.iconButton, activePanel === 'position' && styles.activeIconButton]}
+           onPress={() => setActivePanel(activePanel === 'position' ? null : 'position')}
+         >
+           <Text style={styles.iconText}>📍</Text>
+         </TouchableOpacity>
+         
+         <TouchableOpacity
+           style={styles.iconButton}
+           onPress={handleSaveTemple}
+         >
+           <Text style={styles.iconText}>💾</Text>
+         </TouchableOpacity>
+         
+         <TouchableOpacity
+           style={styles.iconButton}
+           onPress={handleBackButton}
+         >
+           <Text style={styles.iconText}>⬅️</Text>
+         </TouchableOpacity>
+       </View>
+       
+       {/* Temple Name Input */}
+       <View style={styles.templeNameContainer}>
+         <Text style={styles.label}>Temple Name:</Text>
+         <TextInput
+           style={styles.templeNameInput}
+           value={templeName}
+           onChangeText={setTempleName}
+           placeholder="Enter temple name"
+           placeholderTextColor="#666"
+         />
+       </View>
       
       {/* Dynamic Control Panel */}
              <View style={[
@@ -298,10 +464,11 @@ const styles = StyleSheet.create({
   topIconBar: {
     position: 'absolute',
     top: 40,
-    left: '50%',
-    transform: [{ translateX: -60 }],
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 1000,
   },
   iconButton: {
@@ -371,5 +538,24 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       justifyContent: 'space-between',
       paddingHorizontal: 20,
+    },
+    templeNameContainer: {
+      position: 'absolute',
+      top: 260,
+      width: 'auto',
+      alignSelf: 'center',
+      alignItems: 'center',
+      zIndex: 100,
+    },
+    templeNameInput: {
+      backgroundColor: '#333',
+      color: 'white',
+      borderWidth: 1,
+      borderColor: '#666',
+      borderRadius: 8,
+      padding: 10,
+      marginTop: 10,
+      minWidth: 200,
+      textAlign: 'center',
     },
   });

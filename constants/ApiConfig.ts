@@ -48,6 +48,7 @@ export const API_CONFIG = {
     // User Temple Management
     SAVE_USER_TEMPLE: '/api/save-user-temple',
     GET_USER_TEMPLE: '/api/get-user-temple',
+    SAVE_GANESHA_TEMPLE: '/api/save-temple',
     
     // Temples and Charities
     TEMPLES_CHARITIES: '/api/temples-charities',
