@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, Modal, Pressable, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import HomeHeader from '@/components/Home/HomeHeader';
 
 const { width, height } = Dimensions.get('window');
 
 export default function EcoFriendlyGaneshaScreen() {
   const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -34,6 +36,20 @@ export default function EcoFriendlyGaneshaScreen() {
           colors={['#FFFFFF', '#FFF8E1', '#FFECB3']}
           style={styles.contentContainer}
         >
+          {/* 3D Ganesha Button */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.ganesha3DButton}
+              onPress={() => router.push('/screens/3d-ganesha')}
+            >
+              <View style={styles.buttonContent}>
+                <Ionicons name="cube" size={32} color="#FF6A00" />
+                <Text style={styles.buttonTitle}>3D Ganesha Darshan</Text>
+                <Text style={styles.buttonSubtitle}>Experience Lord Ganesha in 3D</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color="#FF6A00" />
+            </TouchableOpacity>
+          </View>
         </LinearGradient>
 
        {/* Modal */}
@@ -152,5 +168,38 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     lineHeight: 22,
     flex: 1,
+  },
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  ganesha3DButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFF8E1',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  buttonContent: {
+    flex: 1,
+    marginRight: 10,
+  },
+  buttonTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF6A00',
+    marginTop: 5,
+  },
+  buttonSubtitle: {
+    fontSize: 14,
+    color: '#555',
+    marginTop: 2,
   },
 });
