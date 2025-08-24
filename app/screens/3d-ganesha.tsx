@@ -15,25 +15,63 @@ export default function GaneshaTint() {
   const [activePanel, setActivePanel] = useState<string | null>(null); // null, 'tint', 'size', 'position'
   const [templeName, setTempleName] = useState("My Ganesha Temple");
   const [userId, setUserId] = useState<string | null>(null);
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info');
   
   // Get device dimensions
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
-  // Load userId from AsyncStorage when component mounts
+  // Load userId and temple configuration from database when component mounts
   useEffect(() => {
-    const loadUserId = async () => {
+    const loadUserData = async () => {
       try {
         const userStr = await AsyncStorage.getItem('user');
         if (userStr) {
           const userData = JSON.parse(userStr);
-          setUserId(userData.userId);
+          const currentUserId = userData.userId;
+          setUserId(currentUserId);
+          
+          // Load existing temple configuration from database
+          if (currentUserId) {
+            try {
+              const response = await fetch(getApiUrl('/api/get-ganesha-temple') + `?userId=${currentUserId}`, {
+                method: 'GET',
+                headers: getAuthHeaders(),
+              });
+              
+              if (response.ok) {
+                const result = await response.json();
+                if (result.success && result.temple) {
+                  const temple = result.temple;
+                  console.log('✅ Loaded existing temple configuration:', temple);
+                  
+                  // Update state with loaded configuration
+                  setTempleName(temple.templeName || "My Ganesha Temple");
+                  if (temple.templeInformation) {
+                    const info = temple.templeInformation;
+                    setTintColor(info.tintColor || "gold");
+                    setTintIntensity(info.tintIntensity || 0.3);
+                    setImageSize(info.imageSize || 0.4);
+                    setImageX(info.imageX || 0);
+                    setImageY(info.imageY || 0);
+                  }
+                }
+              } else if (response.status === 404) {
+                console.log('ℹ️ No existing temple configuration found, using defaults');
+              } else {
+                console.error('❌ Error loading temple configuration:', response.status);
+              }
+            } catch (error) {
+              console.error('❌ Error fetching temple configuration:', error);
+            }
+          }
         }
       } catch (error) {
         console.error('Error loading userId:', error);
       }
     };
     
-    loadUserId();
+    loadUserData();
   }, []);
   
   // Load the PNG
@@ -132,13 +170,27 @@ export default function GaneshaTint() {
       });
       
       if (response.ok) {
-        alert('Temple saved successfully!');
+        // Show quick notification instead of modal
+        setMessage('Temple Saved');
+        setMessageType('success');
+        // Clear message after 2 seconds
+        setTimeout(() => {
+          setMessage('');
+        }, 2000);
       } else {
-        alert('Failed to save temple');
+        setMessage('Failed to save temple');
+        setMessageType('error');
+        setTimeout(() => {
+          setMessage('');
+        }, 2000);
       }
     } catch (error) {
       console.error('Error saving temple:', error);
-      alert('Error saving temple');
+      setMessage('Error saving temple');
+      setMessageType('error');
+      setTimeout(() => {
+        setMessage('');
+      }, 2000);
     }
   };
 
@@ -303,6 +355,17 @@ export default function GaneshaTint() {
            placeholderTextColor="#666"
          />
        </View>
+       
+       {/* Quick Notification */}
+       {message && (
+         <View style={[
+           styles.notification,
+           messageType === 'success' && styles.notificationSuccess,
+           messageType === 'error' && styles.notificationError
+         ]}>
+           <Text style={styles.notificationText}>{message}</Text>
+         </View>
+       )}
       
       {/* Dynamic Control Panel */}
              <View style={[
@@ -557,5 +620,31 @@ const styles = StyleSheet.create({
       marginTop: 10,
       minWidth: 200,
       textAlign: 'center',
+    },
+    notification: {
+      position: 'absolute',
+      top: 320,
+      alignSelf: 'center',
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 20,
+      backgroundColor: '#333',
+      borderWidth: 1,
+      borderColor: '#666',
+      zIndex: 1000,
+    },
+    notificationSuccess: {
+      backgroundColor: '#4CAF50',
+      borderColor: '#45a049',
+    },
+    notificationError: {
+      backgroundColor: '#f44336',
+      borderColor: '#da190b',
+    },
+    notificationText: {
+      color: 'white',
+      fontSize: 16,
+      textAlign: 'center',
+      fontWeight: '500',
     },
   });
