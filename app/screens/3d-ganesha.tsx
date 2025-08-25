@@ -140,10 +140,14 @@ export default function GaneshaTint() {
     }
   };
 
-    // Handle saving temple
+  // Handle saving temple
   const handleSaveTemple = async () => {
     if (!userId) {
-      alert('Please log in to save your temple configuration');
+      setMessage('Please log in to save your temple configuration');
+      setMessageType('error');
+      setTimeout(() => {
+        setMessage('');
+      }, 2000);
       return;
     }
 
@@ -290,6 +294,14 @@ export default function GaneshaTint() {
         style={styles.backgroundImage}
         resizeMode="cover"
       />
+      
+      {/* Garland Image */}
+      <Image
+        source={require("../../assets/images/ganesha2025/Garland.png")}
+        style={styles.garlandImage}
+        resizeMode="contain"
+      />
+      
       <Canvas style={[styles.canvas, { width: screenWidth, height: screenHeight }]}>
         <Group>
           <ColorMatrix matrix={getColorMatrix(tintColor, tintIntensity)} />
@@ -310,147 +322,144 @@ export default function GaneshaTint() {
         </Group>
       </Canvas>
       
-             {/* Top Icon Bar */}
-       <View style={styles.topIconBar}>
-         <TouchableOpacity
-           style={[styles.iconButton, activePanel === 'tint' && styles.activeIconButton]}
-           onPress={() => setActivePanel(activePanel === 'tint' ? null : 'tint')}
-         >
-           <Text style={styles.iconText}>🎨</Text>
-         </TouchableOpacity>
-         
-         <TouchableOpacity
-           style={[styles.iconButton, activePanel === 'size' && styles.activeIconButton]}
-           onPress={() => setActivePanel(activePanel === 'size' ? null : 'size')}
-         >
-           <Text style={styles.iconText}>📏</Text>
-         </TouchableOpacity>
-         
-         <TouchableOpacity
-           style={[styles.iconButton, activePanel === 'position' && styles.activeIconButton]}
-           onPress={() => setActivePanel(activePanel === 'position' ? null : 'position')}
-         >
-           <Text style={styles.iconText}>📍</Text>
-         </TouchableOpacity>
-         
-         <TouchableOpacity
-           style={styles.iconButton}
-           onPress={handleSaveTemple}
-         >
-           <Text style={styles.iconText}>💾</Text>
-         </TouchableOpacity>
-         
-         <TouchableOpacity
-           style={styles.iconButton}
-           onPress={handleBackButton}
-         >
-           <Text style={styles.iconText}>⬅️</Text>
-         </TouchableOpacity>
-       </View>
-       
-
-       
-       {/* Quick Notification */}
-       {message && (
-         <View style={[
-           styles.notification,
-           messageType === 'success' && styles.notificationSuccess,
-           messageType === 'error' && styles.notificationError
-         ]}>
-           <Text style={styles.notificationText}>{message}</Text>
-         </View>
-       )}
+      {/* Top Icon Bar */}
+      <View style={styles.topIconBar}>
+        <TouchableOpacity
+          style={[styles.iconButton, activePanel === 'tint' && styles.activeIconButton]}
+          onPress={() => setActivePanel(activePanel === 'tint' ? null : 'tint')}
+        >
+          <Text style={styles.iconText}>🎨</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.iconButton, activePanel === 'size' && styles.activeIconButton]}
+          onPress={() => setActivePanel(activePanel === 'size' ? null : 'size')}
+        >
+          <Text style={styles.iconText}>📏</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={[styles.iconButton, activePanel === 'position' && styles.activeIconButton]}
+          onPress={() => setActivePanel(activePanel === 'position' ? null : 'position')}
+        >
+          <Text style={styles.iconText}>📍</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={handleSaveTemple}
+        >
+          <Text style={styles.iconText}>💾</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={handleBackButton}
+        >
+          <Text style={styles.iconText}>⬅️</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {/* Quick Notification */}
+      {message && (
+        <View style={[
+          styles.notification,
+          messageType === 'success' && styles.notificationSuccess,
+          messageType === 'error' && styles.notificationError
+        ]}>
+          <Text style={styles.notificationText}>{message}</Text>
+        </View>
+      )}
       
       {/* Dynamic Control Panel */}
-             <View style={[
-         styles.controls, 
-         { 
-           top: activePanel === 'position' || activePanel === 'tint' || activePanel === 'size' ? 0 : 200,
-           left: 0
-         }
-       ]}>
-                 {activePanel === 'tint' && (
-           <>
-             <View style={[styles.positionContainer, { top: 100 }]}>
-               {["gold", "red", "blue", "green", "purple"].map(color => (
-                 <TouchableOpacity
-                   key={color}
-                   style={[
-                     styles.colorButton, 
-                     { backgroundColor: color === "gold" ? "#FFD700" : color },
-                     tintColor === color && styles.activeColorButton
-                   ]}
-                   onPress={() => setTintColor(color)}
-                 />
-               ))}
-             </View>
-             
-             <View style={[styles.positionContainer, { top: 180 }]}>
-               <TouchableOpacity
-                 style={styles.intensityButton}
-                 onPress={() => setTintIntensity(prev => Math.max(0, prev - 0.1))}
-               >
-                 <Text style={styles.buttonText}>⬅️</Text>
-               </TouchableOpacity>
-               <Text style={styles.label}>Intensity: {Math.round(tintIntensity * 100)}%</Text>
-               <TouchableOpacity
-                 style={styles.intensityButton}
-                 onPress={() => setTintIntensity(prev => Math.min(1, prev + 0.1))}
-               >
-                 <Text style={styles.buttonText}>➡️</Text>
-               </TouchableOpacity>
-             </View>
-           </>
-         )}
-        
-                 {activePanel === 'size' && (
-           <View style={[styles.positionContainer, { top: 100 }]}>
-             <TouchableOpacity
-               style={styles.intensityButton}
-               onPress={() => setImageSize(prev => Math.max(0.1, prev - 0.1))}
-             >
-               <Text style={styles.buttonText}>⬅️</Text>
-             </TouchableOpacity>
-             <Text style={styles.label}>Size: {Math.round(imageSize * 100)}%</Text>
-             <TouchableOpacity
-               style={styles.intensityButton}
-               onPress={() => setImageSize(prev => Math.min(1.2, prev + 0.1))}
-             >
-               <Text style={styles.buttonText}>➡️</Text>
-             </TouchableOpacity>
-           </View>
-         )}
-         
-                   {activePanel === 'position' && (
-            <View style={styles.positionContainer}>
-              <TouchableOpacity 
-                style={styles.arrowButton}
-                onPress={() => setImageY(prev => Math.min(100, prev + 10))}
-              >
-                <Text style={styles.arrowText}>⬇️</Text>
-              </TouchableOpacity>
-                             <TouchableOpacity 
-                 style={styles.arrowButton}
-                 onPress={() => setImageY(prev => Math.max(-100, prev - 10))}
-               >
-                 <Text style={styles.arrowText}>⬆️</Text>
-               </TouchableOpacity>
-                               <TouchableOpacity 
-                  style={styles.arrowButton}
-                  onPress={() => setImageX(prev => Math.max(-100, prev - 10))}
-                >
-                  <Text style={styles.arrowText}>⬅️</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.arrowButton}
-                  onPress={() => setImageX(prev => Math.min(100, prev + 10))}
-                >
-                  <Text style={styles.arrowText}>➡️</Text>
-                </TouchableOpacity>
+      <View style={[
+        styles.controls, 
+        { 
+          top: activePanel === 'position' || activePanel === 'tint' || activePanel === 'size' ? 0 : 200,
+          left: 0
+        }
+      ]}>
+        {activePanel === 'tint' && (
+          <>
+            <View style={[styles.positionContainer, { top: 100 }]}>
+              {["gold", "red", "blue", "green", "purple"].map(color => (
+                <TouchableOpacity
+                  key={color}
+                  style={[
+                    styles.colorButton, 
+                    { backgroundColor: color === "gold" ? "#FFD700" : color },
+                    tintColor === color && styles.activeColorButton
+                  ]}
+                  onPress={() => setTintColor(color)}
+                />
+              ))}
             </View>
-          )}
-
-       </View>
+            
+            <View style={[styles.positionContainer, { top: 180 }]}>
+              <TouchableOpacity
+                style={styles.intensityButton}
+                onPress={() => setTintIntensity(prev => Math.max(0, prev - 0.1))}
+              >
+                <Text style={styles.buttonText}>⬅️</Text>
+              </TouchableOpacity>
+              <Text style={styles.label}>Intensity: {Math.round(tintIntensity * 100)}%</Text>
+              <TouchableOpacity
+                style={styles.intensityButton}
+                onPress={() => setTintIntensity(prev => Math.min(1, prev + 0.1))}
+              >
+                <Text style={styles.buttonText}>➡️</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+        
+        {activePanel === 'size' && (
+          <View style={[styles.positionContainer, { top: 100 }]}>
+            <TouchableOpacity
+              style={styles.intensityButton}
+              onPress={() => setImageSize(prev => Math.max(0.1, prev - 0.1))}
+            >
+              <Text style={styles.buttonText}>⬅️</Text>
+            </TouchableOpacity>
+            <Text style={styles.label}>Size: {Math.round(imageSize * 100)}%</Text>
+            <TouchableOpacity
+              style={styles.intensityButton}
+              onPress={() => setImageSize(prev => Math.min(1.2, prev + 0.1))}
+            >
+              <Text style={styles.buttonText}>➡️</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        
+        {activePanel === 'position' && (
+          <View style={styles.positionContainer}>
+            <TouchableOpacity 
+              style={styles.arrowButton}
+              onPress={() => setImageY(prev => Math.min(100, prev + 10))}
+            >
+              <Text style={styles.arrowText}>⬇️</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.arrowButton}
+              onPress={() => setImageY(prev => Math.max(-100, prev - 10))}
+            >
+              <Text style={styles.arrowText}>⬆️</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.arrowButton}
+              onPress={() => setImageX(prev => Math.max(-100, prev - 10))}
+            >
+              <Text style={styles.arrowText}>⬅️</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.arrowButton}
+              onPress={() => setImageX(prev => Math.min(100, prev + 10))}
+            >
+              <Text style={styles.arrowText}>➡️</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -470,63 +479,30 @@ const styles = StyleSheet.create({
     height: '100%',
     zIndex: 0, // Behind everything
   },
+  garlandImage: {
+    position: 'absolute',
+    right: 0, // At the very right edge
+    top: '50%',
+    transform: [{ translateY: -175 }], // Center vertically (adjusted for 3.5x size)
+    width: 420, // 3.5x original size (120 * 3.5)
+    height: 420, // 3.5x original size (120 * 3.5)
+    zIndex: 1, // Above background, below Ganesha
+  },
   canvas: {
     flex: 1,
+    zIndex: 10, // Above Garland
   },
   loadingText: {
     color: 'white',
     fontSize: 18,
     textAlign: 'center',
-    marginTop: 50,
+    marginTop: 200,
   },
   controls: {
     position: 'absolute',
     alignItems: 'center',
     width: '100%',
-    zIndex: 100,
-  },
-  label: {
-    color: 'white',
-    fontSize: 16,
-    marginBottom: 10,
-    fontWeight: 'bold',
-  },
-  colorButtons: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  colorButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginHorizontal: 8,
-    borderWidth: 2,
-    borderColor: 'white',
-  },
-  activeColorButton: {
-    borderColor: '#FFD700',
-    borderWidth: 3,
-  },
-  intensityControls: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    justifyContent: 'center',
-  },
-  intensityButton: {
-    padding: 15,
-    borderRadius: 25,
-    marginHorizontal: 10,
-    minWidth: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    zIndex: 1000,
   },
   topIconBar: {
     position: 'absolute',
@@ -554,84 +530,92 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFD700',
     borderColor: 'white',
   },
-     iconText: {
-     fontSize: 24,
-     transform: [{ rotate: '90deg' }],
-   },
-       positionContainer: {
-      position: 'absolute',
-      top: 100,
-      width: 'auto',
-      height: 80,
-      alignSelf: 'center',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 20,
-    },
-   arrowButton: {
-     width: 60,
-     height: 60,
-     borderRadius: 30,
-     backgroundColor: '#333',
-     alignItems: 'center',
-     justifyContent: 'center',
-     marginHorizontal: 10,
-     borderWidth: 2,
-     borderColor: 'transparent',
-   },
-       arrowText: {
-      fontSize: 24,
-      color: 'white',
-    },
-    tintColorContainer: {
-      position: 'absolute',
-      top: 100,
-      width: 'auto',
-      height: 80,
-      alignSelf: 'center',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 20,
-    },
-    tintIntensityContainer: {
-      position: 'absolute',
-      top: 180,
-      width: 'auto',
-      height: 80,
-      alignSelf: 'center',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 20,
-    },
-
-
-    notification: {
-      position: 'absolute',
-      top: 320,
-      alignSelf: 'center',
-      paddingHorizontal: 20,
-      paddingVertical: 10,
-      borderRadius: 20,
-      backgroundColor: '#333',
-      borderWidth: 1,
-      borderColor: '#666',
-      zIndex: 1000,
-    },
-    notificationSuccess: {
-      backgroundColor: '#4CAF50',
-      borderColor: '#45a049',
-    },
-    notificationError: {
-      backgroundColor: '#f44336',
-      borderColor: '#da190b',
-    },
-    notificationText: {
-      color: 'white',
-      fontSize: 16,
-      textAlign: 'center',
-      fontWeight: '500',
-    },
-  });
+  iconText: {
+    fontSize: 24,
+    transform: [{ rotate: '90deg' }],
+  },
+  positionContainer: {
+    position: 'absolute',
+    top: 100,
+    width: 'auto',
+    height: 80,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+  },
+  arrowButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  arrowText: {
+    fontSize: 24,
+    color: 'white',
+  },
+  colorButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginHorizontal: 5,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  activeColorButton: {
+    borderColor: 'white',
+    borderWidth: 3,
+  },
+  intensityButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 10,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  buttonText: {
+    fontSize: 20,
+    color: 'white',
+  },
+  label: {
+    color: 'white',
+    fontSize: 16,
+    marginHorizontal: 15,
+  },
+  notification: {
+    position: 'absolute',
+    top: 320,
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#333',
+    borderWidth: 1,
+    borderColor: '#666',
+    zIndex: 1000,
+  },
+  notificationSuccess: {
+    backgroundColor: '#4CAF50',
+    borderColor: '#45a049',
+  },
+  notificationError: {
+    backgroundColor: '#f44336',
+    borderColor: '#da190b',
+  },
+  notificationText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+});
