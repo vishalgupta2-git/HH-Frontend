@@ -85,7 +85,7 @@ const VastuCalculator: React.FC = () => {
       color: 'Red/Orange',
       deity: 'Yama (God of Death)',
       suitableFor: ['Bedroom', 'Kitchen', 'Fireplace'],
-      avoidFor: ['Main Entrance', 'Pooja Room'],
+      avoidFor: ['Main Entrance', 'Puja Room'],
       remedies: ['Use red/orange colors', 'Place fire elements', 'Keep well-lit']
     },
     'East': {
@@ -103,7 +103,7 @@ const VastuCalculator: React.FC = () => {
       color: 'Brown/Yellow',
       deity: 'Varuna (God of Water)',
       suitableFor: ['Bedroom', 'Bathroom', 'Storage'],
-      avoidFor: ['Main Entrance', 'Pooja Room'],
+      avoidFor: ['Main Entrance', 'Puja Room'],
       remedies: ['Use brown/yellow colors', 'Place heavy furniture', 'Keep stable']
     },
     'North-East': {
@@ -111,7 +111,7 @@ const VastuCalculator: React.FC = () => {
       element: 'Water + Air',
       color: 'Light Blue/White',
       deity: 'Ishanya (God of Knowledge)',
-      suitableFor: ['Pooja Room', 'Study Room', 'Entrance'],
+      suitableFor: ['Puja Room', 'Study Room', 'Entrance'],
       avoidFor: ['Kitchen', 'Bathroom', 'Bedroom'],
       remedies: ['Keep clean and pure', 'Use light colors', 'Place religious items']
     },
@@ -121,7 +121,7 @@ const VastuCalculator: React.FC = () => {
       color: 'Grey/White',
       deity: 'Vayu (God of Wind)',
       suitableFor: ['Bedroom', 'Guest Room', 'Storage'],
-      avoidFor: ['Kitchen', 'Pooja Room'],
+      avoidFor: ['Kitchen', 'Puja Room'],
       remedies: ['Use grey/white colors', 'Place wind chimes', 'Keep well-ventilated']
     },
     'South-East': {
@@ -130,7 +130,7 @@ const VastuCalculator: React.FC = () => {
       color: 'Red/Orange',
       deity: 'Agni (God of Fire)',
       suitableFor: ['Kitchen', 'Fireplace', 'Generator Room'],
-      avoidFor: ['Bedroom', 'Pooja Room'],
+      avoidFor: ['Bedroom', 'Puja Room'],
       remedies: ['Use red/orange colors', 'Place fire elements', 'Keep well-lit']
     },
     'South-West': {
@@ -139,7 +139,7 @@ const VastuCalculator: React.FC = () => {
       color: 'Brown/Red',
       deity: 'Nairutya (God of Demons)',
       suitableFor: ['Master Bedroom', 'Heavy Furniture', 'Storage'],
-      avoidFor: ['Main Entrance', 'Pooja Room', 'Kitchen'],
+      avoidFor: ['Main Entrance', 'Puja Room', 'Kitchen'],
       remedies: ['Use brown/red colors', 'Place heavy items', 'Keep stable and quiet']
     }
   };
@@ -176,16 +176,16 @@ const VastuCalculator: React.FC = () => {
       'West': 'Poor - May cause digestive issues',
       'South-West': 'Very Poor - May cause family conflicts'
     },
-    'Pooja Room': {
-      'North-East': 'Excellent - Best for spiritual activities',
-      'East': 'Very Good - Good for morning prayers',
-      'North': 'Good - Good for meditation',
-      'North-West': 'Moderate - Acceptable',
-      'West': 'Poor - Not ideal for prayers',
-      'South': 'Poor - May cause negative energy',
-      'South-East': 'Very Poor - May cause spiritual issues',
-      'South-West': 'Very Poor - May cause negative thoughts'
-    }
+         'Puja Room': {
+       'North-East': 'Excellent - Best for spiritual activities',
+       'East': 'Very Good - Good for morning prayers',
+       'North': 'Good - Good for meditation',
+       'North-West': 'Moderate - Acceptable',
+       'West': 'Poor - Not ideal for prayers',
+       'South': 'Poor - May cause negative energy',
+       'South-East': 'Very Poor - May cause spiritual issues',
+       'South-West': 'Very Poor - May cause negative thoughts'
+     }
   };
 
   // Show info modal
@@ -564,7 +564,7 @@ const VastuCalculator: React.FC = () => {
               { name: 'Living Room', location: results.livingRoom },
               { name: 'Bathroom', location: results.bathroom },
               { name: 'Study Room', location: results.studyRoom },
-              { name: 'Pooja Room', location: results.poojaRoom }
+                             { name: 'Puja Room', location: results.poojaRoom }
             ].map((room) => {
               if (!room.location) return null;
               const guidelines = roomGuidelines[room.name as keyof typeof roomGuidelines];
