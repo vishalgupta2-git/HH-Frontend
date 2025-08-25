@@ -1,11 +1,13 @@
 // GaneshaTint.js
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated, Easing, ScrollView } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated, Easing, ScrollView, ActivityIndicator } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Canvas, Image as SkiaImage, useImage, ColorMatrix, Group } from "@shopify/react-native-skia";
 import { useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
-import { getApiUrl, getAuthHeaders } from '../../constants/ApiConfig';
+import { getApiUrl, getEndpointUrl, getAuthHeaders } from '../../constants/ApiConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function GaneshaTint() {
@@ -23,6 +25,14 @@ export default function GaneshaTint() {
   const [showFlowerModal, setShowFlowerModal] = useState(false);
   const [flowers, setFlowers] = useState<any[]>([]);
   const [isFlowerAnimationRunning, setIsFlowerAnimationRunning] = useState(false);
+  const [showMusicModal, setShowMusicModal] = useState(false);
+  const [musicFiles, setMusicFiles] = useState<any[]>([]);
+  const [musicLoading, setMusicLoading] = useState(false);
+  const [selectedMusicFilter, setSelectedMusicFilter] = useState('All');
+  const [ganeshaOnly, setGaneshaOnly] = useState(true);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
+  const [loadingMusicId, setLoadingMusicId] = useState<string | null>(null);
   
   // Get device dimensions
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -175,6 +185,15 @@ export default function GaneshaTint() {
       }
     };
   }, []);
+
+  // Cleanup music sound when component unmounts
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.unloadAsync();
+      }
+    };
+  }, [sound]);
   
   // Function to trigger bell swing and sound (matching daily puja exactly)
   const triggerBells = async () => {
@@ -287,6 +306,159 @@ export default function GaneshaTint() {
   // Function to open flower selection modal
   const openFlowerModal = () => {
     setShowFlowerModal(true);
+  };
+
+  // Function to handle music action
+  const handleMusic = () => {
+    console.log('🎵 [MUSIC] Music icon clicked, opening modal');
+    setShowMusicModal(true);
+    fetchMusicFiles();
+  };
+
+  // Function to fetch music files from media-files API
+  const fetchMusicFiles = async () => {
+    try {
+      setMusicLoading(true);
+      const url = getEndpointUrl('MEDIA_FILES');
+      
+      const res = await fetch(url, {
+        headers: getAuthHeaders()
+      });
+      
+      if (!res.ok) {
+        return;
+      }
+      
+      const data = await res.json();
+      
+      if (Array.isArray(data)) {
+        console.log('🎵 [MUSIC] Raw data received:', data.length, 'files');
+        console.log('🎵 [MUSIC] Sample file:', data[0]);
+        
+        // Filter for audio files based on Classification or Type
+        const audioFiles = data.filter((file: any) => {
+          // Check if it's an audio file based on Classification or Type
+          const isAudio = file.Classification?.toLowerCase() === 'audio' || 
+                         file.Type?.toLowerCase().includes('audio') ||
+                         file.MediaType?.toLowerCase() === 'mp3';
+          
+          return isAudio;
+        });
+        
+        console.log('🎵 [MUSIC] Filtered audio files:', audioFiles.length);
+        console.log('🎵 [MUSIC] Sample audio file:', audioFiles[0]);
+        
+        setMusicFiles(audioFiles);
+      } else {
+        console.log('🎵 [MUSIC] Data is not an array:', typeof data, data);
+        setMusicFiles([]);
+      }
+    } catch (error) {
+      console.error('❌ [MUSIC] Error fetching music files:', error);
+      setMusicFiles([]);
+    } finally {
+      setMusicLoading(false);
+    }
+  };
+
+  // Function to extract music metadata from MediaFile
+  const extractMusicMetadata = (file: any) => {
+    return {
+      title: file.VideoName || 'Untitled',
+      category: file.Type || file.Classification || 'Music',
+      duration: file.Duration || '--:--',
+      deity: file.Deity || '',
+      language: file.Language || '',
+      artists: file.Artists || '',
+      link: file.Link || ''
+    };
+  };
+
+  // Function to play a specific music file
+  const playMusicFile = async (file: any) => {
+    try {
+      // Validate file object
+      if (!file || !file.avld) {
+        console.error('❌ [MUSIC] Invalid file object:', file);
+        return;
+      }
+
+      console.log('🎵 [MUSIC] Attempting to play file:', file.avld, 'File object:', file);
+      
+      setLoadingMusicId(file.avld);
+      
+      // Stop any currently playing sound
+      if (sound) {
+        try {
+          const status = await sound.getStatusAsync();
+          if (status.isLoaded) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+            console.log('🎵 [MUSIC] Successfully stopped and unloaded current sound');
+          }
+        } catch (error) {
+          console.error('❌ [MUSIC] Error stopping current sound:', error);
+        }
+      }
+
+      // Get presigned URL from backend API (same as daily puja custom temple)
+      const apiUrl = getEndpointUrl('S3_AUDIO_URL');
+      console.log('🎵 [MUSIC] Fetching presigned URL for:', file.Link);
+      
+      const response = await fetch(`${apiUrl}?filename=${encodeURIComponent(file.Link)}`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get presigned URL from API: ${response.status} ${response.statusText}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('🎵 [MUSIC] API response:', responseData);
+      
+      if (!responseData.success || !responseData.presignedUrl) {
+        throw new Error(`Invalid API response: ${JSON.stringify(responseData)}`);
+      }
+      
+      const presignedUrl = responseData.presignedUrl;
+      console.log('🎵 [MUSIC] Got presigned URL, loading audio...');
+
+      // Load and play the music using the presigned URL
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: presignedUrl },
+        { shouldPlay: true }
+      );
+      
+      console.log('🎵 [MUSIC] Audio loaded successfully, setting up playback...');
+      
+      setSound(newSound);
+      setCurrentlyPlaying(file.avld);
+      setLoadingMusicId(null);
+      
+      console.log('🎵 [MUSIC] Successfully started playing:', file.avld);
+      
+    } catch (error) {
+      console.error('❌ [MUSIC] Error playing music file:', error);
+      setLoadingMusicId(null);
+    }
+  };
+
+  // Function to stop current music
+  const stopCurrentMusic = async () => {
+    try {
+      if (sound) {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded) {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        }
+      }
+      setSound(null);
+      setCurrentlyPlaying(null);
+      console.log('🎵 [MUSIC] Successfully stopped current music');
+    } catch (error) {
+      console.error('❌ [MUSIC] Error stopping music:', error);
+    }
   };
 
   // Function to drop flowers (right to left, matching garland width)
@@ -796,7 +968,7 @@ export default function GaneshaTint() {
       
       {/* Bottom Icon Container */}
       <View style={styles.bottomIconContainer}>
-        <TouchableOpacity style={styles.bottomIconButton}>
+        <TouchableOpacity style={styles.bottomIconButton} onPress={handleMusic}>
           <Text style={[styles.bottomIconText, { transform: [{ rotate: '90deg' }] }]}>🎵</Text>
         </TouchableOpacity>
         
@@ -1012,6 +1184,155 @@ export default function GaneshaTint() {
             </ScrollView>
           </View>
         </TouchableOpacity>
+      )}
+      
+      {/* Music Modal */}
+      {showMusicModal && (
+        <View style={styles.musicModalOverlay}>
+          <TouchableOpacity 
+            style={styles.musicModalOverlayTouchable}
+            activeOpacity={1}
+            onPress={() => setShowMusicModal(false)}
+          >
+            <View style={styles.musicModalContent}>
+              {/* Header */}
+              <View style={styles.musicModalHeader}>
+                <Text style={styles.musicModalTitle}>🎵 Divine Music</Text>
+                <TouchableOpacity 
+                  style={styles.musicModalCloseButton}
+                  onPress={() => setShowMusicModal(false)}
+                >
+                  <Text style={styles.musicModalCloseText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Ganesha Toggle */}
+              <View style={styles.ganeshaToggleContainer}>
+                <TouchableOpacity 
+                  style={styles.toggleItem}
+                  onPress={() => setGaneshaOnly(!ganeshaOnly)}
+                >
+                  <LinearGradient
+                    colors={ganeshaOnly ? ['#4CAF50', '#81C784'] : ['#E0E0E0', '#F5F5F5']}
+                    style={styles.toggleTrack}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    <View
+                      style={[
+                        styles.toggleThumb,
+                        ganeshaOnly && styles.toggleThumbActive
+                      ]}
+                    />
+                  </LinearGradient>
+                  <Text style={styles.toggleLabel}>Ganesha Only</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Filter Buttons */}
+              <View style={styles.musicFilterContainer}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.musicFilterContent}
+                >
+                  {['All', 'Aarti', 'Bhajan', 'Chalisa', 'Paath / Strotam', 'Famous'].map((filter) => (
+                    <TouchableOpacity
+                      key={filter}
+                      style={[
+                        styles.musicFilterButton,
+                        selectedMusicFilter === filter && styles.musicFilterButtonActive
+                      ]}
+                      onPress={() => setSelectedMusicFilter(filter)}
+                    >
+                      <Text style={[
+                        styles.musicFilterText,
+                        selectedMusicFilter === filter && styles.musicFilterTextActive
+                      ]}>{filter}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* Music List */}
+              <ScrollView style={styles.musicListContainer} showsVerticalScrollIndicator={false}>
+                {musicLoading ? (
+                  <View style={styles.musicLoadingContainer}>
+                    <Text style={styles.musicLoadingText}>Loading music library...</Text>
+                  </View>
+                ) : musicFiles.length === 0 ? (
+                  <View style={styles.musicEmptyContainer}>
+                    <Text style={styles.musicEmptyText}>No music files found</Text>
+                  </View>
+                ) : (
+                  // Filter music files based on Ganesha preference and category
+                  musicFiles
+                    .filter(file => {
+                      if (!file) return false;
+                      
+                      // Apply Ganesha filter (default: ON)
+                      if (ganeshaOnly) {
+                        const title = file.VideoName?.toLowerCase() || '';
+                        const deity = file.Deity?.toLowerCase() || '';
+                        const isGanesha = title.includes('ganesh') || title.includes('ganesha') || 
+                                         title.includes('ganpati') || title.includes('ganpati') ||
+                                         deity.includes('ganesh') || deity.includes('ganesha') ||
+                                         deity.includes('ganpati') || deity.includes('ganpati');
+                        if (!isGanesha) return false;
+                      }
+                      
+                      // Apply category filter
+                      if (selectedMusicFilter !== 'All') {
+                        if (selectedMusicFilter === 'Famous') {
+                          return file.famous === true;
+                        }
+                        return file.Type === selectedMusicFilter;
+                      }
+                      
+                      return true;
+                    })
+                    .map((file, index) => {
+                      const metadata = extractMusicMetadata(file);
+                      
+                      return (
+                        <TouchableOpacity key={file.avld || index} style={styles.musicItem}>
+                          <View style={styles.musicItemContent}>
+                            <Text style={styles.musicItemTitle}>{metadata.title}</Text>
+                            <Text style={styles.musicItemSubtitle}>
+                              {metadata.deity ? `${metadata.deity} • ${metadata.category}` : metadata.category}
+                            </Text>
+                          </View>
+                          <TouchableOpacity 
+                            style={styles.musicPlayButton}
+                            onPress={async () => {
+                              // If this music is already playing, stop it
+                              if (currentlyPlaying === file.avld) {
+                                await stopCurrentMusic();
+                                return;
+                              }
+                              
+                              // Otherwise, play this music
+                              await playMusicFile(file);
+                            }}
+                          >
+                            {loadingMusicId === file.avld ? (
+                              <ActivityIndicator size="small" color="#FF6A00" />
+                            ) : (
+                              <MaterialCommunityIcons 
+                                name={currentlyPlaying === file.avld ? "pause-circle" : "play-circle"} 
+                                size={32} 
+                                color="#FF6A00" 
+                              />
+                            )}
+                          </TouchableOpacity>
+                        </TouchableOpacity>
+                      );
+                    })
+                )}
+              </ScrollView>
+            </View>
+          </TouchableOpacity>
+        </View>
       )}
       
       {/* Dynamic Control Panel */}
@@ -1401,4 +1722,189 @@ const styles = StyleSheet.create({
     width: 36, // 50% bigger: 24 * 1.5 = 36
     height: 36, // 50% bigger: 24 * 1.5 = 36
   },
+  musicModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2000,
+  },
+  musicModalOverlayTouchable: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  musicModalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+    alignItems: 'stretch',
+    marginTop: -100,
+  },
+  musicModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 20,
+  },
+  musicModalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  musicModalCloseButton: {
+    backgroundColor: '#FF6A00',
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  musicModalCloseText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  musicModalBody: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  musicModalBodyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 10,
+    lineHeight: 24,
+  },
+  ganeshaToggleContainer: {
+    width: '100%',
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  toggleItem: {
+    alignItems: 'center',
+  },
+  toggleTrack: {
+    width: 40,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  toggleThumb: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#fff',
+    position: 'absolute',
+    left: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toggleThumbActive: {
+    left: 21,
+  },
+  toggleLabel: {
+    marginTop: 6,
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+  },
+  musicFilterContainer: {
+    width: '100%',
+    marginBottom: 15,
+  },
+  musicFilterContent: {
+    paddingHorizontal: 10,
+  },
+  musicFilterButton: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  musicFilterButtonActive: {
+    backgroundColor: '#FF6A00',
+    borderColor: '#FF6A00',
+  },
+  musicFilterText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  musicFilterTextActive: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  musicListContainer: {
+    flex: 1,
+    width: '100%',
+    minHeight: 200,
+  },
+  musicLoadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  musicLoadingText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  musicEmptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  musicEmptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  musicItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: 'white',
+  },
+  musicItemContent: {
+    flex: 1,
+  },
+  musicItemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  musicItemSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 2,
+  },
+  musicItemDuration: {
+    fontSize: 12,
+    color: '#999',
+  },
+  musicPlayButton: {
+    padding: 8,
+  },
+
 });
