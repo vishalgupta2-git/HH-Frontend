@@ -1,6 +1,6 @@
 // GaneshaTint.js
-import React, { useState, useMemo, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image } from "react-native";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated } from "react-native";
 import { Canvas, Image as SkiaImage, useImage, ColorMatrix, Group } from "@shopify/react-native-skia";
 import { useWindowDimensions } from 'react-native';
 import { getApiUrl, getAuthHeaders } from '../../constants/ApiConfig';
@@ -19,6 +19,10 @@ export default function GaneshaTint() {
   
   // Get device dimensions
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+
+  // Animated values for swinging bells
+  const topBellsSwing = useRef(new Animated.Value(0)).current;
+  const bottomBellsSwing = useRef(new Animated.Value(0)).current;
 
   // Load userId and temple configuration from database when component mounts
   useEffect(() => {
@@ -71,6 +75,37 @@ export default function GaneshaTint() {
     
     loadUserData();
   }, []);
+
+  // Start swinging bells animation
+  useEffect(() => {
+    const createSwingingAnimation = (animatedValue: Animated.Value, delay: number = 0) => {
+      const swingAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(animatedValue, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(animatedValue, {
+            toValue: -1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      
+      setTimeout(() => swingAnimation.start(), delay);
+      return swingAnimation;
+    };
+
+    const topBellsAnimation = createSwingingAnimation(topBellsSwing, 0);
+    const bottomBellsAnimation = createSwingingAnimation(bottomBellsSwing, 1000); // Slight delay for variety
+
+    return () => {
+      topBellsAnimation.stop();
+      bottomBellsAnimation.stop();
+    };
+  }, [topBellsSwing, bottomBellsSwing]);
   
   // Load the PNG
   const image = useImage(require("../../assets/images/temple/Ganesha1.png"));
@@ -302,6 +337,44 @@ export default function GaneshaTint() {
         resizeMode="contain"
       />
       
+      {/* Temple Bells */}
+      <Animated.Image
+        source={require("../../assets/images/temple/templeBellIcon2_90.png")}
+        style={[
+          styles.templeBellsImage,
+          {
+            transform: [
+              { translateX: 80 }, // Move pivot point to right edge
+              { rotate: topBellsSwing.interpolate({
+                inputRange: [-1, 1],
+                outputRange: ['-15deg', '15deg']
+              })},
+              { translateX: -80 } // Move back to original position
+            ]
+          }
+        ]}
+        resizeMode="contain"
+      />
+      
+      {/* Temple Bells - Bottom Copy */}
+      <Animated.Image
+        source={require("../../assets/images/temple/templeBellIcon2_90.png")}
+        style={[
+          styles.templeBellsBottomImage,
+          {
+            transform: [
+              { translateX: 80 }, // Move pivot point to right edge
+              { rotate: bottomBellsSwing.interpolate({
+                inputRange: [-1, 1],
+                outputRange: ['-15deg', '15deg']
+              })},
+              { translateX: -80 } // Move back to original position
+            ]
+          }
+        ]}
+        resizeMode="contain"
+      />
+      
       <Canvas style={[styles.canvas, { width: screenWidth, height: screenHeight }]}>
         <Group>
           <ColorMatrix matrix={getColorMatrix(tintColor, tintIntensity)} />
@@ -370,6 +443,25 @@ export default function GaneshaTint() {
           <Text style={styles.notificationText}>{message}</Text>
         </View>
       )}
+      
+      {/* Bottom Icon Container */}
+      <View style={styles.bottomIconContainer}>
+        <TouchableOpacity style={styles.bottomIconButton}>
+          <Text style={[styles.bottomIconText, { transform: [{ rotate: '90deg' }] }]}>🎵</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.bottomIconButton}>
+          <Image 
+            source={require("../../assets/images/icons/own temple/PujaThali1.png")}
+            style={styles.bottomIconImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.bottomIconButton}>
+          <Text style={styles.bottomIconText}>🌸</Text>
+        </TouchableOpacity>
+      </View>
       
       {/* Dynamic Control Panel */}
       <View style={[
@@ -483,9 +575,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0, // At the very right edge
     top: '50%',
-    transform: [{ translateY: -175 }], // Center vertically (adjusted for 3.5x size)
+    transform: [{ translateY: -210 }], // Perfect center: half of 420px height
     width: 420, // 3.5x original size (120 * 3.5)
     height: 420, // 3.5x original size (120 * 3.5)
+    zIndex: 1, // Above background, below Ganesha
+  },
+  templeBellsImage: {
+    position: 'absolute',
+    right: -10, // 10px from right edge
+    top: 150, // Positioned above the Garland
+    width: 160, // 2x original size (80 * 2)
+    height: 160, // 2x original size (80 * 2)
+    zIndex: 1, // Above background, below Ganesha
+  },
+  templeBellsBottomImage: {
+    position: 'absolute',
+    right: -10, // 10px from right edge
+    bottom: 150, // Positioned below the Garland
+    width: 160, // 2x original size (80 * 2)
+    height: 160, // 2x original size (80 * 2)
     zIndex: 1, // Above background, below Ganesha
   },
   canvas: {
@@ -617,5 +725,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     fontWeight: '500',
+  },
+  bottomIconContainer: {
+    position: 'absolute',
+    bottom: 100,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  bottomIconButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#333',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 15,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  bottomIconText: {
+    fontSize: 28,
+    color: 'white',
+  },
+  bottomIconImage: {
+    width: 50,
+    height: 50,
+    transform: [{ rotate: '90deg' }],
   },
 });
