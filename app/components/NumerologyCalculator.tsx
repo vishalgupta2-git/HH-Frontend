@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -54,6 +54,9 @@ const NumerologyCalculator: React.FC = () => {
   const [infoTitle, setInfoTitle] = useState('');
   const [infoDescription, setInfoDescription] = useState('');
 
+  // ScrollView reference for auto-scrolling
+  const scrollViewRef = useRef<ScrollView>(null);
+  
   // Numerology meanings
   const numberMeanings = {
     1: {
@@ -307,6 +310,11 @@ const NumerologyCalculator: React.FC = () => {
     }
 
     setCompatibilityResult({ compatibility, meaning, advice });
+    
+    // Scroll to results after a short delay to ensure they're rendered
+    setTimeout(() => {
+      scrollViewRef.current?.scrollTo({ y: 400, animated: true });
+    }, 100);
   };
 
   // Get daily lucky numbers
@@ -354,6 +362,11 @@ const NumerologyCalculator: React.FC = () => {
       };
 
       setResults(result);
+      
+      // Scroll to results after a short delay to ensure they're rendered
+      setTimeout(() => {
+        scrollViewRef.current?.scrollTo({ y: 400, animated: true });
+      }, 100);
     } catch (error) {
       Alert.alert('Error', 'An error occurred while calculating. Please try again.');
     } finally {
@@ -430,6 +443,20 @@ const NumerologyCalculator: React.FC = () => {
               {isCalculating ? 'Calculating...' : 'Calculate Numerology'}
             </Text>
           </LinearGradient>
+        </TouchableOpacity>
+
+        {/* Clear Button */}
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={() => {
+            setFullName('');
+            setBirthDate(new Date());
+            setResults(null);
+            // Scroll to top after clearing
+            scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+          }}
+        >
+          <Text style={styles.clearButtonText}>Clear</Text>
         </TouchableOpacity>
       </View>
 
@@ -560,6 +587,22 @@ const NumerologyCalculator: React.FC = () => {
             <Text style={styles.calculateButtonText}>Calculate Compatibility</Text>
           </LinearGradient>
         </TouchableOpacity>
+
+        {/* Clear Button */}
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={() => {
+            setFullName('');
+            setPartnerName('');
+            setBirthDate(new Date());
+            setPartnerBirthDate(new Date());
+            setCompatibilityResult(null);
+            // Scroll to top after clearing
+            scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+          }}
+        >
+          <Text style={styles.clearButtonText}>Clear</Text>
+        </TouchableOpacity>
       </View>
 
       {compatibilityResult && (
@@ -609,7 +652,7 @@ const NumerologyCalculator: React.FC = () => {
   );
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} ref={scrollViewRef}>
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
@@ -826,6 +869,19 @@ const styles = StyleSheet.create({
   },
   calculateButtonText: {
     color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  clearButton: {
+    marginTop: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#e0e0e0',
+    padding: 18,
+    alignItems: 'center',
+  },
+  clearButtonText: {
+    color: '#333',
     fontSize: 18,
     fontWeight: 'bold',
   },
