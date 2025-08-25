@@ -1,6 +1,7 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView, StatusBar, Dimensions, Image, StyleSheet, View, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import NumerologyCalculator from '../components/NumerologyCalculator';
 
 const { width } = Dimensions.get('window');
 const CARD_TOP = 250;
@@ -8,9 +9,12 @@ const CARD_MARGIN_TOP = -40;
 
 export const options = { headerShown: false };
 
-export default function NumerologyScreen() {
+const NumerologyScreen: React.FC = () => {
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#FFA040" />
+      
+      {/* Header matching Vastu screen */}
       <LinearGradient
         colors={["#FFA040", "#FF6A00"]}
         style={styles.header}
@@ -24,12 +28,14 @@ export default function NumerologyScreen() {
           style={styles.temple}
         />
       </LinearGradient>
+      
+      {/* Content card overlapping header */}
       <View style={styles.card}>
-        <Text style={styles.text}>Numerology Services (coming soon...)</Text>
+        <NumerologyCalculator />
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -71,19 +77,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 12,
     marginTop: CARD_MARGIN_TOP,
-    padding: 24,
+    padding: 0, // Remove padding since NumerologyCalculator has its own
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
+    flex: 1, // Allow the card to expand
   },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF9800',
-    textAlign: 'center',
-  },
-}); 
+});
+
+export default NumerologyScreen; 
