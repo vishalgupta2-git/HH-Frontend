@@ -1,12 +1,15 @@
 // GaneshaTint.js
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated, Easing } from "react-native";
 import { Canvas, Image as SkiaImage, useImage, ColorMatrix, Group } from "@shopify/react-native-skia";
 import { useWindowDimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Audio } from 'expo-av';
 import { getApiUrl, getAuthHeaders } from '../../constants/ApiConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function GaneshaTint() {
+  const router = useRouter();
   const [tintColor, setTintColor] = useState("gold");
   const [tintIntensity, setTintIntensity] = useState(0.3);
   const [imageSize, setImageSize] = useState(0.4); // 0.1 to 1.2 range
@@ -16,6 +19,7 @@ export default function GaneshaTint() {
   const [userId, setUserId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info');
+  const [bellsLoaded, setBellsLoaded] = useState(false);
   
   // Get device dimensions
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -23,6 +27,28 @@ export default function GaneshaTint() {
   // Animated values for swinging bells
   const topBellsSwing = useRef(new Animated.Value(0)).current;
   const bottomBellsSwing = useRef(new Animated.Value(0)).current;
+  
+  // Bell sound reference
+  const bellSound = useRef<Audio.Sound | null>(null);
+
+  // Preload bell sound and create one-time swing animation
+  useEffect(() => {
+    const preloadBellSound = async () => {
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          require('../../assets/sounds/TempleBell.mp3'),
+          { shouldPlay: false }
+        );
+        bellSound.current = sound;
+        setBellsLoaded(true);
+      } catch (error) {
+        console.error('Error preloading bell sound:', error);
+        setBellsLoaded(true); // Continue even if sound fails to load
+      }
+    };
+
+    preloadBellSound();
+  }, []);
 
   // Load userId and temple configuration from database when component mounts
   useEffect(() => {
@@ -76,36 +102,60 @@ export default function GaneshaTint() {
     loadUserData();
   }, []);
 
-  // Start swinging bells animation
+  // Start one-time swinging bells animation when screen loads
   useEffect(() => {
-    const createSwingingAnimation = (animatedValue: Animated.Value, delay: number = 0) => {
-      const swingAnimation = Animated.loop(
-        Animated.sequence([
-          Animated.timing(animatedValue, {
-            toValue: 1,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(animatedValue, {
-            toValue: -1,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-        ])
-      );
+    if (!bellsLoaded) return;
+
+    const playBellSound = async () => {
+      try {
+        if (bellSound.current) {
+          await bellSound.current.replayAsync();
+        }
+      } catch (error) {
+        console.error('Error playing bell sound:', error);
+      }
+    };
+
+    const createOneTimeSwing = (animatedValue: Animated.Value, delay: number = 0) => {
+      const swingAnimation = Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 4,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        })
+      ]);
       
-      setTimeout(() => swingAnimation.start(), delay);
+      setTimeout(() => {
+        swingAnimation.start();
+        playBellSound(); // Play sound when animation starts
+      }, delay);
+      
       return swingAnimation;
     };
 
-    const topBellsAnimation = createSwingingAnimation(topBellsSwing, 0);
-    const bottomBellsAnimation = createSwingingAnimation(bottomBellsSwing, 1000); // Slight delay for variety
+    // Start both bells swinging with slight delay between them
+    const topBellsAnimation = createOneTimeSwing(topBellsSwing, 500);
+    const bottomBellsAnimation = createOneTimeSwing(bottomBellsSwing, 1000);
 
     return () => {
       topBellsAnimation.stop();
       bottomBellsAnimation.stop();
     };
-  }, [topBellsSwing, bottomBellsSwing]);
+  }, [bellsLoaded, topBellsSwing, bottomBellsSwing]);
+
+  // Cleanup bell sound when component unmounts
+  useEffect(() => {
+    return () => {
+      if (bellSound.current) {
+        bellSound.current.unloadAsync();
+      }
+    };
+  }, []);
   
   // Load the PNG
   const image = useImage(require("../../assets/images/temple/Ganesha1.png"));
@@ -234,38 +284,28 @@ export default function GaneshaTint() {
   // Handle back button with save confirmation
   const handleBackButton = () => {
     Alert.alert(
-      "Save Changes?",
-      "Do you want to save your temple changes before going back?",
+      'Exit Temple',
+      'Do you want to save your changes before leaving?',
       [
         {
-          text: "Don't Save",
-          style: "destructive",
-          onPress: () => {
-            // Go back without saving
-            console.log('Going back without saving');
-            // Navigate to previous screen
-            if (typeof window !== 'undefined' && window.history) {
-              window.history.back();
-            }
-          }
+          text: 'Cancel',
+          style: 'cancel',
         },
         {
-          text: "Save",
+          text: "Don't Save",
+          onPress: () => {
+            // Go back without saving (like Android/iOS back button)
+            router.back();
+          },
+        },
+        {
+          text: 'Save',
           onPress: async () => {
-            // Save first, then go back
-            if (!userId) {
-              alert('Please log in to save your temple configuration');
-              // Still go back even without saving
-              if (typeof window !== 'undefined' && window.history) {
-                window.history.back();
-              }
-              return;
-            }
-
             try {
+              // Save current state before going back
               const templeData = {
                 userId: userId,
-                templeName: "My Ganesha Temple", // Default name since input is removed
+                templeName: "My Ganesha Temple",
                 templeInformation: {
                   tintColor,
                   tintIntensity,
@@ -275,45 +315,57 @@ export default function GaneshaTint() {
                   createdAt: new Date().toISOString()
                 }
               };
-              
+
               const response = await fetch(getApiUrl('/api/save-temple'), {
                 method: 'POST',
                 headers: getAuthHeaders(),
-                body: JSON.stringify(templeData),
+                body: JSON.stringify(templeData)
               });
-              
+
               if (response.ok) {
-                console.log('✅ Temple saved successfully, going back');
-                // Navigate to previous screen after successful save
-                if (typeof window !== 'undefined' && window.history) {
-                  window.history.back();
+                const result = await response.json();
+                if (result.success) {
+                  setMessage('Temple saved successfully!');
+                  setMessageType('success');
+                  setTimeout(() => {
+                    setMessage('');
+                    setMessageType('info');
+                    // Go back after showing success message
+                    router.back();
+                  }, 2000);
+                } else {
+                  setMessage('Error saving temple');
+                  setMessageType('error');
+                  setTimeout(() => {
+                    setMessage('');
+                    setMessageType('info');
+                  }, 2000);
                 }
               } else {
-                console.error('❌ Failed to save temple');
-                // Still go back even if save fails
-                if (typeof window !== 'undefined' && window.history) {
-                  window.history.back();
-                }
+                setMessage('Error saving temple');
+                setMessageType('error');
+                setTimeout(() => {
+                  setMessage('');
+                  setMessageType('info');
+                }, 2000);
               }
             } catch (error) {
-              console.error('❌ Error saving temple:', error);
-              // Still go back even if save fails
-              if (typeof window !== 'undefined' && window.history) {
-                window.history.back();
-              }
+              console.error('Error saving temple:', error);
+              setMessage('Error saving temple');
+              setMessageType('error');
+              setTimeout(() => {
+                setMessage('');
+                setMessageType('info');
+              }, 2000);
             }
-          }
+          },
         },
-        {
-          text: "Cancel",
-          style: "cancel"
-        }
       ]
     );
   };
 
-  // Don't render until image is loaded
-  if (!image) {
+  // Don't render until image and bells are loaded
+  if (!image || !bellsLoaded) {
     return (
       <View style={styles.container}>
         <Text style={styles.loadingText}>Loading Ganesha...</Text>
@@ -346,8 +398,8 @@ export default function GaneshaTint() {
             transform: [
               { translateX: 80 }, // Move pivot point to right edge
               { rotate: topBellsSwing.interpolate({
-                inputRange: [-1, 1],
-                outputRange: ['-15deg', '15deg']
+                inputRange: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4],
+                outputRange: ['0deg', '7.5deg', '15deg', '7.5deg', '0deg', '-7.5deg', '-15deg', '-7.5deg', '0deg']
               })},
               { translateX: -80 } // Move back to original position
             ]
@@ -365,8 +417,8 @@ export default function GaneshaTint() {
             transform: [
               { translateX: 80 }, // Move pivot point to right edge
               { rotate: bottomBellsSwing.interpolate({
-                inputRange: [-1, 1],
-                outputRange: ['-15deg', '15deg']
+                inputRange: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4],
+                outputRange: ['0deg', '7.5deg', '15deg', '7.5deg', '0deg', '-7.5deg', '-15deg', '-7.5deg', '0deg']
               })},
               { translateX: -80 } // Move back to original position
             ]
@@ -728,7 +780,7 @@ const styles = StyleSheet.create({
   },
   bottomIconContainer: {
     position: 'absolute',
-    bottom: 100,
+    bottom: 50,
     left: 0,
     right: 0,
     flexDirection: 'row',
