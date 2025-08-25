@@ -310,7 +310,6 @@ export default function GaneshaTint() {
 
   // Function to handle music action
   const handleMusic = () => {
-    console.log('🎵 [MUSIC] Music icon clicked, opening modal');
     setShowMusicModal(true);
     fetchMusicFiles();
   };
@@ -332,9 +331,6 @@ export default function GaneshaTint() {
       const data = await res.json();
       
       if (Array.isArray(data)) {
-        console.log('🎵 [MUSIC] Raw data received:', data.length, 'files');
-        console.log('🎵 [MUSIC] Sample file:', data[0]);
-        
         // Filter for audio files based on Classification or Type
         const audioFiles = data.filter((file: any) => {
           // Check if it's an audio file based on Classification or Type
@@ -345,12 +341,8 @@ export default function GaneshaTint() {
           return isAudio;
         });
         
-        console.log('🎵 [MUSIC] Filtered audio files:', audioFiles.length);
-        console.log('🎵 [MUSIC] Sample audio file:', audioFiles[0]);
-        
         setMusicFiles(audioFiles);
       } else {
-        console.log('🎵 [MUSIC] Data is not an array:', typeof data, data);
         setMusicFiles([]);
       }
     } catch (error) {
@@ -383,8 +375,6 @@ export default function GaneshaTint() {
         return;
       }
 
-      console.log('🎵 [MUSIC] Attempting to play file:', file.avld, 'File object:', file);
-      
       setLoadingMusicId(file.avld);
       
       // Stop any currently playing sound
@@ -394,7 +384,7 @@ export default function GaneshaTint() {
           if (status.isLoaded) {
             await sound.stopAsync();
             await sound.unloadAsync();
-            console.log('🎵 [MUSIC] Successfully stopped and unloaded current sound');
+            // Successfully stopped and unloaded current sound
           }
         } catch (error) {
           console.error('❌ [MUSIC] Error stopping current sound:', error);
@@ -403,7 +393,6 @@ export default function GaneshaTint() {
 
       // Get presigned URL from backend API (same as daily puja custom temple)
       const apiUrl = getEndpointUrl('S3_AUDIO_URL');
-      console.log('🎵 [MUSIC] Fetching presigned URL for:', file.Link);
       
       const response = await fetch(`${apiUrl}?filename=${encodeURIComponent(file.Link)}`, {
         headers: getAuthHeaders()
@@ -414,14 +403,12 @@ export default function GaneshaTint() {
       }
       
       const responseData = await response.json();
-      console.log('🎵 [MUSIC] API response:', responseData);
       
       if (!responseData.success || !responseData.presignedUrl) {
         throw new Error(`Invalid API response: ${JSON.stringify(responseData)}`);
       }
       
       const presignedUrl = responseData.presignedUrl;
-      console.log('🎵 [MUSIC] Got presigned URL, loading audio...');
 
       // Load and play the music using the presigned URL
       const { sound: newSound } = await Audio.Sound.createAsync(
@@ -434,8 +421,6 @@ export default function GaneshaTint() {
       setSound(newSound);
       setCurrentlyPlaying(file.avld);
       setLoadingMusicId(null);
-      
-      console.log('🎵 [MUSIC] Successfully started playing:', file.avld);
       
     } catch (error) {
       console.error('❌ [MUSIC] Error playing music file:', error);
@@ -455,7 +440,6 @@ export default function GaneshaTint() {
       }
       setSound(null);
       setCurrentlyPlaying(null);
-      console.log('🎵 [MUSIC] Successfully stopped current music');
     } catch (error) {
       console.error('❌ [MUSIC] Error stopping music:', error);
     }

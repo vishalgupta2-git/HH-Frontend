@@ -835,44 +835,44 @@ export default function DonationScreen() {
                 </View>
               ) : modalImages.length > 0 ? (
                 <ScrollView 
-                  horizontal 
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{
-                    paddingRight: 20
-                  }}
-                >
-                  {modalImages.map((image, index) => (
-                    <TouchableOpacity 
-                      key={index}
-                      style={{
-                        marginRight: 15,
-                        borderRadius: 10,
-                        overflow: 'hidden',
-                        alignItems: 'center'
-                      }}
-                      onPress={() => handleImageClick(index)}
-                    >
-                      <Image
-                        source={{ uri: image.url }}
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{
+                      paddingRight: 20
+                    }}
+                  >
+                    {modalImages.map((image, index) => (
+                      <TouchableOpacity 
+                        key={index}
                         style={{
-                          width: 120,
-                          height: 120,
-                          borderRadius: 10
+                          marginRight: 15,
+                          borderRadius: 10,
+                          overflow: 'hidden',
+                          alignItems: 'center'
                         }}
-                        resizeMode="cover"
-                      />
-                      <Text style={{
-                        marginTop: 8,
-                        fontSize: 12,
-                        color: '#666',
-                        textAlign: 'center',
-                        maxWidth: 120
-                      }} numberOfLines={2}>
-                        {image.key.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'Image'}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                        onPress={() => handleImageClick(index)}
+                      >
+                        <Image
+                          source={{ uri: image.url }}
+                          style={{
+                            width: 120,
+                            height: 120,
+                            borderRadius: 10
+                          }}
+                          resizeMode="cover"
+                        />
+                        <Text style={{
+                          marginTop: 8,
+                          fontSize: 12,
+                          color: '#666',
+                          textAlign: 'center',
+                          maxWidth: 120
+                        }} numberOfLines={2}>
+                          {image.key.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'Image'}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
               ) : (
                 <View style={{
                   alignItems: 'center',
