@@ -102,7 +102,7 @@ export default function GaneshaTint() {
     loadUserData();
   }, []);
 
-  // Start one-time swinging bells animation when screen loads
+  // Start one-time swinging bells animation when screen loads (matching daily puja pattern)
   useEffect(() => {
     if (!bellsLoaded) return;
 
@@ -116,35 +116,51 @@ export default function GaneshaTint() {
       }
     };
 
-    const createOneTimeSwing = (animatedValue: Animated.Value, delay: number = 0) => {
-      const swingAnimation = Animated.sequence([
-        Animated.timing(animatedValue, {
-          toValue: 4,
-          duration: 2000,
+    // Play bell sound immediately
+    playBellSound();
+
+    // Swing top bell immediately
+    Animated.sequence([
+      Animated.timing(topBellsSwing, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(topBellsSwing, {
+        toValue: -1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(topBellsSwing, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Swing bottom bell with slight delay
+    setTimeout(() => {
+      Animated.sequence([
+        Animated.timing(bottomBellsSwing, {
+          toValue: 1,
+          duration: 300,
           useNativeDriver: true,
         }),
-        Animated.timing(animatedValue, {
-          toValue: 0,
-          duration: 2000,
+        Animated.timing(bottomBellsSwing, {
+          toValue: -1,
+          duration: 600,
           useNativeDriver: true,
-        })
-      ]);
-      
-      setTimeout(() => {
-        swingAnimation.start();
-        playBellSound(); // Play sound when animation starts
-      }, delay);
-      
-      return swingAnimation;
-    };
-
-    // Start both bells swinging with slight delay between them
-    const topBellsAnimation = createOneTimeSwing(topBellsSwing, 500);
-    const bottomBellsAnimation = createOneTimeSwing(bottomBellsSwing, 1000);
+        }),
+        Animated.timing(bottomBellsSwing, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }, 200);
 
     return () => {
-      topBellsAnimation.stop();
-      bottomBellsAnimation.stop();
+      // Cleanup not needed for one-time animations
     };
   }, [bellsLoaded, topBellsSwing, bottomBellsSwing]);
 
@@ -156,6 +172,114 @@ export default function GaneshaTint() {
       }
     };
   }, []);
+  
+  // Function to trigger bell swing and sound (matching daily puja exactly)
+  const triggerBells = async () => {
+    try {
+      // Play first bell sound
+      if (bellSound.current) {
+        await bellSound.current.replayAsync();
+      }
+      
+      // Reset bell animations
+      topBellsSwing.setValue(0);
+      bottomBellsSwing.setValue(0);
+      
+      // Swing top bell immediately (parallel with first sound)
+      Animated.sequence([
+        Animated.timing(topBellsSwing, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(topBellsSwing, {
+          toValue: -1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(topBellsSwing, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Swing bottom bell with slight delay (still parallel with first sound)
+      setTimeout(() => {
+        Animated.sequence([
+          Animated.timing(bottomBellsSwing, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(bottomBellsSwing, {
+            toValue: -1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(bottomBellsSwing, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }, 200);
+
+      // Play second bell sound after 2.5 seconds
+      setTimeout(async () => {
+        try {
+          if (bellSound.current) {
+            await bellSound.current.replayAsync();
+          }
+        } catch (error) {
+          console.error('Error playing second bell sound:', error);
+        }
+        
+        // Swing top bell again for second ring
+        Animated.sequence([
+          Animated.timing(topBellsSwing, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(topBellsSwing, {
+            toValue: -1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(topBellsSwing, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start();
+
+        // Swing bottom bell again with slight delay
+        setTimeout(() => {
+          Animated.sequence([
+            Animated.timing(bottomBellsSwing, {
+              toValue: 1,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(bottomBellsSwing, {
+              toValue: -1,
+              duration: 600,
+              useNativeDriver: true,
+            }),
+            Animated.timing(bottomBellsSwing, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start();
+        }, 200);
+      }, 2500);
+      
+    } catch (error) {
+      console.error('Error triggering bells:', error);
+    }
+  };
   
   // Load the PNG
   const image = useImage(require("../../assets/images/temple/Ganesha1.png"));
@@ -398,8 +522,8 @@ export default function GaneshaTint() {
             transform: [
               { translateX: 80 }, // Move pivot point to right edge
               { rotate: topBellsSwing.interpolate({
-                inputRange: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4],
-                outputRange: ['0deg', '7.5deg', '15deg', '7.5deg', '0deg', '-7.5deg', '-15deg', '-7.5deg', '0deg']
+                inputRange: [-1, 0, 1],
+                outputRange: ['-15deg', '0deg', '15deg']
               })},
               { translateX: -80 } // Move back to original position
             ]
@@ -417,8 +541,8 @@ export default function GaneshaTint() {
             transform: [
               { translateX: 80 }, // Move pivot point to right edge
               { rotate: bottomBellsSwing.interpolate({
-                inputRange: [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4],
-                outputRange: ['0deg', '7.5deg', '15deg', '7.5deg', '0deg', '-7.5deg', '-15deg', '-7.5deg', '0deg']
+                inputRange: [-1, 0, 1],
+                outputRange: ['-15deg', '0deg', '15deg']
               })},
               { translateX: -80 } // Move back to original position
             ]
@@ -502,12 +626,8 @@ export default function GaneshaTint() {
           <Text style={[styles.bottomIconText, { transform: [{ rotate: '90deg' }] }]}>🎵</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.bottomIconButton}>
-          <Image 
-            source={require("../../assets/images/icons/own temple/PujaThali1.png")}
-            style={styles.bottomIconImage}
-            resizeMode="contain"
-          />
+        <TouchableOpacity style={styles.bottomIconButton} onPress={triggerBells}>
+          <Text style={[styles.bottomIconText, { transform: [{ rotate: '90deg' }] }]}>🔔</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.bottomIconButton}>
