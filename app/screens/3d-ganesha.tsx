@@ -631,6 +631,14 @@ export default function GaneshaTint() {
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.bottomIconButton}>
+          <Image 
+            source={require("../../assets/images/icons/own temple/PujaThali1.png")}
+            style={styles.bottomIconImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.bottomIconButton}>
           <Text style={styles.bottomIconText}>🌸</Text>
         </TouchableOpacity>
       </View>
