@@ -48,6 +48,18 @@ const VastuCalculator: React.FC = () => {
   const [results, setResults] = useState<VastuResult | null>(null);
   const [activeTab, setActiveTab] = useState<'calculator' | 'directions' | 'remedies'>('calculator');
   
+  // Expandable sections state
+  const [expandedSections, setExpandedSections] = useState({
+    houseFacing: false,
+    mainEntrance: false,
+    bedroom: false,
+    kitchen: false,
+    livingRoom: false,
+    bathroom: false,
+    studyRoom: false,
+    poojaRoom: false
+  });
+  
   // Info modal state
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [infoTitle, setInfoTitle] = useState('');
@@ -183,6 +195,14 @@ const VastuCalculator: React.FC = () => {
     setShowInfoModal(true);
   };
 
+  // Toggle expandable section
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   // Close info modal
   const closeInfoModal = () => {
     setShowInfoModal(false);
@@ -315,6 +335,19 @@ const VastuCalculator: React.FC = () => {
     setStudyRoomLocation('');
     setPoojaRoomLocation('');
     setResults(null);
+    
+    // Reset expanded sections
+    setExpandedSections({
+      houseFacing: false,
+      mainEntrance: false,
+      bedroom: false,
+      kitchen: false,
+      livingRoom: false,
+      bathroom: false,
+      studyRoom: false,
+      poojaRoom: false
+    });
+    
     // Scroll to top after clearing
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
   };
@@ -325,137 +358,46 @@ const VastuCalculator: React.FC = () => {
       <View style={styles.inputSection}>
         <Text style={styles.sectionTitle}>Your House Information</Text>
         
-        {/* House Facing */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>House Facing Direction</Text>
-          <TouchableOpacity
-            style={styles.dropdownButton}
-            onPress={() => showInfo('House Facing', 'The direction your house faces (main entrance direction). This is crucial for Vastu analysis as it determines the energy flow into your home.')}
+        {/* House Facing - Required */}
+        <View style={styles.expandableSection}>
+          <TouchableOpacity 
+            style={styles.sectionHeader}
+            onPress={() => toggleSection('houseFacing')}
           >
-            <Text style={styles.dropdownButtonText}>
-              {houseFacing || 'Select House Facing Direction'}
+            <View style={styles.sectionHeaderContent}>
+              <Text style={styles.sectionLabel}>
+                                 House Facing <Text style={styles.required}>*</Text>
+              </Text>
+              <Text style={styles.selectedValue}>
+                {houseFacing || 'Not selected'}
+              </Text>
+            </View>
+            <Text style={[
+              styles.expandArrow,
+              expandedSections.houseFacing && styles.expandArrowUp
+            ]}>
+              ▼
             </Text>
-            <Text style={styles.dropdownButtonText}>i</Text>
           </TouchableOpacity>
-          <View style={styles.directionGrid}>
-            {Object.keys(directionAnalysis).map((direction) => (
-              <TouchableOpacity
-                key={direction}
-                style={[
-                  styles.directionButton,
-                  houseFacing === direction && styles.selectedDirection
-                ]}
-                onPress={() => setHouseFacing(direction)}
-              >
-                <Text style={[
-                  styles.directionButtonText,
-                  houseFacing === direction && styles.selectedDirectionText
-                ]}>
-                  {direction}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Room Locations */}
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Room Locations</Text>
           
-          {/* Main Entrance */}
-          <View style={styles.roomInput}>
-            <Text style={styles.roomLabel}>Main Entrance</Text>
-            <View style={styles.directionGrid}>
-              {Object.keys(directionAnalysis).map((direction) => (
-                <TouchableOpacity
-                  key={direction}
-                  style={[
-                    styles.directionButton,
-                    mainEntrance === direction && styles.selectedDirection
-                  ]}
-                  onPress={() => setMainEntrance(direction)}
-                >
-                  <Text style={[
-                    styles.directionButtonText,
-                    mainEntrance === direction && styles.selectedDirectionText
-                  ]}>
-                    {direction}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Bedroom */}
-          <View style={styles.roomInput}>
-            <Text style={styles.roomLabel}>Bedroom</Text>
-            <View style={styles.directionGrid}>
-              {Object.keys(directionAnalysis).map((direction) => (
-                <TouchableOpacity
-                  key={direction}
-                  style={[
-                    styles.directionButton,
-                    bedroomLocation === direction && styles.selectedDirection
-                  ]}
-                  onPress={() => setBedroomLocation(direction)}
-                >
-                  <Text style={[
-                    styles.directionButtonText,
-                    bedroomLocation === direction && styles.selectedDirectionText
-                  ]}>
-                    {direction}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Kitchen */}
-          <View style={styles.roomInput}>
-            <Text style={styles.roomLabel}>Kitchen</Text>
-            <View style={styles.directionGrid}>
-              {Object.keys(directionAnalysis).map((direction) => (
-                <TouchableOpacity
-                  key={direction}
-                  style={[
-                    styles.directionButton,
-                    kitchenLocation === direction && styles.selectedDirection
-                  ]}
-                  onPress={() => setKitchenLocation(direction)}
-                >
-                  <Text style={[
-                    styles.directionButtonText,
-                    kitchenLocation === direction && styles.selectedDirectionText
-                  ]}>
-                    {direction}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Other Rooms */}
-          {[
-            { label: 'Living Room', state: livingRoomLocation, setter: setLivingRoomLocation },
-            { label: 'Bathroom', state: bathroomLocation, setter: setBathroomLocation },
-            { label: 'Study Room', state: studyRoomLocation, setter: setStudyRoomLocation },
-            { label: 'Pooja Room', state: poojaRoomLocation, setter: setPoojaRoomLocation }
-          ].map((room) => (
-            <View key={room.label} style={styles.roomInput}>
-              <Text style={styles.roomLabel}>{room.label}</Text>
+          {expandedSections.houseFacing && (
+            <View style={styles.sectionContent}>
               <View style={styles.directionGrid}>
                 {Object.keys(directionAnalysis).map((direction) => (
                   <TouchableOpacity
                     key={direction}
                     style={[
                       styles.directionButton,
-                      room.state === direction && styles.selectedDirection
+                      houseFacing === direction && styles.selectedDirection
                     ]}
-                    onPress={() => room.setter(direction)}
+                    onPress={() => {
+                      setHouseFacing(direction);
+                      toggleSection('houseFacing');
+                    }}
                   >
                     <Text style={[
                       styles.directionButtonText,
-                      room.state === direction && styles.selectedDirectionText
+                      houseFacing === direction && styles.selectedDirectionText
                     ]}>
                       {direction}
                     </Text>
@@ -463,8 +405,115 @@ const VastuCalculator: React.FC = () => {
                 ))}
               </View>
             </View>
-          ))}
+          )}
         </View>
+
+        {/* Main Entrance - Required */}
+        <View style={styles.expandableSection}>
+          <TouchableOpacity 
+            style={styles.sectionHeader}
+            onPress={() => toggleSection('mainEntrance')}
+          >
+            <View style={styles.sectionHeaderContent}>
+              <Text style={styles.sectionLabel}>
+                Main Entrance <Text style={styles.required}>*</Text>
+              </Text>
+              <Text style={styles.selectedValue}>
+                {mainEntrance || 'Not selected'}
+              </Text>
+            </View>
+            <Text style={[
+              styles.expandArrow,
+              expandedSections.mainEntrance && styles.expandArrowUp
+            ]}>
+              ▼
+            </Text>
+          </TouchableOpacity>
+          
+          {expandedSections.mainEntrance && (
+            <View style={styles.sectionContent}>
+              <View style={styles.directionGrid}>
+                {Object.keys(directionAnalysis).map((direction) => (
+                  <TouchableOpacity
+                    key={direction}
+                    style={[
+                      styles.directionButton,
+                      mainEntrance === direction && styles.selectedDirection
+                    ]}
+                    onPress={() => {
+                      setMainEntrance(direction);
+                      toggleSection('mainEntrance');
+                    }}
+                  >
+                    <Text style={[
+                      styles.directionButtonText,
+                      mainEntrance === direction && styles.selectedDirectionText
+                    ]}>
+                      {direction}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+        </View>
+
+        {/* Optional Rooms */}
+        {[
+          { key: 'bedroom', label: 'Bedroom', state: bedroomLocation, setter: setBedroomLocation },
+          { key: 'kitchen', label: 'Kitchen', state: kitchenLocation, setter: setKitchenLocation },
+          { key: 'livingRoom', label: 'Living Room', state: livingRoomLocation, setter: setLivingRoomLocation },
+          { key: 'bathroom', label: 'Bathroom', state: bathroomLocation, setter: setBathroomLocation },
+          { key: 'studyRoom', label: 'Study Room', state: studyRoomLocation, setter: setStudyRoomLocation },
+                     { key: 'poojaRoom', label: 'Puja Room', state: poojaRoomLocation, setter: setPoojaRoomLocation }
+        ].map((room) => (
+          <View key={room.key} style={styles.expandableSection}>
+            <TouchableOpacity 
+              style={styles.sectionHeader}
+              onPress={() => toggleSection(room.key as keyof typeof expandedSections)}
+            >
+              <View style={styles.sectionHeaderContent}>
+                <Text style={styles.sectionLabel}>{room.label}</Text>
+                <Text style={styles.selectedValue}>
+                  {room.state || 'Not selected'}
+                </Text>
+              </View>
+              <Text style={[
+                styles.expandArrow,
+                expandedSections[room.key as keyof typeof expandedSections] && styles.expandArrowUp
+              ]}>
+                ▼
+              </Text>
+            </TouchableOpacity>
+            
+            {expandedSections[room.key as keyof typeof expandedSections] && (
+              <View style={styles.sectionContent}>
+                <View style={styles.directionGrid}>
+                  {Object.keys(directionAnalysis).map((direction) => (
+                    <TouchableOpacity
+                      key={direction}
+                      style={[
+                        styles.directionButton,
+                        room.state === direction && styles.selectedDirection
+                      ]}
+                      onPress={() => {
+                        room.setter(direction);
+                        toggleSection(room.key as keyof typeof expandedSections);
+                      }}
+                    >
+                      <Text style={[
+                        styles.directionButtonText,
+                        room.state === direction && styles.selectedDirectionText
+                      ]}>
+                        {direction}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+        ))}
 
         {/* Calculate Button */}
         <TouchableOpacity
@@ -520,7 +569,7 @@ const VastuCalculator: React.FC = () => {
               if (!room.location) return null;
               const guidelines = roomGuidelines[room.name as keyof typeof roomGuidelines];
               const placement = guidelines?.[room.location as keyof typeof guidelines] || 'Analysis needed';
-              
+               
               return (
                 <View key={room.name} style={styles.roomAnalysisItem}>
                   <Text style={styles.roomName}>{room.name}</Text>
@@ -1132,6 +1181,51 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  expandableSection: {
+    marginBottom: 15,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  sectionHeaderContent: {
+    flex: 1,
+    marginRight: 10,
+  },
+  sectionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 5,
+  },
+  selectedValue: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  required: {
+    color: 'red',
+    fontSize: 16,
+  },
+  expandArrow: {
+    fontSize: 18,
+    color: '#666',
+    fontWeight: 'bold',
+  },
+  expandArrowUp: {
+    transform: [{ rotate: '180deg' }],
+  },
+  sectionContent: {
+    paddingTop: 15,
+    paddingHorizontal: 5,
   },
 });
 
