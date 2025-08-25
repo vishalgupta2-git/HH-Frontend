@@ -1,6 +1,6 @@
 // GaneshaTint.js
 import React, { useState, useMemo, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image } from "react-native";
 import { Canvas, Image as SkiaImage, useImage, ColorMatrix, Group } from "@shopify/react-native-skia";
 import { useWindowDimensions } from 'react-native';
 import { getApiUrl, getAuthHeaders } from '../../constants/ApiConfig';
@@ -13,7 +13,6 @@ export default function GaneshaTint() {
   const [imageX, setImageX] = useState(0); // -100 to 100 range
   const [imageY, setImageY] = useState(0); // -100 to 100 range
   const [activePanel, setActivePanel] = useState<string | null>(null); // null, 'tint', 'size', 'position'
-  const [templeName, setTempleName] = useState("My Ganesha Temple");
   const [userId, setUserId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error' | 'info'>('info');
@@ -46,7 +45,6 @@ export default function GaneshaTint() {
                   console.log('✅ Loaded existing temple configuration:', temple);
                   
                   // Update state with loaded configuration
-                  setTempleName(temple.templeName || "My Ganesha Temple");
                   if (temple.templeInformation) {
                     const info = temple.templeInformation;
                     setTintColor(info.tintColor || "gold");
@@ -152,7 +150,7 @@ export default function GaneshaTint() {
     try {
       const templeData = {
         userId: userId,
-        templeName: templeName,
+        templeName: "My Ganesha Temple", // Default name since input is removed
         templeInformation: {
           tintColor,
           tintIntensity,
@@ -228,7 +226,7 @@ export default function GaneshaTint() {
             try {
               const templeData = {
                 userId: userId,
-                templeName: templeName,
+                templeName: "My Ganesha Temple", // Default name since input is removed
                 templeInformation: {
                   tintColor,
                   tintIntensity,
@@ -286,6 +284,12 @@ export default function GaneshaTint() {
 
   return (
     <View style={styles.container}>
+      {/* Background Image */}
+      <Image
+        source={require("../../assets/images/ganesha2025/Ganesha_BG_1.jpg")}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      />
       <Canvas style={[styles.canvas, { width: screenWidth, height: screenHeight }]}>
         <Group>
           <ColorMatrix matrix={getColorMatrix(tintColor, tintIntensity)} />
@@ -344,17 +348,7 @@ export default function GaneshaTint() {
          </TouchableOpacity>
        </View>
        
-       {/* Temple Name Input */}
-       <View style={styles.templeNameContainer}>
-         <Text style={styles.label}>Temple Name:</Text>
-         <TextInput
-           style={styles.templeNameInput}
-           value={templeName}
-           onChangeText={setTempleName}
-           placeholder="Enter temple name"
-           placeholderTextColor="#666"
-         />
-       </View>
+
        
        {/* Quick Notification */}
        {message && (
@@ -465,6 +459,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#000", // so the transparent background is visible
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 0, // Behind everything
   },
   canvas: {
     flex: 1,
@@ -602,25 +606,8 @@ const styles = StyleSheet.create({
       justifyContent: 'space-between',
       paddingHorizontal: 20,
     },
-    templeNameContainer: {
-      position: 'absolute',
-      top: 260,
-      width: 'auto',
-      alignSelf: 'center',
-      alignItems: 'center',
-      zIndex: 100,
-    },
-    templeNameInput: {
-      backgroundColor: '#333',
-      color: 'white',
-      borderWidth: 1,
-      borderColor: '#666',
-      borderRadius: 8,
-      padding: 10,
-      marginTop: 10,
-      minWidth: 200,
-      textAlign: 'center',
-    },
+
+
     notification: {
       position: 'absolute',
       top: 320,
