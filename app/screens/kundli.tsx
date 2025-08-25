@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
+import KundliCalculator from '../components/KundliCalculator';
 
 const { width } = Dimensions.get('window');
 const CARD_TOP = 250;
@@ -25,7 +26,7 @@ export default function KundliScreen() {
         />
       </LinearGradient>
       <View style={styles.card}>
-        <Text style={styles.text}>Kundli Services (coming soon...)</Text>
+        <KundliCalculator />
       </View>
     </View>
   );
@@ -71,19 +72,11 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 12,
     marginTop: CARD_MARGIN_TOP,
-    padding: 24,
+    flex: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FF9800',
-    textAlign: 'center',
   },
 }); 
