@@ -110,11 +110,29 @@ export default function HomeScreen() {
   
   return (
     <View style={styles.root}>
+      {/* Fixed Header with Gradient Background */}
       <HomeHeader enableSpiritualSearch={false} showSearchBar={false} showDailyPujaButton={true} />
-      <View style={styles.section}>
-        <HomeIconGrid />
-      </View>
-      <ScrollView contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      
+      {/* Empty white box with rounded top corners - positioned on top of everything */}
+      <View style={styles.topWhiteBox} />
+      
+      {/* Scrollable Content that scrolls in front of the gradient */}
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        contentInsetAdjustmentBehavior="never"
+      >
+        {/* Top spacing to account for header height */}
+        <View style={styles.headerSpacer} />
+        
+        {/* Icon Grid Section */}
+        <View style={styles.section}>
+          <HomeIconGrid />
+        </View>
+        
+        {/* Eco-friendly Ganesha Button Section */}
         <View style={styles.section}>
           <TouchableOpacity 
             style={[styles.ecoGaneshaButton, { backgroundColor: buttonBackgroundColor }]}
@@ -123,9 +141,13 @@ export default function HomeScreen() {
             <Text style={[styles.ecoGaneshaButtonText, { color: buttonTextColor }]}>Eco friendly Ganesha</Text>
           </TouchableOpacity>
         </View>
+        
+        {/* Spiritual & Astrology Block Section */}
         <View style={styles.section}>
           <SpiritualAstrologyBlock />
         </View>
+        
+        {/* Referral & Social Section */}
         <View style={styles.referralSection}>
           <ReferralConnectBlock />
           <SocialRow />
@@ -136,7 +158,7 @@ export default function HomeScreen() {
       <DailyPujaReminderModal
         visible={showDailyPujaModal}
         onClose={handleCloseDailyPujaModal}
-        firstName={userFirstName}
+        firstName={userFirstName || undefined}
       />
       
       {/* Special Days Modal */}
@@ -160,17 +182,41 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F6F2',
   },
+  topWhiteBox: {
+    position: 'absolute',
+    top: 212,
+    left: '6%', // 4% left margin to center the 92% width box
+    width: '88%', // Same width as icon grid
+    height: 30,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    zIndex: 999, // Much higher z-index to ensure it's on top
+    elevation: 999, // For Android
+  },
+  scrollView: {
+    flex: 1,
+    position: 'absolute',
+    top: 0,
+    left: '2.5%', // 2.5% left margin to center the 95% width content
+    width: '95%', // Increased to 95% screen width
+    bottom: 0,
+    zIndex: 0, // Lower z-index so content scrolls behind header elements
+  },
   contentContainer: {
     paddingBottom: 32,
   },
+  headerSpacer: {
+    height: 300, // 280px header height + 20px top margin
+  },
   section: {
-    marginTop: 8,
+    marginTop: 20,
   },
   referralSection: {
     marginTop: 6,
   },
   ecoGaneshaButton: {
-    width: '82%',
+    width: '92%',
     alignSelf: 'center',
     borderRadius: 8,
     paddingVertical: 12,

@@ -16,7 +16,7 @@ const icons = [
 ];
 
 const numColumns = 4;
-const tileSize = (Dimensions.get('window').width - 48) / numColumns;
+const tileSize = (Dimensions.get('window').width - 72) / numColumns;
 
 export default function HomeIconGrid() {
   const router = useRouter();

@@ -379,6 +379,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Platform.OS === 'android' ? -statusBarHeight : 0,
     paddingTop: TOP_PADDING,
+    zIndex: 10, // Higher z-index to appear in front of scrolling content
   },
   gradient: {
     position: 'absolute',
@@ -394,6 +395,7 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 16,
     minHeight: 48,
+    zIndex: 11, // Higher z-index than headerContainer
   },
   iconButton: {
     padding: 8,
@@ -429,6 +431,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginTop: 18,
+    zIndex: 11, // Higher z-index to appear in front
   },
   searchBarContainer: {
     flexDirection: 'row',
@@ -453,7 +456,7 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   dailyPujaButton: {
-    width: '88%',
+    width: '92%',
     height: 44,
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -469,6 +472,7 @@ const styles = StyleSheet.create({
     width: '88%',
     marginTop: 14,
     alignItems: 'center',
+    zIndex: 11, // Higher z-index to appear in front
   },
   dailyPujaButtonText: {
     color: '#FF6A00',

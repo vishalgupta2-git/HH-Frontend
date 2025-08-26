@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // import ReferralConnectBlock, { SocialRow } from './ReferralConnectBlock';
 
 const spiritualItems = [
@@ -21,43 +20,10 @@ const astrologyItems = [
   { label: 'Talk To Priest', image: require('@/assets/images/icons/home page icons/talk-to-priest.jpg') },
 ];
 
-const tileWidth = (Dimensions.get('window').width - 48) / 2;
+const tileWidth = (Dimensions.get('window').width - 60) / 2;
 
 export default function SpiritualAstrologyBlock() {
   const router = useRouter();
-
-  const clearAllAsyncStorage = async () => {
-    Alert.alert(
-      'Clear All Data',
-      'This will remove all your saved data including temple configurations, user preferences, and other settings. This action cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Clear All Data',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await AsyncStorage.clear();
-              Alert.alert(
-                'Data Cleared',
-                'All data has been successfully cleared.',
-                [{ text: 'OK' }]
-              );
-            } catch (error) {
-              Alert.alert(
-                'Error',
-                'Failed to clear data. Please try again.',
-                [{ text: 'OK' }]
-              );
-            }
-          },
-        },
-      ]
-    );
-  };
 
   return (
     <View style={styles.container}>
@@ -102,18 +68,6 @@ export default function SpiritualAstrologyBlock() {
             <Text style={styles.spiritualLabel}>{item.label}</Text>
           </TouchableOpacity>
         ))}
-        
-        {/* Clear Data Button */}
-        <TouchableOpacity
-          style={styles.clearDataButton}
-          activeOpacity={0.8}
-          onPress={clearAllAsyncStorage}
-        >
-          <View style={styles.clearDataIcon}>
-            <Text style={styles.clearDataIconText}>🗑️</Text>
-          </View>
-          <Text style={styles.clearDataLabel}>Clear Data</Text>
-        </TouchableOpacity>
       </ScrollView>
       {/* Astrology Services Section */}
       <View style={[styles.sectionHeaderRow, { marginTop: 24 }]}>
@@ -144,7 +98,7 @@ export default function SpiritualAstrologyBlock() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
+    marginTop: 15,
     marginBottom: 16,
     paddingHorizontal: 12,
   },
@@ -174,8 +128,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   spiritualImage: {
-    width: 64,
-    height: 64,
+    width: 50,
+    height: 50,
     borderRadius: 12,
     marginBottom: 4,
     backgroundColor: '#F8F8F8',
@@ -185,38 +139,6 @@ const styles = StyleSheet.create({
     color: '#444',
     marginTop: 2,
     textAlign: 'center',
-  },
-  // Clear Data Button styles
-  clearDataButton: {
-    alignItems: 'center',
-    width: 92,
-    marginRight: 8,
-  },
-  clearDataIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
-    backgroundColor: '#FF4444',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-    borderWidth: 2,
-    borderColor: '#D32F2F',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  clearDataIconText: {
-    fontSize: 28,
-  },
-  clearDataLabel: {
-    fontSize: 12,
-    color: '#D32F2F',
-    marginTop: 2,
-    textAlign: 'center',
-    fontWeight: '600',
   },
   astrologyGrid: {
     flexDirection: 'row',
