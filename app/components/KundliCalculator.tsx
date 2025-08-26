@@ -516,9 +516,9 @@ const KundliCalculator: React.FC = () => {
                         style={styles.datePickerButton}
                         onPress={showDatePickerModal}
                       >
-                        <Text style={styles.datePickerButtonText}>
-                          {bookingDate ? bookingDate : 'Select Date (at least 18 hours in future)'}
-                        </Text>
+                                            <Text style={styles.datePickerButtonText}>
+                      {bookingDate ? bookingDate : 'Select Date'}
+                    </Text>
                       </TouchableOpacity>
                       
                       <Text style={styles.formLabel}>Preferred Time Slot *</Text>
