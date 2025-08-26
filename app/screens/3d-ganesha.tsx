@@ -681,6 +681,8 @@ export default function GaneshaTint() {
       });
       
       if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Temple saved successfully:', result);
         // Show quick notification instead of modal
         setMessage('Temple Saved');
         setMessageType('success');
@@ -689,7 +691,9 @@ export default function GaneshaTint() {
           setMessage('');
         }, 2000);
       } else {
-        setMessage('Failed to save temple');
+        const errorData = await response.json();
+        console.error('❌ Failed to save temple:', response.status, errorData);
+        setMessage(`Failed to save temple: ${errorData.error || 'Unknown error'}`);
         setMessageType('error');
         setTimeout(() => {
           setMessage('');
