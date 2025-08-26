@@ -61,6 +61,7 @@ const TalkToPriestScreen: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [showProviderModal, setShowProviderModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   
   // Booking form states
   const [bookingName, setBookingName] = useState('');
@@ -294,7 +295,15 @@ const TalkToPriestScreen: React.FC = () => {
       <View style={styles.card}>
         <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.providersSection}>
-            <Text style={styles.sectionTitle}>Priest Consultation Services</Text>
+                         <View style={styles.titleContainer}>
+               <Text style={styles.sectionTitle}>Priest Consultation Services</Text>
+               <TouchableOpacity 
+                 style={styles.infoIcon}
+                 onPress={() => setShowInfoModal(true)}
+               >
+                 <Text style={styles.infoIconText}>ℹ️</Text>
+               </TouchableOpacity>
+             </View>
             <Text style={styles.instructionText}>Click on any provider to book priest consultation services</Text>
         
         {loadingProviders ? (
@@ -586,6 +595,42 @@ const TalkToPriestScreen: React.FC = () => {
             minimumDate={new Date(Date.now() + 18 * 60 * 60 * 1000)} // 18 hours from now
           />
         )}
+        
+        {/* Info Modal */}
+        <Modal
+          visible={showInfoModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowInfoModal(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowInfoModal(false)}
+          >
+            <TouchableOpacity 
+              style={styles.modalContent}
+              activeOpacity={1}
+              onPress={(e) => e.stopPropagation()}
+            >
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>About Priest Consultation</Text>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setShowInfoModal(false)}
+                >
+                  <Text style={styles.closeButtonText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.infoContent}>
+                <Text style={styles.infoText}>
+                  Avail trusted Priest Consultation services for your religious and spiritual needs. Get expert guidance for pujas, rituals, and ceremonies performed with authenticity and devotion.
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </Modal>
           </ScrollView>
         </View>
       </View>
@@ -654,12 +699,25 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
   sectionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
+    color: '#FFA040',
     textAlign: 'center',
+  },
+  infoIcon: {
+    marginLeft: 10,
+    padding: 5,
+  },
+  infoIconText: {
+    fontSize: 20,
+    color: '#FFA040',
   },
   instructionText: {
     fontSize: 14,
@@ -809,7 +867,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFA040',
   },
   closeButton: {
     padding: 5,
@@ -1030,6 +1088,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     textAlign: 'left',
+  },
+  infoContent: {
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  infoText: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    lineHeight: 24,
   },
 });
 
