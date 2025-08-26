@@ -674,7 +674,7 @@ export default function GaneshaTint() {
         }
       };
       
-      const response = await fetch(getApiUrl('/api/save-temple'), {
+      const response = await fetch(getApiUrl('/api/save-ganesha-temple'), {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(templeData)
@@ -740,7 +740,7 @@ export default function GaneshaTint() {
                 }
               };
 
-              const response = await fetch(getApiUrl('/api/save-temple'), {
+              const response = await fetch(getApiUrl('/api/save-ganesha-temple'), {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(templeData)
