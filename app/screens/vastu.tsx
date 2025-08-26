@@ -61,10 +61,10 @@ const styles = StyleSheet.create({
   },
   temple: {
     position: 'absolute',
-    width: width * 1.5 * 0.8,
-    height: 120 * 0.8,
+    width: width * 1.5 * 0.8 * 1.2, // 120% size
+    height: 120 * 0.8 * 1.2, // 120% size
     left: width * -0.25 * 0.8,
-    bottom: CARD_TOP + CARD_MARGIN_TOP - 120 - 60,
+    bottom: 0, // Same positioning as home screen
     resizeMode: 'contain',
   },
   card: {

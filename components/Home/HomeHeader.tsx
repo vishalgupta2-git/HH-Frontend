@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { ReactNode, useState } from 'react';
-import { Modal, Platform, Pressable, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, Pressable, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Dimensions } from 'react-native';
 import SearchBar from './SearchBar';
 import SearchResults from './SearchResults';
 import SearchSuggestions from './SearchSuggestions';
@@ -11,6 +11,7 @@ import { useSpiritualSearch } from '@/hooks/useSpiritualSearch';
 
 const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
 const TOP_PADDING = (Platform.OS === 'android' ? statusBarHeight : 0) + 24;
+const { width } = Dimensions.get('window');
 
 // Topic dropdown options
 const TOPIC_OPTIONS = [
@@ -201,6 +202,11 @@ export default function HomeHeader({
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
       />
+      {/* Temple Illustration */}
+      <Image
+        source={require('@/assets/images/temple illustration.png')}
+        style={styles.temple}
+      />
       {/* Top Row: Hamburger, Title, Language */}
       <View style={styles.topRow}>
         <TouchableOpacity
@@ -387,6 +393,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 275,
+  },
+  temple: {
+    position: 'absolute',
+    width: width * 1.5 * 0.8 * 1.2, // 120% size
+    height: 120 * 0.8 * 1.2, // 120% size
+    left: width * -0.25 * 0.8,
+    bottom: 0, // 30px lower than mantras screen
+    resizeMode: 'contain',
   },
   topRow: {
     flexDirection: 'row',
