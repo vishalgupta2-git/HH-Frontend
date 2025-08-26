@@ -1374,7 +1374,7 @@ export default function GaneshaTint() {
                   ))}
                 </View>
                 
-                <View style={[styles.positionContainer, { top: 180 }]}>
+                <View style={[styles.positionContainer, { top: 140 }]}>
                   <TouchableOpacity
                     style={styles.intensityButton}
                     onPress={() => setTintIntensity(prev => Math.max(0, prev - 0.1))}
@@ -1620,7 +1620,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#333',
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 10,
@@ -1647,7 +1647,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#333',
+    backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: 10,
@@ -1655,13 +1655,15 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   buttonText: {
-    fontSize: 20,
-    color: 'white',
+    fontSize: 22,
+    color: '#000000',
+    fontWeight: 'bold',
   },
   label: {
-    color: 'white',
-    fontSize: 16,
+    color: '#000000',
+    fontSize: 18,
     marginHorizontal: 15,
+    fontWeight: 'bold',
   },
   notification: {
     position: 'absolute',
