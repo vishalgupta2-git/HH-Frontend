@@ -176,7 +176,20 @@ export default function ReferralConnectBlock() {
 
 export function SocialRow() {
   // Use the same icon row as before
-  const { FontAwesome, MaterialCommunityIcons, Ionicons } = require('@expo/vector-icons');
+  const { FontAwesome, MaterialCommunityIcons } = require('@expo/vector-icons');
+  
+  // Facebook function to open your profile
+  const openFacebookProfile = () => {
+    const facebookUrl = 'https://www.facebook.com/profile.php?id=61578706766530';
+    
+    // Try to open Facebook app first
+    const appUrl = `fb://profile/61578706766530`;
+    
+    Linking.openURL(appUrl).catch(() => {
+      // Fallback: open in browser if app not installed
+      Linking.openURL(facebookUrl);
+    });
+  };
   
   // WhatsApp function to open chat with your number
   const openWhatsAppChat = () => {
@@ -237,7 +250,7 @@ export function SocialRow() {
   
   return (
     <View style={styles.socialContainer}>
-      <TouchableOpacity style={styles.socialIcon}>
+      <TouchableOpacity style={styles.socialIcon} onPress={openFacebookProfile}>
         <FontAwesome name="facebook" size={26} color="#1877F3" />
       </TouchableOpacity>
       <TouchableOpacity style={styles.socialIcon} onPress={openYouTubeChannel}>
@@ -251,9 +264,6 @@ export function SocialRow() {
       </TouchableOpacity>
       <TouchableOpacity style={styles.socialIcon} onPress={openWhatsAppChat}>
         <FontAwesome name="whatsapp" size={26} color="#25D366" />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.socialIcon}>
-        <Ionicons name="logo-instagram" size={26} color="#E1306C" />
       </TouchableOpacity>
     </View>
   );
