@@ -18,9 +18,23 @@
 import HomeHeader from '@/components/Home/HomeHeader';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, ActivityIndicator, RefreshControl, Modal, TextInput } from 'react-native';
-import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, ActivityIndicator, RefreshControl, Modal, TextInput, Alert } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { getEndpointUrl, getAuthHeaders, API_CONFIG } from '@/constants/ApiConfig';
 import axios from 'axios';
+
+// Time slots for donation
+const timeSlots = [
+  '8AM-10AM',
+  '10AM-12PM',
+  '12PM-2PM',
+  '2PM-4PM',
+  '4PM-6PM',
+  '6PM-8PM'
+];
+
+// Currency options
+const currencies = ['Rs', '$', '€', '£'];
 
 export const options = { headerShown: false };
 
@@ -67,6 +81,34 @@ export default function DonationScreen() {
   // Image viewer modal state
   const [showImageViewer, setShowImageViewer] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  
+  // Donation modal state
+  const [showDonationModal, setShowDonationModal] = useState(false);
+  const [donationForm, setDonationForm] = useState({
+    name: '',
+    phone: '',
+    date: '',
+    timeSlot: '',
+    amount: '',
+    currency: 'Rs'
+  });
+  
+  // Date picker state
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Date picker handlers
+  const onDateChange = (event: any, date?: Date) => {
+    setShowDatePicker(false);
+    if (date) {
+      setSelectedDate(date);
+      setDonationForm(prev => ({ ...prev, date: date.toISOString().split('T')[0] })); // Format as YYYY-MM-DD
+    }
+  };
+
+  const showDatePickerModal = () => {
+    setShowDatePicker(true);
+  };
 
   // Debug search query changes
   useEffect(() => {
@@ -792,14 +834,17 @@ export default function DonationScreen() {
             )}
 
             {/* Donate Button */}
-            <TouchableOpacity style={{
-              backgroundColor: '#FF6A00',
-              paddingVertical: 15,
-              paddingHorizontal: 30,
-              borderRadius: 8,
-              alignItems: 'center',
-              marginBottom: 20
-            }}>
+            <TouchableOpacity 
+              style={{
+                backgroundColor: '#FF6A00',
+                paddingVertical: 15,
+                paddingHorizontal: 30,
+                borderRadius: 8,
+                alignItems: 'center',
+                marginBottom: 20
+              }}
+              onPress={() => setShowDonationModal(true)}
+            >
               <Text style={{
                 color: '#fff',
                 fontSize: 18,
@@ -1009,6 +1054,355 @@ export default function DonationScreen() {
           </View>
         </View>
       </Modal>
+      
+      {/* Donation Modal */}
+      <Modal
+        visible={showDonationModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowDonationModal(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 20,
+            padding: 20,
+            margin: 20,
+            width: '90%',
+            maxHeight: '80%'
+          }}>
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 20,
+              borderBottomWidth: 1,
+              borderBottomColor: '#eee',
+              paddingBottom: 15
+            }}>
+              <Text style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: '#FF6A00'
+              }}>
+                Donation Form
+              </Text>
+              <TouchableOpacity
+                style={{ padding: 5 }}
+                onPress={() => setShowDonationModal(false)}
+              >
+                <Text style={{ fontSize: 20, color: '#666' }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <Text style={{
+              fontSize: 16,
+              color: '#333',
+              textAlign: 'center',
+              marginBottom: 20,
+              lineHeight: 24
+            }}>
+              Thank you for supporting the {selectedItem?.name}
+              {'\n'}Please provide the following information for us to contact you
+            </Text>
+            
+            <View style={{ marginBottom: 15 }}>
+              <Text style={{
+                fontSize: 14,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: 8
+              }}>
+                Name (Min 3 characters) *
+              </Text>
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  borderRadius: 8,
+                  padding: 12,
+                  fontSize: 16,
+                  backgroundColor: '#f9f9f9'
+                }}
+                value={donationForm.name}
+                onChangeText={(text) => setDonationForm(prev => ({ ...prev, name: text }))}
+                placeholder="Enter your full name"
+                placeholderTextColor="#999"
+              />
+            </View>
+            
+            <View style={{ marginBottom: 15 }}>
+              <Text style={{
+                fontSize: 14,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: 8
+              }}>
+                Phone Number (Min 10 digits) *
+              </Text>
+              <TextInput
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  borderRadius: 8,
+                  padding: 12,
+                  fontSize: 16,
+                  backgroundColor: '#f9f9f9'
+                }}
+                value={donationForm.phone}
+                onChangeText={(text) => setDonationForm(prev => ({ ...prev, phone: text }))}
+                placeholder="Enter your phone number"
+                placeholderTextColor="#999"
+                keyboardType="phone-pad"
+              />
+            </View>
+            
+            <View style={{ marginBottom: 15 }}>
+              <Text style={{
+                fontSize: 14,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: 8
+              }}>
+                Donation Amount *
+              </Text>
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10
+              }}>
+                <View style={{
+                  flexDirection: 'row',
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  borderRadius: 8,
+                  overflow: 'hidden'
+                }}>
+                  {currencies.map((currency) => (
+                    <TouchableOpacity
+                      key={currency}
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 12,
+                        backgroundColor: donationForm.currency === currency ? '#FF6A00' : '#f9f9f9',
+                        borderRightWidth: currency !== currencies[currencies.length - 1] ? 1 : 0,
+                        borderRightColor: '#ddd'
+                      }}
+                      onPress={() => setDonationForm(prev => ({ ...prev, currency }))}
+                    >
+                      <Text style={{
+                        fontSize: 16,
+                        color: donationForm.currency === currency ? 'white' : '#666',
+                        fontWeight: donationForm.currency === currency ? 'bold' : '500'
+                      }}>
+                        {currency}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TextInput
+                  style={{
+                    flex: 1,
+                    borderWidth: 1,
+                    borderColor: '#ddd',
+                    borderRadius: 8,
+                    padding: 12,
+                    fontSize: 16,
+                    backgroundColor: '#f9f9f9'
+                  }}
+                  value={donationForm.amount}
+                  onChangeText={(text) => {
+                    // Only allow integers
+                    const cleanText = text.replace(/[^0-9]/g, '');
+                    setDonationForm(prev => ({ ...prev, amount: cleanText }));
+                  }}
+                  placeholder="Enter amount"
+                  placeholderTextColor="#999"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+            
+            <View style={{ marginBottom: 15 }}>
+              <Text style={{
+                fontSize: 14,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: 8
+              }}>
+                Preferred Date *
+              </Text>
+              <TouchableOpacity
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#ddd',
+                  borderRadius: 8,
+                  padding: 12,
+                  backgroundColor: '#f9f9f9'
+                }}
+                onPress={showDatePickerModal}
+              >
+                <Text style={{
+                  fontSize: 16,
+                  color: donationForm.date ? '#333' : '#999'
+                }}>
+                  {donationForm.date ? donationForm.date : 'Select Date'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{
+                fontSize: 14,
+                fontWeight: '600',
+                color: '#333',
+                marginBottom: 8
+              }}>
+                Preferred Time Slot *
+              </Text>
+              <View style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                gap: 8
+              }}>
+                {timeSlots.map((slot) => (
+                  <TouchableOpacity
+                    key={slot}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: donationForm.timeSlot === slot ? '#FF6A00' : '#ddd',
+                      borderRadius: 15,
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      backgroundColor: donationForm.timeSlot === slot ? '#FF6A00' : '#f9f9f9'
+                    }}
+                    onPress={() => setDonationForm(prev => ({ ...prev, timeSlot: slot }))}
+                  >
+                    <Text style={{
+                      fontSize: 12,
+                      color: donationForm.timeSlot === slot ? 'white' : '#666',
+                      fontWeight: donationForm.timeSlot === slot ? 'bold' : '500'
+                    }}>
+                      {slot}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            
+            <TouchableOpacity
+              style={{
+                backgroundColor: '#FF6A00',
+                paddingVertical: 15,
+                borderRadius: 8,
+                alignItems: 'center'
+              }}
+              onPress={async () => {
+                // Validation
+                if (!donationForm.name || donationForm.name.trim().length < 3) {
+                  Alert.alert('Invalid Name', 'Name must be at least 3 characters long.');
+                  return;
+                }
+                
+                if (!donationForm.phone || donationForm.phone.length < 10) {
+                  Alert.alert('Invalid Phone', 'Please enter a valid phone number.');
+                  return;
+                }
+                
+                if (!donationForm.amount || parseFloat(donationForm.amount) <= 0) {
+                  Alert.alert('Invalid Amount', 'Please enter a valid donation amount.');
+                  return;
+                }
+                
+                if (!donationForm.date) {
+                  Alert.alert('Invalid Date', 'Please select a preferred date.');
+                  return;
+                }
+                
+                if (!donationForm.timeSlot) {
+                  Alert.alert('Invalid Time', 'Please select a preferred time slot.');
+                  return;
+                }
+                
+                try {
+                  const response = await fetch(`${API_CONFIG.BASE_URL}/api/donation-bookings`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      ...getAuthHeaders(),
+                    },
+                    body: JSON.stringify({
+                      name: donationForm.name.trim(),
+                      phone: donationForm.phone,
+                      amount: parseFloat(donationForm.amount),
+                      templeCharityId: selectedItem?.id,
+                      currency: donationForm.currency,
+                      dateToContact: donationForm.date,
+                      timeSlot: donationForm.timeSlot,
+                    }),
+                  });
+                  
+                  if (response.ok) {
+                    const result = await response.json();
+                    Alert.alert(
+                      'Donation Successful!',
+                      'Thank you for your donation. We will contact you soon.',
+                      [
+                        {
+                          text: 'OK',
+                          onPress: () => {
+                            setShowDonationModal(false);
+                            // Reset form
+                            setDonationForm({
+                              name: '',
+                              phone: '',
+                              date: '',
+                              timeSlot: '',
+                              amount: '',
+                              currency: 'Rs'
+                            });
+                            setSelectedDate(new Date());
+                          },
+                        },
+                      ]
+                    );
+                  } else {
+                    const errorData = await response.json();
+                    Alert.alert('Error', errorData.error || 'Failed to submit donation. Please try again.');
+                  }
+                } catch (error) {
+                  console.error('Error submitting donation:', error);
+                  Alert.alert('Error', 'Failed to submit donation. Please try again.');
+                }
+              }}
+            >
+              <Text style={{
+                color: 'white',
+                fontSize: 18,
+                fontWeight: 'bold'
+              }}>
+                Submit Donation
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
+      {/* Date Picker */}
+      {showDatePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display="default"
+          onChange={onDateChange}
+          minimumDate={new Date(Date.now() + 18 * 60 * 60 * 1000)} // 18 hours from now
+        />
+      )}
     </View>
   );
 }
