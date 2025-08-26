@@ -2,13 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 
 const icons = [
   { label: 'My Virtual Temple', image: require('@/assets/images/icons/home page icons/temple.png') },
   { label: 'Puja', image: require('@/assets/images/icons/home page icons/puja.png') },
   { label: 'Donation', image: require('@/assets/images/icons/home page icons/charity.png') },
   { label: 'Mannat', image: require('@/assets/images/icons/home page icons/horoscope.png') },
-  { label: 'Virtual Darshan', image: require('@/assets/images/icons/home page icons/virtual-darshan.png') },
+  { label: 'Divine Music', icon: 'video' },
   { label: 'Puja Guidance', image: require('@/assets/images/icons/home page icons/puja-guidance.png') },
   { label: 'Special Day Puja', image: require('@/assets/images/icons/home page icons/special-day-puja.png') },
   { label: 'Professional Puja', image: require('@/assets/images/icons/home page icons/professional-puja.jpg') },
@@ -38,8 +39,8 @@ export default function HomeIconGrid() {
                 router.push('/screens/puja');
               } else if (item.label === 'Mannat') {
                 router.push('/screens/mannat');
-              } else if (item.label === 'Virtual Darshan') {
-                router.push('/screens/virtual-darshan');
+              } else if (item.label === 'Divine Music') {
+                router.push('/audio-video');
               } else if (item.label === 'Puja Guidance') {
                 router.push('/screens/puja-guidance');
               } else if (item.label === 'Professional Puja') {
@@ -48,7 +49,11 @@ export default function HomeIconGrid() {
             }}
           >
             <View style={styles.iconCircle}>
-              <Image source={item.image} style={styles.iconImage} resizeMode="contain" />
+              {item.image ? (
+                <Image source={item.image} style={styles.iconImage} resizeMode="contain" />
+              ) : item.icon ? (
+                <IconSymbol size={36} name={item.icon} color="#FFA040" />
+              ) : null}
             </View>
             <Text style={styles.label} numberOfLines={2}>{item.label}</Text>
           </TouchableOpacity>
