@@ -10,6 +10,7 @@ const spiritualItems = [
   { label: 'Gods & Godesses', image: require('@/assets/images/icons/home page icons/godsAndGodessesIcon.png') },
   { label: 'Famous Temples', image: require('@/assets/images/icons/home page icons/FamousTemple.png') },
   { label: 'Fasts & Festivals', image: require('@/assets/images/icons/home page icons/Fasts&Festivals.png') },
+  { label: 'Shalokas', image: require('@/assets/images/icons/home page icons/shalokasIcon.png') },
 ];
 
 const astrologyItems = [
@@ -57,6 +58,10 @@ export default function SpiritualAstrologyBlock() {
               }
               if (item.label === 'Fasts & Festivals') {
                 router.push({ pathname: '/screens/fasts-and-festivals' });
+                return;
+              }
+              if (item.label === 'Shalokas') {
+                router.push({ pathname: '/screens/shalokas' });
                 return;
               }
               const path = `/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`;

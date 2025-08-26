@@ -1,8 +1,8 @@
 // GaneshaTint.js
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated, Easing, ScrollView, ActivityIndicator } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated, Easing, ScrollView, ActivityIndicator, Modal } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Canvas, Image as SkiaImage, useImage, ColorMatrix, Group } from "@shopify/react-native-skia";
 import { useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -33,6 +33,8 @@ export default function GaneshaTint() {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
   const [loadingMusicId, setLoadingMusicId] = useState<string | null>(null);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Get device dimensions
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -660,6 +662,9 @@ export default function GaneshaTint() {
       return;
     }
 
+    if (isSaving) return; // Prevent multiple saves
+
+    setIsSaving(true);
     try {
       const templeData = {
         userId: userId,
@@ -706,90 +711,88 @@ export default function GaneshaTint() {
       setTimeout(() => {
         setMessage('');
       }, 2000);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // Handle back button with save confirmation
   const handleBackButton = () => {
-    Alert.alert(
-      'Exit Temple',
-      'Do you want to save your changes before leaving?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: "Don't Save",
-          onPress: () => {
-            // Go back without saving (like Android/iOS back button)
+    console.log('Opening exit modal');
+    setShowExitModal(true);
+  };
+
+  // Handle exit without saving
+  const handleExitWithoutSaving = () => {
+    setShowExitModal(false);
+    router.back();
+  };
+
+  // Handle exit with saving
+  const handleExitWithSaving = async () => {
+    if (isSaving) return; // Prevent multiple saves
+    
+    setIsSaving(true);
+    try {
+      // Save current state before going back
+      const templeData = {
+        userId: userId,
+        templeName: "My Ganesha Temple",
+        templeInformation: {
+          tintColor,
+          tintIntensity,
+          imageSize,
+          imageX,
+          imageY,
+          createdAt: new Date().toISOString()
+        }
+      };
+
+      const response = await fetch(getApiUrl('/api/save-ganesha-temple'), {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(templeData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          setMessage('Temple saved successfully!');
+          setMessageType('success');
+          setTimeout(() => {
+            setMessage('');
+            setMessageType('info');
+            // Go back after showing success message
+            setShowExitModal(false);
             router.back();
-          },
-        },
-        {
-          text: 'Save',
-          onPress: async () => {
-            try {
-              // Save current state before going back
-              const templeData = {
-                userId: userId,
-                templeName: "My Ganesha Temple",
-                templeInformation: {
-                  tintColor,
-                  tintIntensity,
-                  imageSize,
-                  imageX,
-                  imageY,
-                  createdAt: new Date().toISOString()
-                }
-              };
-
-              const response = await fetch(getApiUrl('/api/save-ganesha-temple'), {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify(templeData)
-              });
-
-              if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                  setMessage('Temple saved successfully!');
-                  setMessageType('success');
-                  setTimeout(() => {
-                    setMessage('');
-                    setMessageType('info');
-                    // Go back after showing success message
-                    router.back();
-                  }, 2000);
-                } else {
-                  setMessage('Error saving temple');
-                  setMessageType('error');
-                  setTimeout(() => {
-                    setMessage('');
-                    setMessageType('info');
-                  }, 2000);
-                }
-              } else {
-                setMessage('Error saving temple');
-                setMessageType('error');
-                setTimeout(() => {
-                  setMessage('');
-                  setMessageType('info');
-                }, 2000);
-              }
-            } catch (error) {
-              console.error('Error saving temple:', error);
-              setMessage('Error saving temple');
-              setMessageType('error');
-              setTimeout(() => {
-                setMessage('');
-                setMessageType('info');
-              }, 2000);
-            }
-          },
-        },
-      ]
-    );
+          }, 2000);
+        } else {
+          setMessage('Error saving temple');
+          setMessageType('error');
+          setTimeout(() => {
+            setMessage('');
+            setMessageType('info');
+          }, 2000);
+        }
+      } else {
+        setMessage('Error saving temple');
+        setMessageType('error');
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('info');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error saving temple:', error);
+      setMessage('Error saving temple');
+      setMessageType('error');
+      setTimeout(() => {
+        setMessage('');
+        setMessageType('info');
+      }, 2000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Don't render until image and bells are loaded
@@ -918,28 +921,46 @@ export default function GaneshaTint() {
           style={[styles.iconButton, activePanel === 'size' && styles.activeIconButton]}
           onPress={() => setActivePanel(activePanel === 'size' ? null : 'size')}
         >
-          <Text style={styles.iconText}>📏</Text>
+          <Image 
+            source={require("../../assets/images/icons/otherIcons/scalingIcon.png")}
+            style={styles.iconImage}
+            resizeMode="contain"
+          />
         </TouchableOpacity>
         
         <TouchableOpacity
           style={[styles.iconButton, activePanel === 'position' && styles.activeIconButton]}
           onPress={() => setActivePanel(activePanel === 'position' ? null : 'position')}
         >
-          <Text style={styles.iconText}>📍</Text>
+          <Image 
+            source={require("../../assets/images/icons/otherIcons/positionIcon.png")}
+            style={styles.iconImage}
+            resizeMode="contain"
+          />
         </TouchableOpacity>
         
         <TouchableOpacity
-          style={styles.iconButton}
+          style={[styles.iconButton, isSaving && styles.disabledIconButton]}
           onPress={handleSaveTemple}
+          disabled={isSaving}
         >
-          <Text style={styles.iconText}>💾</Text>
+          {isSaving ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.iconText}>💾</Text>
+          )}
         </TouchableOpacity>
         
         <TouchableOpacity
           style={styles.iconButton}
           onPress={handleBackButton}
         >
-          <Text style={styles.iconText}>⬅️</Text>
+          <Ionicons 
+            name="arrow-undo" 
+            size={31} 
+            color="#fff" 
+            style={{ transform: [{ rotate: '90deg' }] }}
+          />
         </TouchableOpacity>
       </View>
       
@@ -1332,85 +1353,157 @@ export default function GaneshaTint() {
         }
       ]}>
         {activePanel === 'tint' && (
-          <>
-            <View style={[styles.positionContainer, { top: 100 }]}>
-              {["gold", "red", "blue", "green", "purple"].map(color => (
-                <TouchableOpacity
-                  key={color}
-                  style={[
-                    styles.colorButton, 
-                    { backgroundColor: color === "gold" ? "#FFD700" : color },
-                    tintColor === color && styles.activeColorButton
-                  ]}
-                  onPress={() => setTintColor(color)}
-                />
-              ))}
-            </View>
-            
-            <View style={[styles.positionContainer, { top: 180 }]}>
-              <TouchableOpacity
-                style={styles.intensityButton}
-                onPress={() => setTintIntensity(prev => Math.max(0, prev - 0.1))}
-              >
-                <Text style={styles.buttonText}>⬅️</Text>
+          <TouchableOpacity 
+            style={styles.controlPanelOverlay} 
+            activeOpacity={1} 
+            onPress={() => setActivePanel(null)}
+          >
+            <View style={styles.controlPanelContent}>
+              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+                <View style={[styles.positionContainer, { top: 100 }]}>
+                  {["gold", "red", "blue", "green", "purple"].map(color => (
+                    <TouchableOpacity
+                      key={color}
+                      style={[
+                        styles.colorButton, 
+                        { backgroundColor: color === "gold" ? "#FFD700" : color },
+                        tintColor === color && styles.activeColorButton
+                      ]}
+                      onPress={() => setTintColor(color)}
+                    />
+                  ))}
+                </View>
+                
+                <View style={[styles.positionContainer, { top: 180 }]}>
+                  <TouchableOpacity
+                    style={styles.intensityButton}
+                    onPress={() => setTintIntensity(prev => Math.max(0, prev - 0.1))}
+                  >
+                    <Text style={styles.buttonText}>⬅️</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.label}>Intensity: {Math.round(tintIntensity * 100)}%</Text>
+                  <TouchableOpacity
+                    style={styles.intensityButton}
+                    onPress={() => setTintIntensity(prev => Math.min(1, prev + 0.1))}
+                  >
+                    <Text style={styles.buttonText}>➡️</Text>
+                  </TouchableOpacity>
+                </View>
               </TouchableOpacity>
-              <Text style={styles.label}>Intensity: {Math.round(tintIntensity * 100)}%</Text>
-              <TouchableOpacity
-                style={styles.intensityButton}
-                onPress={() => setTintIntensity(prev => Math.min(1, prev + 0.1))}
-              >
-                <Text style={styles.buttonText}>➡️</Text>
-              </TouchableOpacity>
             </View>
-          </>
+          </TouchableOpacity>
         )}
         
         {activePanel === 'size' && (
-          <View style={[styles.positionContainer, { top: 100 }]}>
-            <TouchableOpacity
-              style={styles.intensityButton}
-              onPress={() => setImageSize(prev => Math.max(0.1, prev - 0.1))}
-            >
-              <Text style={styles.buttonText}>⬅️</Text>
-            </TouchableOpacity>
-            <Text style={styles.label}>Size: {Math.round(imageSize * 100)}%</Text>
-            <TouchableOpacity
-              style={styles.intensityButton}
-              onPress={() => setImageSize(prev => Math.min(1.2, prev + 0.1))}
-            >
-              <Text style={styles.buttonText}>➡️</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity 
+            style={styles.controlPanelOverlay} 
+            activeOpacity={1} 
+            onPress={() => setActivePanel(null)}
+          >
+            <View style={styles.controlPanelContent}>
+              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+                <View style={[styles.positionContainer, { top: 100 }]}>
+                  <TouchableOpacity
+                    style={styles.intensityButton}
+                    onPress={() => setImageSize(prev => Math.max(0.1, prev - 0.1))}
+                  >
+                    <Text style={styles.buttonText}>⬅️</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.label}>Size: {Math.round(imageSize * 100)}%</Text>
+                  <TouchableOpacity
+                    style={styles.intensityButton}
+                    onPress={() => setImageSize(prev => Math.min(1.2, prev + 0.1))}
+                  >
+                    <Text style={styles.buttonText}>➡️</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
         )}
         
         {activePanel === 'position' && (
-          <View style={styles.positionContainer}>
-            <TouchableOpacity 
-              style={styles.arrowButton}
-              onPress={() => setImageY(prev => Math.min(100, prev + 10))}
-            >
-              <Text style={styles.arrowText}>⬇️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.arrowButton}
-              onPress={() => setImageY(prev => Math.max(-100, prev - 10))}
-            >
-              <Text style={styles.arrowText}>⬆️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.arrowButton}
-              onPress={() => setImageX(prev => Math.max(-100, prev - 10))}
-            >
-              <Text style={styles.arrowText}>⬅️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.arrowButton}
-              onPress={() => setImageX(prev => Math.min(100, prev + 10))}
-            >
-              <Text style={styles.arrowText}>➡️</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity 
+            style={styles.controlPanelOverlay} 
+            activeOpacity={1} 
+            onPress={() => setActivePanel(null)}
+          >
+            <View style={styles.controlPanelContent}>
+              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+                <View style={styles.positionContainer}>
+                  <TouchableOpacity 
+                    style={styles.arrowButton}
+                    onPress={() => setImageY(prev => Math.min(100, prev + 10))}
+                  >
+                    <Text style={styles.arrowText}>⬇️</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.arrowButton}
+                    onPress={() => setImageY(prev => Math.max(-100, prev - 10))}
+                  >
+                    <Text style={styles.arrowText}>⬆️</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.arrowButton}
+                    onPress={() => setImageX(prev => Math.max(-100, prev - 10))}
+                  >
+                    <Text style={styles.arrowText}>⬅️</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.arrowButton}
+                    onPress={() => setImageX(prev => Math.min(100, prev + 10))}
+                  >
+                    <Text style={styles.arrowText}>➡️</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
         )}
+
+        {/* Exit Modal */}
+        <Modal
+          visible={showExitModal}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setShowExitModal(false)}
+        >
+          <TouchableOpacity 
+            style={styles.exitModalOverlay} 
+            activeOpacity={1} 
+            onPress={() => setShowExitModal(false)}
+          >
+            <View style={styles.exitModalContent}>
+              <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()}>
+                <Text style={styles.exitModalTitle}>Exit Temple</Text>
+                <Text style={styles.exitModalMessage}>Do you want to save your changes before leaving?</Text>
+                
+                <View style={styles.exitModalButtons}>
+                  <TouchableOpacity 
+                    style={[styles.exitModalButton, styles.cancelButton]}
+                    onPress={() => setShowExitModal(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[styles.exitModalButton, styles.dontSaveButton]}
+                    onPress={handleExitWithoutSaving}
+                  >
+                    <Text style={styles.dontSaveButtonText}>Don't Save</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={[styles.exitModalButton, styles.saveButton]}
+                    onPress={handleExitWithSaving}
+                  >
+                    <Text style={styles.saveButtonText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </View>
     </View>
   );
@@ -1498,8 +1591,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFD700',
     borderColor: 'white',
   },
+  disabledIconButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    opacity: 0.6,
+  },
   iconText: {
     fontSize: 24,
+    transform: [{ rotate: '90deg' }],
+  },
+  iconImage: {
+    width: 29,
+    height: 29,
     transform: [{ rotate: '90deg' }],
   },
   positionContainer: {
@@ -1893,6 +1996,107 @@ const styles = StyleSheet.create({
   },
   musicPlayButton: {
     padding: 8,
+  },
+
+  // Exit Modal Styles
+  exitModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2000,
+    flex: 1,
+  },
+  exitModalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    marginHorizontal: 20,
+    width: 400,
+    minHeight: 200,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 2,
+    borderColor: 'red',
+    transform: [{ rotate: '90deg' }],
+  },
+  exitModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  exitModalMessage: {
+    fontSize: 16,
+    color: '#000',
+    marginBottom: 24,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  exitModalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  exitModalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelButton: {
+    backgroundColor: '#f0f0f0',
+  },
+  dontSaveButton: {
+    backgroundColor: '#ff9800',
+  },
+  saveButton: {
+    backgroundColor: '#4CAF50',
+  },
+  cancelButtonText: {
+    color: '#666',
+    fontWeight: '600',
+  },
+  dontSaveButtonText: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: '600',
+  },
+
+  // Control Panel Overlay Styles
+  controlPanelOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1500,
+    width: '100%',
+    height: '100%',
+  },
+  controlPanelContent: {
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
 
 });
