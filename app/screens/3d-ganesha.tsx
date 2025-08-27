@@ -25,6 +25,7 @@ export default function GaneshaTint() {
   const [showFlowerModal, setShowFlowerModal] = useState(false);
   const [flowers, setFlowers] = useState<any[]>([]);
   const [isFlowerAnimationRunning, setIsFlowerAnimationRunning] = useState(false);
+  const [isBellAnimationRunning, setIsBellAnimationRunning] = useState(false);
   const [showMusicModal, setShowMusicModal] = useState(false);
   const [musicFiles, setMusicFiles] = useState<any[]>([]);
   const [musicLoading, setMusicLoading] = useState(false);
@@ -199,6 +200,10 @@ export default function GaneshaTint() {
   
   // Function to trigger bell swing and sound (matching daily puja exactly)
   const triggerBells = async () => {
+    if (isBellAnimationRunning) return; // Prevent multiple animations
+    
+    setIsBellAnimationRunning(true);
+    
     try {
       // Play first bell sound
       if (bellSound.current) {
@@ -299,6 +304,11 @@ export default function GaneshaTint() {
           ]).start();
         }, 200);
       }, 2500);
+      
+      // Reset bell animation state after complete sequence
+      setTimeout(() => {
+        setIsBellAnimationRunning(false);
+      }, 3500); // Total animation time: 2.5s + 1s for final swings
       
     } catch (error) {
       console.error('Error triggering bells:', error);
@@ -858,9 +868,42 @@ export default function GaneshaTint() {
         resizeMode="contain"
       />
       
+      {/* Standing Lamps - Left Side */}
+      <Image
+        source={require("../../assets/images/temple/standingLampIcon.png")}
+        style={styles.standingLampTopImage}
+        resizeMode="contain"
+      />
+      
+      <Image
+        source={require("../../assets/images/temple/standingLampIcon.png")}
+        style={styles.standingLampBottomImage}
+        resizeMode="contain"
+      />
+      
       <Canvas style={[styles.canvas, { width: screenWidth, height: screenHeight }]}>
         <Group>
           <ColorMatrix matrix={getColorMatrix(tintColor, tintIntensity)} />
+          {/* Shadow Layer */}
+          <Group>
+            <ColorMatrix matrix={[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]} />
+            <SkiaImage
+              image={image}
+              x={imageDims.x - 12}
+              y={imageDims.y - 6}
+              width={imageDims.width}
+              height={imageDims.height}
+              transform={[
+                { translateX: imageDims.x - 12 + imageDims.width / 2 },
+                { translateY: imageDims.y - 6 + imageDims.height / 2 },
+                { rotate: Math.PI / 2 }, // Exactly 90 degrees
+                { translateX: -(imageDims.x - 12 + imageDims.width / 2) },
+                { translateY: -(imageDims.y - 6 + imageDims.height / 2) }
+              ]}
+              opacity={0.3}
+            />
+          </Group>
+          {/* Main Ganesha Image */}
           <SkiaImage
             image={image}
             x={imageDims.x}
@@ -981,8 +1024,19 @@ export default function GaneshaTint() {
           <Text style={[styles.bottomIconText, { transform: [{ rotate: '90deg' }] }]}>🎵</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.bottomIconButton} onPress={triggerBells}>
-          <Text style={[styles.bottomIconText, { transform: [{ rotate: '90deg' }] }]}>🔔</Text>
+        <TouchableOpacity 
+          style={[
+            styles.bottomIconButton, 
+            isBellAnimationRunning && styles.disabledBottomIconButton
+          ]} 
+          onPress={triggerBells}
+          disabled={isBellAnimationRunning}
+        >
+          <Text style={[
+            styles.bottomIconText, 
+            { transform: [{ rotate: '90deg' }] },
+            isBellAnimationRunning && styles.disabledBottomIconText
+          ]}>🔔</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style={styles.bottomIconButton}>
@@ -993,8 +1047,18 @@ export default function GaneshaTint() {
           />
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.bottomIconButton} onPress={() => setShowFlowerModal(!showFlowerModal)}>
-          <Text style={styles.bottomIconText}>🌸</Text>
+        <TouchableOpacity 
+          style={[
+            styles.bottomIconButton, 
+            isFlowerAnimationRunning && styles.disabledBottomIconButton
+          ]} 
+          onPress={() => setShowFlowerModal(!showFlowerModal)}
+          disabled={isFlowerAnimationRunning}
+        >
+          <Text style={[
+            styles.bottomIconText,
+            isFlowerAnimationRunning && styles.disabledBottomIconText
+          ]}>🌸</Text>
         </TouchableOpacity>
       </View>
       
@@ -1015,16 +1079,17 @@ export default function GaneshaTint() {
                 style={styles.flowerOption} 
                 onPress={() => dropFlowers('hibiscus')}
               >
+                <Text style={styles.flowerOptionLabel}>Hibiscus</Text>
                 <View style={styles.flowerIconContainer}>
                   <Text style={styles.flowerOptionEmoji}>🌺</Text>
                 </View>
-                <Text style={styles.flowerOptionLabel}>Hibiscus</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.flowerOption} 
                 onPress={() => dropFlowers('redRose')}
               >
+                <Text style={styles.flowerOptionLabel}>Red Rose</Text>
                 <View style={styles.flowerIconContainer}>
                   <Image 
                     source={require("../../assets/images/icons/own temple/rose.png")}
@@ -1032,13 +1097,13 @@ export default function GaneshaTint() {
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={styles.flowerOptionLabel}>Red Rose</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.flowerOption} 
                 onPress={() => dropFlowers('whiteRose')}
               >
+                <Text style={styles.flowerOptionLabel}>White Rose</Text>
                 <View style={styles.flowerIconContainer}>
                   <Image 
                     source={require("../../assets/images/icons/own temple/whiterose.png")}
@@ -1046,43 +1111,43 @@ export default function GaneshaTint() {
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={styles.flowerOptionLabel}>White Rose</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.flowerOption} 
                 onPress={() => dropFlowers('sunflower')}
               >
+                <Text style={styles.flowerOptionLabel}>Sunflower</Text>
                 <View style={styles.flowerIconContainer}>
                   <Text style={styles.flowerOptionEmoji}>🌻</Text>
                 </View>
-                <Text style={styles.flowerOptionLabel}>Sunflower</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.flowerOption} 
                 onPress={() => dropFlowers('marigold')}
               >
+                <Text style={styles.flowerOptionLabel}>Marigold</Text>
                 <View style={styles.flowerIconContainer}>
                   <Text style={styles.flowerOptionEmoji}>🌼</Text>
                 </View>
-                <Text style={styles.flowerOptionLabel}>Marigold</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.flowerOption} 
                 onPress={() => dropFlowers('belPatra')}
               >
+                <Text style={styles.flowerOptionLabel}>Bel Patra</Text>
                 <View style={styles.flowerIconContainer}>
                   <Text style={styles.flowerOptionEmoji}>🍃</Text>
                 </View>
-                <Text style={styles.flowerOptionLabel}>Bel Patra</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.flowerOption} 
                 onPress={() => dropFlowers('jasmine')}
               >
+                <Text style={styles.flowerOptionLabel}>Jasmine</Text>
                 <View style={styles.flowerIconContainer}>
                   <Image 
                     source={require("../../assets/images/icons/own temple/jasmine.png")}
@@ -1090,13 +1155,13 @@ export default function GaneshaTint() {
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={styles.flowerOptionLabel}>Jasmine</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.flowerOption} 
                 onPress={() => dropFlowers('yellowShevanthi')}
               >
+                <Text style={styles.flowerOptionLabel}>Yellow Shevanthi</Text>
                 <View style={styles.flowerIconContainer}>
                   <Image 
                     source={require("../../assets/images/icons/own temple/YellowShevanthi.png")}
@@ -1104,13 +1169,13 @@ export default function GaneshaTint() {
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={styles.flowerOptionLabel}>Yellow Shevanthi</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
                 style={styles.flowerOption} 
                 onPress={() => dropFlowers('whiteShevanthi')}
               >
+                <Text style={styles.flowerOptionLabel}>White Shevanthi</Text>
                 <View style={styles.flowerIconContainer}>
                   <Image 
                     source={require("../../assets/images/icons/own temple/WhiteShevanthi.png")}
@@ -1118,7 +1183,6 @@ export default function GaneshaTint() {
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={styles.flowerOptionLabel}>White Shevanthi</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
@@ -1549,6 +1613,22 @@ const styles = StyleSheet.create({
     height: 160, // 2x original size (80 * 2)
     zIndex: 1, // Above background, below Ganesha
   },
+  standingLampTopImage: {
+    position: 'absolute',
+    left: -10, // 10px from left edge
+    top: 150, // Same height as top temple bell
+    width: 160, // 2x original size (80 * 2)
+    height: 160, // 2x original size (80 * 2)
+    zIndex: 1, // Above background, below Ganesha
+  },
+  standingLampBottomImage: {
+    position: 'absolute',
+    left: -10, // 10px from left edge
+    bottom: 150, // Same height as bottom temple bell
+    width: 160, // 2x original size (80 * 2)
+    height: 160, // 2x original size (80 * 2)
+    zIndex: 1, // Above background, below Ganesha
+  },
   canvas: {
     flex: 1,
     zIndex: 10, // Above Garland
@@ -1716,6 +1796,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: 'white',
   },
+  disabledBottomIconButton: {
+    opacity: 0.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  disabledBottomIconText: {
+    opacity: 0.5,
+  },
   bottomIconImage: {
     width: 50,
     height: 50,
@@ -1763,14 +1850,15 @@ const styles = StyleSheet.create({
     minWidth: '100%',
   },
   flowerOption: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 10,
+    marginHorizontal: 5,
     justifyContent: 'center',
   },
   flowerIconContainer: {
-    width: 45, // 25% smaller: 60 * 0.75 = 45
-    height: 45, // 25% smaller: 60 * 0.75 = 45
-    borderRadius: 22.5, // 25% smaller: 30 * 0.75 = 22.5
+    width: 35,
+    height: 35,
+    borderRadius: 17.5,
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1779,11 +1867,11 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   flowerOptionEmoji: {
-    fontSize: 22.5, // 25% smaller: 30 * 0.75 = 22.5
+    fontSize: 18,
   },
   flowerOptionImage: {
-    width: 30, // 25% smaller: 40 * 0.75 = 30
-    height: 30, // 25% smaller: 40 * 0.75 = 30
+    width: 25,
+    height: 25,
     resizeMode: 'contain',
   },
   flowerOptionLabel: {
@@ -1791,6 +1879,8 @@ const styles = StyleSheet.create({
     fontSize: 9, // 25% smaller: 12 * 0.75 = 9
     textAlign: 'center',
     fontWeight: '500',
+    transform: [{ rotate: '90deg' }],
+    marginRight: -2,
   },
   closeFlowerModalButton: {
     backgroundColor: '#FF6A00',
