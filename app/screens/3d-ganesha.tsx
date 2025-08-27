@@ -1,6 +1,6 @@
 // GaneshaTint.js
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated, Easing, ScrollView, ActivityIndicator, Modal } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated, Easing, ScrollView, ActivityIndicator, Modal, AppState } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Canvas, Image as SkiaImage, useImage, ColorMatrix, Group } from "@shopify/react-native-skia";
@@ -29,7 +29,7 @@ export default function GaneshaTint() {
   const [showMusicModal, setShowMusicModal] = useState(false);
   const [musicFiles, setMusicFiles] = useState<any[]>([]);
   const [musicLoading, setMusicLoading] = useState(false);
-  const [selectedMusicFilter, setSelectedMusicFilter] = useState('All');
+
   const [ganeshaOnly, setGaneshaOnly] = useState(true);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
@@ -46,6 +46,42 @@ export default function GaneshaTint() {
   
   // Bell sound reference
   const bellSound = useRef<Audio.Sound | null>(null);
+
+  // Configure audio session for background playback
+  useEffect(() => {
+    const configureAudioSession = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+      } catch (error) {
+        console.error('Error configuring audio session:', error);
+      }
+    };
+
+    configureAudioSession();
+  }, []);
+
+  // Handle app state changes to maintain audio playback
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active' && sound && currentlyPlaying) {
+        // App came back to foreground, ensure audio is still playing
+        sound.getStatusAsync().then((status) => {
+          if (status.isLoaded && !status.isPlaying) {
+            sound.playAsync();
+          }
+        });
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [sound, currentlyPlaying]);
 
   // Preload bell sound and create one-time swing animation
   useEffect(() => {
@@ -204,6 +240,23 @@ export default function GaneshaTint() {
     
     setIsBellAnimationRunning(true);
     
+    // Store current music state and stop music if playing
+    let wasMusicPlaying = false;
+    let currentMusicFile = null;
+    
+    if (sound && currentlyPlaying) {
+      try {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded && status.isPlaying) {
+          wasMusicPlaying = true;
+          currentMusicFile = currentlyPlaying;
+          await sound.pauseAsync(); // Pause instead of stop to maintain position
+        }
+      } catch (error) {
+        console.error('Error pausing music for bells:', error);
+      }
+    }
+    
     try {
       // Play first bell sound
       if (bellSound.current) {
@@ -305,9 +358,21 @@ export default function GaneshaTint() {
         }, 200);
       }, 2500);
       
-      // Reset bell animation state after complete sequence
-      setTimeout(() => {
+      // Reset bell animation state and restart music if it was playing
+      setTimeout(async () => {
         setIsBellAnimationRunning(false);
+        
+        // Restart music if it was playing before bells
+        if (wasMusicPlaying && sound && currentMusicFile === currentlyPlaying) {
+          try {
+            const status = await sound.getStatusAsync();
+            if (status.isLoaded && !status.isPlaying) {
+              await sound.playAsync();
+            }
+          } catch (error) {
+            console.error('Error restarting music after bells:', error);
+          }
+        }
       }, 3500); // Total animation time: 2.5s + 1s for final swings
       
     } catch (error) {
@@ -1279,7 +1344,7 @@ export default function GaneshaTint() {
                 </TouchableOpacity>
               </View>
 
-              {/* Ganesha Toggle */}
+              {/* Ganesha Toggle and Stop Music Button */}
               <View style={styles.ganeshaToggleContainer}>
                 <TouchableOpacity 
                   style={styles.toggleItem}
@@ -1300,32 +1365,23 @@ export default function GaneshaTint() {
                   </LinearGradient>
                   <Text style={styles.toggleLabel}>Ganesha Only</Text>
                 </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[
+                    styles.stopMusicButton,
+                    currentlyPlaying ? styles.stopMusicButtonActive : styles.stopMusicButtonDisabled
+                  ]}
+                  onPress={stopCurrentMusic}
+                  disabled={!currentlyPlaying}
+                >
+                  <Text style={[
+                    styles.stopMusicButtonText,
+                    currentlyPlaying ? styles.stopMusicButtonTextActive : styles.stopMusicButtonTextDisabled
+                  ]}>⏹️ Stop Music</Text>
+                </TouchableOpacity>
               </View>
 
-              {/* Filter Buttons */}
-              <View style={styles.musicFilterContainer}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.musicFilterContent}
-                >
-                  {['All', 'Aarti', 'Bhajan', 'Chalisa', 'Paath / Strotam', 'Famous'].map((filter) => (
-                    <TouchableOpacity
-                      key={filter}
-                      style={[
-                        styles.musicFilterButton,
-                        selectedMusicFilter === filter && styles.musicFilterButtonActive
-                      ]}
-                      onPress={() => setSelectedMusicFilter(filter)}
-                    >
-                      <Text style={[
-                        styles.musicFilterText,
-                        selectedMusicFilter === filter && styles.musicFilterTextActive
-                      ]}>{filter}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
+
 
               {/* Music List */}
               <ScrollView style={styles.musicListContainer} showsVerticalScrollIndicator={false}>
@@ -1354,13 +1410,7 @@ export default function GaneshaTint() {
                         if (!isGanesha) return false;
                       }
                       
-                      // Apply category filter
-                      if (selectedMusicFilter !== 'All') {
-                        if (selectedMusicFilter === 'Famous') {
-                          return file.famous === true;
-                        }
-                        return file.Type === selectedMusicFilter;
-                      }
+
                       
                       return true;
                     })
@@ -1912,8 +1962,8 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
     zIndex: 2000,
   },
   musicModalOverlayTouchable: {
@@ -1944,7 +1994,7 @@ const styles = StyleSheet.create({
   musicModalTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FF6A00',
   },
   musicModalCloseButton: {
     backgroundColor: '#FF6A00',
@@ -1973,7 +2023,10 @@ const styles = StyleSheet.create({
   ganeshaToggleContainer: {
     width: '100%',
     marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
   toggleItem: {
     alignItems: 'center',
@@ -2007,6 +2060,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#333',
+  },
+  stopMusicButton: {
+    marginTop: 5,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+  },
+  stopMusicButtonActive: {
+    backgroundColor: '#FF6A00',
+    borderColor: '#FF6A00',
+  },
+  stopMusicButtonDisabled: {
+    backgroundColor: '#f0f0f0',
+    borderColor: '#ddd',
+  },
+  stopMusicButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  stopMusicButtonTextActive: {
+    color: 'white',
+  },
+  stopMusicButtonTextDisabled: {
+    color: '#999',
   },
   musicFilterContainer: {
     width: '100%',

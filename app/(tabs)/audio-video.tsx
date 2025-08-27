@@ -54,6 +54,7 @@ export default function AudioVideoScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
 
   useEffect(() => {
     // Configure audio session for background playback
@@ -221,6 +222,7 @@ export default function AudioVideoScreen() {
         
         setSound(newSound);
         setIsPlaying(true); // Set playing state to true
+        setCurrentlyPlaying(media.avld);
         setIsLoading(false);
       } else {
         throw new Error('Failed to get presigned URL from API');
@@ -264,6 +266,25 @@ export default function AudioVideoScreen() {
       }
     } catch (error) {
       console.error('❌ [AUDIO-VIDEO] Error stopping audio:', error);
+    }
+  };
+
+  // Function to stop current music (for global music control)
+  const stopCurrentMusic = async () => {
+    try {
+      if (sound) {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded) {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        }
+      }
+      setSound(null);
+      setIsPlaying(false);
+      setCurrentlyPlaying(null);
+      setCurrentMedia(null);
+    } catch (error) {
+      console.error('❌ [AUDIO-VIDEO] Error stopping current music:', error);
     }
   };
 
@@ -470,6 +491,20 @@ export default function AudioVideoScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Stop Music Button */}
+        <TouchableOpacity 
+          style={[
+            styles.stopMusicButton,
+            currentlyPlaying ? styles.stopMusicButtonActive : styles.stopMusicButtonDisabled
+          ]}
+          onPress={stopCurrentMusic}
+          disabled={!currentlyPlaying}
+        >
+          <Text style={[
+            styles.stopMusicButtonText,
+            currentlyPlaying ? styles.stopMusicButtonTextActive : styles.stopMusicButtonTextDisabled
+          ]}>⏹️ Stop Music</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -1083,6 +1118,35 @@ const styles = StyleSheet.create({
   filterButtonTextActive: {
     color: '#fff',
     fontWeight: '600',
+  },
+  stopMusicButton: {
+    marginTop: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+    alignSelf: 'center',
+  },
+  stopMusicButtonActive: {
+    backgroundColor: '#FF6A00',
+    borderColor: '#FF6A00',
+  },
+  stopMusicButtonDisabled: {
+    backgroundColor: '#f0f0f0',
+    borderColor: '#ddd',
+  },
+  stopMusicButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  stopMusicButtonTextActive: {
+    color: 'white',
+  },
+  stopMusicButtonTextDisabled: {
+    color: '#999',
   },
   header: {
     backgroundColor: '#fff',

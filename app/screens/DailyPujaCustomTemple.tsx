@@ -3700,27 +3700,6 @@ export default function DailyPujaCustomTemple() {
                 <Text style={styles.musicModalTitle}>🎵 Divine Music</Text>
                 <View style={styles.musicModalHeaderButtons}>
                   <TouchableOpacity 
-                    style={styles.musicModalAutoPlayButton}
-                    onPress={() => setAutoPlayEnabled(!autoPlayEnabled)}
-                  >
-                    <MaterialCommunityIcons 
-                      name={autoPlayEnabled ? "repeat" : "repeat-off"} 
-                      size={20} 
-                      color={autoPlayEnabled ? "#FF6A00" : "#ccc"} 
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.musicModalRefreshButton}
-                    onPress={fetchMusicFiles}
-                    disabled={musicLoading}
-                  >
-                    <MaterialCommunityIcons 
-                      name="refresh" 
-                      size={20} 
-                      color={musicLoading ? "#ccc" : "#FF6A00"} 
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
                     style={styles.musicModalCloseButton}
                     onPress={() => {
                       setShowMusicModal(false);
@@ -3766,11 +3745,26 @@ export default function DailyPujaCustomTemple() {
                     >
                       <Text style={[
                         styles.musicFilterText,
-                        selectedMusicFilter === filter && styles.musicFilterTextActive
+                        selectedMusicFilter === filter && styles.musicFilterButtonActive
                       ]}>{filter}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
+                
+                {/* Stop Music Button */}
+                <TouchableOpacity 
+                  style={[
+                    styles.stopMusicButton,
+                    currentlyPlaying ? styles.stopMusicButtonActive : styles.stopMusicButtonDisabled
+                  ]}
+                  onPress={stopCurrentMusic}
+                  disabled={!currentlyPlaying}
+                >
+                  <Text style={[
+                    styles.stopMusicButtonText,
+                    currentlyPlaying ? styles.stopMusicButtonTextActive : styles.stopMusicButtonTextDisabled
+                  ]}>⏹️ Stop Music</Text>
+                </TouchableOpacity>
               </View>
 
               {/* Music List */}
@@ -4301,7 +4295,7 @@ const styles = StyleSheet.create({
          musicModalTitle: {
            fontSize: 24,
            fontWeight: 'bold',
-           color: '#333',
+           color: '#FF6A00',
          },
          musicModalCloseButton: {
            width: 32,
@@ -4361,6 +4355,35 @@ const styles = StyleSheet.create({
          musicFilterTextActive: {
            color: '#fff',
            fontWeight: '600',
+         },
+         stopMusicButton: {
+           marginTop: 10,
+           paddingHorizontal: 20,
+           paddingVertical: 10,
+           borderRadius: 8,
+           borderWidth: 2,
+           alignItems: 'center',
+           justifyContent: 'center',
+           minWidth: 120,
+           alignSelf: 'center',
+         },
+         stopMusicButtonActive: {
+           backgroundColor: '#FF6A00',
+           borderColor: '#FF6A00',
+         },
+         stopMusicButtonDisabled: {
+           backgroundColor: '#f0f0f0',
+           borderColor: '#ddd',
+         },
+         stopMusicButtonText: {
+           fontSize: 14,
+           fontWeight: '600',
+         },
+         stopMusicButtonTextActive: {
+           color: 'white',
+         },
+         stopMusicButtonTextDisabled: {
+           color: '#999',
          },
          musicListContainer: {
            flex: 1,
