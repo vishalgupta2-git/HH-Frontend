@@ -704,13 +704,13 @@ const styles = StyleSheet.create({
   },
      titleContainer: {
      flexDirection: 'row',
-     alignItems: 'center',
-     justifyContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
      marginBottom: 20,
-   },
+  },
        sectionTitle: {
-      fontSize: 24,
-      fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: 'bold',
       color: '#FFA040',
       textAlign: 'center',
     },
@@ -1107,7 +1107,7 @@ const styles = StyleSheet.create({
      color: '#333',
      textAlign: 'center',
      lineHeight: 24,
-   },
-});
+  },
+}); 
 
 export default PujaGuidanceScreen; 

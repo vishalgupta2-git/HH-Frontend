@@ -233,8 +233,8 @@ export default function MannatScreen() {
 
   // Render empty state
   if (filteredData.length === 0 && !loading) {
-    return (
-      <View style={styles.container}>
+  return (
+    <View style={styles.container}>
         <HomeHeader 
           searchPlaceholder="Search for 'Temples'" 
           showDailyPujaButton={false} 
@@ -247,7 +247,7 @@ export default function MannatScreen() {
               : 'No temples or charities available'
             }
           </Text>
-        </View>
+      </View>
       </View>
     );
   }

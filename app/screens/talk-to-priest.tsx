@@ -632,9 +632,9 @@ const TalkToPriestScreen: React.FC = () => {
           </TouchableOpacity>
         </Modal>
           </ScrollView>
-        </View>
       </View>
-    );
+    </View>
+  );
   };
 
 const styles = StyleSheet.create({

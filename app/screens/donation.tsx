@@ -836,12 +836,12 @@ export default function DonationScreen() {
             {/* Donate Button */}
             <TouchableOpacity 
               style={{
-                backgroundColor: '#FF6A00',
-                paddingVertical: 15,
-                paddingHorizontal: 30,
-                borderRadius: 8,
-                alignItems: 'center',
-                marginBottom: 20
+              backgroundColor: '#FF6A00',
+              paddingVertical: 15,
+              paddingHorizontal: 30,
+              borderRadius: 8,
+              alignItems: 'center',
+              marginBottom: 20
               }}
               onPress={() => setShowDonationModal(true)}
             >
@@ -880,44 +880,44 @@ export default function DonationScreen() {
                 </View>
               ) : modalImages.length > 0 ? (
                 <ScrollView 
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{
-                      paddingRight: 20
-                    }}
-                  >
-                    {modalImages.map((image, index) => (
-                      <TouchableOpacity 
-                        key={index}
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{
+                    paddingRight: 20
+                  }}
+                >
+                  {modalImages.map((image, index) => (
+                    <TouchableOpacity 
+                      key={index}
+                      style={{
+                        marginRight: 15,
+                        borderRadius: 10,
+                        overflow: 'hidden',
+                        alignItems: 'center'
+                      }}
+                      onPress={() => handleImageClick(index)}
+                    >
+                      <Image
+                        source={{ uri: image.url }}
                         style={{
-                          marginRight: 15,
-                          borderRadius: 10,
-                          overflow: 'hidden',
-                          alignItems: 'center'
+                          width: 120,
+                          height: 120,
+                          borderRadius: 10
                         }}
-                        onPress={() => handleImageClick(index)}
-                      >
-                        <Image
-                          source={{ uri: image.url }}
-                          style={{
-                            width: 120,
-                            height: 120,
-                            borderRadius: 10
-                          }}
-                          resizeMode="cover"
-                        />
-                        <Text style={{
-                          marginTop: 8,
-                          fontSize: 12,
-                          color: '#666',
-                          textAlign: 'center',
-                          maxWidth: 120
-                        }} numberOfLines={2}>
-                          {image.key.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'Image'}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
+                        resizeMode="cover"
+                      />
+                      <Text style={{
+                        marginTop: 8,
+                        fontSize: 12,
+                        color: '#666',
+                        textAlign: 'center',
+                        maxWidth: 120
+                      }} numberOfLines={2}>
+                        {image.key.split('/').pop()?.replace(/\.[^/.]+$/, '') || 'Image'}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               ) : (
                 <View style={{
                   alignItems: 'center',
@@ -1098,7 +1098,7 @@ export default function DonationScreen() {
               >
                 <Text style={{ fontSize: 20, color: '#666' }}>✕</Text>
               </TouchableOpacity>
-            </View>
+    </View>
             
             <Text style={{
               fontSize: 16,

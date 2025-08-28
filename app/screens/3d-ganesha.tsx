@@ -1,6 +1,6 @@
 // GaneshaTint.js
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated, Easing, ScrollView, ActivityIndicator, Modal, AppState } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, Alert, Image, Animated, Easing, ScrollView, ActivityIndicator, Modal, AppState, PanResponder } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Canvas, Image as SkiaImage, useImage, ColorMatrix, Group } from "@shopify/react-native-skia";
@@ -29,6 +29,11 @@ export default function GaneshaTint() {
   const [showMusicModal, setShowMusicModal] = useState(false);
   const [musicFiles, setMusicFiles] = useState<any[]>([]);
   const [musicLoading, setMusicLoading] = useState(false);
+  const [showThali, setShowThali] = useState(false);
+  const [thaliPosition, setThaliPosition] = useState({ x: 0, y: 0 });
+  const [thaliScale] = useState(new Animated.Value(1));
+  const thaliPan = useRef(new Animated.ValueXY()).current;
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [ganeshaOnly, setGaneshaOnly] = useState(true);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -46,6 +51,100 @@ export default function GaneshaTint() {
   
   // Bell sound reference
   const bellSound = useRef<Audio.Sound | null>(null);
+
+  // Thali interaction functions
+  const handleThaliPress = () => {
+    setShowThali(!showThali);
+    if (!showThali) {
+      // Center the thali when first shown
+      setThaliPosition({ x: 0, y: 0 });
+      
+      // Add entrance animation
+      thaliScale.setValue(0);
+      Animated.spring(thaliScale, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 8,
+      }).start();
+    }
+  };
+
+  const handleThaliLongPress = () => {
+    // Reset thali position to center
+    setThaliPosition({ x: 0, y: 0 });
+    thaliPan.setValue({ x: 0, y: 0 });
+  };
+
+  const handleThaliTap = () => {
+    // Simple tap effect - move thali slightly
+    const randomX = (Math.random() - 0.5) * 30;
+    const randomY = (Math.random() - 0.5) * 30;
+    
+    setThaliPosition(prev => ({
+      x: prev.x + randomX,
+      y: prev.y + randomY
+    }));
+    
+    // Add a subtle bounce animation
+    Animated.sequence([
+      Animated.timing(thaliScale, {
+        toValue: 1.1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(thaliScale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  // Create PanResponder for thali dragging
+  const thaliPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: () => {
+        // Start of drag - start long press timer
+        longPressTimer.current = setTimeout(() => {
+          handleThaliLongPress();
+        }, 500); // 500ms for long press
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        // If moving, cancel long press timer
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
+        
+        // Handle the drag movement
+        Animated.event(
+          [null, { dx: thaliPan.x, dy: thaliPan.y }],
+          { useNativeDriver: false }
+        )(evt, gestureState);
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        // Cancel long press timer
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
+        
+        // Check if it was a tap (very small movement)
+        if (Math.abs(gestureState.dx) < 5 && Math.abs(gestureState.dy) < 5) {
+          handleThaliTap();
+        }
+      },
+      onPanResponderTerminate: () => {
+        // Cancel long press timer
+        if (longPressTimer.current) {
+          clearTimeout(longPressTimer.current);
+          longPressTimer.current = null;
+        }
+      },
+    })
+  ).current;
 
   // Configure audio session for background playback
   useEffect(() => {
@@ -1104,7 +1203,10 @@ export default function GaneshaTint() {
           ]}>🔔</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.bottomIconButton}>
+        <TouchableOpacity 
+          style={styles.bottomIconButton}
+          onPress={handleThaliPress}
+        >
           <Image 
             source={require("../../assets/images/icons/own temple/PujaThali1.png")}
             style={styles.bottomIconImage}
@@ -1322,6 +1424,55 @@ export default function GaneshaTint() {
             </ScrollView>
           </View>
         </TouchableOpacity>
+      )}
+      
+      {/* Interactive Thali */}
+      {showThali && (
+        <View style={styles.thaliContainer}>
+          <Animated.View
+            style={[
+              styles.interactiveThali,
+              {
+                transform: [
+                  { translateX: thaliPosition.x },
+                  { translateY: thaliPosition.y },
+                  { scale: thaliScale }
+                ]
+              }
+            ]}
+          >
+            <Animated.View
+              style={[
+                styles.thaliTouchArea,
+                {
+                  transform: thaliPan.getTranslateTransform(),
+                }
+              ]}
+              {...thaliPanResponder.panHandlers}
+            >
+              <Image 
+                source={require("../../assets/images/icons/own temple/PujaThali-rotated.png")}
+                style={styles.interactiveThaliImage}
+                resizeMode="contain"
+              />
+            </Animated.View>
+          </Animated.View>
+          
+          {/* Instructions text */}
+          <View style={styles.thaliInstructions}>
+            <Text style={styles.thaliInstructionsText}>
+              Tap to move • Long press to center • Drag to reposition
+            </Text>
+          </View>
+          
+          {/* Close button for thali */}
+          <TouchableOpacity 
+            style={styles.thaliCloseButton}
+            onPress={() => setShowThali(false)}
+          >
+            <Text style={styles.thaliCloseButtonText}>✕</Text>
+          </TouchableOpacity>
+        </View>
       )}
       
       {/* Music Modal */}
@@ -2270,6 +2421,73 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
+  },
+
+  // Interactive Thali Styles
+  thaliContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1500,
+    pointerEvents: 'box-none',
+  },
+  interactiveThali: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 120,
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1501,
+  },
+  thaliTouchArea: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  interactiveThaliImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 60,
+  },
+  thaliCloseButton: {
+    position: 'absolute',
+    top: 100,
+    right: 50,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 0, 0, 0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1502,
+  },
+  thaliCloseButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  thaliInstructions: {
+    position: 'absolute',
+    bottom: 200,
+    left: 20,
+    right: 20,
+    alignItems: 'center',
+    zIndex: 1502,
+  },
+  thaliInstructionsText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
 
 });
