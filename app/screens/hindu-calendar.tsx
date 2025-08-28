@@ -121,7 +121,7 @@ const hinduMonths: HinduMonth[] = [
     endDate: new Date(2026, 2, 3),
     festivals: [
       { name: 'Maha Shivaratri', date: 'Feb 15', description: 'Mahadev Shiv Ji' },
-      { name: 'Holika Dahan', date: 'Mar 3', description: '' },
+      { name: 'Holika Dahan', date: 'Mar 3', description: 'Shri Krishna' },
       { name: 'Holi (Rangotsav)', date: 'Mar 4', description: 'Shri Krishna' }
     ]
   }
@@ -171,28 +171,55 @@ const HinduCalendarScreen: React.FC = () => {
       };
     });
     
-    // Add all other festivals from hinduMonths
-    hinduMonths.forEach(month => {
-      month.festivals.forEach(festival => {
-        const [monthName, day] = festival.date.split(' ');
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthIndex = monthNames.indexOf(monthName);
-        const year = monthIndex >= 7 ? 2025 : 2026; // Aug-Sep 2025, rest 2026
-        
-        const dateKey = `${year}-${(monthIndex + 1).toString().padStart(2, '0')}-${day.padStart(2, '0')}`;
-        markedDates[dateKey] = {
-          marked: true,
-          dotColor: '#FF6A00',
-          text: festival.name,
-          description: festival.description,
-          // Enhanced highlighting
-          selected: true,
-          selectedColor: '#FFE5CC',
-          textColor: '#FF6A00',
-          fontWeight: 'bold'
-        };
-      });
-    });
+         // Add all other festivals from hinduMonths
+     hinduMonths.forEach(month => {
+       month.festivals.forEach(festival => {
+         const [monthName, day] = festival.date.split(' ');
+         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+         const monthIndex = monthNames.indexOf(monthName);
+         const year = monthIndex >= 7 ? 2025 : 2026; // Aug-Sep 2025, rest 2026
+         
+         const dateKey = `${year}-${(monthIndex + 1).toString().padStart(2, '0')}-${day.padStart(2, '0')}`;
+         markedDates[dateKey] = {
+           marked: true,
+           dotColor: '#FF6A00',
+           text: festival.name,
+           description: festival.description,
+           // Enhanced highlighting
+           selected: true,
+           selectedColor: '#FFE5CC',
+           textColor: '#FF6A00',
+           fontWeight: 'bold'
+         };
+       });
+     });
+     
+     // Special handling for March 2026 festivals to ensure they appear
+     if (!markedDates['2026-03-03']) {
+       markedDates['2026-03-03'] = {
+         marked: true,
+         dotColor: '#FF6A00',
+         text: 'Holika Dahan',
+         description: 'Shri Krishna',
+         selected: true,
+         selectedColor: '#FFE5CC',
+         textColor: '#FF6A00',
+         fontWeight: 'bold'
+       };
+     }
+     
+     if (!markedDates['2026-03-04']) {
+       markedDates['2026-03-04'] = {
+         marked: true,
+         dotColor: '#FF6A00',
+         text: 'Holi (Rangotsav)',
+         description: 'Shri Krishna',
+         selected: true,
+         selectedColor: '#FFE5CC',
+         textColor: '#FF6A00',
+         fontWeight: 'bold'
+       };
+     }
     
     return markedDates;
   };
@@ -221,6 +248,15 @@ const HinduCalendarScreen: React.FC = () => {
       return `${month} (Shravana - Bhadrapada)`;
     }
     
+    // Special cases for February and March 2026
+    if (month === 'February' && year === 2026) {
+      return `${month} ${year} (Magha - Phalguna)`;
+    }
+    
+    if (month === 'March' && year === 2026) {
+      return `${month} ${year} (Phalguna)`;
+    }
+    
     // Find which Hindu months this Gregorian month spans
     const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
     const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
@@ -239,12 +275,12 @@ const HinduCalendarScreen: React.FC = () => {
     return `${month} ${year}`;
   };
 
-  const onMonthChange = (month: DateData) => {
-    const newDate = new Date(month.timestamp);
-    if (newDate >= new Date(2025, 7, 1) && newDate <= new Date(2026, 1, 1)) {
-      setCurrentDate(newDate);
-    }
-  };
+     const onMonthChange = (month: DateData) => {
+     const newDate = new Date(month.timestamp);
+     if (newDate >= new Date(2025, 7, 1) && newDate <= new Date(2026, 2, 31)) {
+       setCurrentDate(newDate);
+     }
+   };
 
   const getMonthFestivals = (date: Date): Festival[] => {
     const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -262,7 +298,26 @@ const HinduCalendarScreen: React.FC = () => {
       monthFestivals.push(...shravanaFestivals);
     }
     
-    // Only add festivals that fall within the current English month
+    // Special handling for February and March 2026
+    if (date.getFullYear() === 2026 && date.getMonth() === 1) { // February 2026
+      // February should show festivals from both Magha (Jan 4 - Feb 1) and Phalguna (Feb 2 - Mar 3)
+      const februaryFestivals: Festival[] = [
+        { name: 'Maha Shivaratri', date: 'Feb 15', description: 'Mahadev Shiv Ji' }
+      ];
+      monthFestivals.push(...februaryFestivals);
+    }
+    
+         if (date.getFullYear() === 2026 && date.getMonth() === 2) { // March 2026
+       // March should show festivals from Phalguna (Feb 2 - Mar 3)
+       const marchFestivals: Festival[] = [
+         { name: 'Holika Dahan', date: 'Mar 3', description: 'Shri Krishna' },
+         { name: 'Holi (Rangotsav)', date: 'Mar 4', description: 'Shri Krishna' }
+       ];
+       monthFestivals.push(...marchFestivals);
+       return monthFestivals; // Return early to avoid duplicate festivals
+     }
+    
+    // Only add festivals that fall within the current English month for other months
     for (const month of hinduMonths) {
       if ((month.startDate <= monthEnd && month.endDate >= monthStart)) {
         const currentMonthFestivals = month.festivals.filter(festival => {
@@ -296,11 +351,11 @@ const HinduCalendarScreen: React.FC = () => {
 
   const renderCalendarTab = () => (
     <ScrollView style={styles.calendarTab} showsVerticalScrollIndicator={false}>
-      {/* Update notice */}
-      <Text style={styles.updateNotice}>Updated up to February 2026</Text>
-      
-      {/* Month Title */}
-      <Text style={styles.monthTitle}>{getHinduMonthTitle(currentDate)}</Text>
+             {/* Update notice */}
+       <Text style={styles.updateNotice}>Updated up to March 2026</Text>
+       
+       {/* Month Title */}
+       <Text style={styles.monthTitle}>{getHinduMonthTitle(currentDate)}</Text>
       
       {/* Calendar with Built-in Swipe Support */}
       <View style={styles.calendarContainer}>
@@ -308,8 +363,8 @@ const HinduCalendarScreen: React.FC = () => {
           current={currentDate.toISOString().split('T')[0]}
           onMonthChange={onMonthChange}
           markedDates={getMarkedDates()}
-          minDate={'2025-08-01'}
-          maxDate={'2026-02-28'}
+                     minDate={'2025-08-01'}
+           maxDate={'2026-03-31'}
           theme={{
             backgroundColor: '#ffffff',
             calendarBackground: '#ffffff',
@@ -381,12 +436,12 @@ const HinduCalendarScreen: React.FC = () => {
   );
 
   const renderSummaryTab = () => (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      {/* Update notice */}
-      <Text style={styles.updateNotice}>Updated up to February 2026</Text>
-      
-      {/* Hindu Months Overview */}
-      <Text style={styles.sectionTitle}>Hindu Calendar 2025-2026</Text>
+         <ScrollView showsVerticalScrollIndicator={false}>
+       {/* Update notice */}
+       <Text style={styles.updateNotice}>Updated up to March 2026</Text>
+       
+       {/* Hindu Months Overview */}
+       <Text style={styles.sectionTitle}>Hindu Calendar 2025-2026</Text>
       
       {hinduMonths.map((month, index) => (
         <TouchableOpacity
