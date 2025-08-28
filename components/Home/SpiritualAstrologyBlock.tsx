@@ -3,7 +3,13 @@ import React from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // import ReferralConnectBlock, { SocialRow } from './ReferralConnectBlock';
 
-const spiritualItems = [
+interface SpiritualItem {
+  label: string;
+  image: any;
+  isEmoji?: boolean;
+}
+
+const spiritualItems: SpiritualItem[] = [
   { label: 'Vedas', image: require('@/assets/images/icons/home page icons/vedas.png') },
   { label: 'Dhams and Yatras', image: require('@/assets/images/icons/home page icons/dhams.png') },
   { label: 'Holy Books', image: require('@/assets/images/icons/home page icons/HolyBooksIcon.png') },
@@ -12,6 +18,7 @@ const spiritualItems = [
   { label: 'Fasts & Festivals', image: require('@/assets/images/icons/home page icons/Fasts&Festivals.png') },
   { label: 'Shalokas', image: require('@/assets/images/icons/home page icons/shalokasIcon.png') },
   { label: 'Mantras', image: require('@/assets/images/icons/home page icons/mantrasIcon.png') },
+  { label: 'Calendar', image: require('@/assets/images/icons/home page icons/hinduCalendarIcon.png') },
 ];
 
 const astrologyItems = [
@@ -69,12 +76,20 @@ export default function SpiritualAstrologyBlock() {
                 router.push({ pathname: '/screens/mantras' });
                 return;
               }
+              if (item.label === 'Calendar') {
+                router.push({ pathname: '/screens/hindu-calendar' });
+                return;
+              }
               const path = `/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`;
               // @ts-expect-error dynamic route path
               router.push({ pathname: path });
             }}
           >
-            <Image source={item.image} style={styles.spiritualImage} />
+            {item.isEmoji ? (
+              <Text style={styles.spiritualEmoji}>{item.image}</Text>
+            ) : (
+              <Image source={item.image} style={styles.spiritualImage} />
+            )}
             <Text style={styles.spiritualLabel}>{item.label}</Text>
           </TouchableOpacity>
         ))}
@@ -143,6 +158,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 4,
     backgroundColor: '#F8F8F8',
+  },
+  spiritualEmoji: {
+    fontSize: 50,
+    marginBottom: 4,
+    textAlign: 'center',
+    width: 50,
+    height: 50,
   },
   spiritualLabel: {
     fontSize: 12,

@@ -722,7 +722,7 @@ export default function AudioVideoScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterButtonsContent}
         >
-          {['All', 'Aarti', 'Bhajan', 'Chalisa', 'Paath / Strotam', 'Famous'].map((filter) => (
+          {['All', 'Aarti', 'Bhajan', 'Chalisa', 'Katha', 'Paath / Strotam', 'Famous'].map((filter) => (
             <TouchableOpacity
               key={filter}
               style={[
