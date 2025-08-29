@@ -1458,12 +1458,7 @@ export default function GaneshaTint() {
             </Animated.View>
           </Animated.View>
           
-          {/* Instructions text */}
-          <View style={styles.thaliInstructions}>
-            <Text style={styles.thaliInstructionsText}>
-              Tap to move • Long press to center • Drag to reposition
-            </Text>
-          </View>
+
           
           {/* Close button for thali */}
           <TouchableOpacity 
