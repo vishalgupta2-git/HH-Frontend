@@ -30,10 +30,8 @@ export default function GaneshaTint() {
   const [musicFiles, setMusicFiles] = useState<any[]>([]);
   const [musicLoading, setMusicLoading] = useState(false);
   const [showThali, setShowThali] = useState(false);
-  const [thaliPosition, setThaliPosition] = useState({ x: 0, y: 0 });
-  const [thaliScale] = useState(new Animated.Value(1));
   const thaliPan = useRef(new Animated.ValueXY()).current;
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const thaliCurrentPosition = useRef({ x: 0, y: 0 });
 
   const [ganeshaOnly, setGaneshaOnly] = useState(true);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
@@ -54,51 +52,15 @@ export default function GaneshaTint() {
 
   // Thali interaction functions
   const handleThaliPress = () => {
-    setShowThali(!showThali);
     if (!showThali) {
-      // Center the thali when first shown
-      setThaliPosition({ x: 0, y: 0 });
-      
-      // Add entrance animation
-      thaliScale.setValue(0);
-      Animated.spring(thaliScale, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 100,
-        friction: 8,
-      }).start();
+      // Show thali and position it 200 pixels to the left
+      setShowThali(true);
+      thaliPan.setValue({ x: -200, y: 0 });
+      thaliCurrentPosition.current = { x: -200, y: 0 };
+    } else {
+      // Hide thali without changing position
+      setShowThali(false);
     }
-  };
-
-  const handleThaliLongPress = () => {
-    // Reset thali position to center
-    setThaliPosition({ x: 0, y: 0 });
-    thaliPan.setValue({ x: 0, y: 0 });
-  };
-
-  const handleThaliTap = () => {
-    // Simple tap effect - move thali slightly
-    const randomX = (Math.random() - 0.5) * 30;
-    const randomY = (Math.random() - 0.5) * 30;
-    
-    setThaliPosition(prev => ({
-      x: prev.x + randomX,
-      y: prev.y + randomY
-    }));
-    
-    // Add a subtle bounce animation
-    Animated.sequence([
-      Animated.timing(thaliScale, {
-        toValue: 1.1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(thaliScale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
   };
 
   // Create PanResponder for thali dragging
@@ -106,45 +68,28 @@ export default function GaneshaTint() {
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onPanResponderGrant: () => {
-        // Start of drag - start long press timer
-        longPressTimer.current = setTimeout(() => {
-          handleThaliLongPress();
-        }, 500); // 500ms for long press
+        // Store the current position when starting to drag
+        thaliPan.extractOffset();
+        // Log thali position when touched
+        logThaliState();
       },
-      onPanResponderMove: (evt, gestureState) => {
-        // If moving, cancel long press timer
-        if (longPressTimer.current) {
-          clearTimeout(longPressTimer.current);
-          longPressTimer.current = null;
-        }
-        
-        // Handle the drag movement
-        Animated.event(
-          [null, { dx: thaliPan.x, dy: thaliPan.y }],
-          { useNativeDriver: false }
-        )(evt, gestureState);
-      },
-      onPanResponderRelease: (evt, gestureState) => {
-        // Cancel long press timer
-        if (longPressTimer.current) {
-          clearTimeout(longPressTimer.current);
-          longPressTimer.current = null;
-        }
-        
-        // Check if it was a tap (very small movement)
-        if (Math.abs(gestureState.dx) < 5 && Math.abs(gestureState.dy) < 5) {
-          handleThaliTap();
-        }
-      },
-      onPanResponderTerminate: () => {
-        // Cancel long press timer
-        if (longPressTimer.current) {
-          clearTimeout(longPressTimer.current);
-          longPressTimer.current = null;
-        }
+      onPanResponderMove: Animated.event(
+        [null, { dx: thaliPan.x, dy: thaliPan.y }],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: () => {
+        // Flatten the offset to make the current position the new base
+        thaliPan.flattenOffset();
       },
     })
   ).current;
+
+  // Log thali position and size on touch
+  const logThaliState = () => {
+    if (showThali) {
+      console.log('🔍 [THALI] Position:', thaliCurrentPosition.current, 'Size: 120x120');
+    }
+  };
 
   // Configure audio session for background playback
   useEffect(() => {
@@ -1433,40 +1378,19 @@ export default function GaneshaTint() {
             style={[
               styles.interactiveThali,
               {
-                transform: [
-                  { translateX: thaliPosition.x },
-                  { translateY: thaliPosition.y },
-                  { scale: thaliScale }
-                ]
+                transform: thaliPan.getTranslateTransform(),
               }
             ]}
+            {...thaliPanResponder.panHandlers}
           >
-            <Animated.View
-              style={[
-                styles.thaliTouchArea,
-                {
-                  transform: thaliPan.getTranslateTransform(),
-                }
-              ]}
-              {...thaliPanResponder.panHandlers}
-            >
-              <Image 
-                source={require("../../assets/images/icons/own temple/PujaThali-rotated.png")}
-                style={styles.interactiveThaliImage}
-                resizeMode="contain"
-              />
-            </Animated.View>
+            <Image 
+              source={require("../../assets/images/icons/own temple/PujaThali-rotated.png")}
+              style={styles.interactiveThaliImage}
+              resizeMode="contain"
+            />
           </Animated.View>
           
 
-          
-          {/* Close button for thali */}
-          <TouchableOpacity 
-            style={styles.thaliCloseButton}
-            onPress={() => setShowThali(false)}
-          >
-            <Text style={styles.thaliCloseButtonText}>✕</Text>
-          </TouchableOpacity>
         </View>
       )}
       
@@ -2428,6 +2352,7 @@ const styles = StyleSheet.create({
     zIndex: 1500,
     pointerEvents: 'box-none',
   },
+
   interactiveThali: {
     position: 'absolute',
     top: '50%',
