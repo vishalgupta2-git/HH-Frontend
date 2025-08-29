@@ -355,7 +355,11 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
       <View style={styles.content}>
         <View style={styles.contentCard}>
           <Text style={styles.headline}>Discover the timeless wisdom of the stars.</Text>
-          <ScrollView style={styles.contentScrollView} showsVerticalScrollIndicator={true}>
+          <ScrollView 
+            style={styles.contentScrollView} 
+            contentContainerStyle={{ paddingBottom: 200 }}
+            showsVerticalScrollIndicator={true}
+          >
             <Text style={styles.contentText}>
               Astrology isn't just about predicting the future. It's a guide to understanding yourself, your relationships, and the energies shaping your life.
             </Text>

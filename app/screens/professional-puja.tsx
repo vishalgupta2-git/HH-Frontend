@@ -273,7 +273,10 @@ export default function ProfessionalPujaScreen() {
     <View style={styles.container}>
       <HomeHeader searchPlaceholder="Search for Pujas" extraContent={iconRowAndDropdown} showDailyPujaButton={false} showSearchBar={false} />
       {/* Puja List */}
-      <ScrollView style={styles.content}>
+              <ScrollView 
+          style={styles.content}
+          contentContainerStyle={{ paddingBottom: 200 }}
+        >
         <Text style={styles.sectionHeader}>Puja Library</Text>
         {loading ? (
           <Text style={styles.loadingText}>Loading...</Text>

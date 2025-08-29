@@ -293,7 +293,11 @@ const TalkToPriestScreen: React.FC = () => {
         />
       </LinearGradient>
       <View style={styles.card}>
-        <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={styles.scrollContainer} 
+          contentContainerStyle={{ paddingBottom: 200 }}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.providersSection}>
                          <View style={styles.titleContainer}>
                <Text style={styles.sectionTitle}>Priest Consultation Services</Text>

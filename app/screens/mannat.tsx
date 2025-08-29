@@ -262,6 +262,7 @@ export default function MannatScreen() {
       
       <ScrollView 
         style={styles.content}
+        contentContainerStyle={{ paddingBottom: 200 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

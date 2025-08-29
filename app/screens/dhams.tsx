@@ -266,7 +266,11 @@ export default function DhamsScreen() {
         }
       />
 
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+              <ScrollView 
+          ref={scrollRef} 
+          contentContainerStyle={[styles.content, { paddingBottom: 200 }]} 
+          showsVerticalScrollIndicator={false}
+        >
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop} onLayout={(e) => (sectionY.current['intro'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h1}>Dhams and Yatras: Sacred Pilgrimage Sites of Hinduism</Text>
           <HighlightedText 

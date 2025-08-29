@@ -191,7 +191,11 @@ export default function ShalokasScreen() {
            </View>
          </View>
         
-                 <ScrollView style={styles.contentContainer} showsVerticalScrollIndicator={false}>
+                 <ScrollView 
+          style={styles.contentContainer} 
+          contentContainerStyle={{ paddingBottom: 200 }}
+          showsVerticalScrollIndicator={false}
+        >
            <View style={styles.tilesContainer}>
              {shuffledShalokas.length === 0 ? (
                <View style={styles.loadingContainer}>

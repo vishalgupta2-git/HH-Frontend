@@ -206,7 +206,11 @@ export default function YatraScreen() {
           </>
         }
       />
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        ref={scrollRef} 
+        contentContainerStyle={[styles.content, { paddingBottom: 150 }]} 
+        showsVerticalScrollIndicator={false}
+      >
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop} onLayout={(e) => (sectionY.current['intro'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h1}>Yatra: The Sacred Journey of Spiritual Pilgrimage</Text>
           <HighlightedText 

@@ -256,7 +256,11 @@ export default function HolyBooksScreen() {
         }
       />
 
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+              <ScrollView 
+          ref={scrollRef} 
+          contentContainerStyle={[styles.content, { paddingBottom: 200 }]} 
+          showsVerticalScrollIndicator={false}
+        >
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop} onLayout={(e) => (sectionY.current['intro'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h1}>Holy Books: The Sacred Literary Foundation of Hinduism</Text>
           <HighlightedText 

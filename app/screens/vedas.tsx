@@ -265,7 +265,11 @@ export default function VedasScreen() {
 
 
 
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+              <ScrollView 
+          ref={scrollRef} 
+          contentContainerStyle={[styles.content, { paddingBottom: 200 }]} 
+          showsVerticalScrollIndicator={false}
+        >
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop} onLayout={(e) => (sectionY.current['intro'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h1}>The Vedas: The Sacred Foundation of Hindu Knowledge</Text>
           <HighlightedText 

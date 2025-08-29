@@ -12,8 +12,94 @@ import { hasVisitedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUti
 import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
 import DailyPujaReminderModal from '@/components/Home/DailyPujaReminderModal';
 import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
+import { View, TouchableOpacity, Text, StyleSheet, Platform, Image } from 'react-native';
+import { useRouter, usePathname } from 'expo-router';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { MaterialIcons } from '@expo/vector-icons';
+import TabBarBackground from '@/components/ui/TabBarBackground';
+import { Colors } from '@/constants/Colors';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+
+// Global Bottom Navigation Component
+function GlobalBottomNavigation() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const colorScheme = useColorScheme();
+
+  const isActive = (route: string) => {
+    if (route === 'home') {
+      return pathname === '/' || pathname === '/(tabs)' || pathname === '/(tabs)/index';
+    }
+    if (route === 'puja') {
+      return pathname === '/screens/puja';
+    }
+    if (route === 'yatra') {
+      return pathname === '/(tabs)/yatra';
+    }
+    if (route === 'audio-video') {
+      return pathname === '/(tabs)/audio-video';
+    }
+    return false;
+  };
+
+  const navigateTo = (route: string) => {
+    if (route === 'home') {
+      router.push('/(tabs)');
+    } else if (route === 'puja') {
+      router.push('/screens/puja');
+    } else if (route === 'yatra') {
+      router.push('/(tabs)/yatra');
+    } else if (route === 'audio-video') {
+      router.push('/(tabs)/audio-video');
+    }
+  };
+
+  return (
+    <View style={[styles.bottomNav, Platform.select({
+      ios: { position: 'absolute' },
+      default: {},
+    })]}>
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, isActive('home') && styles.activeTab]} 
+          onPress={() => navigateTo('home')}
+        >
+          <IconSymbol size={28} name="house.fill" color={isActive('home') ? '#FF6A00' : '#666'} />
+          <Text style={[styles.tabText, isActive('home') && styles.activeTabText]}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.tab, isActive('puja') && styles.activeTab]} 
+          onPress={() => navigateTo('puja')}
+        >
+          <Image 
+            source={require('@/assets/images/icons/home page icons/puja.png')} 
+            style={[styles.tabIcon, isActive('puja') && styles.activeTabIcon]} 
+            resizeMode="contain" 
+          />
+          <Text style={[styles.tabText, isActive('puja') && styles.activeTabText]}>Puja</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.tab, isActive('yatra') && styles.activeTab]} 
+          onPress={() => navigateTo('yatra')}
+        >
+          <MaterialIcons size={28} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
+          <Text style={[styles.tabText, isActive('yatra') && styles.activeTabText]}>Yatra</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.tab, isActive('audio-video') && styles.activeTab]} 
+          onPress={() => navigateTo('audio-video')}
+        >
+          <MaterialIcons size={28} name="ondemand-video" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
+          <Text style={[styles.tabText, isActive('audio-video') && styles.activeTabText]}>Divine Music</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -161,6 +247,9 @@ export default function RootLayout() {
         </Stack>
         <StatusBar style="auto" />
         
+        {/* Global Bottom Navigation */}
+        <GlobalBottomNavigation />
+        
         {/* Daily Puja Reminder Modal */}
         <DailyPujaReminderModal
           visible={showDailyPujaModal}
@@ -178,3 +267,53 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 8,
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    paddingTop: 10,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  activeTab: {
+    // Active tab styling - can add background or other visual indicators if needed
+  },
+  tabIcon: {
+    width: 28,
+    height: 28,
+    marginBottom: 4,
+  },
+  activeTabIcon: {
+    // Active icon styling - can add transform or other effects if needed
+  },
+  tabText: {
+    fontSize: 12,
+    marginTop: 4,
+    color: '#666',
+  },
+  activeTabText: {
+    color: '#FF6A00',
+    fontWeight: '600',
+  },
+});

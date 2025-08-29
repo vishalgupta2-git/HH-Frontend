@@ -245,7 +245,11 @@ export default function GodsAndGodessesScreen() {
           </>
         }
       />
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+              <ScrollView 
+          ref={scrollRef} 
+          contentContainerStyle={[styles.content, { paddingBottom: 200 }]} 
+          showsVerticalScrollIndicator={false}
+        >
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.card}>
           <Text style={styles.h1}>Hidu Gods & Goddesses</Text>
           <HighlightedText 

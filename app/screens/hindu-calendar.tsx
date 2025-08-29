@@ -350,7 +350,11 @@ const HinduCalendarScreen: React.FC = () => {
   const monthFestivals = getMonthFestivals(currentDate);
 
   const renderCalendarTab = () => (
-    <ScrollView style={styles.calendarTab} showsVerticalScrollIndicator={false}>
+            <ScrollView 
+          style={styles.calendarTab} 
+          contentContainerStyle={{ paddingBottom: 200 }}
+          showsVerticalScrollIndicator={false}
+        >
              {/* Update notice */}
        <Text style={styles.updateNotice}>Updated up to March 2026</Text>
        
@@ -436,7 +440,10 @@ const HinduCalendarScreen: React.FC = () => {
   );
 
   const renderSummaryTab = () => (
-         <ScrollView showsVerticalScrollIndicator={false}>
+         <ScrollView 
+          contentContainerStyle={{ paddingBottom: 200 }}
+          showsVerticalScrollIndicator={false}
+        >
        {/* Update notice */}
        <Text style={styles.updateNotice}>Updated up to March 2026</Text>
        

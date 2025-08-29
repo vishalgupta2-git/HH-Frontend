@@ -652,7 +652,12 @@ const NumerologyCalculator: React.FC = () => {
   );
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} ref={scrollViewRef}>
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={{ paddingBottom: 200 }}
+      showsVerticalScrollIndicator={false} 
+      ref={scrollViewRef}
+    >
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <TouchableOpacity

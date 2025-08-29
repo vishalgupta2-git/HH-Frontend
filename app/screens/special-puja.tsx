@@ -295,7 +295,10 @@ export default function SpecialPujaScreen() {
          }
       />
       {/* Puja List */}
-      <ScrollView style={styles.content}>
+              <ScrollView 
+          style={styles.content}
+          contentContainerStyle={{ paddingBottom: 200 }}
+        >
         <Text style={styles.headline}>Mark your milestones with Divine Blessings</Text>
         {loading ? (
           <Text style={styles.loadingText}>Loading...</Text>

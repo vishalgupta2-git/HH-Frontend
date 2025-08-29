@@ -152,6 +152,9 @@ export default function HomeScreen() {
           <ReferralConnectBlock />
           <SocialRow />
         </View>
+        
+        {/* Bottom Spacer for Global Navigation */}
+        <View style={styles.bottomSpacer} />
       </ScrollView>
       
       {/* Daily Puja Reminder Modal */}
@@ -214,6 +217,9 @@ const styles = StyleSheet.create({
   },
   referralSection: {
     marginTop: 6,
+  },
+  bottomSpacer: {
+    height: 150,
   },
   ecoGaneshaButton: {
     width: '92%',
