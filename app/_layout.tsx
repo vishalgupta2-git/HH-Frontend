@@ -27,6 +27,11 @@ function GlobalBottomNavigation() {
   const pathname = usePathname();
   const colorScheme = useColorScheme();
 
+  // Hide bottom navigation on 3D Ganesha screen
+  if (pathname === '/screens/3d-ganesha') {
+    return null;
+  }
+
   const isActive = (route: string) => {
     if (route === 'home') {
       return pathname === '/' || pathname === '/(tabs)' || pathname === '/(tabs)/index';
@@ -314,6 +319,7 @@ const styles = StyleSheet.create({
   },
   activeTabText: {
     color: '#FF6A00',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 13,
   },
 });
