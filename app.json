@@ -4,32 +4,37 @@
     "slug": "HinduHeritageAppNew",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/app-icon.png",
+    "icon": "./assets/app-icon-1024x1024.png",
     "scheme": "hinduheritageappnew",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/images/app-icon.png"
+      "icon": "./assets/app-icon-1024x1024.png"
     },
+
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app-icon-foreground.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/app-icon-foreground.png",
+        "backgroundImage": "./assets/app-icon-background.png"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.thehinduheritage.HinduHeritageAppNew"
     },
+
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/app-icon.png"
+      "favicon": "./assets/app-icon-1024x1024.png"
     },
+
     "splash": {
       "image": "./assets/images/splash-screen-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "plugins": [
       "expo-router",
       [
@@ -46,9 +51,11 @@
         }
       ]
     ],
+
     "experiments": {
       "typedRoutes": true
     },
+
     "extra": {
       "router": {},
       "eas": {
