@@ -56,20 +56,21 @@ const hinduMonths: HinduMonth[] = [
     startDate: new Date(2025, 8, 8),
     endDate: new Date(2025, 9, 7),
     festivals: [
-      { name: 'Sharad Navratri (Day 1 – Shailaputri)', date: 'Sep 22', description: 'Durga Maa' },
-      { name: 'Sharad Navratri (Day 2 – Brahmacharini)', date: 'Sep 23', description: 'Durga Maa' },
-      { name: 'Sharad Navratri (Day 3 – Chandraghanta)', date: 'Sep 24', description: 'Durga Maa' },
-      { name: 'Sharad Navratri (Day 4 – Kushmanda)', date: 'Sep 25', description: 'Durga Maa' },
-      { name: 'Sharad Navratri (Day 5 – Skandamata)', date: 'Sep 26', description: 'Durga Maa' },
-      { name: 'Sharad Navratri (Day 6 – Katyayani)', date: 'Sep 27', description: 'Durga Maa' },
-      { name: 'Sharad Navratri (Day 7 – Kalaratri)', date: 'Sep 28', description: 'Maa Kali' },
-      { name: 'Sharad Navratri (Day 8 – Mahagauri)', date: 'Sep 29', description: 'Durga Maa' },
-      { name: 'Sharad Navratri (Day 9 – Siddhidatri)', date: 'Sep 30', description: 'Durga Maa' },
+      { name: 'Sharad Navratri', date: 'Sep 22', description: 'Durga Maa' },
+      { name: 'Sharad Navratri', date: 'Sep 23', description: 'Durga Maa' },
+      { name: 'Sharad Navratri', date: 'Sep 24', description: 'Durga Maa' },
+      { name: 'Sharad Navratri', date: 'Sep 25', description: 'Durga Maa' },
+      { name: 'Sharad Navratri', date: 'Sep 26', description: 'Durga Maa' },
+      { name: 'Sharad Navratri', date: 'Sep 27', description: 'Durga Maa' },
+      { name: 'Sharad Navratri', date: 'Sep 28', description: 'Maa Kali' },
+      { name: 'Sharad Navratri', date: 'Sep 29', description: 'Durga Maa' },
+      { name: 'Sharad Navratri', date: 'Sep 30', description: 'Durga Maa' },
       { name: 'Vijayadashami (Dussehra)', date: 'Oct 2', description: 'Shri Ram' },
       { name: 'Karva Chauth', date: 'Oct 10', description: '' },
+      { name: 'Ahoi Ashtami', date: 'Oct 13', description: '' },
       { name: 'Dhanteras (Diwali Day 1)', date: 'Oct 18', description: 'Lakshmi Maa' },
       { name: 'Naraka Chaturdashi (Chhoti Diwali)', date: 'Oct 19', description: 'Shri Krishna' },
-      { name: 'Lakshmi Puja (Diwali)', date: 'Oct 20', description: 'Lakshmi Maa' },
+      { name: 'Diwali', date: 'Oct 20', description: 'Lakshmi Maa' },
       { name: 'Govardhan Puja', date: 'Oct 21', description: 'Shri Krishna' },
       { name: 'Bhai Dooj', date: 'Oct 23', description: '' }
     ]
@@ -81,6 +82,7 @@ const hinduMonths: HinduMonth[] = [
     startDate: new Date(2025, 9, 8),
     endDate: new Date(2025, 10, 5),
     festivals: [
+      { name: 'Ahoi Ashtami', date: 'Oct 13', description: '' },
       { name: 'Gita Jayanti (Mokshada Ekadashi)', date: 'Nov 4', description: 'Shri Krishna' }
     ]
   },
@@ -109,7 +111,7 @@ const hinduMonths: HinduMonth[] = [
     startDate: new Date(2026, 0, 4),
     endDate: new Date(2026, 1, 1),
     festivals: [
-      { name: 'Makar Sankranti / Pongal / Magh Bihu', date: 'Jan 14', description: 'Surya Dev' },
+      { name: 'Makar Sankranti', date: 'Jan 14', description: 'Surya Dev' },
       { name: 'Vasant Panchami', date: 'Jan 23', description: 'Saraswati Maa' }
     ]
   },
@@ -132,6 +134,32 @@ const HinduCalendarScreen: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'calendar' | 'summary'>('calendar');
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedFestival, setSelectedFestival] = useState<{ name: string; date: string; description?: string; image?: any } | null>(null);
+
+  // Function to get festival image based on festival name
+  const getFestivalImage = (festivalName: string): any => {
+    const lowerName = festivalName.toLowerCase();
+    
+    if (lowerName.includes('ganesh chaturthi')) {
+      return require('@/assets/images/fastsAndFestivals/GaneshChaturthi1.jpg');
+    } else if (lowerName.includes('raksha bandhan')) {
+      return require('@/assets/images/fastsAndFestivals/RakshaBandhan1.jpg');
+    } else if (lowerName.includes('krishna janmashtami') || lowerName.includes('janmashtami')) {
+      return require('@/assets/images/fastsAndFestivals/Janmashtami1.jpg');
+    } else if (lowerName.includes('navratri')) {
+      return require('@/assets/images/fastsAndFestivals/Navratri1.jpg');
+    } else if (lowerName.includes('diwali')) {
+      return require('@/assets/images/fastsAndFestivals/Diwali6.jpg');
+    } else if (lowerName.includes('dusshera') || lowerName.includes('dussehra') || lowerName.includes('vijayadashami')) {
+      return require('@/assets/images/fastsAndFestivals/Dusshera1.jpg');
+    } else if (lowerName.includes('karva chauth') || lowerName.includes('karwachauth')) {
+      return require('@/assets/images/fastsAndFestivals/KarvaChauth1.jpg');
+    } else if (lowerName.includes('makar sankranti')) {
+      return require('@/assets/images/fastsAndFestivals/MakarSakranti1.jpg');
+    }
+    
+    return null;
+  };
 
   // Set initial date to August 2025 (earliest allowed month)
   useEffect(() => {
@@ -153,7 +181,7 @@ const HinduCalendarScreen: React.FC = () => {
     const shravanaFestivals = [
       { name: 'Shravan Somvar (last)', date: 'Aug 4', description: 'Mahadev Shiv Ji' },
       { name: 'Putrada Ekadashi', date: 'Aug 5', description: 'Vishnu Bhagwan' },
-      { name: 'Raksha Bandhan (Shravana Purnima)', date: 'Aug 9', description: '— (traditionally tied to Krishna)' }
+      { name: 'Raksha Bandhan', date: 'Aug 9', description: '— (traditionally tied to Krishna)' }
     ];
     
     shravanaFestivals.forEach(festival => {
@@ -232,6 +260,7 @@ const HinduCalendarScreen: React.FC = () => {
   const closeModal = () => {
     setModalVisible(false);
     setSelectedMonth(null);
+    setSelectedFestival(null);
   };
 
   const getHinduMonthTitle = (date: Date): string => {
@@ -293,7 +322,7 @@ const HinduCalendarScreen: React.FC = () => {
       const shravanaFestivals: Festival[] = [
         { name: 'Shravan Somvar (last)', date: 'Aug 4', description: 'Mahadev Shiv Ji' },
         { name: 'Putrada Ekadashi', date: 'Aug 5', description: 'Vishnu Bhagwan' },
-        { name: 'Raksha Bandhan (Shravana Purnima)', date: 'Aug 9', description: '— (traditionally tied to Krishna)' }
+        { name: 'Raksha Bandhan', date: 'Aug 9', description: '— (traditionally tied to Krishna)' }
       ];
       monthFestivals.push(...shravanaFestivals);
     }
@@ -398,17 +427,12 @@ const HinduCalendarScreen: React.FC = () => {
             const dateKey = day.dateString;
             const markedDate = getMarkedDates()[dateKey];
             if (markedDate) {
-              setSelectedMonth({
-                name: 'Festival Details',
-                gregorianSpan: new Date(day.timestamp).toDateString(),
-                color: '#FF6A00',
-                startDate: new Date(day.timestamp),
-                endDate: new Date(day.timestamp),
-                festivals: [{
-                  name: markedDate.text,
-                  date: markedDate.text,
-                  description: markedDate.description
-                }]
+              const festivalImage = getFestivalImage(markedDate.text);
+              setSelectedFestival({
+                name: markedDate.text,
+                date: markedDate.text,
+                description: markedDate.description,
+                image: festivalImage
               });
               setModalVisible(true);
             }
@@ -458,7 +482,7 @@ const HinduCalendarScreen: React.FC = () => {
         >
           <View style={styles.monthHeader}>
             <Text style={styles.monthName}>{month.name}</Text>
-            <Text style={styles.gregorianSpan}>{month.gregorianSpan}</Text>
+            <Text style={styles.gregorianSpan}>({month.gregorianSpan})</Text>
           </View>
           
           {month.festivals.length > 0 ? (
@@ -524,7 +548,7 @@ const HinduCalendarScreen: React.FC = () => {
         {activeTab === 'calendar' ? renderCalendarTab() : renderSummaryTab()}
       </View>
 
-      {/* Month Details Modal */}
+      {/* Festival Details Modal */}
       <Modal
         visible={modalVisible}
         transparent={true}
@@ -538,33 +562,31 @@ const HinduCalendarScreen: React.FC = () => {
         >
           <View style={styles.modalContent}>
             <TouchableOpacity activeOpacity={1}>
-              {selectedMonth && (
+              {selectedFestival && (
                 <View style={styles.modalBody}>
                   <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>{selectedMonth.name}</Text>
-                    <Text style={styles.modalSubtitle}>{selectedMonth.gregorianSpan}</Text>
+                    <Text style={styles.modalTitle}>{selectedFestival.name}</Text>
+                    <Text style={styles.modalSubtitle}>{selectedFestival.date}</Text>
                   </View>
                   
-                  {selectedMonth.festivals.length > 0 ? (
-                    <View style={styles.modalFestivals}>
-                      <Text style={styles.modalFestivalsTitle}>Festivals & Vrats:</Text>
-                      {selectedMonth.festivals.map((festival, index) => (
-                        <View key={index} style={styles.modalFestivalItem}>
-                          <Text style={styles.modalFestivalName}>{festival.name}</Text>
-                          <Text style={styles.modalFestivalDate}>{festival.date}</Text>
-                          {festival.description && (
-                            <Text style={styles.modalFestivalDescription}>
-                              {festival.description}
-                            </Text>
-                          )}
-                        </View>
-                      ))}
+                  {/* Festival Image */}
+                  {selectedFestival.image && (
+                    <View style={styles.festivalImageContainer}>
+                      <Image 
+                        source={selectedFestival.image} 
+                        style={styles.festivalImage} 
+                        resizeMode="contain"
+                      />
                     </View>
-                  ) : (
-                    <Text style={styles.modalNoFestivals}>
-                      This month has no major pan-Indian festivals listed. 
-                      It may include regional observances and solar events.
-                    </Text>
+                  )}
+                  
+                  {/* Festival Description */}
+                  {selectedFestival.description && (
+                    <View style={styles.modalFestivalItem}>
+                      <Text style={styles.modalFestivalDescription}>
+                        {selectedFestival.description}
+                      </Text>
+                    </View>
                   )}
                   
                   <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
@@ -695,11 +717,11 @@ const styles = StyleSheet.create({
   monthName: {
     fontSize: getResponsiveFontSize(20),
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FF6A00',
     marginBottom: 5,
   },
   gregorianSpan: {
-    fontSize: getResponsiveFontSize(16),
+    fontSize: getResponsiveFontSize(14),
     color: '#666',
     fontStyle: 'italic',
   },
@@ -858,6 +880,15 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: getResponsiveFontSize(16),
     fontWeight: 'bold',
+  },
+  festivalImageContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  festivalImage: {
+    height: 150,
+    width: 200,
+    borderRadius: 12,
   },
   bottomSpacing: {
     height: 200,

@@ -8,35 +8,31 @@
     "scheme": "hinduheritageappnew",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/app-icon-1024x1024.png"
+      "icon": "./assets/app-icon-1024x1024.png",
+      "bundleIdentifier": "com.thehinduheritage.HinduHeritageApp"
     },
-
     "android": {
+      "icon": "./assets/app-icon-1024x1024.png",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/app-icon-foreground.png",
-        "backgroundImage": "./assets/app-icon-background.png"
+        "foregroundImage": "./assets/app-icon-1024x1024.png",
+        "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.thehinduheritage.HinduHeritageAppNew"
+      "package": "com.thehinduheritage.HinduHeritageApp"
     },
-
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/app-icon-1024x1024.png"
     },
-
     "splash": {
       "image": "./assets/images/splash-screen-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "plugins": [
-      "expo-router",
       [
         "expo-splash-screen",
         {
@@ -51,11 +47,9 @@
         }
       ]
     ],
-
     "experiments": {
       "typedRoutes": true
     },
-
     "extra": {
       "router": {},
       "eas": {

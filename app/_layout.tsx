@@ -27,8 +27,8 @@ function GlobalBottomNavigation() {
   const pathname = usePathname();
   const colorScheme = useColorScheme();
 
-  // Hide bottom navigation on 3D Ganesha screen
-  if (pathname === '/screens/3d-ganesha') {
+  // Hide bottom navigation on 3D Ganesha screen and Daily Puja Custom Temple screen
+  if (pathname === '/screens/3d-ganesha' || pathname === '/screens/DailyPujaCustomTemple') {
     return null;
   }
 

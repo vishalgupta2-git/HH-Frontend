@@ -1,4 +1,4 @@
-package com.thehinduheritage
+package com.thehinduheritage.HinduHeritageApp
 
 import android.app.Application
 import android.content.res.Configuration

@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking, TextInput } from 'react-native';
+import React, { useRef, useState, useCallback } from 'react';
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking, TextInput, Image, RefreshControl } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import HomeHeader from '@/components/Home/HomeHeader';
 import HighlightedText from '@/components/Home/HighlightedText';
@@ -27,6 +27,7 @@ export default function FastsAndFestivalsScreen() {
   const [searchResults, setSearchResults] = useState<Array<{section: string, text: string, index: number, sectionKey: string}>>([]);
   const [currentResultIndex, setCurrentResultIndex] = useState(-1);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const performSearch = (query: string) => {
     if (!query.trim()) {
@@ -136,6 +137,24 @@ export default function FastsAndFestivalsScreen() {
     });
   };
 
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // Simulate refresh delay
+    setTimeout(() => {
+      setRefreshing(false);
+      // You can add actual refresh logic here, such as:
+      // - Reloading data from an API
+      // - Clearing search results
+      // - Resetting any cached content
+      setSearchQuery('');
+      setSearchResults([]);
+      setCurrentResultIndex(-1);
+      setShowSearchResults(false);
+      setSearchHighlight('');
+      setDropdownLabel('Topic');
+    }, 1000);
+  }, []);
+
   const references = [
     "https://en.wikipedia.org/wiki/Hindu_festivals",
     "https://www.britannica.com/topic/Hindu-festivals",
@@ -234,6 +253,16 @@ export default function FastsAndFestivalsScreen() {
           ref={scrollRef} 
           contentContainerStyle={[styles.content, { paddingBottom: 200 }]} 
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#FF9800']}
+              tintColor="#FF9800"
+              title="Pull to refresh"
+              titleColor="#FF9800"
+            />
+          }
         >
         {/* Intro */}
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop} onLayout={(e) => (sectionY.current['intro'] = e.nativeEvent.layout.y)}>
@@ -249,6 +278,11 @@ export default function FastsAndFestivalsScreen() {
         <View style={styles.card} onLayout={(e) => (sectionY.current['majorFestivals'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h2}>Major Hindu Festivals</Text>
           
+          <Image 
+            source={require('@/assets/images/fastsAndFestivals/Diwali6.jpg')} 
+            style={styles.festivalImage} 
+            resizeMode="contain"
+          />
           <Text style={styles.h3}>Diwali - Festival of Lights</Text>
           <HighlightedText 
             text="Celebrated on the new moon day of Kartik month, Diwali symbolizes the victory of light over darkness and knowledge over ignorance. It commemorates Lord Rama's return to Ayodhya and the triumph of good over evil. Homes are illuminated with diyas, rangolis are created, and families gather for prayers and celebrations."
@@ -256,6 +290,11 @@ export default function FastsAndFestivalsScreen() {
             textStyle={styles.p}
           />
 
+          <Image 
+            source={require('@/assets/images/fastsAndFestivals/Holi1.jpg')} 
+            style={styles.festivalImage} 
+            resizeMode="contain"
+          />
           <Text style={styles.h3}>Holi - Festival of Colors</Text>
           <HighlightedText 
             text="Observed on the full moon day of Phalgun month, Holi celebrates divine love between Radha and Krishna. It represents the victory of devotion over ego and the arrival of spring. People play with colors, sing devotional songs, and share sweets, symbolizing unity and joy."
@@ -263,6 +302,11 @@ export default function FastsAndFestivalsScreen() {
             textStyle={styles.p}
           />
 
+          <Image 
+            source={require('@/assets/images/fastsAndFestivals/MakarSakranti1.jpg')} 
+            style={styles.festivalImage} 
+            resizeMode="contain"
+          />
           <Text style={styles.h3}>Makar Sankranti - Sun's Journey</Text>
           <HighlightedText 
             text="Celebrated when the sun enters Capricorn (Makar), this festival marks the beginning of Uttarayan (northward journey of the sun). It symbolizes spiritual awakening and the triumph of light. Kite flying, sesame sweets, and holy dips in sacred rivers are traditional practices."
@@ -270,6 +314,11 @@ export default function FastsAndFestivalsScreen() {
             textStyle={styles.p}
           />
 
+          <Image 
+            source={require('@/assets/images/fastsAndFestivals/RakshaBandhan1.jpg')} 
+            style={styles.festivalImage} 
+            resizeMode="contain"
+          />
           <Text style={styles.h3}>Raksha Bandhan - Bond of Protection</Text>
           <HighlightedText 
             text="Observed on the full moon day of Shravan month, this festival celebrates the sacred bond between brothers and sisters. Sisters tie rakhi (sacred thread) on brothers' wrists, symbolizing love, protection, and the eternal bond of family."
@@ -277,6 +326,11 @@ export default function FastsAndFestivalsScreen() {
             textStyle={styles.p}
           />
 
+          <Image 
+            source={require('@/assets/images/fastsAndFestivals/Janmashtami1.jpg')} 
+            style={styles.festivalImage} 
+            resizeMode="contain"
+          />
           <Text style={styles.h3}>Janmashtami - Birth of Krishna</Text>
           <HighlightedText 
             text="Celebrated on the eighth day of the dark fortnight of Bhadrapada month, Janmashtami commemorates Lord Krishna's birth. Devotees observe fasts, sing bhajans, and perform special pujas to honor the divine incarnation who delivered the Bhagavad Gita."
@@ -322,6 +376,11 @@ export default function FastsAndFestivalsScreen() {
         <View style={styles.card} onLayout={(e) => (sectionY.current['seasonalRegional'] = e.nativeEvent.layout.y)}>
           <Text style={styles.h2}>Seasonal and Regional Festivals</Text>
           
+          <Image 
+            source={require('@/assets/images/fastsAndFestivals/Navratri1.jpg')} 
+            style={styles.festivalImage} 
+            resizeMode="contain"
+          />
           <Text style={styles.h3}>Navratri - Nine Nights of Goddess</Text>
           <Text style={styles.p}>
             Celebrated twice a year (Chaitra and Ashwin months), Navratri honors the divine feminine 
@@ -330,6 +389,11 @@ export default function FastsAndFestivalsScreen() {
             Dussehra, celebrating the victory of good over evil.
           </Text>
 
+          <Image 
+            source={require('@/assets/images/fastsAndFestivals/GaneshChaturthi1.jpg')} 
+            style={styles.festivalImage} 
+            resizeMode="contain"
+          />
           <Text style={styles.h3}>Ganesh Chaturthi - Ganesha Festival</Text>
           <Text style={styles.p}>
             Celebrated on the fourth day of Bhadrapada month, this festival honors Lord Ganesha's birth. 
@@ -399,6 +463,13 @@ const styles = StyleSheet.create({
   h1: { fontSize: 20, fontWeight: 'bold', color: '#FF9800', marginBottom: 8 },
   h2: { fontSize: 18, fontWeight: 'bold', color: '#FF9800', marginBottom: 8 },
   h3: { fontSize: 16, fontWeight: '600', color: '#FF9800', marginTop: 6, marginBottom: 4 },
+  festivalImage: {
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 16,
+    marginTop: 8,
+    alignSelf: 'center',
+  },
   p: { fontSize: 14, color: '#555', lineHeight: 20 },
   link: { color: '#1a73e8', textDecorationLine: 'underline' },
   dropdownTrigger: {
