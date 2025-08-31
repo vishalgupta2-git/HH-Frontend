@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, Dimensions
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
+import { useRouter } from 'expo-router';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_TOP = 250;
@@ -130,6 +131,7 @@ const hinduMonths: HinduMonth[] = [
 ];
 
 const HinduCalendarScreen: React.FC = () => {
+  const router = useRouter();
   const [selectedMonth, setSelectedMonth] = useState<HinduMonth | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'calendar' | 'summary'>('calendar');
@@ -156,6 +158,14 @@ const HinduCalendarScreen: React.FC = () => {
       return require('@/assets/images/fastsAndFestivals/KarvaChauth1.jpg');
     } else if (lowerName.includes('makar sankranti')) {
       return require('@/assets/images/fastsAndFestivals/MakarSakranti1.jpg');
+    } else if (lowerName.includes('govardhan puja')) {
+      return require('@/assets/images/fastsAndFestivals/Diwali6.jpg');
+    } else if (lowerName.includes('bhai dooj')) {
+      return require('@/assets/images/fastsAndFestivals/Diwali6.jpg');
+    } else if (lowerName.includes('dhanteras')) {
+      return require('@/assets/images/fastsAndFestivals/Diwali6.jpg');
+    } else if (lowerName.includes('naraka chaturdashi') || lowerName.includes('chhoti diwali')) {
+      return require('@/assets/images/fastsAndFestivals/Diwali6.jpg');
     }
     
     return null;
@@ -580,18 +590,29 @@ const HinduCalendarScreen: React.FC = () => {
                     </View>
                   )}
                   
-                  {/* Festival Description */}
-                  {selectedFestival.description && (
-                    <View style={styles.modalFestivalItem}>
-                      <Text style={styles.modalFestivalDescription}>
-                        {selectedFestival.description}
-                      </Text>
-                    </View>
-                  )}
-                  
-                  <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-                    <Text style={styles.closeButtonText}>Close</Text>
-                  </TouchableOpacity>
+                                       {/* Festival Description */}
+                     {selectedFestival.description && (
+                       <View style={styles.modalFestivalItem}>
+                         <Text style={styles.modalFestivalDescription}>
+                           {selectedFestival.description}
+                         </Text>
+                       </View>
+                     )}
+                     
+                     {/* Tell me more button for Diwali and related festivals */}
+                     {(selectedFestival.name.toLowerCase().includes('diwali') || 
+                       selectedFestival.name.toLowerCase().includes('govardhan puja') || 
+                       selectedFestival.name.toLowerCase().includes('bhai dooj') ||
+                       selectedFestival.name.toLowerCase().includes('dhanteras') ||
+                       selectedFestival.name.toLowerCase().includes('naraka chaturdashi') ||
+                       selectedFestival.name.toLowerCase().includes('chhoti diwali')) && (
+                       <TouchableOpacity style={styles.tellMeMoreButton} onPress={() => {
+                         closeModal();
+                         router.push('/screens/diwali');
+                       }}>
+                         <Text style={styles.tellMeMoreButtonText}>Tell me more</Text>
+                       </TouchableOpacity>
+                     )}
                 </View>
               )}
             </TouchableOpacity>
@@ -892,6 +913,25 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 200,
+  },
+  tellMeMoreButton: {
+    backgroundColor: '#FF6A00',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  tellMeMoreButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

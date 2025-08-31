@@ -21,8 +21,8 @@ export default function HomeScreen() {
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [upcomingPujas, setUpcomingPujas] = useState<UpcomingPuja[]>([]);
-  const [buttonBackgroundColor, setButtonBackgroundColor] = useState('#FF9800');
-  const [buttonTextColor, setButtonTextColor] = useState('#fff');
+  // const [buttonBackgroundColor, setButtonBackgroundColor] = useState('#FF9800');
+  // const [buttonTextColor, setButtonTextColor] = useState('#fff');
   
   // Check if user should see daily puja reminder and special days
   useEffect(() => {
@@ -82,19 +82,19 @@ export default function HomeScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Color animation for Eco friendly Ganesha button
-  useEffect(() => {
-    const colorInterval = setInterval(() => {
-      setButtonBackgroundColor(prevColor => 
-        prevColor === '#FF9800' ? '#FFB74D' : '#FF9800'
-      );
-      setButtonTextColor(prevColor => 
-        prevColor === '#fff' ? '#000' : '#fff'
-      );
-    }, 3000); // Change every 3 seconds
+  // Color animation for Eco friendly Ganesha button - Commented out for future use
+  // useEffect(() => {
+  //   const colorInterval = setInterval(() => {
+  //     setButtonBackgroundColor(prevColor => 
+  //       prevColor === '#FF9800' ? '#FFB74D' : '#FFB74D'
+  //     );
+  //     setButtonTextColor(prevColor => 
+  //       prevColor === '#fff' ? '#000' : '#fff'
+  //     );
+  //   }, 3000); // Change every 3 seconds
 
-    return () => clearInterval(colorInterval);
-  }, []);
+  //   return () => clearInterval(colorInterval);
+  // }, []);
   
   const handleCloseDailyPujaModal = () => {
     setShowDailyPujaModal(false);
@@ -132,15 +132,7 @@ export default function HomeScreen() {
           <HomeIconGrid />
         </View>
         
-        {/* Eco-friendly Ganesha Button Section */}
-        <View style={styles.section}>
-          <TouchableOpacity 
-            style={[styles.ecoGaneshaButton, { backgroundColor: buttonBackgroundColor }]}
-            onPress={() => router.push('/screens/eco-friendly-ganesha')}
-          >
-            <Text style={[styles.ecoGaneshaButtonText, { color: buttonTextColor }]}>Eco friendly Ganesha</Text>
-          </TouchableOpacity>
-        </View>
+
         
         {/* Spiritual & Astrology Block Section */}
         <View style={styles.section}>
@@ -221,22 +213,23 @@ const styles = StyleSheet.create({
   bottomSpacer: {
     height: 150,
   },
-  ecoGaneshaButton: {
-    width: '92%',
-    alignSelf: 'center',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  ecoGaneshaButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
+
+  // ecoGaneshaButton: {
+  //   width: '92%',
+  //   alignSelf: 'center',
+  //   borderRadius: 8,
+  //   paddingVertical: 12,
+  //   paddingHorizontal: 16,
+  //   alignItems: 'center',
+  //   shadowColor: '#000',
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowOpacity: 0.1,
+  //   shadowRadius: 4,
+  //   elevation: 3,
+  // },
+  // ecoGaneshaButtonText: {
+  //   fontSize: 16,
+  //   fontWeight: 'bold',
+  //   textAlign: 'center',
+  // },
 });
