@@ -218,8 +218,15 @@ export default function HomeHeader({
         </TouchableOpacity>
         <Text style={styles.centeredTitle}>The Hindu Heritage</Text>
         <View style={styles.mudraDisplay}>
-          <Text style={styles.aumSymbol}>ॐ</Text>
-          <Text style={styles.mudraCount}>{mudraCount}</Text>
+          <TouchableOpacity 
+            style={styles.mudraDisplayButton}
+            onPress={() => router.push('/auth/mudras')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.aumSymbol}>ॐ</Text>
+            <Text style={styles.mudraCount}>{mudraCount}</Text>
+            <Text style={styles.clickIndicator}>›</Text>
+          </TouchableOpacity>
         </View>
       </View>
       {/* Search Bar */}
@@ -426,6 +433,22 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   mudraCount: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  mudraDisplayButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  clickIndicator: {
     fontSize: 14,
     color: '#fff',
     fontWeight: 'bold',
