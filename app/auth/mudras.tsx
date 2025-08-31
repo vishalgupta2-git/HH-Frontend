@@ -60,14 +60,17 @@ export default function MudrasScreen() {
       </LinearGradient>
       <View style={styles.card}>
         <View style={styles.contentHeader}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-undo" size={24} color="#666" />
-          </TouchableOpacity>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Mudras</Text>
           </View>
         </View>
         <Text style={styles.subtitle}>Current Mudras</Text>
+        
+        {/* Fixed back button container */}
+        <TouchableOpacity style={styles.fixedBackButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-undo" size={24} color="#666" />
+        </TouchableOpacity>
+        
         {/* Placeholder for current mudras list */}
                  <View style={styles.mudraListPlaceholder}>
            {loading ? (
@@ -205,6 +208,18 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingTop: 0,
     position: 'relative',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F0F0F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'absolute',
+    left: -135,  // Move it to the left side
+    top: 5,   // 20px from top
+    zIndex: 10, // Ensure it's above other elements
   },
   logo: {
     width: Math.min(width * 1.125 * 0.8, width),
@@ -387,29 +402,27 @@ const styles = StyleSheet.create({
      flexDirection: 'row',
      alignItems: 'center',
      paddingHorizontal: 20,
-     paddingTop: 20,
+     paddingTop: 5,
      paddingBottom: 16,
      borderBottomWidth: 1,
      borderBottomColor: '#E0E0E0',
      marginBottom: 20,
    },
-   backButton: {
+   titleContainer: {
+     flex: 1,
+     alignItems: 'center',
+     justifyContent: 'center',
+   },
+   fixedBackButton: {
+     position: 'absolute',
+     top: 20,
+     left: 20,
      width: 40,
      height: 40,
      borderRadius: 20,
      backgroundColor: '#F0F0F0',
      alignItems: 'center',
      justifyContent: 'center',
-     marginRight: 16,
-     position: 'absolute',
-     left: -15,
-     top: -10,
-   },
-   titleContainer: {
-     position: 'absolute',
-     left: 0,
-     right: 0,
-     alignItems: 'center',
-     justifyContent: 'center',
+     zIndex: 10,
    },
  }); 
