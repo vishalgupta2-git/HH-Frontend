@@ -111,6 +111,8 @@ By agreeing to these Terms of Use, you also hereby unconditionally consent to us
 
 12.3. Additionally, by using the Platform or any of the Services, you acknowledge and agree that internet transmissions are never completely private or secure. You understand that any message or information you send using the Platform or any of the Services may be read or intercepted by others, even if there is a special notice that a particular transmission is encrypted.
 
+12.4. DISCLAIMER OF CONTENT ACCURACY
+
 12.4.1. The Company expressly disclaims any responsibility or liability for the accuracy, completeness, reliability, or authenticity of any information, content, data, or materials provided through the Platform or Services, including but not limited to information relating to:
 
 (a) Astrology, horoscopes, predictions, and astrological interpretations;

@@ -377,6 +377,69 @@ export default function LoginScreen() {
                 Additionally, by using the Platform or any of the Services, you acknowledge and agree that internet transmissions are never completely private or secure. You understand that any message or information you send using the Platform or any of the Services may be read or intercepted by others, even if there is a special notice that a particular transmission is encrypted.
               </Text>
 
+              <Text style={styles.modalLevel2}>12.4</Text>
+              <Text style={styles.modalLevel3}>DISCLAIMER OF CONTENT ACCURACY</Text>
+              
+              <Text style={styles.modalNormalText}>
+                12.4.1. The Company expressly disclaims any responsibility or liability for the accuracy, completeness, reliability, or authenticity of any information, content, data, or materials provided through the Platform or Services, including but not limited to information relating to:
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (a) Astrology, horoscopes, predictions, and astrological interpretations;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (b) Numerology, numerological calculations, and related analyses;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (c) Vastu Shastra principles, guidelines, and recommendations;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (d) Vedic texts, interpretations, translations, and commentaries;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (e) Religious sites, pilgrimage destinations (Dhams), and spiritual journeys (Yatras);
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (f) Holy books, scriptures, religious texts, and their interpretations;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (g) Information about Gods, Goddesses, deities, and religious figures;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (h) Temple information, histories, significance, and related details;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (i) Religious observances, fasting practices, festivals, and ceremonial procedures;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (j) Shalokas, mantras, chants, and their translations or meanings;
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (k) Hindu calendar dates, auspicious timings, and religious scheduling; and
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                (l) Any other religious, spiritual, cultural, or traditional content or practices.
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                12.4.2. All such information is provided for general informational and educational purposes only and should not be relied upon as definitive, authoritative, or professional guidance. Users are strongly advised to consult with qualified religious scholars, spiritual advisors, certified practitioners, or other appropriate professionals before making any decisions or taking any actions based on information obtained through the Platform or Services.
+              </Text>
+              
+              <Text style={styles.modalNormalText}>
+                12.4.3. The Company makes no representations or warranties, express or implied, regarding the spiritual efficacy, religious validity, cultural authenticity, or traditional accuracy of any content provided through the Platform or Services.
+              </Text>
+
               <Text style={styles.modalLevel1}>13. TERMINATION</Text>
               
               <Text style={styles.modalLevel2}>13.1</Text>
