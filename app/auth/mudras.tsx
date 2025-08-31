@@ -5,6 +5,7 @@ import { Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacit
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -58,7 +59,15 @@ export default function MudrasScreen() {
         />
       </LinearGradient>
       <View style={styles.card}>
-        <Text style={styles.title}>Current Mudras</Text>
+        <View style={styles.contentHeader}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-undo" size={24} color="#666" />
+          </TouchableOpacity>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Mudras</Text>
+          </View>
+        </View>
+        <Text style={styles.subtitle}>Current Mudras</Text>
         {/* Placeholder for current mudras list */}
                  <View style={styles.mudraListPlaceholder}>
            {loading ? (
@@ -232,13 +241,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     alignItems: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 18,
-    textAlign: 'center',
-  },
+
   mudraListPlaceholder: {
     minHeight: 80,
     justifyContent: 'center',
@@ -364,5 +367,49 @@ const styles = StyleSheet.create({
      fontWeight: 'bold',
      color: '#FF6A00',
      textAlign: 'center',
+   },
+   title: {
+     fontSize: 20,
+     fontWeight: 'bold',
+     color: '#FF6A00',
+     marginBottom: 18,
+     textAlign: 'center',
+   },
+   subtitle: {
+     fontSize: 18,
+     fontWeight: 'bold',
+     color: '#222',
+     marginBottom: 18,
+     textAlign: 'left',
+   },
+   // New styles for contentHeader
+   contentHeader: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     paddingHorizontal: 20,
+     paddingTop: 20,
+     paddingBottom: 16,
+     borderBottomWidth: 1,
+     borderBottomColor: '#E0E0E0',
+     marginBottom: 20,
+   },
+   backButton: {
+     width: 40,
+     height: 40,
+     borderRadius: 20,
+     backgroundColor: '#F0F0F0',
+     alignItems: 'center',
+     justifyContent: 'center',
+     marginRight: 16,
+     position: 'absolute',
+     left: -15,
+     top: -10,
+   },
+   titleContainer: {
+     position: 'absolute',
+     left: 0,
+     right: 0,
+     alignItems: 'center',
+     justifyContent: 'center',
    },
  }); 

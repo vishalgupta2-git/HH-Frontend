@@ -839,3 +839,5 @@ const styles = StyleSheet.create({
     zIndex: 5, // Above temple but below bells and arch
   },
 }); 
+
+export const options = { headerShown: false }; 

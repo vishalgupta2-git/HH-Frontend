@@ -7,6 +7,8 @@ import HomeHeader from '@/components/Home/HomeHeader';
 
 const { width, height } = Dimensions.get('window');
 
+export const options = { headerShown: false };
+
 export default function EcoFriendlyGaneshaScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();

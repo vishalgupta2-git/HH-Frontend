@@ -487,3 +487,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+export const options = { headerShown: false };

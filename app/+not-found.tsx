@@ -4,6 +4,8 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+export const options = { headerShown: false };
+
 export default function NotFoundScreen() {
   return (
     <>

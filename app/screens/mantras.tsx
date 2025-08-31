@@ -312,6 +312,8 @@ export default function MantrasScreen() {
   );
 }
 
+export const options = { headerShown: false };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

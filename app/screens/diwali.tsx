@@ -1192,3 +1192,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
+
+export const options = { headerShown: false };

@@ -9,6 +9,8 @@ import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View,
 
 const { width } = Dimensions.get('window');
 
+export const options = { headerShown: false };
+
 export default function OTPScreen() {
   const { email, name, from } = useLocalSearchParams();
   const [otp, setOtp] = useState(['', '', '', '']);

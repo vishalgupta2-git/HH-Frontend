@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Modal, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -68,7 +69,14 @@ export default function LoginScreen() {
         />
       </LinearGradient>
       <View style={styles.card}>
-        <Text style={styles.title}>Login to Your Account</Text>
+        <View style={styles.contentHeader}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-undo" size={24} color="#666" />
+          </TouchableOpacity>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Login to Your Account</Text>
+          </View>
+        </View>
         <TextInput
           style={styles.input}
           placeholder="Enter Your Email"
@@ -1096,9 +1104,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#222',
+    color: '#FF6A00',
     marginBottom: 18,
-    textAlign: 'left',
+    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
@@ -1254,6 +1262,14 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 6,
   },
+  modalLevel3: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+    color: '#222',
+    marginTop: 12,
+    marginBottom: 6,
+  },
   modalNormalText: {
     fontSize: 11,
     color: '#333',
@@ -1266,5 +1282,35 @@ const styles = StyleSheet.create({
   },
   buttonTextDisabled: {
     color: '#888',
+  },
+  // New styles for contentHeader
+  contentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+    marginBottom: 20,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F0F0F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+    position: 'absolute',
+    left: -15,
+    top: -10,
+  },
+  titleContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 }); 
