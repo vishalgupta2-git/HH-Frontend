@@ -3112,7 +3112,11 @@ export default function DailyPujaCustomTemple() {
             onPress={handleAarti}
             activeOpacity={0.7}
           >
-            <Text style={styles.pujaIcon}>🕉️</Text>
+            <Image 
+              source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+              style={styles.pujaIconImage}
+              resizeMode="contain"
+            />
             <Text style={styles.pujaIconLabel}>Aarti</Text>
           </TouchableOpacity>
 
@@ -3428,7 +3432,11 @@ export default function DailyPujaCustomTemple() {
               onPress={handleAarti}
               activeOpacity={0.7}
             >
-              <Text style={styles.pujaIcon}>🕉️</Text>
+              <Image 
+                source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+                style={styles.pujaIconImage}
+                resizeMode="contain"
+              />
               <Text style={styles.pujaIconLabel}>Aarti</Text>
             </TouchableOpacity>
 
@@ -4157,8 +4165,8 @@ const styles = StyleSheet.create({
           fontStyle: 'italic',
         },
         pujaIconImage: {
-          width: 50, // Set to exactly 50x50 pixels
-          height: 50, // Set to exactly 50x50 pixels
+          width: 40, // Set to exactly 40x40 pixels
+          height: 40, // Set to exactly 40x40 pixels
           marginBottom: 6,
         },
                                                                                modalOverlay: {
