@@ -4165,8 +4165,8 @@ const styles = StyleSheet.create({
           fontStyle: 'italic',
         },
         pujaIconImage: {
-          width: 40, // Set to exactly 40x40 pixels
-          height: 40, // Set to exactly 40x40 pixels
+          width: 50, // Set to exactly 50x50 pixels
+          height: 50, // Set to exactly 50x50 pixels
           marginBottom: 6,
         },
                                                                                modalOverlay: {
