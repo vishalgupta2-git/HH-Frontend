@@ -16,7 +16,7 @@ export default function DailyPujaReminderModal({
   firstName 
 }: DailyPujaReminderModalProps) {
   const router = useRouter();
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(4);
 
   // Auto-close timer
   useEffect(() => {
@@ -33,7 +33,7 @@ export default function DailyPujaReminderModal({
   // Reset timer when modal becomes visible
   useEffect(() => {
     if (visible) {
-      setTimeLeft(10);
+      setTimeLeft(4);
     }
   }, [visible]);
 

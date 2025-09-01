@@ -2,7 +2,7 @@ import HomeHeader from '@/components/Home/HomeHeader';
 import HomeIconGrid from '@/components/Home/HomeIconGrid';
 import ReferralConnectBlock, { SocialRow } from '@/components/Home/ReferralConnectBlock';
 import SpiritualAstrologyBlock from '@/components/Home/SpiritualAstrologyBlock';
-import DailyPujaReminderModal from '@/components/Home/DailyPujaReminderModal';
+
 import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
 import ReferralSuccessModal from '@/components/Home/ReferralSuccessModal';
 import React, { useEffect, useState } from 'react';
@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [showDailyPujaModal, setShowDailyPujaModal] = useState(false);
+
   const [showSpecialDaysModal, setShowSpecialDaysModal] = useState(false);
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
@@ -32,10 +32,9 @@ export default function HomeScreen() {
         const hasVisitedToday = await hasVisitedDailyPujaToday();
         const firstName = await getUserFirstName();
         
-        // Only show daily puja modal if user is logged in and hasn't visited today
-        if (!hasVisitedToday && firstName) {
+        // Set user first name for other modals
+        if (firstName) {
           setUserFirstName(firstName);
-          setShowDailyPujaModal(true);
         }
 
         // Check for upcoming special pujas (show for all users)
@@ -96,9 +95,7 @@ export default function HomeScreen() {
   //   return () => clearInterval(colorInterval);
   // }, []);
   
-  const handleCloseDailyPujaModal = () => {
-    setShowDailyPujaModal(false);
-  };
+
 
   const handleCloseSpecialDaysModal = () => {
     setShowSpecialDaysModal(false);
@@ -149,12 +146,7 @@ export default function HomeScreen() {
         <View style={styles.bottomSpacer} />
       </ScrollView>
       
-      {/* Daily Puja Reminder Modal */}
-      <DailyPujaReminderModal
-        visible={showDailyPujaModal}
-        onClose={handleCloseDailyPujaModal}
-        firstName={userFirstName || undefined}
-      />
+
       
       {/* Special Days Modal */}
       <SpecialDaysModal
