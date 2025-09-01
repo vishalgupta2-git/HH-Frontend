@@ -46,6 +46,7 @@ export default function HomeHeader({
 }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [mudraCount, setMudraCount] = useState(0);
   const [topicDropdownOpen, setTopicDropdownOpen] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
@@ -64,9 +65,11 @@ export default function HomeHeader({
         if (data) {
           const user = JSON.parse(data);
           setUserName(user.name || user.firstName || '');
+          setUserEmail(user.email || '');
           setMudraCount(user.mudras || 0);
         } else {
           setUserName('');
+          setUserEmail('');
           setMudraCount(0);
         }
       } catch (error) {
@@ -87,9 +90,11 @@ export default function HomeHeader({
           if (data) {
             const user = JSON.parse(data);
             setUserName(user.name || user.firstName || '');
+            setUserEmail(user.email || '');
             setMudraCount(user.mudras || 0);
           } else {
             setUserName('');
+            setUserEmail('');
             setMudraCount(0);
           }
         } catch (error) {
@@ -105,6 +110,7 @@ export default function HomeHeader({
   const handleLogout = async () => {
     await AsyncStorage.removeItem('user');
     setUserName('');
+    setUserEmail('');
     setModalVisible(false);
   };
 
@@ -361,6 +367,11 @@ export default function HomeHeader({
                 <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/mudras'); }}>
                   <Text style={styles.modalText}>Mudras</Text>
                 </TouchableOpacity>
+                {userEmail === 'vishalgupta2@gmail.com' && (
+                  <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/screens/my-bookings'); }}>
+                    <Text style={styles.modalText}>My Bookings</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity style={styles.modalOption} onPress={handleLogout}>
                   <Text style={styles.modalText}>Logout</Text>
                 </TouchableOpacity>

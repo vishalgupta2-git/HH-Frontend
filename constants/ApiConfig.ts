@@ -76,6 +76,9 @@ export const API_CONFIG = {
     PROVIDERS_KUNDLI: '/api/providers/kundli',
     PROVIDERS: '/api/providers',
     
+    // My Bookings
+    MY_BOOKINGS: '/api/my-bookings',
+    
     // Astrology & Horoscope
     FREE_ASTROLOGY_API: 'https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily',
   }
