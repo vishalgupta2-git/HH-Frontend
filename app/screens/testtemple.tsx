@@ -280,6 +280,7 @@ export default function TestTempleScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedDeityForStatues, setSelectedDeityForStatues] = useState<DeityData | null>(null);
   const [templeDimensions, setTempleDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
+  const [isEditingTemple, setIsEditingTemple] = useState(false);
 
   // Fetch deity data from MongoDB
   useEffect(() => {
@@ -439,53 +440,74 @@ export default function TestTempleScreen() {
         resizeMode="contain"
       />
       
-      {/* Temple Configuration Icons - Positioned at 50px from top */}
-      <View style={styles.templeConfigIconsContainer}>
-        <View style={styles.configIconWrapper}>
-          <TouchableOpacity 
-            style={styles.configIconItem}
-            onPress={() => setModal('temple')}
-          >
-            <Image 
-              source={require('@/assets/images/temple/Temple1.png')} 
-              style={styles.configIconImage} 
-              resizeMode="contain" 
-            />
-          </TouchableOpacity>
-          <Text style={styles.configIconLabel} numberOfLines={1}>Temple Style</Text>
-        </View>
-        
-        <View style={styles.configIconWrapper}>
-          <TouchableOpacity 
-            style={styles.configIconItem}
-            onPress={() => setModal('deities')}
-          >
-            <Image 
-              source={require('@/assets/images/temple/Ganesha1.png')} 
-              style={styles.configIconImage} 
-              resizeMode="contain" 
-            />
-          </TouchableOpacity>
-          <Text style={styles.configIconLabel} numberOfLines={1}>Deity</Text>
-        </View>
-        
-        <View style={styles.configIconWrapper}>
-          <TouchableOpacity 
-            style={styles.configIconItem}
-            onPress={() => setModal('background')}
-          >
-            <View style={styles.gradientIconContainer}>
-              <LinearGradient
-                colors={bgGradient as any}
-                style={styles.gradientIcon}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
+      {/* Temple Configuration Controls */}
+      {!isEditingTemple ? (
+        // Create/Modify Temple Button
+        <TouchableOpacity
+          style={styles.createModifyButton}
+          onPress={() => setIsEditingTemple(true)}
+        >
+          <Text style={styles.createModifyButtonText}>Create / Modify My Temple</Text>
+        </TouchableOpacity>
+      ) : (
+        <>
+          {/* Temple Configuration Icons - Positioned at 50px from top */}
+          <View style={styles.templeConfigIconsContainer}>
+            <View style={styles.configIconWrapper}>
+              <TouchableOpacity 
+                style={styles.configIconItem}
+                onPress={() => setModal('temple')}
+              >
+                <Image 
+                  source={require('@/assets/images/temple/Temple1.png')} 
+                  style={styles.configIconImage} 
+                  resizeMode="contain" 
+                />
+              </TouchableOpacity>
+              <Text style={styles.configIconLabel} numberOfLines={1}>Temple Style</Text>
             </View>
+            
+            <View style={styles.configIconWrapper}>
+              <TouchableOpacity 
+                style={styles.configIconItem}
+                onPress={() => setModal('deities')}
+              >
+                <Image 
+                  source={require('@/assets/images/temple/Ganesha1.png')} 
+                  style={styles.configIconImage} 
+                  resizeMode="contain" 
+                />
+              </TouchableOpacity>
+              <Text style={styles.configIconLabel} numberOfLines={1}>Deity</Text>
+            </View>
+            
+            <View style={styles.configIconWrapper}>
+              <TouchableOpacity 
+                style={styles.configIconItem}
+                onPress={() => setModal('background')}
+              >
+                <View style={styles.gradientIconContainer}>
+                  <LinearGradient
+                    colors={bgGradient as any}
+                    style={styles.gradientIcon}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  />
+                </View>
+              </TouchableOpacity>
+              <Text style={styles.configIconLabel} numberOfLines={1}>Background</Text>
+            </View>
+          </View>
+          
+          {/* Save Temple Button */}
+          <TouchableOpacity
+            style={styles.saveTempleButton}
+            onPress={() => setIsEditingTemple(false)}
+          >
+            <Text style={styles.saveTempleButtonText}>Save My Temple</Text>
           </TouchableOpacity>
-          <Text style={styles.configIconLabel} numberOfLines={1}>Background</Text>
-        </View>
-      </View>
+        </>
+      )}
       
       {/* Content */}
       <View style={styles.content}>
@@ -1266,5 +1288,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 8,
     minWidth: 100,
+  },
+  createModifyButton: {
+    position: 'absolute',
+    top: 50,
+    left: '50%',
+    transform: [{ translateX: -screenWidth * 0.45 }],
+    width: screenWidth * 0.9,
+    height: 50,
+    backgroundColor: '#FF6A00',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 20,
+  },
+  createModifyButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  saveTempleButton: {
+    position: 'absolute',
+    top: 130,
+    left: '50%',
+    transform: [{ translateX: -screenWidth * 0.45 }],
+    width: screenWidth * 0.9,
+    height: 50,
+    backgroundColor: '#4CAF50',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    zIndex: 20,
+  },
+  saveTempleButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
   },
 });
