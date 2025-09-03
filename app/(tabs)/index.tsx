@@ -129,6 +129,16 @@ export default function HomeScreen() {
           <HomeIconGrid />
         </View>
         
+        {/* Test Temple Button */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.testTempleButton}
+            onPress={() => router.push('/screens/testtemple')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.testTempleButtonText}>Test Temple</Text>
+          </TouchableOpacity>
+        </View>
 
         
         {/* Spiritual & Astrology Block Section */}
@@ -204,6 +214,26 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 150,
+  },
+  testTempleButton: {
+    width: '92%',
+    alignSelf: 'center',
+    backgroundColor: '#FF6A00',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  testTempleButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
   },
 
   // ecoGaneshaButton: {
