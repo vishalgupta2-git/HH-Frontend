@@ -189,4 +189,92 @@ export const saveTempleConfiguration = async (templeConfig: any): Promise<boolea
     console.error('❌ [SAVE] Error saving temple configuration:', error);
     return false;
   }
+};
+
+// Load temple configuration from new style database (for authenticated users)
+export const loadTempleFromNewStyleDatabase = async (): Promise<any | null> => {
+  try {
+    const userId = await getUserId();
+    if (!userId) {
+      return null;
+    }
+    
+    // Loading temple configuration for userId from new style table
+    const response = await axios.get(getEndpointUrl('GET_USER_TEMPLE_NEW_STYLE'), {
+      params: { userId },
+      headers: getAuthHeaders()
+    });
+    
+    // Temple loaded successfully from new style database
+    return response.data.temple;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return null;
+    }
+    console.error('❌ [NEW STYLE DB LOAD] Error loading temple from new style database:', error);
+    return null;
+  }
+};
+
+// Save temple configuration to new style database (for authenticated users)
+export const saveTempleToNewStyleDatabase = async (templeConfig: any): Promise<boolean> => {
+  try {
+    const userId = await getUserId();
+    if (!userId) {
+      // No userId available
+      return false;
+    }
+
+    // Saving temple configuration to new style database for userId
+    const response = await axios.post(getEndpointUrl('SAVE_USER_TEMPLE_NEW_STYLE'), {
+      userId,
+      templeInformation: templeConfig
+    }, {
+      headers: getAuthHeaders()
+    });
+
+    // Temple saved successfully to new style database
+    return true;
+  } catch (error) {
+    console.error('❌ [NEW STYLE DB SAVE] Error saving temple to new style database:', error);
+    return false;
+  }
+};
+
+// Main function to load temple configuration based on authentication status (new style)
+export const loadTempleConfigurationNewStyle = async (): Promise<any | null> => {
+  try {
+    const { isAuthenticated } = await checkUserAuthentication();
+    
+    if (isAuthenticated) {
+      // User authenticated, loading from new style database
+      return await loadTempleFromNewStyleDatabase();
+    } else {
+      // User not authenticated, loading from AsyncStorage
+      return await loadTempleFromAsyncStorage();
+    }
+  } catch (error) {
+    console.error('❌ [NEW STYLE LOAD] Error loading temple configuration:', error);
+    return null;
+  }
+};
+
+// Main function to save temple configuration based on authentication status (new style)
+export const saveTempleConfigurationNewStyle = async (templeConfig: any): Promise<boolean> => {
+  try {
+    const { isAuthenticated } = await checkUserAuthentication();
+    
+    if (isAuthenticated) {
+      // User authenticated, saving to new style database and AsyncStorage
+      const dbSuccess = await saveTempleToNewStyleDatabase(templeConfig);
+      const storageSuccess = await saveTempleToAsyncStorage(templeConfig);
+      return dbSuccess && storageSuccess;
+    } else {
+      // User not authenticated, saving to AsyncStorage only
+      return await saveTempleToAsyncStorage(templeConfig);
+    }
+  } catch (error) {
+    console.error('❌ [NEW STYLE SAVE] Error saving temple configuration:', error);
+    return false;
+  }
 }; 

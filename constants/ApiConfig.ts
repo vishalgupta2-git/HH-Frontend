@@ -51,6 +51,10 @@ export const API_CONFIG = {
     SAVE_GANESHA_TEMPLE: '/api/save-temple',
     GET_GANESHA_TEMPLE: '/api/get-ganesha-temple',
     
+    // New Style Temple Management
+    SAVE_USER_TEMPLE_NEW_STYLE: '/api/save-user-temple-new-style',
+    GET_USER_TEMPLE_NEW_STYLE: '/api/get-user-temple-new-style',
+    
     // Temples and Charities
     TEMPLES_CHARITIES: '/api/temples-charities',
     TEMPLES_CHARITIES_BY_ID: '/api/temples-charities', // Note: ID is appended to this base path 

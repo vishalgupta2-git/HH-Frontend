@@ -6,6 +6,7 @@ import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient, Line } from
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
+import { loadTempleConfigurationNewStyle, saveTempleConfigurationNewStyle, checkUserAuthentication } from '@/utils/templeUtils';
 
 export const options = { headerShown: false };
 
@@ -320,6 +321,28 @@ export default function TestTempleScreen() {
     console.log('Temple state changed to:', templeState);
   }, [templeState]);
   
+  // Save temple configuration
+  const saveTempleConfig = async () => {
+    try {
+      const templeConfig = {
+        selectedStyle,
+        bgGradient,
+        selectedDeities,
+        deityPositions,
+        deitySizes
+      };
+      
+      const success = await saveTempleConfigurationNewStyle(templeConfig);
+      if (success) {
+        console.log('Temple configuration saved successfully');
+      } else {
+        console.error('Failed to save temple configuration');
+      }
+    } catch (error) {
+      console.error('Error saving temple configuration:', error);
+    }
+  };
+
   // Reset wizard when entering configuringTemple mode
   React.useEffect(() => {
     if (templeState === 'configuringTemple') {
@@ -345,36 +368,46 @@ export default function TestTempleScreen() {
     }
   }, [templeState, wizardStep]);
   
-  // Initialize deity positions and sizes when deities are selected
+  // Initialize deity positions and sizes when NEW deities are selected
   React.useEffect(() => {
-    const newPositions: {[deityId: string]: {x: number, y: number}} = {};
-    const newSizes: {[deityId: string]: {width: number, height: number}} = {};
+    const newPositions: {[deityId: string]: {x: number, y: number}} = {...deityPositions};
+    const newSizes: {[deityId: string]: {width: number, height: number}} = {...deitySizes};
+    
+    let hasNewDeities = false;
     
     Object.entries(selectedDeities).forEach(([deityId, statueUrl], index) => {
-      // Calculate initial position: 10%, 40%, 70% from left
-      const leftPositions = [0.1, 0.4, 0.7];
-      const leftPosition = leftPositions[index] || 0.1;
-      
-      // Initial size: 30% screen width
-      const initialImageWidth = screenWidth * 0.3;
-      const initialImageHeight = initialImageWidth * 1.2;
-      
-      // Vertical position: 70% screen height - calculated image height
-      const initialTopPosition = (screenHeight * 0.7) - initialImageHeight;
-      
-      newPositions[deityId] = {
-        x: screenWidth * leftPosition,
-        y: initialTopPosition
-      };
-      
-      newSizes[deityId] = {
-        width: initialImageWidth,
-        height: initialImageHeight
-      };
+      // Only initialize if this deity doesn't already have position/size data
+      if (!deityPositions[deityId] || !deitySizes[deityId]) {
+        hasNewDeities = true;
+        
+        // Calculate initial position: 10%, 40%, 70% from left
+        const leftPositions = [0.1, 0.4, 0.7];
+        const leftPosition = leftPositions[index] || 0.1;
+        
+        // Initial size: 30% screen width
+        const initialImageWidth = screenWidth * 0.3;
+        const initialImageHeight = initialImageWidth * 1.2;
+        
+        // Vertical position: 70% screen height - calculated image height
+        const initialTopPosition = (screenHeight * 0.7) - initialImageHeight;
+        
+        newPositions[deityId] = {
+          x: screenWidth * leftPosition,
+          y: initialTopPosition
+        };
+        
+        newSizes[deityId] = {
+          width: initialImageWidth,
+          height: initialImageHeight
+        };
+      }
     });
     
-    setDeityPositions(newPositions);
-    setDeitySizes(newSizes);
+    // Only update state if there are new deities to initialize
+    if (hasNewDeities) {
+      setDeityPositions(newPositions);
+      setDeitySizes(newSizes);
+    }
   }, [selectedDeities]);
   
   // Control functions
@@ -462,6 +495,47 @@ export default function TestTempleScreen() {
     return () => clearInterval(interval);
   }, [isPressing, selectedDeityForEdit, deitySizes, deityPositions]);
 
+
+  // Load temple configuration on component mount
+  useEffect(() => {
+    const loadTempleConfig = async () => {
+      try {
+        const templeConfig = await loadTempleConfigurationNewStyle();
+        
+        if (templeConfig) {
+          // Check if templeConfig has templeInformation field (from database)
+          const configData = templeConfig.templeInformation || templeConfig;
+          
+          // Load temple style
+          if (configData.selectedStyle) {
+            setSelectedStyle(configData.selectedStyle);
+          }
+          
+          // Load background gradient
+          if (configData.bgGradient) {
+            setBgGradient(configData.bgGradient);
+          }
+          
+          // Load selected deities
+          if (configData.selectedDeities) {
+            setSelectedDeities(configData.selectedDeities);
+          }
+          
+          // Load deity positions and sizes
+          if (configData.deityPositions) {
+            setDeityPositions(configData.deityPositions);
+          }
+          if (configData.deitySizes) {
+            setDeitySizes(configData.deitySizes);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading temple configuration:', error);
+      }
+    };
+
+    loadTempleConfig();
+  }, []);
 
   // Fetch deity data from MongoDB
   useEffect(() => {
@@ -575,6 +649,7 @@ export default function TestTempleScreen() {
             width: screenWidth * 0.3, 
             height: screenWidth * 0.36 
           };
+
 
           return (
             <View
@@ -702,7 +777,10 @@ export default function TestTempleScreen() {
           {/* Save Temple Button */}
           <TouchableOpacity
             style={styles.saveTempleButton}
-            onPress={() => setTempleState('puja')}
+            onPress={async () => {
+              await saveTempleConfig();
+              setTempleState('puja');
+            }}
           >
             <Text style={styles.saveTempleButtonText}>Save My Temple</Text>
           </TouchableOpacity>
@@ -850,11 +928,12 @@ export default function TestTempleScreen() {
                     ) ? 1 : 0.5
                   }
                 ]}
-                onPress={() => {
+                onPress={async () => {
                   if (wizardStep < 4) {
                     setWizardStep((wizardStep + 1) as 1 | 2 | 3 | 4);
                   } else {
                     // Step 4: Save temple
+                    await saveTempleConfig();
                     setTempleState('puja');
                   }
                 }}
@@ -875,6 +954,7 @@ export default function TestTempleScreen() {
         </TouchableWithoutFeedback>
       )}
       
+
       {/* Bottom Action Buttons - Only show in puja mode */}
       {templeState === 'puja' && (
         <>
@@ -1666,8 +1746,7 @@ const styles = StyleSheet.create({
   selectedDeityImageContainer: {
     position: 'absolute',
     zIndex: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // Removed justifyContent and alignItems to avoid interference with sizing
   },
   selectedDeityFullImage: {
     width: '100%',
