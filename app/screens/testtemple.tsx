@@ -11,6 +11,7 @@ export const options = { headerShown: false };
 
 const { width: screenWidth, height: screenHeight, scale } = Dimensions.get('window');
 
+
 // Function to get temple image dimensions
 const getTempleImageDimensions = (templeId: string) => {
   const templeImageSources = {
@@ -280,7 +281,187 @@ export default function TestTempleScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedDeityForStatues, setSelectedDeityForStatues] = useState<DeityData | null>(null);
   const [templeDimensions, setTempleDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
-  const [isEditingTemple, setIsEditingTemple] = useState(false);
+  // State management: 'puja' | 'configuringTemple'
+  const [templeState, setTempleState] = useState<'puja' | 'configuringTemple'>('puja');
+  
+  // Wizard state management
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4>(1);
+  const [selectedDeityForEdit, setSelectedDeityForEdit] = useState<string | null>(null);
+  const [showDeityDropdown, setShowDeityDropdown] = useState(false);
+  
+  // Deity editing state
+  const [deityPositions, setDeityPositions] = useState<{[deityId: string]: {x: number, y: number}}>({});
+  const [deitySizes, setDeitySizes] = useState<{[deityId: string]: {width: number, height: number}}>({});
+  
+  // Continuous press state
+  const [isPressing, setIsPressing] = useState<{
+    sizeIncrease: boolean;
+    sizeDecrease: boolean;
+    positionLeft: boolean;
+    positionRight: boolean;
+    positionUp: boolean;
+    positionDown: boolean;
+  }>({
+    sizeIncrease: false,
+    sizeDecrease: false,
+    positionLeft: false,
+    positionRight: false,
+    positionUp: false,
+    positionDown: false,
+  });
+  
+  // Debug modal state changes
+  React.useEffect(() => {
+    console.log('Modal state changed to:', modal);
+  }, [modal]);
+  
+  // Debug temple state changes
+  React.useEffect(() => {
+    console.log('Temple state changed to:', templeState);
+  }, [templeState]);
+  
+  // Reset wizard when entering configuringTemple mode
+  React.useEffect(() => {
+    if (templeState === 'configuringTemple') {
+      setWizardStep(1);
+    } else {
+      // Clear selected deity when exiting configuring mode
+      setSelectedDeityForEdit(null);
+      setShowDeityDropdown(false);
+    }
+  }, [templeState]);
+  
+  // Flashing animation state
+  const [isFlashing, setIsFlashing] = useState(false);
+  
+  // Flash animation for current step icon
+  React.useEffect(() => {
+    if (templeState === 'configuringTemple') {
+      const interval = setInterval(() => {
+        setIsFlashing(prev => !prev);
+      }, 2000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [templeState, wizardStep]);
+  
+  // Initialize deity positions and sizes when deities are selected
+  React.useEffect(() => {
+    const newPositions: {[deityId: string]: {x: number, y: number}} = {};
+    const newSizes: {[deityId: string]: {width: number, height: number}} = {};
+    
+    Object.entries(selectedDeities).forEach(([deityId, statueUrl], index) => {
+      // Calculate initial position: 10%, 40%, 70% from left
+      const leftPositions = [0.1, 0.4, 0.7];
+      const leftPosition = leftPositions[index] || 0.1;
+      
+      // Initial size: 30% screen width
+      const initialImageWidth = screenWidth * 0.3;
+      const initialImageHeight = initialImageWidth * 1.2;
+      
+      // Vertical position: 70% screen height - calculated image height
+      const initialTopPosition = (screenHeight * 0.7) - initialImageHeight;
+      
+      newPositions[deityId] = {
+        x: screenWidth * leftPosition,
+        y: initialTopPosition
+      };
+      
+      newSizes[deityId] = {
+        width: initialImageWidth,
+        height: initialImageHeight
+      };
+    });
+    
+    setDeityPositions(newPositions);
+    setDeitySizes(newSizes);
+  }, [selectedDeities]);
+  
+  // Control functions
+  const handleSizeChange = (direction: 'increase' | 'decrease') => {
+    if (!selectedDeityForEdit) return;
+    
+    const currentSize = deitySizes[selectedDeityForEdit] || { width: screenWidth * 0.3, height: screenWidth * 0.36 };
+    const scaleFactor = direction === 'increase' ? 1.05 : 0.95; // 5% change
+    
+    const newWidth = currentSize.width * scaleFactor;
+    const newHeight = currentSize.height * scaleFactor;
+    
+    setDeitySizes(prev => ({
+      ...prev,
+      [selectedDeityForEdit]: { width: newWidth, height: newHeight }
+    }));
+  };
+  
+  const handlePositionChange = (direction: 'left' | 'right' | 'up' | 'down') => {
+    if (!selectedDeityForEdit) return;
+    
+    const currentPosition = deityPositions[selectedDeityForEdit] || { x: screenWidth * 0.1, y: screenHeight * 0.7 };
+    const moveAmount = 5; // 5 pixels
+    
+    let newX = currentPosition.x;
+    let newY = currentPosition.y;
+    
+    switch (direction) {
+      case 'left':
+        newX = Math.max(0, currentPosition.x - moveAmount);
+        break;
+      case 'right':
+        newX = Math.min(screenWidth - (deitySizes[selectedDeityForEdit]?.width || screenWidth * 0.3), currentPosition.x + moveAmount);
+        break;
+      case 'up':
+        newY = Math.max(0, currentPosition.y - moveAmount);
+        break;
+      case 'down':
+        newY = Math.min(screenHeight - (deitySizes[selectedDeityForEdit]?.height || screenWidth * 0.36), currentPosition.y + moveAmount);
+        break;
+    }
+    
+    setDeityPositions(prev => ({
+      ...prev,
+      [selectedDeityForEdit]: { x: newX, y: newY }
+    }));
+  };
+  
+  // Continuous press handlers
+  const startContinuousPress = (action: keyof typeof isPressing) => {
+    if (!selectedDeityForEdit) return;
+    
+    setIsPressing(prev => ({ ...prev, [action]: true }));
+  };
+  
+  const stopContinuousPress = (action: keyof typeof isPressing) => {
+    setIsPressing(prev => ({ ...prev, [action]: false }));
+  };
+  
+  // Continuous press effect
+  React.useEffect(() => {
+    if (!selectedDeityForEdit) return;
+    
+    const interval = setInterval(() => {
+      if (isPressing.sizeIncrease) {
+        handleSizeChange('increase');
+      }
+      if (isPressing.sizeDecrease) {
+        handleSizeChange('decrease');
+      }
+      if (isPressing.positionLeft) {
+        handlePositionChange('left');
+      }
+      if (isPressing.positionRight) {
+        handlePositionChange('right');
+      }
+      if (isPressing.positionUp) {
+        handlePositionChange('up');
+      }
+      if (isPressing.positionDown) {
+        handlePositionChange('down');
+      }
+    }, 100); // 100ms interval for smooth continuous action
+    
+    return () => clearInterval(interval);
+  }, [isPressing, selectedDeityForEdit, deitySizes, deityPositions]);
+
 
   // Fetch deity data from MongoDB
   useEffect(() => {
@@ -311,9 +492,9 @@ export default function TestTempleScreen() {
         try {
           const dims = await getTempleImageDimensions(temple.id);
           dimensions[temple.id] = dims;
-          console.log(`${temple.name} dimensions:`, dims);
+          console.log(`${temple.id} dimensions:`, dims);
         } catch (error) {
-          console.error(`Failed to get dimensions for ${temple.name}:`, error);
+          console.error(`Failed to get dimensions for ${temple.id}:`, error);
         }
       }
       
@@ -381,50 +562,51 @@ export default function TestTempleScreen() {
       )}
       
       {/* Selected Deities Display */}
-      {Object.entries(selectedDeities).map(([deityId, statueUrl], index) => {
-        const deity = deityData.find(d => d._id === deityId);
-        if (!deity) return null;
-        
-        // Calculate image dimensions
-        const imageWidth = screenWidth * 0.3; // 30% of screen width
-        const imageHeight = (() => {
-          // Get the actual image dimensions from the statue URL
-          const imageSource = getImageSource(statueUrl);
-          // For now, we'll use a default aspect ratio, but this could be enhanced
-          // to get actual image dimensions if needed
-          return imageWidth * 1.2; // Assuming roughly square aspect ratio
-        })();
-        
-        // Position logic: 10%, 40%, 70% from left
-        const leftPositions = [0.1, 0.4, 0.7];
-        const leftPosition = leftPositions[index] || 0.1;
-        
-        // Vertical position: 70% screen height - calculated image height
-        const topPosition = (screenHeight * 0.7) - imageHeight;
-        
-        return (
-          <TouchableOpacity
-            key={deityId}
-            style={[styles.selectedDeityImageContainer, {
-              left: screenWidth * leftPosition,
-              top: topPosition,
-              width: imageWidth,
-              height: imageHeight,
-            }]}
-            onPress={() => {
-              // Remove this deity when tapped
-              const newSelectedDeities = { ...selectedDeities };
-              delete newSelectedDeities[deityId];
-              setSelectedDeities(newSelectedDeities);
-            }}
-            activeOpacity={0.7}
-          >
-            <Image
-              source={getImageSource(statueUrl)}
-              style={styles.selectedDeityFullImage}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
+              {Object.entries(selectedDeities).map(([deityId, statueUrl], index) => {
+          const deity = deityData.find(d => d._id === deityId);
+          if (!deity) return null;
+
+          // Get current position and size from state, or use defaults
+          const currentPosition = deityPositions[deityId] || { 
+            x: screenWidth * 0.1, 
+            y: screenHeight * 0.7 
+          };
+          const currentSize = deitySizes[deityId] || { 
+            width: screenWidth * 0.3, 
+            height: screenWidth * 0.36 
+          };
+
+          return (
+            <View
+              key={deityId}
+              style={[styles.selectedDeityImageContainer, {
+                position: 'absolute',
+                left: currentPosition.x,
+                top: currentPosition.y,
+                width: currentSize.width,
+                height: currentSize.height,
+                // Highlight selected deity for editing (only in step 4)
+                borderWidth: (wizardStep === 4 && selectedDeityForEdit === deityId) ? 2 : 0,
+                borderColor: (wizardStep === 4 && selectedDeityForEdit === deityId) ? '#FF6A00' : 'transparent',
+              }]}
+            >
+            <TouchableOpacity
+              onPress={() => {
+                // In step 4, select this deity for editing
+                if (wizardStep === 4) {
+                  setSelectedDeityForEdit(deityId);
+                }
+              }}
+              activeOpacity={0.7}
+              style={{ width: '100%', height: '100%' }}
+            >
+              <Image
+                source={getImageSource(statueUrl)}
+                style={styles.selectedDeityFullImage}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          </View>
         );
       })}
       
@@ -441,22 +623,28 @@ export default function TestTempleScreen() {
       />
       
       {/* Temple Configuration Controls */}
-      {!isEditingTemple ? (
+      {templeState === 'puja' ? (
         // Create/Modify Temple Button
         <TouchableOpacity
           style={styles.createModifyButton}
-          onPress={() => setIsEditingTemple(true)}
+          onPress={() => setTempleState('configuringTemple')}
         >
           <Text style={styles.createModifyButtonText}>Create / Modify My Temple</Text>
         </TouchableOpacity>
-      ) : (
+      ) : templeState === 'configuringTemple' ? (
         <>
           {/* Temple Configuration Icons - Positioned at 50px from top */}
           <View style={styles.templeConfigIconsContainer}>
             <View style={styles.configIconWrapper}>
               <TouchableOpacity 
-                style={styles.configIconItem}
-                onPress={() => setModal('temple')}
+                style={[
+                  styles.configIconItem,
+                  wizardStep === 2 && isFlashing && styles.flashingIcon
+                ]}
+                onPress={() => {
+                  console.log('Temple button pressed');
+                  setModal('temple');
+                }}
               >
                 <Image 
                   source={require('@/assets/images/temple/Temple1.png')} 
@@ -469,8 +657,14 @@ export default function TestTempleScreen() {
             
             <View style={styles.configIconWrapper}>
               <TouchableOpacity 
-                style={styles.configIconItem}
-                onPress={() => setModal('deities')}
+                style={[
+                  styles.configIconItem,
+                  wizardStep === 3 && isFlashing && styles.flashingIcon
+                ]}
+                onPress={() => {
+                  console.log('Deity button pressed');
+                  setModal('deities');
+                }}
               >
                 <Image 
                   source={require('@/assets/images/temple/Ganesha1.png')} 
@@ -483,8 +677,14 @@ export default function TestTempleScreen() {
             
             <View style={styles.configIconWrapper}>
               <TouchableOpacity 
-                style={styles.configIconItem}
-                onPress={() => setModal('background')}
+                style={[
+                  styles.configIconItem,
+                  wizardStep === 1 && isFlashing && styles.flashingIcon
+                ]}
+                onPress={() => {
+                  console.log('Background button pressed');
+                  setModal('background');
+                }}
               >
                 <View style={styles.gradientIconContainer}>
                   <LinearGradient
@@ -502,76 +702,243 @@ export default function TestTempleScreen() {
           {/* Save Temple Button */}
           <TouchableOpacity
             style={styles.saveTempleButton}
-            onPress={() => setIsEditingTemple(false)}
+            onPress={() => setTempleState('puja')}
           >
             <Text style={styles.saveTempleButtonText}>Save My Temple</Text>
           </TouchableOpacity>
         </>
-      )}
+      ) : null}
       
       {/* Content */}
       <View style={styles.content}>
       </View>
       
-      {/* Perform Puja Button - 79% from top, 90% width, 5% height */}
-      <TouchableOpacity
-        style={[styles.performPujaButton, {
-          top: screenHeight * 0.77,
-          width: screenWidth * 0.90,
-          height: screenHeight * 0.05,
-        }]}
-        onPress={() => {
-          // Handle perform puja action
-          console.log('Perform Puja pressed');
-        }}
-      >
-        <Text style={styles.performPujaButtonText}>Perform Puja</Text>
-      </TouchableOpacity>
+      {/* Wizard Banner - Only show in configuringTemple mode */}
+      {templeState === 'configuringTemple' && (
+        <TouchableWithoutFeedback onPress={() => setShowDeityDropdown(false)}>
+          <View style={styles.wizardBanner}>
+          <View style={styles.wizardContent}>
+            <Text style={styles.wizardStepText}>
+              Step {wizardStep} of 4 - {wizardStep === 1 && 'Select Background'}
+              {wizardStep === 2 && 'Select Temple Style'}
+              {wizardStep === 3 && 'Select up to 3 Deities'}
+              {wizardStep === 4 && 'Adjust Deities Size & Position'}
+            </Text>
+            
+            {/* Step 4: Size and Position Controls */}
+            {wizardStep === 4 && (
+              <View style={styles.controlsContainer}>
+                {/* Size Controls */}
+                <View style={styles.sizeControls}>
+                  <Image 
+                    source={require('@/assets/images/icons/otherIcons/scalingIcon.png')} 
+                    style={styles.sizeIcon} 
+                    resizeMode="contain" 
+                  />
+                  <TouchableOpacity 
+                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
+                    onPressIn={() => startContinuousPress('sizeIncrease')}
+                    onPressOut={() => stopContinuousPress('sizeIncrease')}
+                    onPress={() => handleSizeChange('increase')}
+                    disabled={!selectedDeityForEdit}
+                  >
+                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>▲</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
+                    onPressIn={() => startContinuousPress('sizeDecrease')}
+                    onPressOut={() => stopContinuousPress('sizeDecrease')}
+                    onPress={() => handleSizeChange('decrease')}
+                    disabled={!selectedDeityForEdit}
+                  >
+                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>▼</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                {/* Position Controls */}
+                <View style={styles.positionControls}>
+                  <Image 
+                    source={require('@/assets/images/icons/otherIcons/positionIcon.png')} 
+                    style={styles.positionIcon} 
+                    resizeMode="contain" 
+                  />
+                  <TouchableOpacity 
+                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
+                    onPressIn={() => startContinuousPress('positionLeft')}
+                    onPressOut={() => stopContinuousPress('positionLeft')}
+                    onPress={() => handlePositionChange('left')}
+                    disabled={!selectedDeityForEdit}
+                  >
+                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>←</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
+                    onPressIn={() => startContinuousPress('positionRight')}
+                    onPressOut={() => stopContinuousPress('positionRight')}
+                    onPress={() => handlePositionChange('right')}
+                    disabled={!selectedDeityForEdit}
+                  >
+                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>→</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
+                    onPressIn={() => startContinuousPress('positionUp')}
+                    onPressOut={() => stopContinuousPress('positionUp')}
+                    onPress={() => handlePositionChange('up')}
+                    disabled={!selectedDeityForEdit}
+                  >
+                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>↑</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
+                    onPressIn={() => startContinuousPress('positionDown')}
+                    onPressOut={() => stopContinuousPress('positionDown')}
+                    onPress={() => handlePositionChange('down')}
+                    disabled={!selectedDeityForEdit}
+                  >
+                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>↓</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+            
+            {/* Step 4: Deity Dropdown */}
+            {wizardStep === 4 && (
+              <View style={styles.deityDropdownContainer}>
+                <TouchableOpacity 
+                  style={styles.deityDropdown}
+                  onPress={() => setShowDeityDropdown(true)}
+                >
+                  <Text style={styles.dropdownText}>
+                    {selectedDeityForEdit 
+                      ? (() => {
+                          const deity = deityData.find(d => d._id === selectedDeityForEdit);
+                          return deity ? deity.Deity?.Name || 'Unknown Deity' : 'Unknown Deity';
+                        })()
+                      : 'Select a deity to edit...'
+                    }
+                  </Text>
+                  <Text style={styles.dropdownArrow}>▼</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+            
+            {/* Action Buttons */}
+            <View style={styles.wizardButtonsContainer}>
+              {/* Back Button - Only show if not on step 1 */}
+              {wizardStep > 1 && (
+                <TouchableOpacity
+                  style={styles.wizardBackButton}
+                  onPress={() => {
+                    setWizardStep((wizardStep - 1) as 1 | 2 | 3 | 4);
+                  }}
+                >
+                  <Text style={styles.wizardBackButtonText}>Back</Text>
+                </TouchableOpacity>
+              )}
+              
+              {/* Next/Save Button */}
+              <TouchableOpacity
+                style={[
+                  styles.wizardActionButton,
+                  {
+                    opacity: (
+                      wizardStep === 1 || // Always allow step 1
+                      wizardStep === 2 || // Always allow step 2
+                      (wizardStep === 3 && Object.keys(selectedDeities).length > 0) || // Step 3 if at least 1 deity
+                      wizardStep === 4 // Always allow step 4
+                    ) ? 1 : 0.5
+                  }
+                ]}
+                onPress={() => {
+                  if (wizardStep < 4) {
+                    setWizardStep((wizardStep + 1) as 1 | 2 | 3 | 4);
+                  } else {
+                    // Step 4: Save temple
+                    setTempleState('puja');
+                  }
+                }}
+                disabled={!(
+                  wizardStep === 1 || // Always allow step 1
+                  wizardStep === 2 || // Always allow step 2
+                  (wizardStep === 3 && Object.keys(selectedDeities).length > 0) || // Step 3 if at least 1 deity
+                  wizardStep === 4 // Always allow step 4
+                )}
+              >
+                <Text style={styles.wizardActionButtonText}>
+                  {wizardStep === 4 ? 'Save' : 'Next'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        </TouchableWithoutFeedback>
+      )}
       
-      {/* Second Row Buttons - 83% from top (77% + 5% + 1%), 29% width each, 1.5% spacing */}
-      <View style={[styles.secondRowContainer, {
-        top: screenHeight * 0.83,
-        height: screenHeight * 0.05,
-        width: screenWidth * 0.90, // Same width as Perform Puja button
-        left: '50%',
-        transform: [{ translateX: -screenWidth * 0.45 }], // Center the container
-      }]}>
-        <TouchableOpacity
-          style={[styles.secondRowButton, {
-            width: screenWidth * 0.29,
+      {/* Bottom Action Buttons - Only show in puja mode */}
+      {templeState === 'puja' && (
+        <>
+          {/* Perform Puja Button - 79% from top, 90% width, 5% height */}
+          <TouchableOpacity
+            style={[styles.performPujaButton, {
+              top: screenHeight * 0.77,
+              width: screenWidth * 0.90,
+              height: screenHeight * 0.05,
+            }]}
+            onPress={() => {
+              // Handle perform puja action
+              console.log('Perform Puja pressed');
+            }}
+          >
+            <Text style={styles.performPujaButtonText}>Perform Puja</Text>
+          </TouchableOpacity>
+          
+          {/* Second Row Buttons - 83% from top (77% + 5% + 1%), 29% width each, 1.5% spacing */}
+          <View style={[styles.secondRowContainer, {
+            top: screenHeight * 0.83,
             height: screenHeight * 0.05,
-          }]}
-          onPress={() => {
-            console.log('My Temple pressed');
-          }}
-        >
-          <Text style={styles.secondRowButtonText}>My Temple</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.secondRowButton, {
-            width: screenWidth * 0.29,
-            height: screenHeight * 0.05,
-          }]}
-          onPress={() => {
-            console.log('Today\'s Pujas pressed');
-          }}
-        >
-          <Text style={styles.secondRowButtonText}>Today's Pujas</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={[styles.secondRowButton, {
-            width: screenWidth * 0.29,
-            height: screenHeight * 0.05,
-          }]}
-          onPress={() => {
-            console.log('All Temples pressed');
-          }}
-        >
-          <Text style={styles.secondRowButtonText}>All Temples</Text>
-        </TouchableOpacity>
-      </View>
+            width: screenWidth * 0.90, // Same width as Perform Puja button
+            left: '50%',
+            transform: [{ translateX: -screenWidth * 0.45 }], // Center the container
+          }]}>
+            <TouchableOpacity
+              style={[styles.secondRowButton, {
+                width: screenWidth * 0.29,
+                height: screenHeight * 0.05,
+              }]}
+              onPress={() => {
+                console.log('My Temple pressed');
+              }}
+            >
+              <Text style={styles.secondRowButtonText}>My Temple</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.secondRowButton, {
+                width: screenWidth * 0.29,
+                height: screenHeight * 0.05,
+              }]}
+              onPress={() => {
+                console.log('Today\'s Pujas pressed');
+              }}
+            >
+              <Text style={styles.secondRowButtonText}>Today's Pujas</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.secondRowButton, {
+                width: screenWidth * 0.29,
+                height: screenHeight * 0.05,
+              }]}
+              onPress={() => {
+                console.log('All Temples pressed');
+              }}
+            >
+              <Text style={styles.secondRowButtonText}>All Temples</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
       
       {/* Modal Implementation for Temple Configuration */}
       <Modal
@@ -581,7 +948,7 @@ export default function TestTempleScreen() {
         onRequestClose={() => setModal(null)}
       >
         <TouchableWithoutFeedback onPress={() => setModal(null)}>
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100 }}>
             <TouchableWithoutFeedback onPress={() => {}}>
               {modal === 'temple' ? (
                 <View style={styles.modalContent}>
@@ -645,7 +1012,7 @@ export default function TestTempleScreen() {
                   </View>
                 </View>
               ) : modal === 'deities' ? (
-                <View style={styles.deitiesModalContent}>
+                <View style={[styles.modalContent, { height: screenHeight * 0.3 }]}>
                   <View style={styles.modalHeader}>
                     <View>
                       <Text style={styles.modalTitle}>Deities</Text>
@@ -813,6 +1180,63 @@ export default function TestTempleScreen() {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+      
+      {/* Deity Selection Modal for Step 4 */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showDeityDropdown}
+        onRequestClose={() => setShowDeityDropdown(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowDeityDropdown(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.deitySelectionModal}>
+                <View style={styles.deitySelectionHeader}>
+                  <Text style={styles.deitySelectionTitle}>Select Deity to Edit</Text>
+                  <TouchableOpacity 
+                    style={styles.closeButton}
+                    onPress={() => setShowDeityDropdown(false)}
+                  >
+                    <Text style={styles.closeButtonText}>×</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                <ScrollView style={styles.deitySelectionList}>
+                  {Object.entries(selectedDeities).map(([deityId, statueUrl]) => {
+                    const deity = deityData.find(d => d._id === deityId);
+                    return (
+                      <TouchableOpacity
+                        key={deityId}
+                        style={[
+                          styles.deitySelectionOption,
+                          selectedDeityForEdit === deityId && styles.deitySelectionOptionSelected
+                        ]}
+                        onPress={() => {
+                          setSelectedDeityForEdit(deityId);
+                          setShowDeityDropdown(false);
+                        }}
+                      >
+                        <Image 
+                          source={getImageSource(statueUrl)} 
+                          style={styles.deitySelectionImage} 
+                          resizeMode="contain" 
+                        />
+                        <Text style={[
+                          styles.deitySelectionText,
+                          selectedDeityForEdit === deityId && styles.deitySelectionTextSelected
+                        ]}>
+                          {deity ? deity.Deity?.Name || 'Unknown Deity' : 'Unknown Deity'}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
@@ -909,7 +1333,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 10,
+    zIndex: 30,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -926,7 +1350,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    zIndex: 10,
+    zIndex: 30,
   },
   secondRowButton: {
     backgroundColor: '#FF6A00',
@@ -954,7 +1378,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    zIndex: 15,
+    zIndex: 25,
     paddingHorizontal: 20,
   },
   configIconWrapper: {
@@ -1013,6 +1437,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 20,
     elevation: 10,
+    zIndex: 101,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -1255,10 +1680,7 @@ const styles = StyleSheet.create({
     width: '90%',
     maxWidth: 400,
     height: screenHeight * 0.3,
-    position: 'absolute',
-    top: 40,
-    left: '50%',
-    transform: [{ translateX: -screenWidth * 0.45 }], // Center based on screen width
+    zIndex: 101,
   },
   deitiesScrollView: {
     flex: 1,
@@ -1275,9 +1697,6 @@ const styles = StyleSheet.create({
     top: screenHeight * 0.71,
     left: '50%',
     transform: [{ translateX: -screenWidth * 0.45 }], // Center based on screen width
-  },
-  statuesScrollView: {
-    flex: 1,
   },
   statuesScrollContent: {
     flexDirection: 'row',
@@ -1305,7 +1724,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    zIndex: 20,
+    zIndex: 30,
   },
   createModifyButtonText: {
     fontSize: 16,
@@ -1329,12 +1748,261 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    zIndex: 20,
+    zIndex: 30,
   },
   saveTempleButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
+  },
+  // Wizard Banner Styles
+  wizardBanner: {
+    position: 'absolute',
+    top: '75%',
+    left: 0,
+    right: 0,
+    height: '25%',
+    backgroundColor: '#FFD700',
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    zIndex: 50,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 10,
+  },
+  wizardContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wizardStepText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  // Controls Styles
+  controlsContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+    paddingHorizontal: 20,
+  },
+  sizeControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sizeIcon: {
+    width: 30,
+    height: 30,
+  },
+  positionIcon: {
+    width: 30,
+    height: 30,
+  },
+  arrowButton: {
+    width: 30,
+    height: 30,
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowButtonDisabled: {
+    width: 30,
+    height: 30,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  arrowText: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  positionControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  // Deity Dropdown Styles
+  deityDropdownContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  deityDropdown: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dropdownText: {
+    fontSize: 14,
+    color: '#666',
+    flex: 1,
+  },
+  dropdownArrow: {
+    fontSize: 12,
+    color: '#666',
+    marginLeft: 8,
+  },
+  deityDropdownOptions: {
+    position: 'absolute',
+    top: '100%',
+    left: '10%',
+    right: '10%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    maxHeight: 150,
+    zIndex: 1000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  deityDropdownOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  deityDropdownOptionSelected: {
+    backgroundColor: '#f0f0f0',
+  },
+  deityDropdownOptionText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  deityDropdownOptionTextSelected: {
+    color: '#FF6A00',
+    fontWeight: 'bold',
+  },
+  // Action Button Styles
+  wizardButtonsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 15,
+  },
+  wizardBackButton: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#000',
+    minWidth: 80,
+  },
+  wizardBackButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
+    textAlign: 'center',
+  },
+  wizardActionButton: {
+    backgroundColor: '#000',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 20,
+    minWidth: 100,
+  },
+  wizardActionButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFD700',
+    textAlign: 'center',
+  },
+  // Flashing Animation
+  flashingIcon: {
+    transform: [{ scale: 1.2 }],
+    shadowColor: '#FF6A00',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  // Deity Selection Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deitySelectionModal: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 20,
+    margin: 20,
+    maxHeight: '80%',
+    minHeight: 200,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  deitySelectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  deitySelectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  deitySelectionList: {
+    maxHeight: 300,
+  },
+  deitySelectionOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  deitySelectionOptionSelected: {
+    backgroundColor: '#fff3e0',
+    borderColor: '#FF6A00',
+  },
+  deitySelectionImage: {
+    width: 40,
+    height: 40,
+    marginRight: 12,
+  },
+  deitySelectionText: {
+    fontSize: 16,
+    color: '#333',
+    flex: 1,
+  },
+  deitySelectionTextSelected: {
+    color: '#FF6A00',
+    fontWeight: 'bold',
   },
 });
