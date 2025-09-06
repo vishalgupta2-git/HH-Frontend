@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient, Line } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
@@ -284,6 +284,99 @@ export default function TestTempleScreen() {
   const [templeDimensions, setTempleDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
   // State management: 'puja' | 'configuringTemple'
   const [templeState, setTempleState] = useState<'puja' | 'configuringTemple'>('puja');
+
+  // Flower offering state (aligned with Daily Puja Custom Template)
+  const [showFlowerModal, setShowFlowerModal] = useState(false);
+  const [isFlowerAnimationRunning, setIsFlowerAnimationRunning] = useState(false);
+  const [flowers, setFlowers] = useState<Array<{
+    id: string;
+    type: string;
+    x: Animated.Value;
+    y: Animated.Value;
+    opacity: Animated.Value;
+    scale: Animated.Value;
+    rotation: number;
+    baseY?: number;
+  }>>([]);
+  const flowerIdCounter = useRef(0);
+
+  const generateUniqueFlowerId = () => {
+    flowerIdCounter.current += 1;
+    return `flower_${Date.now()}_${flowerIdCounter.current}`;
+  };
+
+  const openFlowerModal = () => {
+    setShowFlowerModal(true);
+  };
+
+  const dropFlowers = async (flowerType: string = 'hibiscus') => {
+    if (isFlowerAnimationRunning) return;
+    setShowFlowerModal(false);
+    setIsFlowerAnimationRunning(true);
+
+    const rows = 5;
+    const itemsPerRow = 12;
+    const rowDelayMs = 200;
+    const edgeClamp = 30; // keep flowers slightly inside the edges
+
+    const makeFlowerAt = (xPos: number) => {
+      const id = generateUniqueFlowerId();
+      const baseY = 200 + (Math.random() - 0.5) * 40;
+      return {
+        id,
+        type: flowerType,
+        x: new Animated.Value(xPos),
+        y: new Animated.Value(0),
+        opacity: new Animated.Value(1),
+        scale: new Animated.Value(0.6 + Math.random() * 0.3),
+        rotation: Math.random() * 360,
+        baseY,
+      };
+    };
+
+    for (let row = 0; row < rows; row++) {
+      const batchRow: typeof flowers = [];
+      for (let i = 0; i < itemsPerRow; i++) {
+        const baseX = (screenWidth * i) / (itemsPerRow - 1);
+        const randomOffset = (Math.random() - 0.5) * 60; // ±30px
+        const xPos = Math.max(edgeClamp, Math.min(screenWidth - edgeClamp, baseX + randomOffset));
+        batchRow.push(makeFlowerAt(xPos));
+      }
+      setFlowers(prev => [...prev, ...batchRow]);
+
+      batchRow.forEach((f) => {
+        setTimeout(() => {
+          const duration = 3000 + Math.random() * 1000 + row * 500; // natural stagger like 3D temple
+          Animated.parallel([
+            Animated.timing(f.y, {
+              toValue: (screenHeight * 0.78) - (f.baseY || 200),
+              duration: duration,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }),
+            Animated.timing(f.opacity, {
+              toValue: 0,
+              duration: duration * 0.2,
+              delay: duration * 0.8,
+              useNativeDriver: true,
+            }),
+            Animated.timing(f.scale, {
+              toValue: 1,
+              duration: 1400,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            setFlowers(prev => prev.filter(x => x.id !== f.id));
+          });
+        }, row * rowDelayMs);
+      });
+    }
+
+    const totalDuration = (3000 + 1000 + (rows - 1) * 500) + (rows - 1) * rowDelayMs + 300;
+    setTimeout(() => {
+      setIsFlowerAnimationRunning(false);
+    }, totalDuration);
+  };
   
   // Wizard state management
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4>(1);
@@ -696,6 +789,88 @@ export default function TestTempleScreen() {
         style={styles.templeBellsLeft}
         resizeMode="contain"
       />
+      {/* Flowers falling overlay */}
+      {flowers.map((flower) => (
+        <Animated.View
+          key={flower.id}
+          style={{
+            position: 'absolute',
+            left: flower.x,
+            top: (flower.baseY || 200),
+            opacity: flower.opacity,
+            transform: [
+              { translateY: flower.y },
+              { rotate: `${flower.rotation}deg` },
+              { scale: flower.scale },
+            ],
+            zIndex: 9997,
+          }}
+        >
+          {flower.type === 'redRose' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/rose.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'whiteRose' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/whiterose.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'jasmine' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/jasmine.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'yellowShevanthi' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/YellowShevanthi.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'whiteShevanthi' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/WhiteShevanthi.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'redShevanthi' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/RedShevanthi.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'rajnigandha' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/rajnigandha.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'parajita' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/parajita.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'datura' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/Datura.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'tulsi' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/tulsi.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text style={{ fontSize: 24 }}>🌸</Text>
+          )}
+        </Animated.View>
+      ))}
       
       {/* Temple Configuration Controls */}
       {templeState === 'puja' ? (
@@ -956,6 +1131,181 @@ export default function TestTempleScreen() {
         </TouchableWithoutFeedback>
       )}
       
+
+      {/* Puja Icons - Only show in puja mode */}
+      {templeState === 'puja' && (
+        <>
+          {/* Left Puja Icons Column - Flowers, Thali, Music */}
+          <View style={styles.leftPujaIconsColumn} pointerEvents={isFlowerAnimationRunning ? 'none' : 'auto'}>
+            <TouchableOpacity 
+              style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
+              disabled={isFlowerAnimationRunning}
+              onPress={openFlowerModal}
+              activeOpacity={0.7}
+            >
+              <Image 
+                source={require('@/assets/images/icons/own temple/jasmine.png')}
+                style={styles.pujaIconImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Flowers</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]}
+              disabled={isFlowerAnimationRunning}
+              onPress={() => {
+                console.log('Thali pressed');
+                // TODO: Add thali functionality
+              }}
+              activeOpacity={0.7}
+            >
+              <Image 
+                source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+                style={styles.pujaIconImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Aarti</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]}
+              disabled={isFlowerAnimationRunning}
+              onPress={() => {
+                console.log('Music pressed');
+                // TODO: Add music functionality
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.pujaIcon}>🎵</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Music</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Right Puja Icons Column - Shankh, Ghanti */}
+          <View style={styles.rightPujaIconsColumn} pointerEvents={isFlowerAnimationRunning ? 'none' : 'auto'}>
+            <TouchableOpacity 
+              style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
+              disabled={isFlowerAnimationRunning}
+              onPress={() => {
+                console.log('Shankh pressed');
+                // TODO: Add shankh functionality
+              }}
+              activeOpacity={0.7}
+            >
+              <Image 
+                source={require('@/assets/images/icons/own temple/sankha.png')}
+                style={styles.pujaIconImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Shankh</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
+              disabled={isFlowerAnimationRunning}
+              onPress={() => {
+                console.log('Ghanti pressed');
+                // TODO: Add ghanti functionality
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.pujaIcon}>🔔</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Ghanti</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+
+      {/* Flower Selection Modal */}
+      <Modal
+        visible={showFlowerModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowFlowerModal(false)}
+        statusBarTranslucent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity 
+            style={{ flex: 1, width: '100%' }}
+            activeOpacity={1}
+            onPress={() => setShowFlowerModal(false)}
+          >
+            <View style={[styles.flowerModalContent, { top: screenHeight * 0.30, height: screenHeight * 0.30, left: 3 }]}>
+              <ScrollView 
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={styles.flowerOptions}
+              >
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('hibiscus')}>
+                  <View style={styles.flowerIconContainer}><Text style={styles.flowerOptionEmoji}>🌺</Text></View>
+                  <Text style={styles.flowerOptionLabel}>Hibiscus</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('redRose')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/rose.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Red Rose</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('whiteRose')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/whiterose.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>White Rose</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('jasmine')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/jasmine.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Jasmine</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('yellowShevanthi')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/YellowShevanthi.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Yellow Shevanthi</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('whiteShevanthi')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/WhiteShevanthi.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>White Shevanthi</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('redShevanthi')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/RedShevanthi.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Red Shevanthi</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('tulsi')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/tulsi.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Tulsi</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('rajnigandha')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/rajnigandha.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Rajnigandha</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('parajita')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/parajita.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Parajita</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('datura')}>
+                  <View style={styles.flowerIconContainer}>
+                    <Image source={require('@/assets/images/icons/own temple/Datura.png')} style={styles.flowerOptionImage} resizeMode="contain" />
+                  </View>
+                  <Text style={styles.flowerOptionLabel}>Datura</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('mix')}>
+                  <View style={styles.flowerIconContainer}><Text style={styles.flowerOptionEmoji}>🌸</Text></View>
+                  <Text style={styles.flowerOptionLabel}>Mix Flowers</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
 
       {/* Bottom Action Buttons - Only show in puja mode */}
       {templeState === 'puja' && (
@@ -1750,9 +2100,106 @@ const styles = StyleSheet.create({
     zIndex: 10,
     // Removed justifyContent and alignItems to avoid interference with sizing
   },
+  // Puja Icons Styles
+  leftPujaIconsColumn: {
+    position: 'absolute',
+    left: 10,
+    top: '40%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 4,
+    zIndex: 20,
+  },
+  rightPujaIconsColumn: {
+    position: 'absolute',
+    right: 10,
+    top: '40%',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 4,
+    zIndex: 20,
+  },
+  pujaIconItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255, 106, 0, 0.8)',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    marginBottom: 20, // Space for the label below
+  },
+  pujaIconItemDisabled: {
+    opacity: 0.5,
+  },
+  pujaIcon: {
+    fontSize: 24,
+  },
+  pujaIconImage: {
+    width: 35,
+    height: 35,
+  },
+  pujaIconLabel: {
+    position: 'absolute',
+    top: 42, // space below the 40x40 icon
+    width: 50,
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: '600',
+    textAlign: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
   selectedDeityFullImage: {
     width: '100%',
     height: '100%',
+  },
+  flowerModalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    position: 'absolute',
+    width: 62,
+    paddingVertical: 8,
+    paddingHorizontal: 3,
+  },
+  flowerOptions: {
+    paddingHorizontal: 2,
+    paddingVertical: 8,
+    alignItems: 'flex-start',
+  },
+  flowerOption: {
+    alignItems: 'center',
+    marginRight: 12,
+    marginBottom: 8,
+  },
+  flowerIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  flowerOptionEmoji: {
+    fontSize: 28,
+  },
+  flowerOptionLabel: {
+    fontSize: 12,
+    color: '#333',
+    textAlign: 'center',
+    alignSelf: 'stretch',
+  },
+  flowerOptionImage: {
+    width: 36,
+    height: 36,
   },
   deitiesModalContent: {
     backgroundColor: '#fff',

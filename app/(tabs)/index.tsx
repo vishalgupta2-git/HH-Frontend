@@ -140,6 +140,17 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* 3D Ganesha Temple Button */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.testTempleButton}
+            onPress={() => router.push('/screens/3d-ganesha')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.testTempleButtonText}>3D Ganesha Temple</Text>
+          </TouchableOpacity>
+        </View>
+
         
         {/* Spiritual & Astrology Block Section */}
         <View style={styles.section}>
