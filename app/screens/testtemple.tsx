@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing, PanResponder, GestureResponderEvent, PanResponderGestureState } from 'react-native';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient, Line } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
@@ -386,6 +386,16 @@ export default function TestTempleScreen() {
   // Deity editing state
   const [deityPositions, setDeityPositions] = useState<{[deityId: string]: {x: number, y: number}}>({});
   const [deitySizes, setDeitySizes] = useState<{[deityId: string]: {width: number, height: number}}>({});
+  const [deityDragOffsets, setDeityDragOffsets] = useState<{[deityId: string]: {dx: number, dy: number}}>({});
+  const gestureStateRef = useRef<{ [deityId: string]: { startX: number; startY: number; startWidth: number; startHeight: number; initialDistance?: number; } }>({});
+  const deityAnimPosRef = useRef<{ [deityId: string]: Animated.ValueXY }>({});
+
+  const getDeityAnim = (deityId: string, initialX: number, initialY: number) => {
+    if (!deityAnimPosRef.current[deityId]) {
+      deityAnimPosRef.current[deityId] = new Animated.ValueXY({ x: initialX, y: initialY });
+    }
+    return deityAnimPosRef.current[deityId];
+  };
   
   // Continuous press state
   const [isPressing, setIsPressing] = useState<{
@@ -685,36 +695,40 @@ export default function TestTempleScreen() {
       <GridSVG width={screenWidth} height={screenHeight} style={styles.gridOverlay} />
       
       {/* Arch on top */}
-      <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
+      <View pointerEvents="none">
+        <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
+      </View>
       
       {/* Temple Display */}
       {templeDimensions[selectedStyle] && (
-        <Image
-          source={templeStyles.find(t => t.id === selectedStyle)?.image}
-          style={[styles.templeDisplay, {
-            width: screenWidth * 0.95,
-            height: (() => {
-              const availableScreenWidth = screenWidth * 0.95;
-              const imageWidth = templeDimensions[selectedStyle].width;
-              const imageHeight = templeDimensions[selectedStyle].height;
-              const templeScale = availableScreenWidth / imageWidth;
-              return templeScale * imageHeight;
-            })(),
-            left: '50%',
-            transform: [
-              { translateX: -screenWidth * 0.475 },
-              { translateY: (() => {
+        <View pointerEvents="none">
+          <Image
+            source={templeStyles.find(t => t.id === selectedStyle)?.image}
+            style={[styles.templeDisplay, {
+              width: screenWidth * 0.95,
+              height: (() => {
                 const availableScreenWidth = screenWidth * 0.95;
                 const imageWidth = templeDimensions[selectedStyle].width;
                 const imageHeight = templeDimensions[selectedStyle].height;
                 const templeScale = availableScreenWidth / imageWidth;
-                const templeHeight = templeScale * imageHeight;
-                return (screenHeight * 0.75) - templeHeight;
-              })()
-            }]
-          }]}
-          resizeMode="stretch"
-        />
+                return templeScale * imageHeight;
+              })(),
+              left: '50%',
+              transform: [
+                { translateX: -screenWidth * 0.475 },
+                { translateY: (() => {
+                  const availableScreenWidth = screenWidth * 0.95;
+                  const imageWidth = templeDimensions[selectedStyle].width;
+                  const imageHeight = templeDimensions[selectedStyle].height;
+                  const templeScale = availableScreenWidth / imageWidth;
+                  const templeHeight = templeScale * imageHeight;
+                  return (screenHeight * 0.75) - templeHeight;
+                })() }
+              ]
+            }]}
+            resizeMode="stretch"
+          />
+        </View>
       )}
       
       {/* Selected Deities Display */}
@@ -731,42 +745,99 @@ export default function TestTempleScreen() {
             width: screenWidth * 0.3, 
             height: screenWidth * 0.36 
           };
+          const dragOffset = deityDragOffsets[deityId] || { dx: 0, dy: 0 };
 
 
           return (
-            <View
+            <Animated.View
               key={deityId}
               style={[styles.selectedDeityImageContainer, {
                 position: 'absolute',
-                left: currentPosition.x,
-                top: currentPosition.y,
                 width: currentSize.width,
                 height: currentSize.height,
-                // Highlight selected deity for editing (only in step 4)
-                borderWidth: (wizardStep === 4 && selectedDeityForEdit === deityId) ? 2 : 0,
-                borderColor: (wizardStep === 4 && selectedDeityForEdit === deityId) ? '#FF6A00' : 'transparent',
+                borderWidth: (selectedDeityForEdit === deityId) ? 2 : 0,
+                borderColor: (selectedDeityForEdit === deityId) ? '#FF6A00' : 'transparent',
+                transform: [
+                  { translateX: getDeityAnim(deityId, currentPosition.x, currentPosition.y).x },
+                  { translateY: getDeityAnim(deityId, currentPosition.x, currentPosition.y).y },
+                ]
               }]}
             >
-            <TouchableOpacity
-              onPress={() => {
-                // In step 4, select this deity for editing
-                if (wizardStep === 4) {
-                  setSelectedDeityForEdit(deityId);
-                }
-              }}
-              activeOpacity={0.7}
+            <View
               style={{ width: '100%', height: '100%' }}
+              {...PanResponder.create({
+                onStartShouldSetPanResponder: () => true,
+                onMoveShouldSetPanResponder: (evt, gs) => gs.numberActiveTouches >= 2 || Math.abs(gs.dx) > 2 || Math.abs(gs.dy) > 2,
+                onPanResponderGrant: (e) => {
+                  const touches = (e.nativeEvent as any).touches || [];
+                  gestureStateRef.current[deityId] = {
+                    startX: currentPosition.x,
+                    startY: currentPosition.y,
+                    startWidth: currentSize.width,
+                    startHeight: currentSize.height,
+                    initialDistance: touches.length >= 2 ? Math.hypot(
+                      touches[1].pageX - touches[0].pageX,
+                      touches[1].pageY - touches[0].pageY
+                    ) : undefined,
+                  };
+                  setSelectedDeityForEdit(deityId);
+                  setDeityDragOffsets(prev => ({ ...prev, [deityId]: { dx: 0, dy: 0 } }));
+                },
+                onPanResponderMove: (e, gs) => {
+                  const ref = gestureStateRef.current[deityId];
+                  if (!ref) return;
+                  const touches = (e.nativeEvent as any).touches || [];
+                  if (touches.length <= 1) {
+                    const anim = getDeityAnim(deityId, currentPosition.x, currentPosition.y);
+                    anim.setValue({ x: ref.startX + gs.dx, y: ref.startY + gs.dy });
+                  }
+                  if (touches.length >= 2) {
+                    const ref2 = gestureStateRef.current[deityId];
+                    if (!ref2.initialDistance) {
+                      ref2.initialDistance = Math.hypot(
+                        touches[1].pageX - touches[0].pageX,
+                        touches[1].pageY - touches[0].pageY
+                      );
+                      ref2.startWidth = currentSize.width;
+                      ref2.startHeight = currentSize.height;
+                    }
+                    const currentDistance = Math.hypot(
+                      touches[1].pageX - touches[0].pageX,
+                      touches[1].pageY - touches[0].pageY
+                    );
+                    const scaleFactor = Math.max(0.5, Math.min(2.0, currentDistance / ref2.initialDistance));
+                    const newWidth = Math.max(40, Math.min(screenWidth, ref2.startWidth * scaleFactor));
+                    const newHeight = Math.max(40, Math.min(screenHeight, ref2.startHeight * scaleFactor));
+                    setDeitySizes(prev => ({ ...prev, [deityId]: { width: newWidth, height: newHeight } }));
+                  }
+                },
+                onPanResponderRelease: (e, gs) => { 
+                  const ref = gestureStateRef.current[deityId];
+                  if (ref) {
+                    const latestSize = deitySizes[deityId] || currentSize;
+                    const finalX = Math.max(0, Math.min(screenWidth - latestSize.width, ref.startX + gs.dx));
+                    const finalY = Math.max(0, Math.min(screenHeight - latestSize.height, ref.startY + gs.dy));
+                    setDeityPositions(prev => ({ ...prev, [deityId]: { x: finalX, y: finalY } }));
+                    const anim = getDeityAnim(deityId, currentPosition.x, currentPosition.y);
+                    anim.setValue({ x: finalX, y: finalY });
+                  }
+                  delete gestureStateRef.current[deityId]; 
+                },
+                onPanResponderTerminate: () => { delete gestureStateRef.current[deityId]; },
+              }).panHandlers}
             >
               <Image
                 source={getImageSource(statueUrl)}
                 style={styles.selectedDeityFullImage}
                 resizeMode="contain"
               />
-            </TouchableOpacity>
-          </View>
+            </View>
+          </Animated.View>
         );
       })}
       
+      {/* Step 4 Edit Modal for Deities - removed as requested */}
+
       {/* Temple Bells */}
       <Image
         source={require('@/assets/images/temple/templeBellIcon2.png')}
