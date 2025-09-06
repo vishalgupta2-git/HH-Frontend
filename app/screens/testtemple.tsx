@@ -695,7 +695,7 @@ export default function TestTempleScreen() {
       <GridSVG width={screenWidth} height={screenHeight} style={styles.gridOverlay} />
       
       {/* Arch on top */}
-      <View pointerEvents="none">
+      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 220 }}>
         <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
       </View>
       
@@ -951,71 +951,7 @@ export default function TestTempleScreen() {
         </TouchableOpacity>
       ) : templeState === 'configuringTemple' ? (
         <>
-          {/* Temple Configuration Icons - Positioned at 50px from top */}
-          <View style={styles.templeConfigIconsContainer}>
-            <View style={styles.configIconWrapper}>
-              <TouchableOpacity 
-                style={[
-                  styles.configIconItem,
-                  wizardStep === 2 && isFlashing && styles.flashingIcon
-                ]}
-                onPress={() => {
-                  console.log('Temple button pressed');
-                  setModal('temple');
-                }}
-              >
-                <Image 
-                  source={require('@/assets/images/temple/Temple1.png')} 
-                  style={styles.configIconImage} 
-                  resizeMode="contain" 
-                />
-              </TouchableOpacity>
-              <Text style={styles.configIconLabel} numberOfLines={1}>Temple Style</Text>
-            </View>
-            
-            <View style={styles.configIconWrapper}>
-              <TouchableOpacity 
-                style={[
-                  styles.configIconItem,
-                  wizardStep === 3 && isFlashing && styles.flashingIcon
-                ]}
-                onPress={() => {
-                  console.log('Deity button pressed');
-                  setModal('deities');
-                }}
-              >
-                <Image 
-                  source={require('@/assets/images/temple/Ganesha1.png')} 
-                  style={styles.configIconImage} 
-                  resizeMode="contain" 
-                />
-              </TouchableOpacity>
-              <Text style={styles.configIconLabel} numberOfLines={1}>Deity</Text>
-            </View>
-            
-            <View style={styles.configIconWrapper}>
-              <TouchableOpacity 
-                style={[
-                  styles.configIconItem,
-                  wizardStep === 1 && isFlashing && styles.flashingIcon
-                ]}
-                onPress={() => {
-                  console.log('Background button pressed');
-                  setModal('background');
-                }}
-              >
-                <View style={styles.gradientIconContainer}>
-                  <LinearGradient
-                    colors={bgGradient as any}
-                    style={styles.gradientIcon}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  />
-                </View>
-              </TouchableOpacity>
-              <Text style={styles.configIconLabel} numberOfLines={1}>Background</Text>
-            </View>
-          </View>
+          {/* Temple Configuration Icons - Moved into bottom banner */}
           
           {/* Save Temple Button */}
           <TouchableOpacity
@@ -1039,15 +975,62 @@ export default function TestTempleScreen() {
         <TouchableWithoutFeedback onPress={() => setShowDeityDropdown(false)}>
           <View style={styles.wizardBanner}>
           <View style={styles.wizardContent}>
-            <Text style={styles.wizardStepText}>
-              Step {wizardStep} of 4 - {wizardStep === 1 && 'Select Background'}
-              {wizardStep === 2 && 'Select Temple Style'}
-              {wizardStep === 3 && 'Select up to 3 Deities'}
-              {wizardStep === 4 && 'Adjust Deities Size & Position'}
-            </Text>
+            {wizardStep !== 1 && (
+              <Text style={styles.wizardStepText}>
+                Step {wizardStep} of 4 - {wizardStep === 2 && 'Select Temple Style'}
+                {wizardStep === 3 && 'Select up to 3 Deities'}
+                {wizardStep === 4 && 'Adjust Deities Size & Position'}
+              </Text>
+            )}
             
             {/* Step 4: Size/Position icons and deity dropdown removed as requested */}
             
+            {/* Config Icons inside banner */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', width: '100%', marginBottom: 12 }}>
+              <View style={styles.configIconWrapper}>
+                <TouchableOpacity 
+                  style={styles.configIconItem}
+                  onPress={() => setModal('temple')}
+                >
+                  <Image 
+                    source={require('@/assets/images/temple/Temple1.png')} 
+                    style={styles.configIconImage} 
+                    resizeMode="contain" 
+                  />
+                </TouchableOpacity>
+                <Text style={styles.configIconLabel} numberOfLines={1}>Temple Style</Text>
+              </View>
+              <View style={styles.configIconWrapper}>
+                <TouchableOpacity 
+                    style={styles.configIconItem}
+                    onPress={() => setModal('deities')}
+                >
+                  <Image 
+                    source={require('@/assets/images/temple/Ganesha1.png')} 
+                    style={styles.configIconImage} 
+                    resizeMode="contain" 
+                  />
+                </TouchableOpacity>
+                <Text style={styles.configIconLabel} numberOfLines={1}>Deity</Text>
+              </View>
+              <View style={styles.configIconWrapper}>
+                <TouchableOpacity 
+                    style={styles.configIconItem}
+                    onPress={() => setModal('background')}
+                >
+                  <View style={styles.gradientIconContainer}>
+                    <LinearGradient
+                      colors={bgGradient as any}
+                      style={styles.gradientIcon}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    />
+                  </View>
+                </TouchableOpacity>
+                <Text style={styles.configIconLabel} numberOfLines={1}>Background</Text>
+              </View>
+            </View>
+
             {/* Action Buttons */}
             <View style={styles.wizardButtonsContainer}>
               {/* Back Button - Only show if not on step 1 */}
@@ -1062,39 +1045,38 @@ export default function TestTempleScreen() {
                 </TouchableOpacity>
               )}
               
-              {/* Next/Save Button */}
-              <TouchableOpacity
-                style={[
-                  styles.wizardActionButton,
-                  {
-                    opacity: (
-                      wizardStep === 1 || // Always allow step 1
-                      wizardStep === 2 || // Always allow step 2
-                      (wizardStep === 3 && Object.keys(selectedDeities).length > 0) || // Step 3 if at least 1 deity
-                      wizardStep === 4 // Always allow step 4
-                    ) ? 1 : 0.5
-                  }
-                ]}
-                onPress={async () => {
-                  if (wizardStep < 4) {
-                    setWizardStep((wizardStep + 1) as 1 | 2 | 3 | 4);
-                  } else {
-                    // Step 4: Save temple
-                    await saveTempleConfig();
-                    setTempleState('puja');
-                  }
-                }}
-                disabled={!(
-                  wizardStep === 1 || // Always allow step 1
-                  wizardStep === 2 || // Always allow step 2
-                  (wizardStep === 3 && Object.keys(selectedDeities).length > 0) || // Step 3 if at least 1 deity
-                  wizardStep === 4 // Always allow step 4
-                )}
-              >
-                <Text style={styles.wizardActionButtonText}>
-                  {wizardStep === 4 ? 'Save' : 'Next'}
-                </Text>
-              </TouchableOpacity>
+              {/* Next/Save Button - hidden on step 1 */}
+              {wizardStep !== 1 && (
+                <TouchableOpacity
+                  style={[
+                    styles.wizardActionButton,
+                    {
+                      opacity: (
+                        wizardStep === 2 ||
+                        (wizardStep === 3 && Object.keys(selectedDeities).length > 0) ||
+                        wizardStep === 4
+                      ) ? 1 : 0.5
+                    }
+                  ]}
+                  onPress={async () => {
+                    if (wizardStep < 4) {
+                      setWizardStep((wizardStep + 1) as 1 | 2 | 3 | 4);
+                    } else {
+                      await saveTempleConfig();
+                      setTempleState('puja');
+                    }
+                  }}
+                  disabled={!(
+                    wizardStep === 2 ||
+                    (wizardStep === 3 && Object.keys(selectedDeities).length > 0) ||
+                    wizardStep === 4
+                  )}
+                >
+                  <Text style={styles.wizardActionButtonText}>
+                    {wizardStep === 4 ? 'Save' : 'Next'}
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </View>
