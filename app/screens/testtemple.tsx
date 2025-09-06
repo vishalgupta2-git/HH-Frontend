@@ -297,6 +297,8 @@ export default function TestTempleScreen() {
     scale: Animated.Value;
     rotation: number;
     baseY?: number;
+    fadeStart?: number;
+    fadeEnd?: number;
   }>>([]);
   const flowerIdCounter = useRef(0);
 
@@ -322,6 +324,8 @@ export default function TestTempleScreen() {
     const makeFlowerAt = (xPos: number) => {
       const id = generateUniqueFlowerId();
       const baseY = 100 + (Math.random() - 0.5) * 40;
+      const fadeStart = screenHeight * 0.65;
+      const fadeEnd = screenHeight * 0.78;
       return {
         id,
         type: flowerType,
@@ -331,6 +335,8 @@ export default function TestTempleScreen() {
         scale: new Animated.Value(0.6 + Math.random() * 0.3),
         rotation: Math.random() * 360,
         baseY,
+        fadeStart,
+        fadeEnd,
       };
     };
 
@@ -354,10 +360,11 @@ export default function TestTempleScreen() {
               easing: Easing.out(Easing.cubic),
               useNativeDriver: true,
             }),
+            // Fade from 65% to 78% of screen height
             Animated.timing(f.opacity, {
               toValue: 0,
-              duration: duration * 0.2,
-              delay: duration * 0.8,
+              duration: Math.max(200, duration * ((screenHeight * 0.78 - (f.fadeStart || screenHeight * 0.65)) / ((screenHeight * 0.78) - (f.baseY || 200)))) ,
+              delay: Math.max(0, duration * (((f.fadeStart || screenHeight * 0.65) - (f.baseY || 200)) / ((screenHeight * 0.78) - (f.baseY || 200)))),
               useNativeDriver: true,
             }),
             Animated.timing(f.scale, {
@@ -755,8 +762,8 @@ export default function TestTempleScreen() {
                 position: 'absolute',
                 width: currentSize.width,
                 height: currentSize.height,
-                borderWidth: (selectedDeityForEdit === deityId) ? 2 : 0,
-                borderColor: (selectedDeityForEdit === deityId) ? '#FF6A00' : 'transparent',
+                borderWidth: 0,
+                borderColor: 'transparent',
                 transform: [
                   { translateX: getDeityAnim(deityId, currentPosition.x, currentPosition.y).x },
                   { translateY: getDeityAnim(deityId, currentPosition.x, currentPosition.y).y },
