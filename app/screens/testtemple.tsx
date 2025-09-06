@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing, PanResponder, GestureResponderEvent, PanResponderGestureState } from 'react-native';
+import { Audio } from 'expo-av';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient, Line } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
@@ -463,6 +464,90 @@ export default function TestTempleScreen() {
   
   // Flashing animation state
   const [isFlashing, setIsFlashing] = useState(false);
+  const topBellsSwing = useRef(new Animated.Value(0)).current;
+  const bottomBellsSwing = useRef(new Animated.Value(0)).current;
+  const [isBellAnimationRunning, setIsBellAnimationRunning] = useState(false);
+  const bellSoundRef = useRef<Audio.Sound | null>(null);
+  const conchSoundRef = useRef<Audio.Sound | null>(null);
+
+  const preloadBellSound = React.useCallback(async () => {
+    try {
+      if (!bellSoundRef.current) {
+        const { sound } = await Audio.Sound.createAsync(require('@/assets/sounds/TempleBell.mp3'));
+        bellSoundRef.current = sound;
+      }
+    } catch (error) {
+      console.error('Error preloading bell sound:', error);
+    }
+  }, []);
+
+  const preloadConchSound = React.useCallback(async () => {
+    try {
+      if (!conchSoundRef.current) {
+        const { sound } = await Audio.Sound.createAsync(require('@/assets/sounds/conch.mp3'));
+        conchSoundRef.current = sound;
+      }
+    } catch (error) {
+      console.error('Error preloading conch sound:', error);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    preloadBellSound();
+    preloadConchSound();
+    return () => {
+      try { bellSoundRef.current?.unloadAsync(); } catch {}
+      try { conchSoundRef.current?.unloadAsync(); } catch {}
+    };
+  }, [preloadBellSound, preloadConchSound]);
+
+  const playConch = async () => {
+    try {
+      if (!conchSoundRef.current) {
+        await preloadConchSound();
+      }
+      await conchSoundRef.current?.replayAsync();
+    } catch (e) {
+      console.warn('Conch sound failed', e);
+    }
+  };
+
+  const triggerBells = async () => {
+    if (isBellAnimationRunning) return;
+    setIsBellAnimationRunning(true);
+    try {
+      // Play bell from beginning, cap playback to 4s
+      if (bellSoundRef.current) {
+        try { await bellSoundRef.current.stopAsync(); } catch {}
+        await bellSoundRef.current.replayAsync();
+        setTimeout(async () => { try { await bellSoundRef.current?.stopAsync(); } catch {} }, 4000);
+      }
+
+      // Reset swings
+      topBellsSwing.setValue(0);
+      bottomBellsSwing.setValue(0);
+
+      // First swing sequence (approx like 3D Ganesha)
+      Animated.timing(topBellsSwing, { toValue: 1, duration: 180, useNativeDriver: true, easing: Easing.out(Easing.quad) }).start(() => {
+        Animated.timing(topBellsSwing, { toValue: -1, duration: 260, useNativeDriver: true, easing: Easing.out(Easing.quad) }).start(() => {
+          Animated.timing(topBellsSwing, { toValue: 0, duration: 200, useNativeDriver: true, easing: Easing.out(Easing.quad) }).start();
+        });
+      });
+      setTimeout(() => {
+        Animated.timing(bottomBellsSwing, { toValue: -1, duration: 180, useNativeDriver: true, easing: Easing.out(Easing.quad) }).start(() => {
+          Animated.timing(bottomBellsSwing, { toValue: 1, duration: 260, useNativeDriver: true, easing: Easing.out(Easing.quad) }).start(() => {
+            Animated.timing(bottomBellsSwing, { toValue: 0, duration: 200, useNativeDriver: true, easing: Easing.out(Easing.quad) }).start();
+          });
+        });
+      }, 150);
+
+      // Finish
+      setTimeout(() => setIsBellAnimationRunning(false), 1200);
+    } catch (e) {
+      console.error('Error triggering bells:', e);
+      setIsBellAnimationRunning(false);
+    }
+  };
   
   // Flash animation for current step icon
   React.useEffect(() => {
@@ -703,38 +788,38 @@ export default function TestTempleScreen() {
       
       {/* Arch on top */}
       <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 220 }}>
-        <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
+      <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
       </View>
       
       {/* Temple Display */}
       {templeDimensions[selectedStyle] && (
         <View pointerEvents="none">
-          <Image
-            source={templeStyles.find(t => t.id === selectedStyle)?.image}
-            style={[styles.templeDisplay, {
-              width: screenWidth * 0.95,
-              height: (() => {
+        <Image
+          source={templeStyles.find(t => t.id === selectedStyle)?.image}
+          style={[styles.templeDisplay, {
+            width: screenWidth * 0.95,
+            height: (() => {
+              const availableScreenWidth = screenWidth * 0.95;
+              const imageWidth = templeDimensions[selectedStyle].width;
+              const imageHeight = templeDimensions[selectedStyle].height;
+              const templeScale = availableScreenWidth / imageWidth;
+              return templeScale * imageHeight;
+            })(),
+            left: '50%',
+            transform: [
+              { translateX: -screenWidth * 0.475 },
+              { translateY: (() => {
                 const availableScreenWidth = screenWidth * 0.95;
                 const imageWidth = templeDimensions[selectedStyle].width;
                 const imageHeight = templeDimensions[selectedStyle].height;
                 const templeScale = availableScreenWidth / imageWidth;
-                return templeScale * imageHeight;
-              })(),
-              left: '50%',
-              transform: [
-                { translateX: -screenWidth * 0.475 },
-                { translateY: (() => {
-                  const availableScreenWidth = screenWidth * 0.95;
-                  const imageWidth = templeDimensions[selectedStyle].width;
-                  const imageHeight = templeDimensions[selectedStyle].height;
-                  const templeScale = availableScreenWidth / imageWidth;
-                  const templeHeight = templeScale * imageHeight;
-                  return (screenHeight * 0.75) - templeHeight;
+                const templeHeight = templeScale * imageHeight;
+                return (screenHeight * 0.75) - templeHeight;
                 })() }
               ]
-            }]}
-            resizeMode="stretch"
-          />
+          }]}
+          resizeMode="stretch"
+        />
         </View>
       )}
       
@@ -844,22 +929,30 @@ export default function TestTempleScreen() {
                 style={styles.selectedDeityFullImage}
                 resizeMode="contain"
               />
-            </View>
+          </View>
           </Animated.View>
         );
       })}
       
       {/* Step 4 Edit Modal for Deities - removed as requested */}
-
+      
       {/* Temple Bells */}
-      <Image
+      <Animated.Image
         source={require('@/assets/images/temple/templeBellIcon2.png')}
-        style={styles.templeBells}
+        style={[styles.templeBells, { transform: [
+          { translateY: -60 },
+          { rotate: topBellsSwing.interpolate({ inputRange: [-1, 0, 1], outputRange: ['-15deg', '0deg', '15deg'] }) },
+          { translateY: 60 },
+        ] }]}
         resizeMode="contain"
       />
-      <Image
+      <Animated.Image
         source={require('@/assets/images/temple/templeBellIcon2.png')}
-        style={styles.templeBellsLeft}
+        style={[styles.templeBellsLeft, { transform: [
+          { translateY: -60 },
+          { rotate: bottomBellsSwing.interpolate({ inputRange: [-1, 0, 1], outputRange: ['15deg', '0deg', '-15deg'] }) },
+          { translateY: 60 },
+        ] }]}
         resizeMode="contain"
       />
       {/* Flowers falling overlay */}
@@ -983,11 +1076,11 @@ export default function TestTempleScreen() {
           <View style={styles.wizardBanner}>
           <View style={styles.wizardContent}>
             {wizardStep !== 1 && (
-              <Text style={styles.wizardStepText}>
+            <Text style={styles.wizardStepText}>
                 Step {wizardStep} of 4 - {wizardStep === 2 && 'Select Temple Style'}
-                {wizardStep === 3 && 'Select up to 3 Deities'}
-                {wizardStep === 4 && 'Adjust Deities Size & Position'}
-              </Text>
+              {wizardStep === 3 && 'Select up to 3 Deities'}
+              {wizardStep === 4 && 'Adjust Deities Size & Position'}
+            </Text>
             )}
             
             {/* Step 4: Size/Position icons and deity dropdown removed as requested */}
@@ -1004,11 +1097,11 @@ export default function TestTempleScreen() {
                     style={styles.configIconImage} 
                     resizeMode="contain" 
                   />
-                </TouchableOpacity>
+                  </TouchableOpacity>
                 <Text style={styles.configIconLabel} numberOfLines={1}>Temple Style</Text>
               </View>
               <View style={styles.configIconWrapper}>
-                <TouchableOpacity 
+                  <TouchableOpacity 
                     style={styles.configIconItem}
                     onPress={() => setModal('deities')}
                 >
@@ -1017,11 +1110,11 @@ export default function TestTempleScreen() {
                     style={styles.configIconImage} 
                     resizeMode="contain" 
                   />
-                </TouchableOpacity>
+                  </TouchableOpacity>
                 <Text style={styles.configIconLabel} numberOfLines={1}>Deity</Text>
               </View>
               <View style={styles.configIconWrapper}>
-                <TouchableOpacity 
+                  <TouchableOpacity 
                     style={styles.configIconItem}
                     onPress={() => setModal('background')}
                 >
@@ -1033,11 +1126,11 @@ export default function TestTempleScreen() {
                       end={{ x: 1, y: 1 }}
                     />
                   </View>
-                </TouchableOpacity>
+                  </TouchableOpacity>
                 <Text style={styles.configIconLabel} numberOfLines={1}>Background</Text>
+                </View>
               </View>
-            </View>
-
+            
             {/* Action Buttons */}
             <View style={styles.wizardButtonsContainer}>
               {/* Back Button - Only show if not on step 1 */}
@@ -1054,35 +1147,35 @@ export default function TestTempleScreen() {
               
               {/* Next/Save Button - hidden on step 1 */}
               {wizardStep !== 1 && (
-                <TouchableOpacity
-                  style={[
-                    styles.wizardActionButton,
-                    {
-                      opacity: (
+              <TouchableOpacity
+                style={[
+                  styles.wizardActionButton,
+                  {
+                    opacity: (
                         wizardStep === 2 ||
                         (wizardStep === 3 && Object.keys(selectedDeities).length > 0) ||
                         wizardStep === 4
-                      ) ? 1 : 0.5
-                    }
-                  ]}
-                  onPress={async () => {
-                    if (wizardStep < 4) {
-                      setWizardStep((wizardStep + 1) as 1 | 2 | 3 | 4);
-                    } else {
-                      await saveTempleConfig();
-                      setTempleState('puja');
-                    }
-                  }}
-                  disabled={!(
+                    ) ? 1 : 0.5
+                  }
+                ]}
+                onPress={async () => {
+                  if (wizardStep < 4) {
+                    setWizardStep((wizardStep + 1) as 1 | 2 | 3 | 4);
+                  } else {
+                    await saveTempleConfig();
+                    setTempleState('puja');
+                  }
+                }}
+                disabled={!(
                     wizardStep === 2 ||
                     (wizardStep === 3 && Object.keys(selectedDeities).length > 0) ||
                     wizardStep === 4
-                  )}
-                >
-                  <Text style={styles.wizardActionButtonText}>
-                    {wizardStep === 4 ? 'Save' : 'Next'}
-                  </Text>
-                </TouchableOpacity>
+                )}
+              >
+                <Text style={styles.wizardActionButtonText}>
+                  {wizardStep === 4 ? 'Save' : 'Next'}
+                </Text>
+              </TouchableOpacity>
               )}
             </View>
           </View>
@@ -1144,10 +1237,7 @@ export default function TestTempleScreen() {
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
               disabled={isFlowerAnimationRunning}
-              onPress={() => {
-                console.log('Shankh pressed');
-                // TODO: Add shankh functionality
-              }}
+              onPress={playConch}
               activeOpacity={0.7}
             >
               <Image 
@@ -1160,10 +1250,7 @@ export default function TestTempleScreen() {
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
               disabled={isFlowerAnimationRunning}
-              onPress={() => {
-                console.log('Ghanti pressed');
-                // TODO: Add ghanti functionality
-              }}
+              onPress={triggerBells}
               activeOpacity={0.7}
             >
               <Text style={styles.pujaIcon}>🔔</Text>
