@@ -815,8 +815,14 @@ export default function TestTempleScreen() {
                   const ref = gestureStateRef.current[deityId];
                   if (ref) {
                     const latestSize = deitySizes[deityId] || currentSize;
-                    const finalX = Math.max(0, Math.min(screenWidth - latestSize.width, ref.startX + gs.dx));
-                    const finalY = Math.max(0, Math.min(screenHeight - latestSize.height, ref.startY + gs.dy));
+                    const minX = -latestSize.width * 0.5;
+                    const maxX = screenWidth - latestSize.width * 0.5;
+                    const minY = -latestSize.height * 0.5;
+                    const maxY = screenHeight - latestSize.height * 0.5;
+                    const unclampedX = ref.startX + gs.dx;
+                    const unclampedY = ref.startY + gs.dy;
+                    const finalX = Math.max(minX, Math.min(maxX, unclampedX));
+                    const finalY = Math.max(minY, Math.min(maxY, unclampedY));
                     setDeityPositions(prev => ({ ...prev, [deityId]: { x: finalX, y: finalY } }));
                     const anim = getDeityAnim(deityId, currentPosition.x, currentPosition.y);
                     anim.setValue({ x: finalX, y: finalY });
@@ -1040,103 +1046,7 @@ export default function TestTempleScreen() {
               {wizardStep === 4 && 'Adjust Deities Size & Position'}
             </Text>
             
-            {/* Step 4: Size and Position Controls */}
-            {wizardStep === 4 && (
-              <View style={styles.controlsContainer}>
-                {/* Size Controls */}
-                <View style={styles.sizeControls}>
-                  <Image 
-                    source={require('@/assets/images/icons/otherIcons/scalingIcon.png')} 
-                    style={styles.sizeIcon} 
-                    resizeMode="contain" 
-                  />
-                  <TouchableOpacity 
-                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
-                    onPressIn={() => startContinuousPress('sizeIncrease')}
-                    onPressOut={() => stopContinuousPress('sizeIncrease')}
-                    onPress={() => handleSizeChange('increase')}
-                    disabled={!selectedDeityForEdit}
-                  >
-                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>▲</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
-                    onPressIn={() => startContinuousPress('sizeDecrease')}
-                    onPressOut={() => stopContinuousPress('sizeDecrease')}
-                    onPress={() => handleSizeChange('decrease')}
-                    disabled={!selectedDeityForEdit}
-                  >
-                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>▼</Text>
-                  </TouchableOpacity>
-                </View>
-                
-                {/* Position Controls */}
-                <View style={styles.positionControls}>
-                  <Image 
-                    source={require('@/assets/images/icons/otherIcons/positionIcon.png')} 
-                    style={styles.positionIcon} 
-                    resizeMode="contain" 
-                  />
-                  <TouchableOpacity 
-                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
-                    onPressIn={() => startContinuousPress('positionLeft')}
-                    onPressOut={() => stopContinuousPress('positionLeft')}
-                    onPress={() => handlePositionChange('left')}
-                    disabled={!selectedDeityForEdit}
-                  >
-                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>←</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
-                    onPressIn={() => startContinuousPress('positionRight')}
-                    onPressOut={() => stopContinuousPress('positionRight')}
-                    onPress={() => handlePositionChange('right')}
-                    disabled={!selectedDeityForEdit}
-                  >
-                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>→</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
-                    onPressIn={() => startContinuousPress('positionUp')}
-                    onPressOut={() => stopContinuousPress('positionUp')}
-                    onPress={() => handlePositionChange('up')}
-                    disabled={!selectedDeityForEdit}
-                  >
-                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>↑</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={!selectedDeityForEdit ? styles.arrowButtonDisabled : styles.arrowButton}
-                    onPressIn={() => startContinuousPress('positionDown')}
-                    onPressOut={() => stopContinuousPress('positionDown')}
-                    onPress={() => handlePositionChange('down')}
-                    disabled={!selectedDeityForEdit}
-                  >
-                    <Text style={[styles.arrowText, !selectedDeityForEdit && { color: '#999' }]}>↓</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-            
-            {/* Step 4: Deity Dropdown */}
-            {wizardStep === 4 && (
-              <View style={styles.deityDropdownContainer}>
-                <TouchableOpacity 
-                  style={styles.deityDropdown}
-                  onPress={() => setShowDeityDropdown(true)}
-                >
-                  <Text style={styles.dropdownText}>
-                    {selectedDeityForEdit 
-                      ? (() => {
-                          const deity = deityData.find(d => d._id === selectedDeityForEdit);
-                          return deity ? deity.Deity?.Name || 'Unknown Deity' : 'Unknown Deity';
-                        })()
-                      : 'Select a deity to edit...'
-                    }
-                  </Text>
-                  <Text style={styles.dropdownArrow}>▼</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            {/* Step 4: Size/Position icons and deity dropdown removed as requested */}
             
             {/* Action Buttons */}
             <View style={styles.wizardButtonsContainer}>
