@@ -469,6 +469,10 @@ export default function TestTempleScreen() {
   const [isBellAnimationRunning, setIsBellAnimationRunning] = useState(false);
   const bellSoundRef = useRef<Audio.Sound | null>(null);
   const conchSoundRef = useRef<Audio.Sound | null>(null);
+  const [isBellSoundPlaying, setIsBellSoundPlaying] = useState(false);
+  const [isConchPlaying, setIsConchPlaying] = useState(false);
+
+  const isPujaTemporarilyDisabled = isFlowerAnimationRunning || isBellAnimationRunning || isBellSoundPlaying || isConchPlaying;
 
   const preloadBellSound = React.useCallback(async () => {
     try {
@@ -506,9 +510,13 @@ export default function TestTempleScreen() {
       if (!conchSoundRef.current) {
         await preloadConchSound();
       }
+      setIsConchPlaying(true);
       await conchSoundRef.current?.replayAsync();
+      // Optional: stop after 4s similar to bell (or let it play through)
+      setTimeout(async () => { try { await conchSoundRef.current?.stopAsync(); } catch {} finally { setIsConchPlaying(false); } }, 4000);
     } catch (e) {
       console.warn('Conch sound failed', e);
+      setIsConchPlaying(false);
     }
   };
 
@@ -519,8 +527,9 @@ export default function TestTempleScreen() {
       // Play bell from beginning, cap playback to 4s
       if (bellSoundRef.current) {
         try { await bellSoundRef.current.stopAsync(); } catch {}
+        setIsBellSoundPlaying(true);
         await bellSoundRef.current.replayAsync();
-        setTimeout(async () => { try { await bellSoundRef.current?.stopAsync(); } catch {} }, 4000);
+        setTimeout(async () => { try { await bellSoundRef.current?.stopAsync(); } catch {} finally { setIsBellSoundPlaying(false); } }, 4000);
       }
 
       // Reset swings
@@ -1188,7 +1197,7 @@ export default function TestTempleScreen() {
       {templeState === 'puja' && (
         <>
           {/* Left Puja Icons Column - Flowers, Thali, Music */}
-          <View style={styles.leftPujaIconsColumn} pointerEvents={isFlowerAnimationRunning ? 'none' : 'auto'}>
+          <View style={[styles.leftPujaIconsColumn, isPujaTemporarilyDisabled && { opacity: 0.5 }]} pointerEvents={isPujaTemporarilyDisabled ? 'none' : 'auto'}>
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
               disabled={isFlowerAnimationRunning}
@@ -1233,7 +1242,7 @@ export default function TestTempleScreen() {
           </View>
 
           {/* Right Puja Icons Column - Shankh, Ghanti */}
-          <View style={styles.rightPujaIconsColumn} pointerEvents={isFlowerAnimationRunning ? 'none' : 'auto'}>
+          <View style={[styles.rightPujaIconsColumn, isPujaTemporarilyDisabled && { opacity: 0.5 }]} pointerEvents={isPujaTemporarilyDisabled ? 'none' : 'auto'}>
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
               disabled={isFlowerAnimationRunning}
