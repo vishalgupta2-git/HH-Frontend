@@ -291,7 +291,7 @@ export default function TestTempleScreen() {
   const [flowers, setFlowers] = useState<Array<{
     id: string;
     type: string;
-    x: Animated.Value;
+    x: number;
     y: Animated.Value;
     opacity: Animated.Value;
     scale: Animated.Value;
@@ -321,11 +321,11 @@ export default function TestTempleScreen() {
 
     const makeFlowerAt = (xPos: number) => {
       const id = generateUniqueFlowerId();
-      const baseY = 200 + (Math.random() - 0.5) * 40;
+      const baseY = 100 + (Math.random() - 0.5) * 40;
       return {
         id,
         type: flowerType,
-        x: new Animated.Value(xPos),
+        x: xPos,
         y: new Animated.Value(0),
         opacity: new Animated.Value(1),
         scale: new Animated.Value(0.6 + Math.random() * 0.3),
@@ -406,12 +406,10 @@ export default function TestTempleScreen() {
   
   // Debug modal state changes
   React.useEffect(() => {
-    console.log('Modal state changed to:', modal);
   }, [modal]);
   
   // Debug temple state changes
   React.useEffect(() => {
-    console.log('Temple state changed to:', templeState);
   }, [templeState]);
   
   // Save temple configuration
@@ -427,7 +425,6 @@ export default function TestTempleScreen() {
       
       const success = await saveTempleConfigurationNewStyle(templeConfig);
       if (success) {
-        console.log('Temple configuration saved successfully');
       } else {
         console.error('Failed to save temple configuration');
       }
@@ -659,7 +656,7 @@ export default function TestTempleScreen() {
         try {
           const dims = await getTempleImageDimensions(temple.id);
           dimensions[temple.id] = dims;
-          console.log(`${temple.id} dimensions:`, dims);
+          
         } catch (error) {
           console.error(`Failed to get dimensions for ${temple.id}:`, error);
         }
@@ -672,15 +669,7 @@ export default function TestTempleScreen() {
   }, []);
 
   // Debug: Log screen dimensions
-  console.log('Screen dimensions:', {
-    width: screenWidth,
-    height: screenHeight,
-    scale: scale,
-    verticalSpacing: screenWidth / 10,
-    horizontalSpacing: screenHeight / 10,
-    verticalLines: 10,
-    horizontalLines: 10
-  });
+  
 
   return (
     <View style={styles.container}>
@@ -803,7 +792,7 @@ export default function TestTempleScreen() {
               { rotate: `${flower.rotation}deg` },
               { scale: flower.scale },
             ],
-            zIndex: 9997,
+            zIndex: 215,
           }}
         >
           {flower.type === 'redRose' ? (
@@ -1380,10 +1369,10 @@ export default function TestTempleScreen() {
         onRequestClose={() => setModal(null)}
       >
         <TouchableWithoutFeedback onPress={() => setModal(null)}>
-          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100 }}>
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 229 }}>
             <TouchableWithoutFeedback onPress={() => {}}>
               {modal === 'temple' ? (
-                <View style={styles.modalContent}>
+                <View style={[styles.modalContent, { zIndex: 230 }]}>
                   <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>Temple</Text>
                     <TouchableOpacity 
@@ -1413,7 +1402,7 @@ export default function TestTempleScreen() {
                   </ScrollView>
                 </View>
               ) : modal === 'background' ? (
-                <View style={styles.modalContent}>
+                <View style={[styles.modalContent, { zIndex: 230 }]}>
                   <View style={styles.modalHeader}>
                     <Text style={styles.modalTitle}>Background</Text>
                     <TouchableOpacity 
@@ -1444,7 +1433,7 @@ export default function TestTempleScreen() {
                   </View>
                 </View>
               ) : modal === 'deities' ? (
-                <View style={[styles.modalContent, { height: screenHeight * 0.3 }]}>
+                <View style={[styles.modalContent, { height: screenHeight * 0.3, zIndex: 230 }]}>
                   <View style={styles.modalHeader}>
                     <View>
                       <Text style={styles.modalTitle}>Deities</Text>
@@ -1697,7 +1686,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 2,
+    zIndex: 220,
   },
   templeDisplay: {
     position: 'absolute',
@@ -1765,7 +1754,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 30,
+    zIndex: 230,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -1782,7 +1771,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    zIndex: 30,
+    zIndex: 225,
   },
   secondRowButton: {
     backgroundColor: '#FF6A00',
@@ -1810,7 +1799,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    zIndex: 25,
+    zIndex: 230,
     paddingHorizontal: 20,
   },
   configIconWrapper: {
@@ -2085,7 +2074,7 @@ const styles = StyleSheet.create({
     height: 120,
     top: 200,
     left: screenWidth * 0.8 - 60,
-    zIndex: 1,
+    zIndex: 199,
   },
   templeBellsLeft: {
     position: 'absolute',
@@ -2093,11 +2082,11 @@ const styles = StyleSheet.create({
     height: 120,
     top: 200,
     left: screenWidth * 0.2 - 60,
-    zIndex: 1,
+    zIndex: 199,
   },
   selectedDeityImageContainer: {
     position: 'absolute',
-    zIndex: 10,
+    zIndex: 210,
     // Removed justifyContent and alignItems to avoid interference with sizing
   },
   // Puja Icons Styles
@@ -2108,7 +2097,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 4,
-    zIndex: 20,
+    zIndex: 220,
   },
   rightPujaIconsColumn: {
     position: 'absolute',
@@ -2117,7 +2106,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 4,
-    zIndex: 20,
+    zIndex: 220,
   },
   pujaIconItem: {
     alignItems: 'center',
@@ -2208,7 +2197,7 @@ const styles = StyleSheet.create({
     width: '90%',
     maxWidth: 400,
     height: screenHeight * 0.3,
-    zIndex: 101,
+    zIndex: 1001,
   },
   deitiesScrollView: {
     flex: 1,
@@ -2225,6 +2214,7 @@ const styles = StyleSheet.create({
     top: screenHeight * 0.71,
     left: '50%',
     transform: [{ translateX: -screenWidth * 0.45 }], // Center based on screen width
+    zIndex: 1001,
   },
   statuesScrollContent: {
     flexDirection: 'row',
@@ -2252,7 +2242,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 2,
     elevation: 2,
-    zIndex: 30,
+    zIndex: 230,
   },
   createModifyButtonText: {
     fontSize: 14,
@@ -2276,7 +2266,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    zIndex: 30,
+    zIndex: 230,
   },
   saveTempleButtonText: {
     fontSize: 16,
