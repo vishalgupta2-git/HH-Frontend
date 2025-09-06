@@ -704,7 +704,9 @@ export default function TestTempleScreen() {
           style={styles.createModifyButton}
           onPress={() => setTempleState('configuringTemple')}
         >
-          <Text style={styles.createModifyButtonText}>Create / Modify My Temple</Text>
+          <Text style={styles.createModifyButtonText}>
+            {Object.keys(selectedDeities).length > 0 ? 'Modify my Temple' : 'Create my Temple'}
+          </Text>
         </TouchableOpacity>
       ) : templeState === 'configuringTemple' ? (
         <>
@@ -1791,23 +1793,23 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50,
     left: '50%',
-    transform: [{ translateX: -screenWidth * 0.45 }],
-    width: screenWidth * 0.9,
-    height: 50,
-    backgroundColor: '#FF6A00',
+    transform: [{ translateX: -screenWidth * 0.35 }],
+    width: screenWidth * 0.7,
+    height: 40,
+    backgroundColor: 'rgba(255, 106, 0, 0.7)',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
     zIndex: 30,
   },
   createModifyButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '500',
     color: '#fff',
     textAlign: 'center',
   },
