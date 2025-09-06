@@ -51,14 +51,13 @@ export default function DiwaliScreen() {
           style={styles.templeIllustration}
           resizeMode="contain"
         />
+        {/* Hindi Toggle - moved inside gradient header */}
+        <View style={styles.toggleContainerInHeader}>
+          <TouchableOpacity style={styles.hindiToggle} onPress={toggleLanguage}>
+            <Text style={styles.toggleText}>{isHindi ? 'English' : 'हिंदी'}</Text>
+          </TouchableOpacity>
+        </View>
       </LinearGradient>
-      
-      {/* Hindi Toggle - positioned below header */}
-      <View style={styles.toggleContainer}>
-        <TouchableOpacity style={styles.hindiToggle} onPress={toggleLanguage}>
-          <Text style={styles.toggleText}>{isHindi ? 'हिंदी' : 'English'}</Text>
-        </TouchableOpacity>
-      </View>
       
       {/* Content card overlapping header */}
       <View style={styles.card}>
@@ -1000,6 +999,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingTop: 0,
     position: 'relative',
+  },
+  toggleContainerInHeader: {
+    position: 'absolute',
+    top: 50,
+    right: 16,
+    zIndex: 2,
   },
   logo: {
     width: Math.min(width * 1.125 * 0.8, width),
