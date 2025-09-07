@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing, PanResponder, GestureResponderEvent, PanResponderGestureState } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing, PanResponder, GestureResponderEvent, PanResponderGestureState, ActivityIndicator } from 'react-native';
 import { Audio } from 'expo-av';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient, Line } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -270,6 +270,60 @@ function ArchSVG(props: { width?: number; height?: number; style?: any }) {
   );
 }
 
+// Draggable Thali component for Aarti
+const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) => {
+  const pan = useRef(new Animated.ValueXY()).current;
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10;
+      },
+      onPanResponderGrant: () => {
+        pan.setOffset({
+          x: 0,
+          y: 0,
+        });
+        pan.setValue({ x: 0, y: 0 });
+        Animated.spring(scale, { toValue: 1.1, useNativeDriver: true }).start();
+      },
+      onPanResponderMove: Animated.event(
+        [null, { dx: pan.x, dy: pan.y }],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: () => {
+        pan.flattenOffset();
+        Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
+      },
+    })
+  ).current;
+
+  return (
+    <Animated.View
+      style={[
+        styles.thaliContainer,
+        {
+          transform: [
+            { translateX: pan.x },
+            { translateY: pan.y },
+            { scale },
+          ],
+        },
+      ]}
+      {...panResponder.panHandlers}
+    >
+      <Image
+        source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+        style={styles.thaliImage}
+        resizeMode="contain"
+        onLoad={onImageLoad}
+      />
+    </Animated.View>
+  );
+};
+
 export default function TestTempleScreen() {
   const router = useRouter();
   
@@ -303,6 +357,10 @@ export default function TestTempleScreen() {
   }>>([]);
   const flowerIdCounter = useRef(0);
 
+  // Aarti state
+  const [showAartiModal, setShowAartiModal] = useState(false);
+  const [thaliImageLoaded, setThaliImageLoaded] = useState(false);
+
   const generateUniqueFlowerId = () => {
     flowerIdCounter.current += 1;
     return `flower_${Date.now()}_${flowerIdCounter.current}`;
@@ -310,6 +368,15 @@ export default function TestTempleScreen() {
 
   const openFlowerModal = () => {
     setShowFlowerModal(true);
+  };
+
+  // Aarti functions
+  const handleAarti = () => {
+    setShowAartiModal(true);
+  };
+
+  const handleCloseAartiModal = () => {
+    setShowAartiModal(false);
   };
 
   const dropFlowers = async (flowerType: string = 'hibiscus') => {
@@ -1223,10 +1290,7 @@ export default function TestTempleScreen() {
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]}
               disabled={isFlowerAnimationRunning}
-              onPress={() => {
-                console.log('Thali pressed');
-                // TODO: Add thali functionality
-              }}
+              onPress={handleAarti}
               activeOpacity={0.7}
             >
               <Image 
@@ -1367,6 +1431,31 @@ export default function TestTempleScreen() {
                 </TouchableOpacity>
               </ScrollView>
             </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* Aarti Modal */}
+      <Modal
+        visible={showAartiModal}
+        transparent={true}
+        animationType="none"
+        onRequestClose={handleCloseAartiModal}
+        statusBarTranslucent={true}
+      >
+        <View style={styles.aartiModalOverlay}>
+          <TouchableOpacity 
+            style={styles.aartiModalOverlayTouchable}
+            activeOpacity={1}
+            onPress={handleCloseAartiModal}
+          >
+            {!thaliImageLoaded && (
+              <View style={styles.thaliLoadingContainer}>
+                <ActivityIndicator size="large" color="#FF6A00" />
+                <Text style={styles.thaliLoadingText}>Loading Aarti Thali...</Text>
+              </View>
+            )}
+            <DraggableThali onImageLoad={() => setThaliImageLoaded(true)} />
           </TouchableOpacity>
         </View>
       </Modal>
@@ -2597,5 +2686,44 @@ const styles = StyleSheet.create({
   deitySelectionTextSelected: {
     color: '#FF6A00',
     fontWeight: 'bold',
+  },
+  // Aarti Modal Styles
+  aartiModalOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent', // 100% transparent
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 200, // Start from 200px
+    paddingBottom: screenHeight * 0.2, // End at 80% screen height (20% from bottom)
+  },
+  aartiModalOverlayTouchable: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  thaliContainer: {
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  thaliImage: {
+    width: '100%',
+    height: '100%',
+  },
+  thaliLoadingContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -50 }, { translateY: -50 }],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thaliLoadingText: {
+    color: '#fff',
+    fontSize: 16,
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
