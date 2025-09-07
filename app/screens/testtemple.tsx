@@ -351,55 +351,293 @@ export default function TestTempleScreen() {
   // State management for navigation (3 states: myTemple, todaysPuja, allTemples)
   const [currentScreen, setCurrentScreen] = useState<'myTemple' | 'todaysPuja' | 'allTemples'>('myTemple');
   
-  // All Temples data with image dimensions
+  // All Temples data with multiple images per deity and their actual dimensions
   const allTemplesData = [
-    { id: 'ganesh', name: 'Vighnaharta Ganesh', nameHindi: 'विघ्नहर्ता गणेश', icon: require('@/assets/images/AllTemples/Vighnaharta Ganesh/LordGaneshaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Vighnaharta Ganesh/LordGaneshaTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'shiv', name: 'Mahadev Shiv Ji', nameHindi: 'महादेव शिव जी', icon: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple1.png'), templeImage: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'vishnu', name: 'Vishnu Bhagwan', nameHindi: 'विष्णु भगवान', icon: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple1.png'), templeImage: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'durga', name: 'Durga Maa', nameHindi: 'दुर्गा माँ', icon: require('@/assets/images/AllTemples/Durga Maa/MaaDurgaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Durga Maa/MaaDurgaTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'lakshmi', name: 'Lakshmi Maa', nameHindi: 'लक्ष्मी माँ', icon: require('@/assets/images/AllTemples/Lakshmi Maa/MaaLaxmiTemple1.png'), templeImage: require('@/assets/images/AllTemples/Lakshmi Maa/MaaLaxmiTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'hanuman', name: 'Mahaveer Hanuman', nameHindi: 'महावीर हनुमान', icon: require('@/assets/images/AllTemples/Mahaveer Hanuman/VeerHanumanTemple1.png'), templeImage: require('@/assets/images/AllTemples/Mahaveer Hanuman/VeerHanumanTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'ram', name: 'Shri Ram', nameHindi: 'श्री राम', icon: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple1.png'), templeImage: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'krishna', name: 'Shri Krishna', nameHindi: 'श्री कृष्ण', icon: require('@/assets/images/AllTemples/Shri Krishna/SreeKrishnaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Shri Krishna/SreeKrishnaTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'balgopal', name: 'Bal Gopal', nameHindi: 'बाल गोपाल', icon: require('@/assets/images/AllTemples/Bal Gopal/BalGopalIcon.png'), templeImage: require('@/assets/images/AllTemples/Bal Gopal/BalGopalTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'kali', name: 'Kali Maa', nameHindi: 'काली माँ', icon: require('@/assets/images/AllTemples/Mahakali Maa/MaaKaliTemple1.png'), templeImage: require('@/assets/images/AllTemples/Mahakali Maa/MaaKaliTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'saraswati', name: 'Saraswati Maa', nameHindi: 'सरस्वती माँ', icon: require('@/assets/images/AllTemples/Saraswati Maa/MaaSaraswatiTemple1.png'), templeImage: require('@/assets/images/AllTemples/Saraswati Maa/MaaSaraswatiTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'ganga', name: 'Ganga Maiyaa', nameHindi: 'गंगा मैया', icon: require('@/assets/images/AllTemples/Ganga Maiyaa/MaaGangaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Ganga Maiyaa/MaaGangaTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'shani', name: 'Shani Dev', nameHindi: 'शनि देव', icon: require('@/assets/images/AllTemples/Shani Dev/ShaniDevTemple1.png'), templeImage: require('@/assets/images/AllTemples/Shani Dev/ShaniDevTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'surya', name: 'Surya Dev', nameHindi: 'सूर्य देव', icon: require('@/assets/images/AllTemples/Surya Dev/LordSuryaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Surya Dev/LordSuryaTemple1.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'tirupati', name: 'Tirupati Balaji', nameHindi: 'तिरुपति बालाजी', icon: require('@/assets/images/AllTemples/Tirupati Balaji/TirupatiBalajiTemple.png'), templeImage: require('@/assets/images/AllTemples/Tirupati Balaji/TirupatiBalajiTemple.png'), imageWidth: 0, imageHeight: 0 },
-    { id: 'brihaspati', name: 'Brihaspati Dev', nameHindi: 'बृहस्पति देव', icon: require('@/assets/images/AllTemples/Brihaspati Dev/BrihaspatiTemple.png'), templeImage: require('@/assets/images/AllTemples/Brihaspati Dev/BrihaspatiTemple.png'), imageWidth: 0, imageHeight: 0 },
+    { 
+      id: 'ganesh', 
+      name: 'Vighnaharta Ganesh', 
+      nameHindi: 'विघ्नहर्ता गणेश', 
+      icon: require('@/assets/images/AllTemples/Vighnaharta Ganesh/LordGaneshaTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Vighnaharta Ganesh/LordGaneshaTemple1.png'), width: 845, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Vighnaharta Ganesh/LordGaneshaTemple2.png'), width: 897, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Vighnaharta Ganesh/LordGaneshaTemple3.png'), width: 703, height: 1000 },
+      ]
+    },
+    { 
+      id: 'shiv', 
+      name: 'Mahadev Shiv Ji', 
+      nameHindi: 'महादेव शिव जी', 
+      icon: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple1.png'), width: 904, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple2.png'), width: 688, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple3.png'), width: 906, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple4.png'), width: 702, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple5.png'), width: 936, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple6.png'), width: 762, height: 1000 },
+      ]
+    },
+    { 
+      id: 'vishnu', 
+      name: 'Vishnu Bhagwan', 
+      nameHindi: 'विष्णु भगवान', 
+      icon: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple1.png'), width: 474, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple2.png'), width: 777, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple3.png'), width: 826, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple4.png'), width: 995, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple5.png'), width: 1240, height: 1000 },
+      ]
+    },
+    { 
+      id: 'durga', 
+      name: 'Durga Maa', 
+      nameHindi: 'दुर्गा माँ', 
+      icon: require('@/assets/images/AllTemples/Durga Maa/MaaDurgaTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Durga Maa/MaaDurgaTemple1.png'), width: 858, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Durga Maa/MaaDurgaTemple2.png'), width: 957, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Durga Maa/MaaDurgaTemple3.png'), width: 759, height: 1000 },
+      ]
+    },
+    { 
+      id: 'lakshmi', 
+      name: 'Lakshmi Maa', 
+      nameHindi: 'लक्ष्मी माँ', 
+      icon: require('@/assets/images/AllTemples/Lakshmi Maa/MaaLaxmiTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Lakshmi Maa/MaaLaxmiTemple1.png'), width: 999, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Lakshmi Maa/MaaLaxmiTemple2.png'), width: 708, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Lakshmi Maa/MaaLaxmiTemple3.png'), width: 794, height: 1000 },
+      ]
+    },
+    { 
+      id: 'hanuman', 
+      name: 'Mahaveer Hanuman', 
+      nameHindi: 'महावीर हनुमान', 
+      icon: require('@/assets/images/AllTemples/Mahaveer Hanuman/VeerHanumanTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Mahaveer Hanuman/VeerHanumanTemple1.png'), width: 810, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Mahaveer Hanuman/VeerHanumanTemple2.png'), width: 446, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Mahaveer Hanuman/VeerHanumanTemple3.png'), width: 348, height: 1000 },
+      ]
+    },
+    { 
+      id: 'ram', 
+      name: 'Shri Ram', 
+      nameHindi: 'श्री राम', 
+      icon: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple1.png'), width: 706, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple2.png'), width: 614, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple3.png'), width: 770, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple4.png'), width: 659, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple5.jpg'), width: 578, height: 750 },
+      ]
+    },
+    { 
+      id: 'krishna', 
+      name: 'Shri Krishna', 
+      nameHindi: 'श्री कृष्ण', 
+      icon: require('@/assets/images/AllTemples/Shri Krishna/SreeKrishnaTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Shri Krishna/SreeKrishnaTemple1.png'), width: 633, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Shri Krishna/SreeKrishnaTemple2.png'), width: 962, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Shri Krishna/SreeKrishnaTemple3.png'), width: 902, height: 1000 },
+      ]
+    },
+    { 
+      id: 'balgopal', 
+      name: 'Bal Gopal', 
+      nameHindi: 'बाल गोपाल', 
+      icon: require('@/assets/images/AllTemples/Bal Gopal/BalGopalIcon.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Bal Gopal/BalGopalTemple1.png'), width: 727, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Bal Gopal/BalGopalTemple2.png'), width: 698, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Bal Gopal/BalGopalTemple3.png'), width: 884, height: 1000 },
+      ]
+    },
+    { 
+      id: 'kali', 
+      name: 'Kali Maa', 
+      nameHindi: 'काली माँ', 
+      icon: require('@/assets/images/AllTemples/Mahakali Maa/MaaKaliTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Mahakali Maa/MaaKaliTemple1.png'), width: 700, height: 800 },
+        { source: require('@/assets/images/AllTemples/Mahakali Maa/MaaKaliTemple2.png'), width: 1333, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Mahakali Maa/MaaKaliTemple3.png'), width: 790, height: 1000 },
+      ]
+    },
+    { 
+      id: 'saraswati', 
+      name: 'Saraswati Maa', 
+      nameHindi: 'सरस्वती माँ', 
+      icon: require('@/assets/images/AllTemples/Saraswati Maa/MaaSaraswatiTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Saraswati Maa/MaaSaraswatiTemple1.png'), width: 797, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Saraswati Maa/MaaSaraswatiTemple2.png'), width: 894, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Saraswati Maa/MaaSaraswatiTemple3.png'), width: 1013, height: 1000 },
+      ]
+    },
+    { 
+      id: 'ganga', 
+      name: 'Ganga Maiyaa', 
+      nameHindi: 'गंगा मैया', 
+      icon: require('@/assets/images/AllTemples/Ganga Maiyaa/MaaGangaTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Ganga Maiyaa/MaaGangaTemple1.png'), width: 1000, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Ganga Maiyaa/MaaGangaTemple2.png'), width: 1224, height: 1000 },
+      ]
+    },
+    { 
+      id: 'shani', 
+      name: 'Shani Dev', 
+      nameHindi: 'शनि देव', 
+      icon: require('@/assets/images/AllTemples/Shani Dev/ShaniDevTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Shani Dev/ShaniDevTemple1.png'), width: 841, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Shani Dev/ShaniDevTemple2.png'), width: 879, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Shani Dev/ShaniDevTemple3.png'), width: 868, height: 1000 },
+      ]
+    },
+    { 
+      id: 'surya', 
+      name: 'Surya Dev', 
+      nameHindi: 'सूर्य देव', 
+      icon: require('@/assets/images/AllTemples/Surya Dev/LordSuryaTemple1.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Surya Dev/LordSuryaTemple1.png'), width: 520, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Surya Dev/LordSuryaTemple2.png'), width: 794, height: 1000 },
+        { source: require('@/assets/images/AllTemples/Surya Dev/LordSuryaTemple3.png'), width: 784, height: 1000 },
+      ]
+    },
+    { 
+      id: 'tirupati', 
+      name: 'Tirupati Balaji', 
+      nameHindi: 'तिरुपति बालाजी', 
+      icon: require('@/assets/images/AllTemples/Tirupati Balaji/TirupatiBalajiTemple.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Tirupati Balaji/TirupatiBalajiTemple.png'), width: 667, height: 1000 },
+      ]
+    },
+    { 
+      id: 'brihaspati', 
+      name: 'Brihaspati Dev', 
+      nameHindi: 'बृहस्पति देव', 
+      icon: require('@/assets/images/AllTemples/Brihaspati Dev/BrihaspatiTemple.png'), 
+      images: [
+        { source: require('@/assets/images/AllTemples/Brihaspati Dev/BrihaspatiTemple.png'), width: 656, height: 1000 },
+      ]
+    },
   ];
   
   // State for selected temple in All Temples mode
   const [selectedAllTemple, setSelectedAllTemple] = useState<string>('ganesh'); // Default to first temple
   
-  // State to store actual image dimensions
-  const [templeImageDimensions, setTempleImageDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
+  // State for selected temple in Today's Puja mode
+  const [selectedTodaysTemple, setSelectedTodaysTemple] = useState<string>('');
   
-  // Function to load actual image dimensions
-  const loadTempleImageDimensions = async () => {
-    const dimensions: {[key: string]: {width: number, height: number}} = {};
+  // State to track current image index for each deity
+  const [currentImageIndex, setCurrentImageIndex] = useState<{[key: string]: number}>({});
+  
+  // Day of the week to deity mapping for Today's Puja
+  const dayToDeityMapping: {[key: string]: string[]} = {
+    'Sunday': ['surya'],
+    'Monday': ['shiv'],
+    'Tuesday': ['durga', 'hanuman'], // Note: Kartikeya not in our data, using available deities
+    'Wednesday': ['ganesh'],
+    'Thursday': ['vishnu', 'brihaspati'],
+    'Friday': ['lakshmi'], // Note: Santoshi Mata not in our data, using available deities
+    'Saturday': ['shani']
+  };
+  
+  // Function to get current day of the week
+  const getCurrentDay = (): string => {
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return days[new Date().getDay()];
+  };
+  
+  // Function to get temples for today's puja
+  const getTodaysPujaTemples = () => {
+    const currentDay = getCurrentDay();
+    const todaysDeityIds = dayToDeityMapping[currentDay] || [];
+    return allTemplesData.filter(temple => todaysDeityIds.includes(temple.id));
+  };
+  
+  // Function to get image dimensions from hardcoded data
+  const getImageDimensions = (templeId: string, imageIndex: number) => {
+    const temple = allTemplesData.find(t => t.id === templeId);
+    if (temple && temple.images[imageIndex]) {
+      return {
+        width: temple.images[imageIndex].width,
+        height: temple.images[imageIndex].height
+      };
+    }
+    return { width: 400, height: 600 }; // Fallback
+  };
+  
+  // Function to switch to next/previous image with looping
+  const switchImage = (direction: 'up' | 'down') => {
+    let selectedTempleId: string;
+    let selectedTemple: any;
     
-    for (const temple of allTemplesData) {
-      try {
-        const result = await new Promise<{width: number, height: number}>((resolve, reject) => {
-          Image.getSize(
-            Image.resolveAssetSource(temple.templeImage).uri,
-            (width, height) => resolve({width, height}),
-            (error) => reject(error)
-          );
-        });
-        
-        dimensions[temple.id] = result;
-      } catch (error) {
-        // Fallback to default dimensions
-        dimensions[temple.id] = {width: 400, height: 600};
-      }
+    if (currentScreen === 'allTemples') {
+      selectedTempleId = selectedAllTemple;
+      selectedTemple = allTemplesData.find(t => t.id === selectedAllTemple);
+    } else if (currentScreen === 'todaysPuja') {
+      selectedTempleId = selectedTodaysTemple;
+      const todaysTemples = getTodaysPujaTemples();
+      selectedTemple = todaysTemples.find(t => t.id === selectedTodaysTemple);
+    } else {
+      return;
     }
     
-    setTempleImageDimensions(dimensions);
+    if (!selectedTemple) return;
+    
+    const currentIndex = currentImageIndex[selectedTempleId] || 0;
+    const totalImages = selectedTemple.images.length;
+    
+    let newIndex: number;
+    if (direction === 'up') {
+      // Swipe up: next image
+      newIndex = (currentIndex + 1) % totalImages;
+    } else {
+      // Swipe down: previous image
+      newIndex = currentIndex === 0 ? totalImages - 1 : currentIndex - 1;
+    }
+    
+    setCurrentImageIndex(prev => ({
+      ...prev,
+      [selectedTempleId]: newIndex
+    }));
   };
+  
+  // PanResponder for swipe detection
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (evt, gestureState) => {
+      // Only respond to vertical swipes with minimum distance
+      return Math.abs(gestureState.dy) > 20 && Math.abs(gestureState.dx) < 50;
+    },
+    onPanResponderMove: (evt, gestureState) => {
+      // Optional: Add visual feedback during swipe
+    },
+    onPanResponderRelease: (evt, gestureState) => {
+      const { dy } = gestureState;
+      const swipeThreshold = 50;
+      
+      if (Math.abs(dy) > swipeThreshold) {
+        if (dy < 0) {
+          // Swipe up (negative dy)
+          switchImage('up');
+        } else {
+          // Swipe down (positive dy)
+          switchImage('down');
+        }
+      }
+    },
+  });
   
   // Function to calculate optimal image size and position
   const calculateImageDimensions = (imageWidth: number, imageHeight: number, imageName: string) => {
@@ -1372,8 +1610,17 @@ export default function TestTempleScreen() {
     };
     
     loadTempleDimensions();
-    loadTempleImageDimensions();
   }, []);
+
+  // Set default selected temple for Today's Puja mode
+  useEffect(() => {
+    if (currentScreen === 'todaysPuja') {
+      const todaysTemples = getTodaysPujaTemples();
+      if (todaysTemples.length > 0 && !selectedTodaysTemple) {
+        setSelectedTodaysTemple(todaysTemples[0].id);
+      }
+    }
+  }, [currentScreen, selectedTodaysTemple]);
 
   // Debug: Log screen dimensions and z-index values when screen changes
   useEffect(() => {
@@ -1453,22 +1700,103 @@ export default function TestTempleScreen() {
         </View>
       )}
       
+      {/* Today's Puja View - Show when in Today's Puja mode */}
+      {currentScreen === 'todaysPuja' && (() => {
+        const todaysTemples = getTodaysPujaTemples();
+        const currentDay = getCurrentDay();
+        
+        return (
+          <View style={styles.allTemplesContainer}>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.allTemplesScrollContent}
+            >
+              {todaysTemples.map((temple, index) => (
+                <View key={temple.id} style={styles.allTemplesIconWrapper}>
+                  <TouchableOpacity 
+                    style={styles.allTemplesIcon}
+                    onPress={() => {
+                      setSelectedTodaysTemple(temple.id);
+                      console.log(`Selected today's temple: ${temple.name}`);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Image
+                      source={temple.icon}
+                      style={styles.allTemplesIconImage}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                  <Text style={styles.allTemplesIconLabel} numberOfLines={2}>
+                    {isHindi ? temple.nameHindi : temple.name}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+            
+            {/* Current Day and Deity Name */}
+            <View style={styles.currentDeityNameContainer}>
+              <Text style={styles.currentDeityName}>
+                {isHindi ? `${currentDay} - ` : `${currentDay} - `}
+                {(() => {
+                  const selectedTemple = todaysTemples.find(t => t.id === selectedTodaysTemple);
+                  return selectedTemple ? (isHindi ? selectedTemple.nameHindi : selectedTemple.name) : '';
+                })()}
+              </Text>
+            </View>
+          </View>
+        );
+      })()}
+      
       {/* All Temples Temple Display - Show when in All Temples mode */}
       {currentScreen === 'allTemples' && (() => {
         const selectedTemple = allTemplesData.find(t => t.id === selectedAllTemple);
         if (!selectedTemple) return null;
         
-        const actualDimensions = templeImageDimensions[selectedTemple.id];
-        if (!actualDimensions) {
+        const currentIndex = currentImageIndex[selectedAllTemple] || 0;
+        const currentImageData = selectedTemple.images[currentIndex];
+        
+        if (!currentImageData) {
           return null;
         }
         
-        const dimensions = calculateImageDimensions(actualDimensions.width, actualDimensions.height, selectedTemple.name);
+        const dimensions = calculateImageDimensions(currentImageData.width, currentImageData.height, selectedTemple.name);
         
         return (
-          <View style={styles.allTemplesTempleDisplay}>
+          <View style={styles.allTemplesTempleDisplay} {...panResponder.panHandlers}>
             <Image
-              source={selectedTemple.templeImage}
+              source={currentImageData.source}
+              style={[styles.allTemplesTempleImage, {
+                width: dimensions.width,
+                height: dimensions.height,
+                top: dimensions.top,
+              }]}
+              resizeMode="contain"
+            />
+          </View>
+        );
+      })()}
+      
+      {/* Today's Puja Temple Display - Show when in Today's Puja mode */}
+      {currentScreen === 'todaysPuja' && (() => {
+        const todaysTemples = getTodaysPujaTemples();
+        const selectedTemple = todaysTemples.find(t => t.id === selectedTodaysTemple);
+        if (!selectedTemple) return null;
+        
+        const currentIndex = currentImageIndex[selectedTodaysTemple] || 0;
+        const currentImageData = selectedTemple.images[currentIndex];
+        
+        if (!currentImageData) {
+          return null;
+        }
+        
+        const dimensions = calculateImageDimensions(currentImageData.width, currentImageData.height, selectedTemple.name);
+        
+        return (
+          <View style={styles.allTemplesTempleDisplay} {...panResponder.panHandlers}>
+            <Image
+              source={currentImageData.source}
               style={[styles.allTemplesTempleImage, {
                 width: dimensions.width,
                 height: dimensions.height,
