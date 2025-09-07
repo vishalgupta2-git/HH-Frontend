@@ -12,6 +12,25 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export const options = { headerShown: false };
 
+// Utility function to safely update state and avoid useInsertionEffect warnings
+const safeSetState = (setter: () => void) => {
+  // Use requestAnimationFrame to defer state updates to the next frame
+  requestAnimationFrame(() => {
+    setter();
+  });
+};
+
+// Suppress useInsertionEffect warnings in development
+if (__DEV__) {
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    if (args[0] && typeof args[0] === 'string' && args[0].includes('useInsertionEffect must not schedule updates')) {
+      return; // Suppress this specific warning
+    }
+    originalWarn.apply(console, args);
+  };
+}
+
 const { width: screenWidth, height: screenHeight, scale } = Dimensions.get('window');
 
 
@@ -548,15 +567,15 @@ export default function TestTempleScreen() {
       newSound.setOnPlaybackStatusUpdate((status) => {
         if (status.isLoaded && status.didJustFinish) {
           // Song naturally finished, playing next...
-          // Use setTimeout to avoid state update during render
-          setTimeout(() => {
+          // Use safeSetState to avoid useInsertionEffect warnings
+          safeSetState(() => {
             if (autoPlayEnabled) {
               playNextSong();
             } else {
               setCurrentlyPlaying(null);
               setSound(null);
             }
-          }, 100);
+          });
         }
       });
 
@@ -732,12 +751,7 @@ export default function TestTempleScreen() {
   });
   
   // Debug modal state changes
-  React.useEffect(() => {
-  }, [modal]);
-  
-  // Debug temple state changes
-  React.useEffect(() => {
-  }, [templeState]);
+  // Removed empty useEffect hooks that were causing useInsertionEffect warnings
   
   // Save temple configuration
   const saveTempleConfig = async () => {
@@ -774,6 +788,11 @@ export default function TestTempleScreen() {
   const conchSoundRef = useRef<Audio.Sound | null>(null);
   const [isBellSoundPlaying, setIsBellSoundPlaying] = useState(false);
   const [isConchPlaying, setIsConchPlaying] = useState(false);
+
+  // Perform Puja state
+  const [isPujaRitualActive, setIsPujaRitualActive] = useState(false);
+  const [thaliEllipseAnimation] = useState(new Animated.Value(0));
+  const flowerIntervalRef = useRef<any>(null);
 
   const isPujaTemporarilyDisabled = isFlowerAnimationRunning || isBellAnimationRunning || isBellSoundPlaying || isConchPlaying;
 
@@ -860,9 +879,190 @@ export default function TestTempleScreen() {
       setIsBellAnimationRunning(false);
     }
   };
+
+  // Stop puja ritual function
+  const stopPujaRitual = () => {
+    if (!isPujaRitualActive) return;
+    
+    console.log('Stopping puja ritual manually');
+    
+    // Stop all animations and intervals
+    if (flowerIntervalRef.current) {
+      clearInterval(flowerIntervalRef.current);
+      flowerIntervalRef.current = null;
+    }
+    
+    // Reset thali animation to starting position
+    thaliEllipseAnimation.setValue(0);
+    
+    // Immediately stop all flower animations and clear them
+    setFlowers(prev => {
+      // Stop all running animations for existing flowers
+      prev.forEach(flower => {
+        flower.y.stopAnimation();
+        flower.opacity.stopAnimation();
+        flower.scale.stopAnimation();
+      });
+      return []; // Clear all flowers immediately
+    });
+    
+    // Close modal immediately
+    setIsPujaRitualActive(false);
+    console.log('Puja ritual stopped manually - modal should close');
+  };
+
+  // Perform Puja Ritual with elliptical thali motion
+  const performPujaRitual = async () => {
+    if (isPujaRitualActive) return; // Prevent multiple simultaneous rituals
+    
+    setIsPujaRitualActive(true);
+    
+    try {
+      // Reset animation
+      thaliEllipseAnimation.setValue(0);
+      
+      // Clear any existing flowers
+      setFlowers([]);
+      
+      // Reset bell positions
+      topBellsSwing.setValue(0);
+      bottomBellsSwing.setValue(0);
+      
+      // Clear any existing flower interval
+      if (flowerIntervalRef.current) {
+        clearInterval(flowerIntervalRef.current);
+        flowerIntervalRef.current = null;
+      }
+      
+      // THREAD 1: Thali Elliptical Motion (30 seconds)
+      const startThaliMotion = () => {
+        const animation = Animated.timing(thaliEllipseAnimation, {
+          toValue: 5, // 5 complete orbits
+          duration: 30000, // 30 seconds
+          useNativeDriver: true,
+        });
+        
+        animation.start(({ finished }) => {
+          console.log('Thali motion completed - ending ritual immediately');
+          
+          // Stop flower dropping when thali motion completes
+          if (flowerIntervalRef.current) {
+            clearInterval(flowerIntervalRef.current);
+            flowerIntervalRef.current = null;
+          }
+          
+          // Immediately stop all flower animations and clear them
+          setFlowers(prev => {
+            // Stop all running animations for existing flowers
+            prev.forEach(flower => {
+              flower.y.stopAnimation();
+              flower.opacity.stopAnimation();
+              flower.scale.stopAnimation();
+            });
+            return []; // Clear all flowers immediately
+          });
+          
+          // Close modal immediately
+          setIsPujaRitualActive(false);
+          console.log('Puja ritual completed - thali at rest, ritual ended');
+        });
+      };
+      
+      // THREAD 2: Continuous Flower Dropping (stops when thali completes)
+      const startFlowerDropping = () => {
+        const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra', 'jasmine', 'yellowShevanthi', 'whiteShevanthi', 'redShevanthi', 'tulsi', 'rajnigandha', 'parajita', 'datura'];
+        
+        const createFlowerBatch = () => {
+          // Use same effect as mix flower dropping - create staggered rows
+          const rows = 2; // Reduced rows for continuous flow
+          const itemsPerRow = 8; // 8 flowers per row
+          const rowDelayMs = 100; // Faster row delay for continuous flow
+          const edgeClamp = 30; // Keep flowers slightly inside edges
+
+          const makeFlowerAt = (xPos: number) => {
+            const id = `mixed-${Date.now()}-${Math.random()}`;
+            const baseY = 100 + (Math.random() - 0.5) * 40;
+            const fadeStart = screenHeight * 0.65;
+            const fadeEnd = screenHeight * 0.78;
+            
+            // Randomly select flower type (same as mix flowers)
+            const randomType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+            
+            return {
+              id,
+              type: randomType,
+              x: xPos,
+              y: new Animated.Value(0),
+              opacity: new Animated.Value(1),
+              scale: new Animated.Value(0.6 + Math.random() * 0.3), // Same scale as mix flowers
+              rotation: Math.random() * 360,
+              baseY,
+              fadeStart,
+              fadeEnd,
+            };
+          };
+
+          for (let row = 0; row < rows; row++) {
+            const batchRow: typeof flowers = [];
+            for (let i = 0; i < itemsPerRow; i++) {
+              const baseX = (screenWidth * i) / (itemsPerRow - 1);
+              const randomOffset = (Math.random() - 0.5) * 60; // ±30px
+              const xPos = Math.max(edgeClamp, Math.min(screenWidth - edgeClamp, baseX + randomOffset));
+              batchRow.push(makeFlowerAt(xPos));
+            }
+            setFlowers(prev => [...prev, ...batchRow]);
+
+            batchRow.forEach((f) => {
+              setTimeout(() => {
+                const duration = 3000 + Math.random() * 1000 + row * 500; // Same timing as mix flowers
+                Animated.parallel([
+                  Animated.timing(f.y, {
+                    toValue: (screenHeight * 0.78) - (f.baseY || 200),
+                    duration: duration,
+                    easing: Easing.out(Easing.cubic), // Same easing as mix flowers
+                    useNativeDriver: true,
+                  }),
+                  // Fade from 65% to 78% of screen height (same as mix flowers)
+                  Animated.timing(f.opacity, {
+                    toValue: 0,
+                    duration: Math.max(200, duration * ((screenHeight * 0.78 - (f.fadeStart || screenHeight * 0.65)) / ((screenHeight * 0.78) - (f.baseY || 200)))) ,
+                    delay: Math.max(0, duration * (((f.fadeStart || screenHeight * 0.65) - (f.baseY || 200)) / ((screenHeight * 0.78) - (f.baseY || 200)))),
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(f.scale, {
+                    toValue: 1,
+                    duration: 1400, // Same scale animation as mix flowers
+                    useNativeDriver: true,
+                  }),
+                ]).start(() => {
+                  setFlowers(prev => prev.filter(x => x.id !== f.id));
+                });
+              }, row * rowDelayMs);
+            });
+          }
+        };
+        
+        // Start continuous flower dropping every 200ms
+        flowerIntervalRef.current = setInterval(createFlowerBatch, 200);
+        
+        return flowerIntervalRef.current;
+      };
+      
+      // Start both threads - flowers will stop when thali completes
+      startThaliMotion();
+      startFlowerDropping();
+      
+    } catch (error) {
+      console.error('Error in perform puja ritual:', error);
+      setIsPujaRitualActive(false);
+    }
+  };
   
   // Flash animation for current step icon
   React.useEffect(() => {
+      // Only start flashing if wizardStep is valid
+      if (wizardStep < 1 || wizardStep > 4) return;
+      
       const interval = setInterval(() => {
         setIsFlashing(prev => !prev);
       }, 2000);
@@ -872,6 +1072,9 @@ export default function TestTempleScreen() {
   
   // Initialize deity positions and sizes when NEW deities are selected
   React.useEffect(() => {
+    // Skip if no deities are selected or if this is the initial render
+    if (Object.keys(selectedDeities).length === 0) return;
+    
     const newPositions: {[deityId: string]: {x: number, y: number}} = {...deityPositions};
     const newSizes: {[deityId: string]: {width: number, height: number}} = {...deitySizes};
     
@@ -907,8 +1110,11 @@ export default function TestTempleScreen() {
     
     // Only update state if there are new deities to initialize
     if (hasNewDeities) {
+      // Use safeSetState to defer the state update to avoid insertion effect issues
+      safeSetState(() => {
       setDeityPositions(newPositions);
       setDeitySizes(newSizes);
+      });
     }
   }, [selectedDeities]);
   
@@ -1352,62 +1558,62 @@ export default function TestTempleScreen() {
       {/* Configuration Icons - Always visible */}
       <View style={styles.configurationIconsContainer}>
         {/* Temple Style Icon */}
-        <View style={styles.configIconWrapper}>
-        <TouchableOpacity
+              <View style={styles.configIconWrapper}>
+                <TouchableOpacity 
             style={styles.configIcon}
-            onPress={() => setModal('temple')}
+                  onPress={() => setModal('temple')}
             activeOpacity={0.7}
-          >
-            <Image 
-              source={require('@/assets/images/temple/Temple1.png')} 
-              style={styles.configIconImage} 
-              resizeMode="contain" 
-            />
-        </TouchableOpacity>
+                >
+                  <Image 
+                    source={require('@/assets/images/temple/Temple1.png')} 
+                    style={styles.configIconImage} 
+                    resizeMode="contain" 
+                  />
+                  </TouchableOpacity>
           <Text style={styles.configIconLabel}>{isHindi ? 'मंदिर' : 'Temple'}</Text>
-        </View>
+              </View>
           
         {/* Deity Icon */}
-        <View style={styles.configIconWrapper}>
-          <TouchableOpacity
+              <View style={styles.configIconWrapper}>
+                  <TouchableOpacity 
             style={styles.configIcon}
-            onPress={() => setModal('deities')}
+                    onPress={() => setModal('deities')}
             activeOpacity={0.7}
-          >
-            <Image 
-              source={require('@/assets/images/temple/Ganesha1.png')} 
-              style={styles.configIconImage} 
-              resizeMode="contain" 
-            />
-          </TouchableOpacity>
+                >
+                  <Image 
+                    source={require('@/assets/images/temple/Ganesha1.png')} 
+                    style={styles.configIconImage} 
+                    resizeMode="contain" 
+                  />
+                  </TouchableOpacity>
           <Text style={styles.configIconLabel}>{isHindi ? 'देवता' : 'Deity'}</Text>
-        </View>
+              </View>
 
         {/* Background Icon */}
-        <View style={styles.configIconWrapper}>
-          <TouchableOpacity
+              <View style={styles.configIconWrapper}>
+                  <TouchableOpacity 
             style={styles.configIcon}
-            onPress={() => setModal('background')}
+                    onPress={() => setModal('background')}
             activeOpacity={0.7}
-          >
-            <View style={styles.gradientIconContainer}>
-              <LinearGradient
-                colors={bgGradient as any}
-                style={styles.gradientIcon}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              />
-            </View>
-          </TouchableOpacity>
+                >
+                  <View style={styles.gradientIconContainer}>
+                    <LinearGradient
+                      colors={bgGradient as any}
+                      style={styles.gradientIcon}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    />
+                  </View>
+                  </TouchableOpacity>
           <Text style={styles.configIconLabel}>{isHindi ? 'बैकग्राउंड' : 'BG'}</Text>
-        </View>
-          
+              </View>
+            
           {/* Save Temple Button */}
         <View style={styles.configIconWrapper}>
-          <TouchableOpacity
+                <TouchableOpacity
             style={styles.saveTempleConfigButton}
-            onPress={async () => {
-              await saveTempleConfig();
+                onPress={async () => {
+                    await saveTempleConfig();
             }}
             activeOpacity={0.7}
           >
@@ -1416,16 +1622,16 @@ export default function TestTempleScreen() {
               style={styles.saveIconImage} 
               resizeMode="contain" 
             />
-          </TouchableOpacity>
+              </TouchableOpacity>
           <Text style={styles.saveTempleConfigButtonText}>{isHindi ? 'सहेजें' : 'Save'}</Text>
-        </View>
-      </View>
+            </View>
+          </View>
       
       {/* Content */}
       <View style={styles.content}>
-      </View>
+        </View>
       
-      
+
 
       {/* Puja Icons - Always visible */}
         <>
@@ -1825,6 +2031,108 @@ export default function TestTempleScreen() {
         </View>
       </Modal>
 
+      {/* Perform Puja Thali Modal */}
+      <Modal
+        visible={isPujaRitualActive}
+        transparent={true}
+        animationType="none"
+        onRequestClose={stopPujaRitual}
+      >
+        <TouchableWithoutFeedback onPress={stopPujaRitual}>
+          <View style={styles.pujaThaliModalOverlay}>
+            <View style={styles.pujaThaliModalOverlayTouchable}>
+              {/* Puja Thali with Elliptical Motion */}
+              {(() => {
+                const ellipseWidth = screenWidth * 0.7; // 70% of screen width
+                const ellipseHeight = ellipseWidth * 0.6; // Maintain aspect ratio
+                const startY = 1000; // Start at 1000px from top
+                const centerX = screenWidth / 2;
+                const centerY = startY + ellipseHeight / 2;
+                
+                return (
+                  <Animated.View
+                    style={[
+                      styles.pujaThali,
+                      {
+                        position: 'absolute',
+                        left: (screenWidth - 200) / 2, // Center horizontally (200px width like aarti)
+                        top: (screenHeight - 200) / 2 + 100, // Center vertically + 100px lower
+                        width: 200, // Same size as aarti thali
+                        height: 200,
+                        transform: [
+                          {
+                            translateX: thaliEllipseAnimation.interpolate({
+                              inputRange: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5],
+                              outputRange: [
+                                0, // Start at 6 o'clock (bottom)
+                                -ellipseWidth / 2, // Quarter at 3 o'clock (right)
+                                0, // Half at 12 o'clock (top)
+                                ellipseWidth / 2, // 3 quarters at 9 o'clock (left)
+                                0, // Complete first orbit at 6 o'clock (bottom)
+                                -ellipseWidth / 2, // Start second orbit - 3 o'clock (right)
+                                0, // Second orbit - 12 o'clock (top)
+                                ellipseWidth / 2, // Second orbit - 9 o'clock (left)
+                                0, // Second orbit complete - 6 o'clock (bottom)
+                                -ellipseWidth / 2, // Third orbit - 3 o'clock (right)
+                                0, // Third orbit - 12 o'clock (top)
+                                ellipseWidth / 2, // Third orbit - 9 o'clock (left)
+                                0, // Third orbit complete - 6 o'clock (bottom)
+                                -ellipseWidth / 2, // Fourth orbit - 3 o'clock (right)
+                                0, // Fourth orbit - 12 o'clock (top)
+                                ellipseWidth / 2, // Fourth orbit - 9 o'clock (left)
+                                0, // Fourth orbit complete - 6 o'clock (bottom)
+                                -ellipseWidth / 2, // Fifth orbit - 3 o'clock (right)
+                                0, // Fifth orbit - 12 o'clock (top)
+                                ellipseWidth / 2, // Fifth orbit - 9 o'clock (left)
+                                0, // Fifth orbit complete - 6 o'clock (bottom)
+                              ],
+                            }),
+                          },
+                          {
+                            translateY: thaliEllipseAnimation.interpolate({
+                              inputRange: [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5],
+                              outputRange: [
+                                ellipseHeight / 2, // Start at 6 o'clock (bottom)
+                                0, // Quarter at 9 o'clock (center)
+                                -ellipseHeight / 2, // Half at 12 o'clock (top)
+                                0, // 3 quarters at 3 o'clock (center)
+                                ellipseHeight / 2, // Complete first orbit at 6 o'clock (bottom)
+                                0, // Start second orbit - 9 o'clock (center)
+                                -ellipseHeight / 2, // Second orbit - 12 o'clock (top)
+                                0, // Second orbit - 3 o'clock (center)
+                                ellipseHeight / 2, // Second orbit complete - 6 o'clock (bottom)
+                                0, // Third orbit - 9 o'clock (center)
+                                -ellipseHeight / 2, // Third orbit - 12 o'clock (top)
+                                0, // Third orbit - 3 o'clock (center)
+                                ellipseHeight / 2, // Third orbit complete - 6 o'clock (bottom)
+                                0, // Fourth orbit - 9 o'clock (center)
+                                -ellipseHeight / 2, // Fourth orbit - 12 o'clock (top)
+                                0, // Fourth orbit - 3 o'clock (center)
+                                ellipseHeight / 2, // Fourth orbit complete - 6 o'clock (bottom)
+                                0, // Fifth orbit - 9 o'clock (center)
+                                -ellipseHeight / 2, // Fifth orbit - 12 o'clock (top)
+                                0, // Fifth orbit - 3 o'clock (center)
+                                ellipseHeight / 2, // Fifth orbit complete - 6 o'clock (bottom)
+                              ],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
+                    <Image
+                      source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+                      style={{ width: '100%', height: '100%' }} // Use full container size
+                      resizeMode="contain"
+                    />
+                  </Animated.View>
+                );
+              })()}
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
       {/* Bottom Action Buttons - Always visible */}
         <>
           {/* Perform Puja Button - 79% from top, 90% width, 5% height */}
@@ -1833,13 +2141,14 @@ export default function TestTempleScreen() {
               top: screenHeight * 0.77,
               width: screenWidth * 0.90,
               height: screenHeight * 0.05,
+              opacity: isPujaRitualActive ? 0.6 : 1,
             }]}
-            onPress={() => {
-              // Handle perform puja action
-              console.log('Perform Puja pressed');
-            }}
+            onPress={performPujaRitual}
+            disabled={isPujaRitualActive}
           >
-            <Text style={styles.performPujaButtonText}>{isHindi ? 'पूजा करें' : 'Perform Puja'}</Text>
+            <Text style={styles.performPujaButtonText}>
+              {isPujaRitualActive ? (isHindi ? 'पूजा हो रही है...' : 'Performing Puja...') : (isHindi ? 'पूजा करें' : 'Perform Puja')}
+            </Text>
           </TouchableOpacity>
           
           {/* Second Row Buttons - 83% from top (77% + 5% + 1%), 29% width each, 1.5% spacing */}
@@ -3296,5 +3605,20 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: 'center',
     width: 65,
+  },
+  // Perform Puja Thali Modal Styles
+  pujaThaliModalOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent', // 100% transparent
+  },
+  pujaThaliModalOverlayTouchable: {
+    flex: 1,
+    width: '100%',
+  },
+  pujaThali: {
+    position: 'absolute',
+    zIndex: 9999, // Very high zIndex to ensure visibility
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

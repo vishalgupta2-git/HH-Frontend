@@ -28,8 +28,8 @@ function GlobalBottomNavigation() {
   const pathname = usePathname();
   const colorScheme = useColorScheme();
 
-  // Hide bottom navigation on 3D Ganesha screen, Daily Puja Custom Temple screen, and testtemple screen
-  if (pathname === '/screens/3d-ganesha' || pathname === '/screens/DailyPujaCustomTemple' || pathname === '/screens/testtemple') {
+  // Hide bottom navigation on 3D Ganesha screen and Daily Puja Custom Temple screen
+  if (pathname === '/screens/3d-ganesha' || pathname === '/screens/DailyPujaCustomTemple') {
     return null;
   }
 
@@ -113,8 +113,8 @@ function BottomNavigationWithLanguage() {
   const pathname = usePathname();
   const { isHindi } = useLanguage();
 
-  // Hide bottom navigation on 3D Ganesha screen, Daily Puja Custom Temple screen, and testtemple screen
-  if (pathname === '/screens/3d-ganesha' || pathname === '/screens/DailyPujaCustomTemple' || pathname === '/screens/testtemple') {
+  // Hide bottom navigation on 3D Ganesha screen and Daily Puja Custom Temple screen
+  if (pathname === '/screens/3d-ganesha' || pathname === '/screens/DailyPujaCustomTemple') {
     return null;
   }
 
