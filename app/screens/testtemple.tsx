@@ -8,6 +8,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { loadTempleConfigurationNewStyle, saveTempleConfigurationNewStyle, checkUserAuthentication } from '@/utils/templeUtils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const options = { headerShown: false };
 
@@ -326,6 +327,7 @@ const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) 
 
 export default function TestTempleScreen() {
   const router = useRouter();
+  const { isHindi } = useLanguage();
   
   // State management for temple configuration
   const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'statues'>(null);
@@ -1516,7 +1518,7 @@ export default function TestTempleScreen() {
                 style={styles.pujaIconImage}
                 resizeMode="contain"
               />
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Flowers</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'फूल' : 'Flowers'}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]}
@@ -1529,7 +1531,7 @@ export default function TestTempleScreen() {
                 style={styles.pujaIconImage}
                 resizeMode="contain"
               />
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Aarti</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'आरती' : 'Aarti'}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]}
@@ -1538,7 +1540,7 @@ export default function TestTempleScreen() {
               activeOpacity={0.7}
             >
               <Text style={styles.pujaIcon}>🎵</Text>
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Music</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'भक्ति संगीत' : 'Music'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -1555,7 +1557,7 @@ export default function TestTempleScreen() {
                 style={styles.pujaIconImage}
                 resizeMode="contain"
               />
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Shankh</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'शंख' : 'Shankh'}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
@@ -1564,7 +1566,7 @@ export default function TestTempleScreen() {
               activeOpacity={0.7}
             >
               <Text style={styles.pujaIcon}>🔔</Text>
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Ghanti</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'घंटी' : 'Ghanti'}</Text>
             </TouchableOpacity>
           </View>
         </>
@@ -1680,7 +1682,7 @@ export default function TestTempleScreen() {
             {!thaliImageLoaded && (
               <View style={styles.thaliLoadingContainer}>
                 <ActivityIndicator size="large" color="#FF6A00" />
-                <Text style={styles.thaliLoadingText}>Loading Aarti Thali...</Text>
+                <Text style={styles.thaliLoadingText}>{isHindi ? 'आरती थाली लोड हो रही है...' : 'Loading Aarti Thali...'}</Text>
               </View>
             )}
             <DraggableThali onImageLoad={() => setThaliImageLoaded(true)} />
@@ -1707,7 +1709,7 @@ export default function TestTempleScreen() {
             <View style={styles.musicModalContent}>
               {/* Header */}
               <View style={styles.musicModalHeader}>
-                <Text style={styles.musicModalTitle}>🎵 Divine Music</Text>
+                <Text style={styles.musicModalTitle}>{isHindi ? '🎵 दिव्य संगीत' : '🎵 Divine Music'}</Text>
                 <View style={styles.musicModalHeaderButtons}>
                   <TouchableOpacity 
                     style={styles.musicModalCloseButton}
@@ -1724,7 +1726,7 @@ export default function TestTempleScreen() {
               <View style={styles.musicSearchContainer}>
                 <TextInput
                   style={styles.musicSearchInput}
-                  placeholder="Search for bhajans, aartis, mantras..."
+                  placeholder={isHindi ? "भजन, आरती, मंत्र खोजें..." : "Search for bhajans, aartis, mantras..."}
                   placeholderTextColor="#999"
                   value={musicSearchQuery}
                   onChangeText={setMusicSearchQuery}
@@ -1773,7 +1775,7 @@ export default function TestTempleScreen() {
                   <Text style={[
                     styles.stopMusicButtonText,
                     currentlyPlaying ? styles.stopMusicButtonTextActive : styles.stopMusicButtonTextDisabled
-                  ]}>⏹️ Stop Music</Text>
+                  ]}>{isHindi ? '⏹️ संगीत बंद करें' : '⏹️ Stop Music'}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -1787,17 +1789,17 @@ export default function TestTempleScreen() {
                   <View style={{ padding: 40, alignItems: 'center' }}>
                     <ActivityIndicator size="large" color="#FF6A00" />
                     <Text style={{ marginTop: 16, fontSize: 16, color: '#666' }}>
-                      Loading music library...
+                      {isHindi ? 'संगीत लाइब्रेरी लोड हो रही है...' : 'Loading music library...'}
                     </Text>
                   </View>
                 ) : musicFiles.length === 0 ? (
                   <View style={{ padding: 40, alignItems: 'center' }}>
                     <MaterialCommunityIcons name="music-off" size={48} color="#ccc" />
                     <Text style={{ marginTop: 16, fontSize: 16, color: '#666', textAlign: 'center' }}>
-                      No music files found in S3
+                      {isHindi ? 'S3 में कोई संगीत फ़ाइल नहीं मिली' : 'No music files found in S3'}
                     </Text>
                     <Text style={{ marginTop: 8, fontSize: 14, color: '#999', textAlign: 'center' }}>
-                      Please upload music files to the 'music/' folder in S3
+                      {isHindi ? 'कृपया S3 में \'music/\' फ़ोल्डर में संगीत फ़ाइलें अपलोड करें' : 'Please upload music files to the \'music/\' folder in S3'}
                     </Text>
                   </View>
                 ) : (
@@ -1915,7 +1917,7 @@ export default function TestTempleScreen() {
               console.log('Perform Puja pressed');
             }}
           >
-            <Text style={styles.performPujaButtonText}>Perform Puja</Text>
+            <Text style={styles.performPujaButtonText}>{isHindi ? 'पूजा करें' : 'Perform Puja'}</Text>
           </TouchableOpacity>
           
           {/* Second Row Buttons - 83% from top (77% + 5% + 1%), 29% width each, 1.5% spacing */}
@@ -1935,7 +1937,7 @@ export default function TestTempleScreen() {
                 console.log('My Temple pressed');
               }}
             >
-              <Text style={styles.secondRowButtonText}>My Temple</Text>
+              <Text style={styles.secondRowButtonText}>{isHindi ? 'मेरा मंदिर' : 'My Temple'}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -1947,7 +1949,7 @@ export default function TestTempleScreen() {
                 console.log('Today\'s Pujas pressed');
               }}
             >
-              <Text style={styles.secondRowButtonText}>Today's Pujas</Text>
+              <Text style={styles.secondRowButtonText}>{isHindi ? 'आज की पूजा' : 'Today\'s Pujas'}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -1959,7 +1961,7 @@ export default function TestTempleScreen() {
                 console.log('All Temples pressed');
               }}
             >
-              <Text style={styles.secondRowButtonText}>All Temples</Text>
+              <Text style={styles.secondRowButtonText}>{isHindi ? 'सभी मंदिर' : 'All Temples'}</Text>
             </TouchableOpacity>
           </View>
         </>
