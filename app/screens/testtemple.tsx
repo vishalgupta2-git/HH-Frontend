@@ -322,14 +322,23 @@ export default function TestTempleScreen() {
     const rowDelayMs = 200;
     const edgeClamp = 30; // keep flowers slightly inside the edges
 
+    // Define available flower types for mixing
+    const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra', 'jasmine', 'yellowShevanthi', 'whiteShevanthi', 'redShevanthi', 'tulsi', 'rajnigandha', 'parajita', 'datura'];
+
     const makeFlowerAt = (xPos: number) => {
       const id = generateUniqueFlowerId();
       const baseY = 100 + (Math.random() - 0.5) * 40;
       const fadeStart = screenHeight * 0.65;
       const fadeEnd = screenHeight * 0.78;
+      
+      // If flowerType is 'mix', randomly select from available flower types
+      const actualFlowerType = flowerType === 'mix' 
+        ? flowerTypes[Math.floor(Math.random() * flowerTypes.length)]
+        : flowerType;
+      
       return {
         id,
-        type: flowerType,
+        type: actualFlowerType,
         x: xPos,
         y: new Animated.Value(0),
         opacity: new Animated.Value(1),
