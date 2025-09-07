@@ -35,7 +35,8 @@ export default function HomeHeader({
   onSearchChange, 
   showSearchBar = true,
   enableSpiritualSearch = false,
-  showTopicDropdown = true
+  showTopicDropdown = true,
+  showLanguageToggle = true
 }: { 
   searchPlaceholder?: string, 
   extraContent?: ReactNode, 
@@ -43,7 +44,8 @@ export default function HomeHeader({
   onSearchChange?: (query: string) => void, 
   showSearchBar?: boolean,
   enableSpiritualSearch?: boolean,
-  showTopicDropdown?: boolean
+  showTopicDropdown?: boolean,
+  showLanguageToggle?: boolean
 }) {
   const { isHindi, toggleLanguage } = useLanguage();
   console.log('HomeHeader props:', { isHindi, showDailyPujaButton });
@@ -298,21 +300,22 @@ export default function HomeHeader({
       )}
       
       {/* Language Toggle - positioned separately to avoid white box overlap */}
-      {/* DEBUG: Always render toggle to test visibility */}
-      <View style={styles.languageToggleContainer}>
-        <TouchableOpacity 
-          style={styles.languageToggleBelow} 
-          onPress={() => {
-            console.log('Language toggle pressed!');
-            toggleLanguage();
-          }}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.languageToggleTextBelow}>
-            {isHindi ? 'English' : 'हिंदी'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {showLanguageToggle && (
+        <View style={styles.languageToggleContainer}>
+          <TouchableOpacity 
+            style={styles.languageToggleBelow} 
+            onPress={() => {
+              console.log('Language toggle pressed!');
+              toggleLanguage();
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.languageToggleTextBelow}>
+              {isHindi ? 'English' : 'हिंदी'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
       
       {/* Search Suggestions Display */}
       {enableSpiritualSearch && (

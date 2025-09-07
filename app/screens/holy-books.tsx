@@ -455,6 +455,7 @@ export default function HolyBooksScreen() {
         enableSpiritualSearch={true}
         showSearchBar={false}
         showTopicDropdown={false}
+        showLanguageToggle={false}
         extraContent={
           <>
             {/* Custom Search Box - Inside the gradient */}

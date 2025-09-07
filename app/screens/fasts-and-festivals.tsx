@@ -309,6 +309,7 @@ export default function FastsAndFestivalsScreen() {
         enableSpiritualSearch={true}
         showSearchBar={false}
         showTopicDropdown={false}
+        showLanguageToggle={false}
         extraContent={
           <>
             {/* Custom Search Box - Inside the gradient */}

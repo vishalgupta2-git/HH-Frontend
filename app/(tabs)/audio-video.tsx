@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, AppState, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { Audio } from 'expo-av';
 import YoutubePlayer from 'react-native-youtube-iframe';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface MediaFile {
   avld: string;
