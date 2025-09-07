@@ -2,29 +2,30 @@ import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 import { Modal, Platform, Pressable, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Dimensions } from 'react-native';
 import SearchBar from './SearchBar';
 import SearchResults from './SearchResults';
 import SearchSuggestions from './SearchSuggestions';
 import { useSpiritualSearch } from '@/hooks/useSpiritualSearch';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
 const TOP_PADDING = (Platform.OS === 'android' ? statusBarHeight : 0) + 24;
 const { width } = Dimensions.get('window');
 
 // Topic dropdown options
-const TOPIC_OPTIONS = [
-  { key: 'puja', title: 'Puja & Rituals' },
-  { key: 'temple', title: 'Temples & Pilgrimage' },
-  { key: 'vedas', title: 'Vedas & Scriptures' },
-  { key: 'gods', title: 'Gods & Goddesses' },
-  { key: 'festivals', title: 'Festivals & Fasts' },
-  { key: 'astrology', title: 'Astrology & Vastu' },
-  { key: 'meditation', title: 'Meditation & Yoga' },
-  { key: 'mudras', title: 'Mudras & Mantras' },
-  { key: 'philosophy', title: 'Philosophy & Ethics' },
-  { key: 'history', title: 'History & Culture' }
+const getTopicOptions = (isHindi: boolean) => [
+  { key: 'puja', title: isHindi ? 'पूजा और अनुष्ठान' : 'Puja & Rituals' },
+  { key: 'temple', title: isHindi ? 'मंदिर और तीर्थयात्रा' : 'Temples & Pilgrimage' },
+  { key: 'vedas', title: isHindi ? 'वेद और शास्त्र' : 'Vedas & Scriptures' },
+  { key: 'gods', title: isHindi ? 'देवी-देवता' : 'Gods & Goddesses' },
+  { key: 'festivals', title: isHindi ? 'त्योहार और व्रत' : 'Festivals & Fasts' },
+  { key: 'astrology', title: isHindi ? 'ज्योतिष और वास्तु' : 'Astrology & Vastu' },
+  { key: 'meditation', title: isHindi ? 'ध्यान और योग' : 'Meditation & Yoga' },
+  { key: 'mudras', title: isHindi ? 'मुद्रा और मंत्र' : 'Mudras & Mantras' },
+  { key: 'philosophy', title: isHindi ? 'दर्शन और नैतिकता' : 'Philosophy & Ethics' },
+  { key: 'history', title: isHindi ? 'इतिहास और संस्कृति' : 'History & Culture' }
 ];
 
 export default function HomeHeader({ 
@@ -44,6 +45,13 @@ export default function HomeHeader({
   enableSpiritualSearch?: boolean,
   showTopicDropdown?: boolean
 }) {
+  const { isHindi, toggleLanguage } = useLanguage();
+  console.log('HomeHeader props:', { isHindi, showDailyPujaButton });
+  
+  // Debug: Log when isHindi changes
+  useEffect(() => {
+    console.log('HomeHeader isHindi changed to:', isHindi);
+  }, [isHindi]);
   const [modalVisible, setModalVisible] = useState(false);
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -202,6 +210,11 @@ export default function HomeHeader({
 
   return (
     <View style={styles.headerContainer}>
+      {/* DEBUG: Test element in header */}
+      <View style={{ position: 'absolute', top: 10, right: 10, backgroundColor: 'blue', padding: 5, zIndex: 10000 }}>
+        <Text style={{ color: 'white', fontSize: 12 }}>HEADER</Text>
+      </View>
+      
       <LinearGradient
         colors={["#FFA040", "#FF6A00"]}
         style={styles.gradient}
@@ -222,7 +235,9 @@ export default function HomeHeader({
         >
           <Feather name="menu" size={32} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.centeredTitle}>The Hindu Heritage</Text>
+        <Text style={styles.centeredTitle}>
+          {isHindi ? 'हिंदू हेरिटेज' : 'The Hindu Heritage'}
+        </Text>
         <View style={styles.mudraDisplay}>
           <TouchableOpacity 
             style={styles.mudraDisplayButton}
@@ -240,7 +255,7 @@ export default function HomeHeader({
         <View style={styles.searchSection}>
           {enableSpiritualSearch ? (
             <SearchBar
-              placeholder={searchPlaceholder || "Search spiritual content..."}
+              placeholder={searchPlaceholder || (isHindi ? "आध्यात्मिक सामग्री खोजें..." : "Search spiritual content...")}
               onSearch={handleSearch}
               onClear={handleSearchClear}
               onFocus={() => setShowSuggestions(true)}
@@ -258,7 +273,7 @@ export default function HomeHeader({
             <View style={styles.searchBarContainer}>
               <TextInput
                 style={styles.searchInput}
-                placeholder={searchPlaceholder || "Search for 'puja '"}
+                placeholder={searchPlaceholder || (isHindi ? "'पूजा' खोजें" : "Search for 'puja '")}
                 placeholderTextColor="#fff"
                 value={searchInputValue}
                 onChangeText={handleSearch}
@@ -275,10 +290,29 @@ export default function HomeHeader({
       {showDailyPujaButton && (
         <View style={styles.dailyPujaButtonContainer}>
           <TouchableOpacity style={styles.dailyPujaButton} onPress={() => router.push('/screens/DailyPujaCustomTemple')}>
-            <Text style={styles.dailyPujaButtonText}>Start Your Daily Puja</Text>
+            <Text style={styles.dailyPujaButtonText}>
+              {isHindi ? 'अपनी दैनिक पूजा शुरू करें' : 'Start Your Daily Puja'}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
+      
+      {/* Language Toggle - positioned separately to avoid white box overlap */}
+      {/* DEBUG: Always render toggle to test visibility */}
+      <View style={styles.languageToggleContainer}>
+        <TouchableOpacity 
+          style={styles.languageToggleBelow} 
+          onPress={() => {
+            console.log('Language toggle pressed!');
+            toggleLanguage();
+          }}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.languageToggleTextBelow}>
+            {isHindi ? 'English' : 'हिंदी'}
+          </Text>
+        </TouchableOpacity>
+      </View>
       
       {/* Search Suggestions Display */}
       {enableSpiritualSearch && (
@@ -313,7 +347,7 @@ export default function HomeHeader({
             style={styles.topicDropdownTrigger}
           >
             <Text style={styles.topicDropdownText}>
-              {selectedTopic || 'Choose a Topic'}
+              {selectedTopic || (isHindi ? 'एक विषय चुनें' : 'Choose a Topic')}
             </Text>
             <Text style={styles.topicDropdownChevron}>▾</Text>
           </TouchableOpacity>
@@ -326,7 +360,7 @@ export default function HomeHeader({
           >
             <View style={styles.topicDropdownOverlay}>
               <View style={styles.topicDropdownCard}>
-                {TOPIC_OPTIONS.map((topic) => (
+                {getTopicOptions(isHindi).map((topic) => (
                   <TouchableOpacity 
                     key={topic.key} 
                     style={styles.topicDropdownItem} 
@@ -339,7 +373,9 @@ export default function HomeHeader({
                   style={[styles.topicDropdownItem, { borderTopWidth: 1, borderTopColor: '#EEE' }]} 
                   onPress={() => setTopicDropdownOpen(false)}
                 >
-                  <Text style={[styles.topicDropdownItemText, { color: '#999' }]}>Cancel</Text>
+                  <Text style={[styles.topicDropdownItemText, { color: '#999' }]}>
+                    {isHindi ? 'रद्द करें' : 'Cancel'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -362,27 +398,27 @@ export default function HomeHeader({
               <>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FF6A00', marginBottom: 12 }}>{userName}</Text>
                 <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/profile'); }}>
-                  <Text style={styles.modalText}>Profile</Text>
+                  <Text style={styles.modalText}>{isHindi ? 'प्रोफाइल' : 'Profile'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/mudras'); }}>
-                  <Text style={styles.modalText}>Mudras</Text>
+                  <Text style={styles.modalText}>{isHindi ? 'मुद्रा' : 'Mudras'}</Text>
                 </TouchableOpacity>
                 {userEmail === 'vishalgupta2@gmail.com' && (
                   <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/screens/my-bookings'); }}>
-                    <Text style={styles.modalText}>My Bookings</Text>
+                    <Text style={styles.modalText}>{isHindi ? 'मेरी बुकिंग' : 'My Bookings'}</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity style={styles.modalOption} onPress={handleLogout}>
-                  <Text style={styles.modalText}>Logout</Text>
+                  <Text style={styles.modalText}>{isHindi ? 'लॉग आउट' : 'Logout'}</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
                 <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/login'); }}>
-                  <Text style={styles.modalText}>Login</Text>
+                  <Text style={styles.modalText}>{isHindi ? 'लॉग इन' : 'Login'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/signup'); }}>
-                  <Text style={styles.modalText}>Sign-Up</Text>
+                  <Text style={styles.modalText}>{isHindi ? 'साइन अप' : 'Sign-Up'}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -526,6 +562,27 @@ const styles = StyleSheet.create({
     color: '#FF6A00',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  languageToggleContainer: {
+    position: 'absolute',
+    top: 170,
+    right: '8%', // 8% from right = 92% from left
+    zIndex: 1000, // Higher than white box z-index (999)
+    elevation: 1000, // For Android
+  },
+  languageToggleBelow: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  languageToggleTextBelow: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   modalOverlay: {
     flex: 1,

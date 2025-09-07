@@ -12,11 +12,12 @@ import { hasVisitedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUti
 import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
 import { shouldShowSpecialDaysModal } from '@/utils/bookingUtils';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 
 export default function HomeScreen() {
   const router = useRouter();
-
+  const { isHindi, toggleLanguage } = useLanguage();
   const [showSpecialDaysModal, setShowSpecialDaysModal] = useState(false);
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
@@ -108,7 +109,11 @@ export default function HomeScreen() {
   return (
     <View style={styles.root}>
       {/* Fixed Header with Gradient Background */}
-      <HomeHeader enableSpiritualSearch={false} showSearchBar={false} showDailyPujaButton={true} />
+      <HomeHeader 
+        enableSpiritualSearch={false} 
+        showSearchBar={false} 
+        showDailyPujaButton={true}
+      />
       
       {/* Empty white box with rounded top corners - positioned on top of everything */}
       <View style={styles.topWhiteBox} />
@@ -124,44 +129,48 @@ export default function HomeScreen() {
         {/* Top spacing to account for header height */}
         <View style={styles.headerSpacer} />
         
-        {/* Icon Grid Section */}
-        <View style={styles.section}>
-          <HomeIconGrid />
-        </View>
-        
-        {/* Test Temple Button */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.testTempleButton}
-            onPress={() => router.push('/screens/testtemple')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.testTempleButtonText}>Test Temple</Text>
-          </TouchableOpacity>
-        </View>
+         {/* Icon Grid Section */}
+         <View style={styles.section}>
+           <HomeIconGrid key={`home-icon-grid-${isHindi}`} isHindi={isHindi} />
+         </View>
+         
+         {/* Test Temple Button */}
+         <View style={styles.section}>
+           <TouchableOpacity
+             style={styles.testTempleButton}
+             onPress={() => router.push('/screens/testtemple')}
+             activeOpacity={0.8}
+           >
+             <Text style={styles.testTempleButtonText}>
+               {isHindi ? 'टेस्ट मंदिर' : 'Test Temple'}
+             </Text>
+           </TouchableOpacity>
+         </View>
 
-        {/* 3D Ganesha Temple Button */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.testTempleButton}
-            onPress={() => router.push('/screens/3d-ganesha')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.testTempleButtonText}>3D Ganesha Temple</Text>
-          </TouchableOpacity>
-        </View>
+         {/* 3D Ganesha Temple Button */}
+         <View style={styles.section}>
+           <TouchableOpacity
+             style={styles.testTempleButton}
+             onPress={() => router.push('/screens/3d-ganesha')}
+             activeOpacity={0.8}
+           >
+             <Text style={styles.testTempleButtonText}>
+               {isHindi ? '3D गणेश मंदिर' : '3D Ganesha Temple'}
+             </Text>
+           </TouchableOpacity>
+         </View>
 
         
-        {/* Spiritual & Astrology Block Section */}
-        <View style={styles.section}>
-          <SpiritualAstrologyBlock />
-        </View>
+         {/* Spiritual & Astrology Block Section */}
+         <View style={styles.section}>
+           <SpiritualAstrologyBlock key={`spiritual-astrology-${isHindi}`} isHindi={isHindi} />
+         </View>
         
-        {/* Referral & Social Section */}
-        <View style={styles.referralSection}>
-          <ReferralConnectBlock />
-          <SocialRow />
-        </View>
+         {/* Referral & Social Section */}
+         <View style={styles.referralSection}>
+           <ReferralConnectBlock key={`referral-connect-${isHindi}`} isHindi={isHindi} />
+           <SocialRow />
+         </View>
         
         {/* Bottom Spacer for Global Navigation */}
         <View style={styles.bottomSpacer} />
@@ -240,12 +249,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  testTempleButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-  },
+   testTempleButtonText: {
+     fontSize: 16,
+     fontWeight: 'bold',
+     color: '#fff',
+     textAlign: 'center',
+   },
 
   // ecoGaneshaButton: {
   //   width: '92%',

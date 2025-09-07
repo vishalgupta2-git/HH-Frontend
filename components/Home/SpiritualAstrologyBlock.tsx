@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 // import ReferralConnectBlock, { SocialRow } from './ReferralConnectBlock';
 
@@ -7,38 +7,49 @@ interface SpiritualItem {
   label: string;
   image: any;
   isEmoji?: boolean;
+  route: string;
 }
 
-const spiritualItems: SpiritualItem[] = [
-  { label: 'Vedas', image: require('@/assets/images/icons/home page icons/vedas.png') },
-  { label: 'Dhams and Yatras', image: require('@/assets/images/icons/home page icons/dhams.png') },
-  { label: 'Holy Books', image: require('@/assets/images/icons/home page icons/HolyBooksIcon.png') },
-  { label: 'Gods & Godesses', image: require('@/assets/images/icons/home page icons/godsAndGodessesIcon.png') },
-  { label: 'Famous Temples', image: require('@/assets/images/icons/home page icons/FamousTemple.png') },
-  { label: 'Fasts & Festivals', image: require('@/assets/images/icons/home page icons/Fasts&Festivals.png') },
-  { label: 'Shalokas', image: require('@/assets/images/icons/home page icons/shalokasIcon.png') },
-  { label: 'Mantras', image: require('@/assets/images/icons/home page icons/mantrasIcon.png') },
-  { label: 'Calendar', image: require('@/assets/images/icons/home page icons/hinduCalendarIcon.png') },
+const getSpiritualItems = (isHindi: boolean): SpiritualItem[] => [
+  { label: isHindi ? 'वेद' : 'Vedas', image: require('@/assets/images/icons/home page icons/vedas.png'), route: '/screens/vedas' },
+  { label: isHindi ? 'धाम और यात्रा' : 'Dhams and Yatras', image: require('@/assets/images/icons/home page icons/dhams.png'), route: '/screens/dhams' },
+  { label: isHindi ? 'पवित्र पुस्तकें' : 'Holy Books', image: require('@/assets/images/icons/home page icons/HolyBooksIcon.png'), route: '/screens/holy-books' },
+  { label: isHindi ? 'देवी-देवता' : 'Gods & Godesses', image: require('@/assets/images/icons/home page icons/godsAndGodessesIcon.png'), route: '/screens/gods-and-godesses' },
+  { label: isHindi ? 'प्रसिद्ध मंदिर' : 'Famous Temples', image: require('@/assets/images/icons/home page icons/FamousTemple.png'), route: '/screens/famous-temples' },
+  { label: isHindi ? 'व्रत और त्योहार' : 'Fasts & Festivals', image: require('@/assets/images/icons/home page icons/Fasts&Festivals.png'), route: '/screens/fasts-and-festivals' },
+  { label: isHindi ? 'श्लोक' : 'Shalokas', image: require('@/assets/images/icons/home page icons/shalokasIcon.png'), route: '/screens/shalokas' },
+  { label: isHindi ? 'मंत्र' : 'Mantras', image: require('@/assets/images/icons/home page icons/mantrasIcon.png'), route: '/screens/mantras' },
+  { label: isHindi ? 'कैलेंडर' : 'Calendar', image: require('@/assets/images/icons/home page icons/hinduCalendarIcon.png'), route: '/screens/hindu-calendar' },
 ];
 
-const astrologyItems = [
-  { label: 'Kundli', image: require('@/assets/images/icons/home page icons/kundli.png') },
-  { label: 'Numerology', image: require('@/assets/images/icons/home page icons/numerology.png') },
-  { label: 'Astrology', image: require('@/assets/images/icons/home page icons/astrology.png') },
-  { label: 'Vastu', image: require('@/assets/images/icons/home page icons/vastu.png') },
-  { label: 'Talk To Priest', image: require('@/assets/images/icons/home page icons/talk-to-priest.jpg') },
+const getAstrologyItems = (isHindi: boolean) => [
+  { label: isHindi ? 'कुंडली' : 'Kundli', image: require('@/assets/images/icons/home page icons/kundli.png'), route: '/screens/kundli' },
+  { label: isHindi ? 'अंक ज्योतिष' : 'Numerology', image: require('@/assets/images/icons/home page icons/numerology.png'), route: '/screens/numerology' },
+  { label: isHindi ? 'ज्योतिष' : 'Astrology', image: require('@/assets/images/icons/home page icons/astrology.png'), route: '/screens/astrology' },
+  { label: isHindi ? 'वास्तु' : 'Vastu', image: require('@/assets/images/icons/home page icons/vastu.png'), route: '/screens/vastu' },
+  { label: isHindi ? 'पुजारी से बात करें' : 'Talk To Priest', image: require('@/assets/images/icons/home page icons/talk-to-priest.jpg'), route: '/screens/talk-to-priest' },
 ];
 
 const tileWidth = (Dimensions.get('window').width - 60) / 2;
 
-export default function SpiritualAstrologyBlock() {
+export default function SpiritualAstrologyBlock({ isHindi = false }: { isHindi?: boolean }) {
+  console.log('SpiritualAstrologyBlock rendering with isHindi:', isHindi);
   const router = useRouter();
+  const spiritualItems = getSpiritualItems(isHindi);
+  const astrologyItems = getAstrologyItems(isHindi);
+  
+  // Debug: Log when isHindi changes
+  useEffect(() => {
+    console.log('SpiritualAstrologyBlock isHindi changed to:', isHindi);
+  }, [isHindi]);
 
   return (
     <View style={styles.container}>
       {/* Spiritual Information Section */}
       <View style={styles.sectionHeaderRow}>
-        <Text style={styles.sectionTitle}>Spiritual Information</Text>
+        <Text style={styles.sectionTitle}>
+          {isHindi ? 'आध्यात्मिक जानकारी' : 'Spiritual Information'}
+        </Text>
         <View style={styles.sectionLine} />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.spiritualScrollContent}>
@@ -48,41 +59,7 @@ export default function SpiritualAstrologyBlock() {
             style={styles.spiritualItem}
             activeOpacity={0.8}
             onPress={() => {
-              if (item.label === 'Gods & Godesses') {
-                router.push({ pathname: '/screens/gods-and-godesses' });
-                return;
-              }
-              if (item.label === 'Dhams and Yatras') {
-                router.push({ pathname: '/screens/dhams' });
-                return;
-              }
-              if (item.label === 'Holy Books') {
-                router.push({ pathname: '/screens/holy-books' });
-                return;
-              }
-              if (item.label === 'Famous Temples') {
-                router.push({ pathname: '/screens/famous-temples' });
-                return;
-              }
-              if (item.label === 'Fasts & Festivals') {
-                router.push({ pathname: '/screens/fasts-and-festivals' });
-                return;
-              }
-              if (item.label === 'Shalokas') {
-                router.push({ pathname: '/screens/shalokas' });
-                return;
-              }
-              if (item.label === 'Mantras') {
-                router.push({ pathname: '/screens/mantras' });
-                return;
-              }
-              if (item.label === 'Calendar') {
-                router.push({ pathname: '/screens/hindu-calendar' });
-                return;
-              }
-              const path = `/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`;
-              // @ts-expect-error dynamic route path
-              router.push({ pathname: path });
+              router.push(item.route as any);
             }}
           >
             {item.isEmoji ? (
@@ -96,7 +73,9 @@ export default function SpiritualAstrologyBlock() {
       </ScrollView>
       {/* Astrology Services Section */}
       <View style={[styles.sectionHeaderRow, { marginTop: 24 }]}>
-        <Text style={styles.sectionTitle}>Astrology Services</Text>
+        <Text style={styles.sectionTitle}>
+          {isHindi ? 'ज्योतिष सेवाएं' : 'Astrology Services'}
+        </Text>
         <View style={styles.sectionLine} />
       </View>
       <View style={styles.astrologyGrid}>
@@ -106,9 +85,7 @@ export default function SpiritualAstrologyBlock() {
             style={[styles.astrologyTile, idx === 4 ? styles.fullWidthTile : null]}
             activeOpacity={0.8}
             onPress={() => {
-              const path = `/screens/${item.label.toLowerCase().replace(/ /g, '-').replace('talk to priest', 'talk-to-priest')}`;
-              // @ts-expect-error dynamic route path
-              router.push({ pathname: path });
+              router.push(item.route as any);
             }}
           >
             <Image source={item.image} style={styles.astrologyIcon} />

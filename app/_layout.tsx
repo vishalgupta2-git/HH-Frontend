@@ -20,6 +20,7 @@ import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useLanguage, LanguageProvider } from '@/contexts/LanguageContext';
 
 // Global Bottom Navigation Component
 function GlobalBottomNavigation() {
@@ -100,6 +101,99 @@ function GlobalBottomNavigation() {
         >
           <MaterialIcons size={28} name="ondemand-video" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('audio-video') && styles.activeTabText]}>Divine Music</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+// Bottom Navigation with Language Support
+function BottomNavigationWithLanguage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isHindi } = useLanguage();
+
+  // Hide bottom navigation on 3D Ganesha screen, Daily Puja Custom Temple screen, and testtemple screen
+  if (pathname === '/screens/3d-ganesha' || pathname === '/screens/DailyPujaCustomTemple' || pathname === '/screens/testtemple') {
+    return null;
+  }
+
+  const isActive = (route: string) => {
+    if (route === 'home') {
+      return pathname === '/' || pathname === '/(tabs)' || pathname === '/(tabs)/index';
+    }
+    if (route === 'puja') {
+      return pathname === '/screens/puja';
+    }
+    if (route === 'yatra') {
+      return pathname === '/(tabs)/yatra';
+    }
+    if (route === 'audio-video') {
+      return pathname === '/(tabs)/audio-video';
+    }
+    return false;
+  };
+
+  const navigateTo = (route: string) => {
+    if (route === 'home') {
+      router.push('/(tabs)');
+    } else if (route === 'puja') {
+      router.push('/screens/puja');
+    } else if (route === 'yatra') {
+      router.push('/(tabs)/yatra');
+    } else if (route === 'audio-video') {
+      router.push('/(tabs)/audio-video');
+    }
+  };
+
+  return (
+    <View style={[styles.bottomNav, Platform.select({
+      ios: { position: 'absolute' },
+      default: {},
+    })]}>
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tab, isActive('home') && styles.activeTab]} 
+          onPress={() => navigateTo('home')}
+        >
+          <IconSymbol size={28} name="house.fill" color={isActive('home') ? '#FF6A00' : '#666'} />
+          <Text style={[styles.tabText, isActive('home') && styles.activeTabText]}>
+            {isHindi ? 'होम' : 'Home'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.tab, isActive('puja') && styles.activeTab]} 
+          onPress={() => navigateTo('puja')}
+        >
+          <Image 
+            source={require('@/assets/images/icons/home page icons/puja.png')} 
+            style={[styles.tabIcon, isActive('puja') && styles.activeTabIcon]} 
+            resizeMode="contain" 
+          />
+          <Text style={[styles.tabText, isActive('puja') && styles.activeTabText]}>
+            {isHindi ? 'पूजा' : 'Puja'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.tab, isActive('yatra') && styles.activeTab]} 
+          onPress={() => navigateTo('yatra')}
+        >
+          <MaterialIcons size={28} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
+          <Text style={[styles.tabText, isActive('yatra') && styles.activeTabText]}>
+            {isHindi ? 'यात्रा' : 'Yatra'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.tab, isActive('audio-video') && styles.activeTab]} 
+          onPress={() => navigateTo('audio-video')}
+        >
+          <MaterialIcons size={28} name="ondemand-video" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
+          <Text style={[styles.tabText, isActive('audio-video') && styles.activeTabText]}>
+            {isHindi ? 'भक्ति संगीत' : 'Divine Music'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -243,34 +337,36 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="screens" options={{ headerShown: false }} />
-          <Stack.Screen name="auth" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-        
-        {/* Global Bottom Navigation */}
-        <GlobalBottomNavigation />
-        
-        {/* Daily Puja Reminder Modal */}
-        <DailyPujaReminderModal
-          visible={showDailyPujaModal}
-          onClose={handleDailyPujaModalClose}
-          firstName={userFirstName || undefined}
-        />
-        
-        {/* Special Days Modal */}
-        <SpecialDaysModal
-          visible={showSpecialPujaModal}
-          onClose={() => setShowSpecialPujaModal(false)}
-          upcomingPujas={upcomingPujas}
-        />
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <LanguageProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="screens" options={{ headerShown: false }} />
+            <Stack.Screen name="auth" options={{ headerShown: false }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+          
+          {/* Global Bottom Navigation */}
+          <BottomNavigationWithLanguage />
+          
+          {/* Daily Puja Reminder Modal */}
+          <DailyPujaReminderModal
+            visible={showDailyPujaModal}
+            onClose={handleDailyPujaModalClose}
+            firstName={userFirstName || undefined}
+          />
+          
+          {/* Special Days Modal */}
+          <SpecialDaysModal
+            visible={showSpecialPujaModal}
+            onClose={() => setShowSpecialPujaModal(false)}
+            upcomingPujas={upcomingPujas}
+          />
+        </ThemeProvider>
+      </GestureHandlerRootView>
+    </LanguageProvider>
   );
 }
 

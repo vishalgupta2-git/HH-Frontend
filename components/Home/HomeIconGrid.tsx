@@ -4,22 +4,61 @@ import React from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
-const icons = [
-  { label: 'My Virtual Temple', image: require('@/assets/images/icons/home page icons/temple.png') },
-  { label: 'Puja', image: require('@/assets/images/icons/home page icons/puja.png') },
-  { label: 'Donation', image: require('@/assets/images/icons/home page icons/charity.png') },
-  { label: 'Mannat', image: require('@/assets/images/icons/home page icons/horoscope.png') },
-  { label: 'Divine Music', icon: 'video' },
-  { label: 'Puja Guidance', image: require('@/assets/images/icons/home page icons/puja-guidance.png') },
-  { label: 'Special Day Puja', image: require('@/assets/images/icons/home page icons/special-day-puja.png') },
-  { label: 'Professional Puja', image: require('@/assets/images/icons/home page icons/professional-puja.jpg') },
+const getIcons = (isHindi: boolean) => [
+  { 
+    label: isHindi ? 'मेरा आभासी मंदिर' : 'My Virtual Temple', 
+    image: require('@/assets/images/icons/home page icons/temple.png'),
+    route: '/screens/create-temple'
+  },
+  { 
+    label: isHindi ? 'पूजा' : 'Puja', 
+    image: require('@/assets/images/icons/home page icons/puja.png'),
+    route: '/screens/puja'
+  },
+  { 
+    label: isHindi ? 'दान' : 'Donation', 
+    image: require('@/assets/images/icons/home page icons/charity.png'),
+    route: '/screens/donation'
+  },
+  { 
+    label: isHindi ? 'मन्नत' : 'Mannat', 
+    image: require('@/assets/images/icons/home page icons/horoscope.png'),
+    route: '/screens/mannat'
+  },
+  { 
+    label: isHindi ? 'भक्ति संगीत' : 'Divine Music', 
+    icon: 'video',
+    route: '/audio-video'
+  },
+  { 
+    label: isHindi ? 'पूजा मार्गदर्शन' : 'Puja Guidance', 
+    image: require('@/assets/images/icons/home page icons/puja-guidance.png'),
+    route: '/screens/puja-guidance'
+  },
+  { 
+    label: isHindi ? 'विशेष दिन पूजा' : 'Special Day Puja', 
+    image: require('@/assets/images/icons/home page icons/special-day-puja.png'),
+    route: '/screens/special-puja'
+  },
+  { 
+    label: isHindi ? 'पेशेवर पूजा' : 'Professional Puja', 
+    image: require('@/assets/images/icons/home page icons/professional-puja.jpg'),
+    route: '/screens/professional-puja'
+  },
 ];
 
 const numColumns = 4;
 const tileSize = (Dimensions.get('window').width - 72) / numColumns;
 
-export default function HomeIconGrid() {
+export default function HomeIconGrid({ isHindi = false }: { isHindi?: boolean }) {
+  console.log('HomeIconGrid rendering with isHindi:', isHindi);
   const router = useRouter();
+  const icons = getIcons(isHindi);
+  
+  // Debug: Log when isHindi changes
+  React.useEffect(() => {
+    console.log('HomeIconGrid isHindi changed to:', isHindi);
+  }, [isHindi]);
   return (
     <View style={styles.gridWrapper}>
       <View style={styles.grid}>
@@ -28,24 +67,9 @@ export default function HomeIconGrid() {
             key={item.label}
             style={styles.tile}
             activeOpacity={0.8}
-            onPress={async () => {
-              if (item.label === 'Special Day Puja') {
-                router.push('/screens/special-puja');
-              } else if (item.label === 'Donation') {
-                router.push('/screens/donation');
-              } else if (item.label === 'My Virtual Temple') {
-                router.push('/screens/create-temple');
-              } else if (item.label === 'Puja') {
-                router.push('/screens/puja');
-              } else if (item.label === 'Mannat') {
-                router.push('/screens/mannat');
-              } else if (item.label === 'Divine Music') {
-                router.push('/audio-video');
-              } else if (item.label === 'Puja Guidance') {
-                router.push('/screens/puja-guidance');
-              } else if (item.label === 'Professional Puja') {
-                router.push('/screens/professional-puja');
-              }
+            onPress={() => {
+              console.log('Icon pressed:', item.label, 'Route:', item.route);
+              router.push(item.route as any);
             }}
           >
             <View style={styles.iconCircle}>

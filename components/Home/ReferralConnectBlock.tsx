@@ -5,13 +5,19 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View, Linking, ScrollView } 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
-export default function ReferralConnectBlock() {
+export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: boolean }) {
+  console.log('ReferralConnectBlock rendering with isHindi:', isHindi);
   const [referralCode, setReferralCode] = useState<string>('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const router = useRouter();
+  
+  // Debug: Log when isHindi changes
+  useEffect(() => {
+    console.log('ReferralConnectBlock isHindi changed to:', isHindi);
+  }, [isHindi]);
 
   useEffect(() => {
     checkUserAuthentication();
@@ -76,18 +82,27 @@ export default function ReferralConnectBlock() {
   if (!isLoggedIn) {
     return (
       <View style={styles.card}>
-        <Text style={styles.title}>Refer friends & family</Text>
+        <Text style={styles.title}>
+          {isHindi ? 'दोस्तों और परिवार को रेफर करें' : 'Refer friends & family'}
+        </Text>
         <Text style={styles.subtitle}>
-          Sign-Up or login to help your friends and family on their spiritual journey.
+          {isHindi 
+            ? 'अपने दोस्तों और परिवार को उनकी आध्यात्मिक यात्रा में मदद करने के लिए साइन-अप या लॉगिन करें।'
+            : 'Sign-Up or login to help your friends and family on their spiritual journey.'
+          }
         </Text>
         
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.loginButtonText}>Login</Text>
+            <Text style={styles.loginButtonText}>
+              {isHindi ? 'लॉग इन' : 'Login'}
+            </Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-            <Text style={styles.signupButtonText}>Sign Up</Text>
+            <Text style={styles.signupButtonText}>
+              {isHindi ? 'साइन अप' : 'Sign Up'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -98,12 +113,19 @@ export default function ReferralConnectBlock() {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Refer friends & family</Text>
+      <Text style={styles.title}>
+        {isHindi ? 'दोस्तों और परिवार को रेफर करें' : 'Refer friends & family'}
+      </Text>
       <Text style={styles.subtitle}>
-        Invite your friends and family enhance their spiritual journey. They will also earn 1000 Mudras when they sign up with your referralCode
+        {isHindi 
+          ? 'अपने दोस्तों और परिवार को उनकी आध्यात्मिक यात्रा में सुधार के लिए आमंत्रित करें। वे आपके रेफरल कोड से साइन अप करने पर 1000 मुद्रा भी कमाएंगे'
+          : 'Invite your friends and family enhance their spiritual journey. They will also earn 1000 Mudras when they sign up with your referralCode'
+        }
       </Text>
       <View style={styles.referralRow}>
-        <Text style={styles.referralLabel}>Referral Code: </Text>
+        <Text style={styles.referralLabel}>
+          {isHindi ? 'रेफरल कोड: ' : 'Referral Code: '}
+        </Text>
         <Text style={styles.referralCode}>{displayCode}</Text>
         <TouchableOpacity
           style={styles.expandButton}
@@ -119,13 +141,17 @@ export default function ReferralConnectBlock() {
         </TouchableOpacity>
       </View>
       <TouchableOpacity style={styles.inviteButton} onPress={handleInviteButton}>
-        <Text style={styles.inviteButtonText}>Invite and Earn 1000 Mudras</Text>
+        <Text style={styles.inviteButtonText}>
+          {isHindi ? 'आमंत्रित करें और 1000 मुद्रा कमाएं' : 'Invite and Earn 1000 Mudras'}
+        </Text>
       </TouchableOpacity>
       
       {/* Toast message */}
       {showToast && (
         <View style={styles.toast}>
-          <Text style={styles.toastText}>Referral code copied!</Text>
+          <Text style={styles.toastText}>
+            {isHindi ? 'रेफरल कोड कॉपी किया गया!' : 'Referral code copied!'}
+          </Text>
         </View>
       )}
       
@@ -134,7 +160,9 @@ export default function ReferralConnectBlock() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Refer and Earn Mudras</Text>
+              <Text style={styles.modalTitle}>
+                {isHindi ? 'रेफर करें और मुद्रा कमाएं' : 'Refer and Earn Mudras'}
+              </Text>
               <TouchableOpacity 
                 style={styles.closeButton}
                 onPress={() => setShowReferralModal(false)}
@@ -145,19 +173,31 @@ export default function ReferralConnectBlock() {
             
             <View style={styles.modalBody}>
               <Text style={styles.modalText}>
-                When you refer someone, you not only help them progress on their spiritual journey, both you and them earn Mudras
+                {isHindi 
+                  ? 'जब आप किसी को रेफर करते हैं, तो आप न केवल उन्हें उनकी आध्यात्मिक यात्रा में प्रगति करने में मदद करते हैं, बल्कि आप दोनों मुद्रा कमाते हैं'
+                  : 'When you refer someone, you not only help them progress on their spiritual journey, both you and them earn Mudras'
+                }
               </Text>
               
               <Text style={styles.modalText}>
-                Please copy the Referral code and share with the person you want to refer.
+                {isHindi 
+                  ? 'कृपया रेफरल कोड कॉपी करें और जिस व्यक्ति को आप रेफर करना चाहते हैं उसके साथ साझा करें।'
+                  : 'Please copy the Referral code and share with the person you want to refer.'
+                }
               </Text>
               
               <Text style={styles.modalText}>
-                Request them to download the app and use the referral code during Sign Up
+                {isHindi 
+                  ? 'उनसे अनुरोध करें कि वे ऐप डाउनलोड करें और साइन अप के दौरान रेफरल कोड का उपयोग करें'
+                  : 'Request them to download the app and use the referral code during Sign Up'
+                }
               </Text>
               
               <Text style={styles.modalNote}>
-                Please note that the bonus Mudras will be awarded within 3 days of Sign Up
+                {isHindi 
+                  ? 'कृपया ध्यान दें कि बोनस मुद्रा साइन अप के 3 दिनों के भीतर प्रदान की जाएंगी'
+                  : 'Please note that the bonus Mudras will be awarded within 3 days of Sign Up'
+                }
               </Text>
             </View>
             
@@ -165,7 +205,9 @@ export default function ReferralConnectBlock() {
               style={styles.modalButton}
               onPress={handleCopyReferralCode}
             >
-              <Text style={styles.modalButtonText}>Copy referral code!</Text>
+              <Text style={styles.modalButtonText}>
+                {isHindi ? 'रेफरल कोड कॉपी करें!' : 'Copy referral code!'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
