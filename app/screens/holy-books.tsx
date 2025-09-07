@@ -4,30 +4,297 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Linking, TextInput } from 'react-native';
 import HighlightedText from '@/components/Home/HighlightedText';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const options = { headerShown: false };
 
 export default function HolyBooksScreen() {
+  const { isHindi } = useLanguage();
   const scrollRef = useRef<ScrollView>(null);
   const sectionY = useRef<{ [key: string]: number }>({});
   const [searchHighlight, setSearchHighlight] = useState('');
 
+  // Hindi translations for sections
+  const translations = {
+    sections: {
+      intro: { en: 'Introduction', hi: 'परिचय' },
+      twoTier: { en: 'The Two-Tier Classification: Shruti and Smriti', hi: 'दो-स्तरीय वर्गीकरण: श्रुति और स्मृति' },
+      epics: { en: 'The Great Epics: Mahabharat and Ramayan', hi: 'महान महाकाव्य: महाभारत और रामायण' },
+      gita: { en: 'The Bhagavad Gita', hi: 'भगवद गीता' },
+      ramcharit: { en: 'Ramcharitmanas', hi: 'रामचरितमानस' },
+      puranas: { en: 'The Puranas', hi: 'पुराण' },
+      additional: { en: 'Additional Sacred Literature', hi: 'अतिरिक्त पवित्र साहित्य' },
+      cultural: { en: 'Cultural and Spiritual Significance', hi: 'सांस्कृतिक और आध्यात्मिक महत्व' },
+      modern: { en: 'Modern Relevance and Global Impact', hi: 'आधुनिक प्रासंगिकता और वैश्विक प्रभाव' },
+      conclusion: { en: 'Conclusion', hi: 'निष्कर्ष' },
+      references: { en: 'References', hi: 'संदर्भ' },
+    },
+    content: {
+      title: { en: 'Holy Books: The Sacred Literary Foundation of Hinduism', hi: 'पवित्र पुस्तकें: हिंदू धर्म की पवित्र साहित्यिक नींव' },
+      intro: { 
+        en: 'Hindu sacred literature encompasses a vast collection of texts that form the spiritual, philosophical, and cultural backbone of one of the world\'s oldest religious traditions. These holy books range from ancient hymns and philosophical treatises to epic narratives that continue to guide millions of devotees in their spiritual journey.',
+        hi: 'हिंदू पवित्र साहित्य में ग्रंथों का एक विशाल संग्रह शामिल है जो दुनिया के सबसे पुराने धार्मिक परंपराओं में से एक की आध्यात्मिक, दार्शनिक और सांस्कृतिक रीढ़ का निर्माण करता है। ये पवित्र पुस्तकें प्राचीन भजनों और दार्शनिक ग्रंथों से लेकर महाकाव्य कथाओं तक हैं जो लाखों भक्तों को उनकी आध्यात्मिक यात्रा में मार्गदर्शन करना जारी रखती हैं।'
+      },
+      twoTier: {
+        text1: { 
+          en: 'Hindu sacred texts are traditionally classified into two main categories:',
+          hi: 'हिंदू पवित्र ग्रंथों को परंपरागत रूप से दो मुख्य श्रेणियों में वर्गीकृत किया जाता है:'
+        },
+        text2: { 
+          en: 'Shruti (\'that which is heard\') refers to divine revelation received by ancient sages, including the Vedas and Upanishads. Smriti (\'that which is remembered\') encompasses texts composed by human authors but based on divine inspiration, including the great epics and Puranas.',
+          hi: 'श्रुति (\'जो सुना गया है\') प्राचीन ऋषियों द्वारा प्राप्त दिव्य प्रकटीकरण को संदर्भित करता है, जिसमें वेद और उपनिषद शामिल हैं। स्मृति (\'जो याद किया गया है\') मानव लेखकों द्वारा रचित लेकिन दिव्य प्रेरणा पर आधारित ग्रंथों को शामिल करता है, जिसमें महान महाकाव्य और पुराण शामिल हैं।'
+        }
+      },
+      epics: {
+        mahabharat: {
+          title: { en: 'Mahabharat - The Great Epic of Bharata', hi: 'महाभारत - भरत का महान महाकाव्य' },
+          intro: { 
+            en: 'The Mahabharat stands as one of the world\'s longest epic poems and is considered the most comprehensive repository of Hindu philosophy, ethics, and mythology. Composed between 500 BCE and 100 CE, this monumental work chronicles the wars of the house of Bharata and serves as a cornerstone of Hindu literature.',
+            hi: 'महाभारत दुनिया के सबसे लंबे महाकाव्य कविताओं में से एक के रूप में खड़ा है और हिंदू दर्शन, नैतिकता और पौराणिक कथाओं का सबसे व्यापक भंडार माना जाता है। 500 BCE और 100 CE के बीच रचित, यह स्मारकीय कार्य भरत के घर के युद्धों का वर्णन करता है और हिंदू साहित्य का आधारशिला के रूप में कार्य करता है।'
+          },
+          encompasses: {
+            title: { en: 'The epic encompasses:', hi: 'महाकाव्य में शामिल है:' },
+            list: {
+              item1: { en: '• 100,000 verses arranged in 18 books (parvas)', hi: '• 18 पुस्तकों (पर्वों) में व्यवस्थित 100,000 छंद' },
+              item2: { en: '• Complex family saga centered on the conflict between the Pandavas and Kauravas', hi: '• पांडवों और कौरवों के बीच संघर्ष पर केंद्रित जटिल पारिवारिक गाथा' },
+              item3: { en: '• Philosophical discussions on dharma (righteous duty), karma, and the nature of existence', hi: '• धर्म (धार्मिक कर्तव्य), कर्म और अस्तित्व की प्रकृति पर दार्शनिक चर्चाएं' },
+              item4: { en: '• Multiple sub-stories that weave together to create a comprehensive worldview', hi: '• कई उप-कथाएं जो एक व्यापक विश्वदृष्टि बनाने के लिए एक साथ बुनी जाती हैं' }
+            }
+          },
+          significance: { 
+            en: 'The Mahabharat is more than just a war narrative - it serves as a dharmic text that explores moral and ethical dilemmas through its characters and their choices. The epic gave greater focus to the gods Vishnu and Shiva and introduced profound theological concepts that continue to influence Hindu thought.',
+            hi: 'महाभारत केवल एक युद्ध कथा से अधिक है - यह एक धार्मिक ग्रंथ के रूप में कार्य करता है जो अपने पात्रों और उनके चुनावों के माध्यम से नैतिक और नैतिक दुविधाओं का अन्वेषण करता है। महाकाव्य ने देवताओं विष्णु और शिव पर अधिक ध्यान दिया और गहरे धार्मिक अवधारणाओं को पेश किया जो हिंदू विचार को प्रभावित करना जारी रखते हैं।'
+          }
+        },
+        ramayan: {
+          title: { en: 'Ramayan - The Romance of Rama', hi: 'रामायण - राम का रोमांस' },
+          intro: { 
+            en: 'The Ramayan, attributed to the sage Valmiki, consists of 24,000 verses organized into seven books and tells the story of Prince Rama, an incarnation of Vishnu. This epic, composed around the 2nd century BCE, chronicles the life and adventures of Rama, the King of Ayodhya and embodiment of truth and righteousness.',
+            hi: 'ऋषि वाल्मीकि को जिम्मेदार ठहराए गए रामायण में सात पुस्तकों में व्यवस्थित 24,000 छंद शामिल हैं और विष्णु के अवतार राजकुमार राम की कहानी बताती है। 2वीं शताब्दी BCE के आसपास रचित यह महाकाव्य अयोध्या के राजा और सत्य और धर्म के अवतार राम के जीवन और रोमांच का वर्णन करता है।'
+          },
+          narrative: {
+            title: { en: 'The narrative encompasses:', hi: 'कथा में शामिल है:' },
+            list: {
+              item1: { en: '• Rama\'s exile to the forest for fourteen years with his wife Sita and brother Lakshmana', hi: '• राम का अपनी पत्नी सीता और भाई लक्ष्मण के साथ चौदह वर्षों के लिए वन में निर्वासन' },
+              item2: { en: '• Sita\'s abduction by the demon king Ravana', hi: '• राक्षस राजा रावण द्वारा सीता का अपहरण' },
+              item3: { en: '• The rescue mission aided by Hanuman and the monkey army', hi: '• हनुमान और वानर सेना की सहायता से बचाव मिशन' },
+              item4: { en: '• The ultimate triumph of good over evil', hi: '• बुराई पर अच्छाई की अंतिम विजय' }
+            }
+          },
+          significance: { 
+            en: 'The Ramayan serves as the story of dharma or duty and presents ideal models of relationships - the perfect king (Rama), the devoted wife (Sita), the loyal brother (Lakshmana), and the faithful devotee (Hanuman). The epic emphasizes themes of justice, sacrifice, loyalty, and the consequences of ethical choices.',
+            hi: 'रामायण धर्म या कर्तव्य की कहानी के रूप में कार्य करती है और रिश्तों के आदर्श मॉडल प्रस्तुत करती है - परिपूर्ण राजा (राम), समर्पित पत्नी (सीता), वफादार भाई (लक्ष्मण), और भक्त भक्त (हनुमान)। महाकाव्य न्याय, बलिदान, वफादारी और नैतिक चुनावों के परिणामों के विषयों पर जोर देता है।'
+          }
+        }
+      },
+      gita: {
+        title: { en: 'The Bhagavad Gita - The Divine Song', hi: 'भगवद गीता - दिव्य गीत' },
+        crownJewel: {
+          title: { en: 'The Crown Jewel of Hindu Philosophy', hi: 'हिंदू दर्शन का मुकुट रत्न' },
+          description: { 
+            en: 'The Bhagavad Gita ("Song of the Lord") forms part of the sixth book of the Mahabharat and stands as one of the most popular sacred texts of Hinduism. Dated to the second or first century BCE, this dialogue between Prince Arjuna and his charioteer Krishna (an avatar of Vishnu) addresses fundamental questions of duty, action, and spiritual liberation.',
+            hi: 'भगवद गीता ("भगवान का गीत") महाभारत की छठी पुस्तक का हिस्सा है और हिंदू धर्म के सबसे लोकप्रिय पवित्र ग्रंथों में से एक के रूप में खड़ा है। दूसरी या पहली शताब्दी BCE की तिथि, राजकुमार अर्जुन और उनके सारथी कृष्ण (विष्णु के अवतार) के बीच यह संवाद कर्तव्य, कर्म और आध्यात्मिक मुक्ति के मौलिक प्रश्नों को संबोधित करता है।'
+          }
+        },
+        philosophical: {
+          title: { en: 'The Philosophical Framework', hi: 'दार्शनिक ढांचा' },
+          intro: { 
+            en: 'The Gita presents itself at the moment before the great battle of Kurukshetra, where Arjuna faces a moral crisis about fighting against friends and relatives. Krishna\'s teachings encompass:',
+            hi: 'गीता खुद को कुरुक्षेत्र के महान युद्ध से पहले के क्षण में प्रस्तुत करती है, जहां अर्जुन दोस्तों और रिश्तेदारों के खिलाफ लड़ने के बारे में एक नैतिक संकट का सामना करता है। कृष्ण की शिक्षाओं में शामिल हैं:'
+          },
+          paths: {
+            item1: { en: '• Karma Yoga - The path of righteous action', hi: '• कर्म योग - धार्मिक कर्म का मार्ग' },
+            item2: { en: '• Bhakti Yoga - The path of devotion', hi: '• भक्ति योग - भक्ति का मार्ग' },
+            item3: { en: '• Jnana Yoga - The path of knowledge', hi: '• ज्ञान योग - ज्ञान का मार्ग' }
+          },
+          concepts: {
+            title: { en: 'Core Philosophical Concepts:', hi: 'मूल दार्शनिक अवधारणाएं:' },
+            list: {
+              item1: { en: '• Dharma - Righteous duty according to one\'s position in life', hi: '• धर्म - जीवन में अपनी स्थिति के अनुसार धार्मिक कर्तव्य' },
+              item2: { en: '• Detached Action - Performing duty without attachment to results', hi: '• निर्लिप्त कर्म - परिणामों से लगाव के बिना कर्तव्य का पालन करना' },
+              item3: { en: '• Immortality of the Soul - The eternal nature of the atman (soul)', hi: '• आत्मा की अमरता - आत्मन (आत्मा) की शाश्वत प्रकृति' },
+              item4: { en: '• Divine Presence - God\'s accessibility to all sincere devotees', hi: '• दिव्य उपस्थिति - सभी ईमानदार भक्तों के लिए भगवान की पहुंच' }
+            }
+          },
+          synthesis: { 
+            en: 'The Gita represents a synthesis of various strands of Indian religious thought, including Vedic concepts of dharma, Samkhya-based yoga and jnana (knowledge), and bhakti (devotion). Krishna reminds Arjuna that it is best to fulfill one\'s destiny with detachment because detachment leads to liberation.',
+            hi: 'गीता भारतीय धार्मिक विचार की विभिन्न धाराओं का एक संश्लेषण का प्रतिनिधित्व करती है, जिसमें धर्म की वैदिक अवधारणाएं, सांख्य-आधारित योग और ज्ञान, और भक्ति शामिल हैं। कृष्ण अर्जुन को याद दिलाते हैं कि निर्लिप्तता के साथ अपने भाग्य को पूरा करना सबसे अच्छा है क्योंकि निर्लिप्तता मुक्ति की ओर ले जाती है।'
+          }
+        },
+        universal: {
+          title: { en: 'Universal Appeal and Influence', hi: 'सार्वभौमिक अपील और प्रभाव' },
+          description: { 
+            en: 'The Bhagavad Gita has transcended religious boundaries to become a universal spiritual text. Its teachings on duty, righteousness, and the nature of reality have influenced philosophers, leaders, and spiritual seekers worldwide. The text\'s emphasis on performing one\'s duty without attachment to results has found resonance in various philosophical traditions and continues to guide millions in their spiritual journey.',
+            hi: 'भगवद गीता ने धार्मिक सीमाओं को पार करके एक सार्वभौमिक आध्यात्मिक ग्रंथ बन गई है। कर्तव्य, धार्मिकता और वास्तविकता की प्रकृति पर इसकी शिक्षाओं ने दुनिया भर के दार्शनिकों, नेताओं और आध्यात्मिक साधकों को प्रभावित किया है। परिणामों से लगाव के बिना अपने कर्तव्य का पालन करने पर पाठ का जोर विभिन्न दार्शनिक परंपराओं में प्रतिध्वनि पाया है और लाखों लोगों को उनकी आध्यात्मिक यात्रा में मार्गदर्शन करना जारी रखता है।'
+          }
+        }
+      },
+      ramcharit: {
+        title: { en: 'Ramcharitmanas - The Lake of Rama\'s Deeds', hi: 'रामचरितमानस - राम के कर्मों की झील' },
+        description: { 
+          en: 'The Ramcharitmanas, composed by the poet-saint Tulsidas in the 16th century, represents a devotional retelling of the Ramayan in the Awadhi dialect of Hindi. This beloved text makes the story of Rama accessible to common people and emphasizes bhakti (devotion) as the primary path to spiritual realization.',
+          hi: '16वीं शताब्दी में कवि-संत तुलसीदास द्वारा रचित रामचरितमानस, हिंदी की अवधी बोली में रामायण का भक्तिपूर्ण पुनर्कथन का प्रतिनिधित्व करता है। यह प्रिय पाठ राम की कहानी को आम लोगों के लिए सुलभ बनाता है और आध्यात्मिक साक्षात्कार के प्राथमिक मार्ग के रूप में भक्ति पर जोर देता है।'
+        },
+        differences: {
+          title: { en: 'The Ramcharitmanas differs from Valmiki\'s Sanskrit Ramayan by:', hi: 'रामचरितमानस वाल्मीकि की संस्कृत रामायण से भिन्न है:' },
+          list: {
+            item1: { en: '• Devotional emphasis over purely narrative approach', hi: '• शुद्ध कथात्मक दृष्टिकोण पर भक्तिपूर्ण जोर' },
+            item2: { en: '• Accessibility through vernacular language', hi: '• स्थानीय भाषा के माध्यम से पहुंच' },
+            item3: { en: '• Emotional connection between devotee and deity', hi: '• भक्त और देवता के बीच भावनात्मक संबंध' },
+            item4: { en: '• Musical composition suitable for congregational singing', hi: '• सामूहिक गायन के लिए उपयुक्त संगीत रचना' }
+          }
+        }
+      },
+      puranas: {
+        title: { en: 'The Puranas - Mythological Treasures', hi: 'पुराण - पौराणिक खजाने' },
+        description: { 
+          en: 'The Puranas, composed starting from around 300 CE, contain extensive mythologies and are central to distributing common themes of Hinduism through vivid narratives. These eighteen major texts and eighteen sub-puranas, traditionally attributed to Sage Vyasa, include:',
+          hi: 'लगभग 300 CE से शुरू होकर रचित पुराणों में व्यापक पौराणिक कथाएं हैं और जीवंत कथाओं के माध्यम से हिंदू धर्म के सामान्य विषयों को वितरित करने में केंद्रीय हैं। ये अठारह प्रमुख ग्रंथ और अठारह उप-पुराण, जो परंपरागत रूप से ऋषि व्यास को जिम्मेदार ठहराए गए हैं, शामिल हैं:'
+        },
+        major: {
+          title: { en: 'Major Puranas:', hi: 'प्रमुख पुराण:' },
+          list: {
+            item1: { en: '• Bhagavata Purana - Stories of Vishnu\'s incarnations, especially Krishna', hi: '• भागवत पुराण - विष्णु के अवतारों की कहानियां, विशेष रूप से कृष्ण' },
+            item2: { en: '• Shiva Purana - Tales and teachings related to Lord Shiva', hi: '• शिव पुराण - भगवान शिव से संबंधित कहानियां और शिक्षाएं' },
+            item3: { en: '• Devi Bhagavata Purana - Stories of the Divine Mother', hi: '• देवी भागवत पुराण - दिव्य माता की कहानियां' },
+            item4: { en: '• Vishnu Purana - Comprehensive account of Vishnu\'s manifestations', hi: '• विष्णु पुराण - विष्णु की अभिव्यक्तियों का व्यापक विवरण' }
+          }
+        },
+        significance: { 
+          en: 'The Puranas generally emphasize valued Hindu morals through stories about Hindu deities fighting to uphold these principles. They serve as accessible repositories of complex philosophical concepts presented through engaging narratives.',
+          hi: 'पुराण आमतौर पर इन सिद्धांतों को बनाए रखने के लिए लड़ने वाले हिंदू देवताओं की कहानियों के माध्यम से मूल्यवान हिंदू नैतिकता पर जोर देते हैं। वे जटिल दार्शनिक अवधारणाओं के सुलभ भंडार के रूप में कार्य करते हैं जो आकर्षक कथाओं के माध्यम से प्रस्तुत की जाती हैं।'
+        }
+      },
+      additional: {
+        title: { en: 'Additional Sacred Literature', hi: 'अतिरिक्त पवित्र साहित्य' },
+        upanishads: {
+          title: { en: 'The Upanishads - Philosophical Wisdom', hi: 'उपनिषद - दार्शनिक ज्ञान' },
+          description: { 
+            en: 'The Upanishads form the concluding portion of the Vedas and contain profound philosophical discussions on the nature of reality, consciousness, and liberation. These texts explore concepts like Brahman (ultimate reality), Atman (individual soul), and moksha (liberation).',
+            hi: 'उपनिषद वेदों का समापन भाग बनाते हैं और वास्तविकता, चेतना और मुक्ति की प्रकृति पर गहन दार्शनिक चर्चाएं शामिल करते हैं। ये ग्रंथ ब्रह्म (परम वास्तविकता), आत्मन (व्यक्तिगत आत्मा), और मोक्ष (मुक्ति) जैसी अवधारणाओं का अन्वेषण करते हैं।'
+          }
+        },
+        agamas: {
+          title: { en: 'The Agamas - Tantric Literature', hi: 'आगम - तांत्रिक साहित्य' },
+          description: { 
+            en: 'The Agamas represent a collection of Tantric literature and scriptures from various Hindu schools. The term means "tradition" or "that which has come down," and these texts cover philosophical doctrines, meditation practices, deity worship, and temple construction.',
+            hi: 'आगम विभिन्न हिंदू स्कूलों से तांत्रिक साहित्य और शास्त्रों का संग्रह का प्रतिनिधित्व करते हैं। शब्द का अर्थ है "परंपरा" या "जो नीचे आया है," और ये ग्रंथ दार्शनिक सिद्धांतों, ध्यान प्रथाओं, देवता पूजा और मंदिर निर्माण को कवर करते हैं।'
+          }
+        },
+        regional: {
+          title: { en: 'Regional and Sectarian Texts', hi: 'क्षेत्रीय और संप्रदायिक ग्रंथ' },
+          description: { 
+            en: 'Hindu literature also includes numerous regional works and sectarian texts that preserve local traditions while maintaining connection to the broader Hindu philosophical framework.',
+            hi: 'हिंदू साहित्य में कई क्षेत्रीय कार्य और संप्रदायिक ग्रंथ भी शामिल हैं जो व्यापक हिंदू दार्शनिक ढांचे से संबंध बनाए रखते हुए स्थानीय परंपराओं को संरक्षित करते हैं।'
+          }
+        }
+      },
+      cultural: {
+        title: { en: 'Cultural and Spiritual Significance', hi: 'सांस्कृतिक और आध्यात्मिक महत्व' },
+        living: {
+          title: { en: 'Living Traditions', hi: 'जीवित परंपराएं' },
+          intro: { 
+            en: 'These sacred texts remain living documents that continue to influence contemporary Hindu practice and thought. They are not merely historical artifacts but active guides for:',
+            hi: 'ये पवित्र ग्रंथ जीवित दस्तावेज बने हुए हैं जो समकालीन हिंदू अभ्यास और विचार को प्रभावित करना जारी रखते हैं। वे केवल ऐतिहासिक कलाकृतियां नहीं हैं बल्कि सक्रिय मार्गदर्शक हैं:'
+          },
+          list: {
+            item1: { en: '• Daily spiritual practice through prayer, meditation, and study', hi: '• प्रार्थना, ध्यान और अध्ययन के माध्यम से दैनिक आध्यात्मिक अभ्यास' },
+            item2: { en: '• Moral guidance in ethical decision-making', hi: '• नैतिक निर्णय लेने में नैतिक मार्गदर्शन' },
+            item3: { en: '• Cultural identity preservation across diverse communities', hi: '• विविध समुदायों में सांस्कृतिक पहचान संरक्षण' },
+            item4: { en: '• Philosophical exploration of life\'s fundamental questions', hi: '• जीवन के मौलिक प्रश्नों का दार्शनिक अन्वेषण' }
+          }
+        },
+        universal: {
+          title: { en: 'Universal Themes', hi: 'सार्वभौमिक विषय' },
+          intro: { 
+            en: 'The Hindu holy books address universal human concerns:',
+            hi: 'हिंदू पवित्र पुस्तकें सार्वभौमिक मानवीय चिंताओं को संबोधित करती हैं:'
+          },
+          list: {
+            item1: { en: '• The struggle between good and evil', hi: '• अच्छाई और बुराई के बीच संघर्ष' },
+            item2: { en: '• The nature of duty and responsibility', hi: '• कर्तव्य और जिम्मेदारी की प्रकृति' },
+            item3: { en: '• The quest for meaning and purpose', hi: '• अर्थ और उद्देश्य की खोज' },
+            item4: { en: '• The relationship between individual and cosmic consciousness', hi: '• व्यक्तिगत और ब्रह्मांडीय चेतना के बीच संबंध' },
+            item5: { en: '• The path to spiritual liberation and fulfillment', hi: '• आध्यात्मिक मुक्ति और पूर्ति का मार्ग' }
+          }
+        },
+        educational: {
+          title: { en: 'Educational and Literary Value', hi: 'शैक्षिक और साहित्यिक मूल्य' },
+          intro: { 
+            en: 'Beyond their religious significance, these texts represent:',
+            hi: 'उनके धार्मिक महत्व से परे, ये ग्रंथ प्रतिनिधित्व करते हैं:'
+          },
+          list: {
+            item1: { en: '• Literary masterpieces showcasing sophisticated narrative techniques', hi: '• परिष्कृत कथात्मक तकनीकों का प्रदर्शन करने वाले साहित्यिक कृतियां' },
+            item2: { en: '• Historical documents preserving ancient Indian culture and values', hi: '• प्राचीन भारतीय संस्कृति और मूल्यों को संरक्षित करने वाले ऐतिहासिक दस्तावेज' },
+            item3: { en: '• Philosophical treatises exploring complex metaphysical concepts', hi: '• जटिल आध्यात्मिक अवधारणाओं का अन्वेषण करने वाले दार्शनिक ग्रंथ' },
+            item4: { en: '• Psychological insights into human nature and behavior', hi: '• मानव प्रकृति और व्यवहार में मनोवैज्ञानिक अंतर्दृष्टि' }
+          }
+        }
+      },
+      modern: {
+        title: { en: 'Modern Relevance and Global Impact', hi: 'आधुनिक प्रासंगिकता और वैश्विक प्रभाव' },
+        contemporary: {
+          title: { en: 'Contemporary Application', hi: 'समकालीन अनुप्रयोग' },
+          intro: { 
+            en: 'The teachings of these holy books continue to offer guidance for modern challenges:',
+            hi: 'इन पवित्र पुस्तकों की शिक्षाएं आधुनिक चुनौतियों के लिए मार्गदर्शन प्रदान करना जारी रखती हैं:'
+          },
+          list: {
+            item1: { en: '• Leadership principles from Rama\'s ideal kingship', hi: '• राम के आदर्श राजत्व से नेतृत्व सिद्धांत' },
+            item2: { en: '• Conflict resolution through Krishna\'s diplomatic wisdom', hi: '• कृष्ण की कूटनीतिक बुद्धिमत्ता के माध्यम से संघर्ष समाधान' },
+            item3: { en: '• Work-life balance through the Gita\'s concept of detached action', hi: '• गीता की निर्लिप्त कर्म की अवधारणा के माध्यम से कार्य-जीवन संतुलन' },
+            item4: { en: '• Environmental consciousness reflected in Vedic reverence for nature', hi: '• प्रकृति के लिए वैदिक श्रद्धा में परिलक्षित पर्यावरणीय चेतना' }
+          }
+        },
+        global: {
+          title: { en: 'Global Influence', hi: 'वैश्विक प्रभाव' },
+          intro: { 
+            en: 'Hindu sacred literature has influenced thinkers, writers, and spiritual seekers worldwide, contributing to:',
+            hi: 'हिंदू पवित्र साहित्य ने दुनिया भर के विचारकों, लेखकों और आध्यात्मिक साधकों को प्रभावित किया है, जो योगदान देता है:'
+          },
+          list: {
+            item1: { en: '• Comparative philosophy and religious studies', hi: '• तुलनात्मक दर्शन और धार्मिक अध्ययन' },
+            item2: { en: '• Literary traditions in various cultures', hi: '• विभिन्न संस्कृतियों में साहित्यिक परंपराएं' },
+            item3: { en: '• Spiritual movements emphasizing meditation and inner transformation', hi: '• ध्यान और आंतरिक रूपांतरण पर जोर देने वाले आध्यात्मिक आंदोलन' },
+            item4: { en: '• Ethical frameworks for personal and social conduct', hi: '• व्यक्तिगत और सामाजिक आचरण के लिए नैतिक ढांचे' }
+          }
+        }
+      },
+      conclusion: {
+        title: { en: 'Conclusion: The Eternal Wisdom', hi: 'निष्कर्ष: शाश्वत ज्ञान' },
+        text1: { 
+          en: 'The Hindu holy books collectively represent humanity\'s most comprehensive exploration of spiritual wisdom, ethical conduct, and the quest for ultimate truth. From the cosmic hymns of the Vedas to the intimate devotional poetry of the Ramcharitmanas, these texts offer multiple paths to understanding the divine and achieving human fulfillment.',
+          hi: 'हिंदू पवित्र पुस्तकें सामूहिक रूप से आध्यात्मिक ज्ञान, नैतिक आचरण और परम सत्य की खोज की मानवता की सबसे व्यापक खोज का प्रतिनिधित्व करती हैं। वेदों के ब्रह्मांडीय भजनों से लेकर रामचरितमानस की अंतरंग भक्तिपूर्ण कविता तक, ये ग्रंथ दिव्य को समझने और मानव पूर्ति प्राप्त करने के लिए कई मार्ग प्रदान करते हैं।'
+        },
+        text2: { 
+          en: 'For millions of Hindus, these are not just ancient scriptures but living guides that continue to illuminate the path toward truth, righteousness, and liberation. Their enduring relevance lies in their ability to address the eternal questions of human existence while providing practical guidance for navigating life\'s complexities with wisdom, compassion, and spiritual insight.',
+          hi: 'लाखों हिंदुओं के लिए, ये केवल प्राचीन शास्त्र नहीं हैं बल्कि जीवित मार्गदर्शक हैं जो सत्य, धार्मिकता और मुक्ति की ओर मार्ग को प्रकाशित करना जारी रखते हैं। उनकी स्थायी प्रासंगिकता मानव अस्तित्व के शाश्वत प्रश्नों को संबोधित करने की उनकी क्षमता में निहित है जबकि ज्ञान, करुणा और आध्यात्मिक अंतर्दृष्टि के साथ जीवन की जटिलताओं को नेविगेट करने के लिए व्यावहारिक मार्गदर्शन प्रदान करते हैं।'
+        },
+        text3: { 
+          en: 'These sacred texts stand as testament to the profound spiritual achievements of ancient India and continue to serve as beacons of wisdom for seekers across the globe, regardless of their cultural or religious background. Their universal messages of duty, devotion, and the ultimate unity of all existence remain as relevant today as they were thousands of years ago.',
+          hi: 'ये पवित्र ग्रंथ प्राचीन भारत की गहरी आध्यात्मिक उपलब्धियों के प्रमाण के रूप में खड़े हैं और उनकी सांस्कृतिक या धार्मिक पृष्ठभूमि की परवाह किए बिना दुनिया भर के साधकों के लिए ज्ञान के प्रकाशस्तंभ के रूप में कार्य करना जारी रखते हैं। कर्तव्य, भक्ति और सभी अस्तित्व की परम एकता के उनके सार्वभौमिक संदेश आज भी उतने ही प्रासंगिक हैं जितने हजारों वर्ष पहले थे।'
+        }
+      }
+    }
+  };
+
   const sections = [
-    { key: 'intro', title: 'Introduction' },
-    { key: 'twoTier', title: 'The Two-Tier Classification: Shruti and Smriti' },
-    { key: 'epics', title: 'The Great Epics: Mahabharat and Ramayan' },
-    { key: 'gita', title: 'The Bhagavad Gita' },
-    { key: 'ramcharit', title: 'Ramcharitmanas' },
-    { key: 'puranas', title: 'The Puranas' },
-    { key: 'additional', title: 'Additional Sacred Literature' },
-    { key: 'cultural', title: 'Cultural and Spiritual Significance' },
-    { key: 'modern', title: 'Modern Relevance and Global Impact' },
-    { key: 'conclusion', title: 'Conclusion' },
-    { key: 'references', title: 'References' },
+    { key: 'intro', title: isHindi ? translations.sections.intro.hi : translations.sections.intro.en },
+    { key: 'twoTier', title: isHindi ? translations.sections.twoTier.hi : translations.sections.twoTier.en },
+    { key: 'epics', title: isHindi ? translations.sections.epics.hi : translations.sections.epics.en },
+    { key: 'gita', title: isHindi ? translations.sections.gita.hi : translations.sections.gita.en },
+    { key: 'ramcharit', title: isHindi ? translations.sections.ramcharit.hi : translations.sections.ramcharit.en },
+    { key: 'puranas', title: isHindi ? translations.sections.puranas.hi : translations.sections.puranas.en },
+    { key: 'additional', title: isHindi ? translations.sections.additional.hi : translations.sections.additional.en },
+    { key: 'cultural', title: isHindi ? translations.sections.cultural.hi : translations.sections.cultural.en },
+    { key: 'modern', title: isHindi ? translations.sections.modern.hi : translations.sections.modern.en },
+    { key: 'conclusion', title: isHindi ? translations.sections.conclusion.hi : translations.sections.conclusion.en },
+    { key: 'references', title: isHindi ? translations.sections.references.hi : translations.sections.references.en },
   ];
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [dropdownLabel, setDropdownLabel] = useState('Topic');
+  const [dropdownLabel, setDropdownLabel] = useState(isHindi ? 'विषय' : 'Topic');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Array<{section: string, text: string, index: number, sectionKey: string}>>([]);
   const [currentResultIndex, setCurrentResultIndex] = useState(-1);
@@ -164,7 +431,7 @@ export default function HolyBooksScreen() {
     const y = sectionY.current[key] ?? 0;
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true });
-      setDropdownLabel('Topic');
+      setDropdownLabel(isHindi ? 'विषय' : 'Topic');
     });
   };
 
@@ -262,168 +529,338 @@ export default function HolyBooksScreen() {
           showsVerticalScrollIndicator={false}
         >
         <LinearGradient colors={["#FFF7ED", "#FFF"]} style={styles.cardTop} onLayout={(e) => (sectionY.current['intro'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h1}>Holy Books: The Sacred Literary Foundation of Hinduism</Text>
+          <Text style={styles.h1}>
+            {isHindi ? translations.content.title.hi : translations.content.title.en}
+          </Text>
           <HighlightedText 
-            text="Hindu sacred literature encompasses a vast collection of texts that form the spiritual, philosophical, and cultural backbone of one of the world's oldest religious traditions. These holy books range from ancient hymns and philosophical treatises to epic narratives that continue to guide millions of devotees in their spiritual journey."
+            text={isHindi ? translations.content.intro.hi : translations.content.intro.en}
             highlight={searchHighlight}
             textStyle={styles.p}
           />
         </LinearGradient>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['twoTier'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>The Two-Tier Classification: Shruti and Smriti</Text>
+          <Text style={styles.h2}>
+            {isHindi ? translations.sections.twoTier.hi : translations.sections.twoTier.en}
+          </Text>
           <HighlightedText 
-            text="Hindu sacred texts are traditionally classified into two main categories:"
+            text={isHindi ? translations.content.twoTier.text1.hi : translations.content.twoTier.text1.en}
             highlight={searchHighlight}
             textStyle={styles.p}
           />
           <HighlightedText 
-            text="Shruti ('that which is heard') refers to divine revelation received by ancient sages, including the Vedas and Upanishads. Smriti ('that which is remembered') encompasses texts composed by human authors but based on divine inspiration, including the great epics and Puranas."
+            text={isHindi ? translations.content.twoTier.text2.hi : translations.content.twoTier.text2.en}
             highlight={searchHighlight}
             textStyle={styles.p}
           />
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['epics'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>The Great Epics: Mahabharat and Ramayan</Text>
-
-          <Text style={styles.h3}>Mahabharat - The Great Epic of Bharata</Text>
-          <Text style={styles.p}>
-            The Mahabharat stands as one of the world's longest epic poems and is considered the most comprehensive repository of Hindu philosophy, ethics, and mythology. Composed between 500 BCE and 100 CE, this monumental work chronicles the wars of the house of Bharata and serves as a cornerstone of Hindu literature.[1]
-          </Text>
-          <Text style={styles.p}>The epic encompasses:</Text>
-          <Text style={styles.li}>• 100,000 verses arranged in 18 books (parvas)</Text>
-          <Text style={styles.li}>• Complex family saga centered on the conflict between the Pandavas and Kauravas</Text>
-          <Text style={styles.li}>• Philosophical discussions on dharma (righteous duty), karma, and the nature of existence</Text>
-          <Text style={styles.li}>• Multiple sub-stories that weave together to create a comprehensive worldview</Text>
-          <Text style={styles.p}>
-            The Mahabharat is more than just a war narrative - it serves as a dharmic text that explores moral and ethical dilemmas through its characters and their choices. The epic gave greater focus to the gods Vishnu and Shiva and introduced profound theological concepts that continue to influence Hindu thought.[2]
+          <Text style={styles.h2}>
+            {isHindi ? translations.sections.epics.hi : translations.sections.epics.en}
           </Text>
 
-          <Text style={styles.h3}>Ramayan - The Romance of Rama</Text>
-          <Text style={styles.p}>
-            The Ramayan, attributed to the sage Valmiki, consists of 24,000 verses organized into seven books and tells the story of Prince Rama, an incarnation of Vishnu. This epic, composed around the 2nd century BCE, chronicles the life and adventures of Rama, the King of Ayodhya and embodiment of truth and righteousness.[3][1]
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.epics.mahabharat.title.hi : translations.content.epics.mahabharat.title.en}
           </Text>
-          <Text style={styles.p}>The narrative encompasses:</Text>
-          <Text style={styles.li}>• Rama's exile to the forest for fourteen years with his wife Sita and brother Lakshmana</Text>
-          <Text style={styles.li}>• Sita's abduction by the demon king Ravana</Text>
-          <Text style={styles.li}>• The rescue mission aided by Hanuman and the monkey army</Text>
-          <Text style={styles.li}>• The ultimate triumph of good over evil</Text>
           <Text style={styles.p}>
-            The Ramayan serves as the story of dharma or duty and presents ideal models of relationships - the perfect king (Rama), the devoted wife (Sita), the loyal brother (Lakshmana), and the faithful devotee (Hanuman). The epic emphasizes themes of justice, sacrifice, loyalty, and the consequences of ethical choices.[4][1][3]
+            {isHindi ? translations.content.epics.mahabharat.intro.hi : translations.content.epics.mahabharat.intro.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.epics.mahabharat.encompasses.title.hi : translations.content.epics.mahabharat.encompasses.title.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.epics.mahabharat.encompasses.list.item1.hi : translations.content.epics.mahabharat.encompasses.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.epics.mahabharat.encompasses.list.item2.hi : translations.content.epics.mahabharat.encompasses.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.epics.mahabharat.encompasses.list.item3.hi : translations.content.epics.mahabharat.encompasses.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.epics.mahabharat.encompasses.list.item4.hi : translations.content.epics.mahabharat.encompasses.list.item4.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.epics.mahabharat.significance.hi : translations.content.epics.mahabharat.significance.en}
+          </Text>
+
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.epics.ramayan.title.hi : translations.content.epics.ramayan.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.epics.ramayan.intro.hi : translations.content.epics.ramayan.intro.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.epics.ramayan.narrative.title.hi : translations.content.epics.ramayan.narrative.title.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.epics.ramayan.narrative.list.item1.hi : translations.content.epics.ramayan.narrative.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.epics.ramayan.narrative.list.item2.hi : translations.content.epics.ramayan.narrative.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.epics.ramayan.narrative.list.item3.hi : translations.content.epics.ramayan.narrative.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.epics.ramayan.narrative.list.item4.hi : translations.content.epics.ramayan.narrative.list.item4.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.epics.ramayan.significance.hi : translations.content.epics.ramayan.significance.en}
           </Text>
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['gita'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>The Bhagavad Gita - The Divine Song</Text>
-          <Text style={styles.h3}>The Crown Jewel of Hindu Philosophy</Text>
-          <Text style={styles.p}>
-            The Bhagavad Gita ("Song of the Lord") forms part of the sixth book of the Mahabharat and stands as one of the most popular sacred texts of Hinduism. Dated to the second or first century BCE, this dialogue between Prince Arjuna and his charioteer Krishna (an avatar of Vishnu) addresses fundamental questions of duty, action, and spiritual liberation.[5][1]
+          <Text style={styles.h2}>
+            {isHindi ? translations.content.gita.title.hi : translations.content.gita.title.en}
           </Text>
-          <Text style={styles.h3}>The Philosophical Framework</Text>
-          <Text style={styles.p}>The Gita presents itself at the moment before the great battle of Kurukshetra, where Arjuna faces a moral crisis about fighting against friends and relatives. Krishna's teachings encompass:</Text>
-          <Text style={styles.li}>• Karma Yoga - The path of righteous action</Text>
-          <Text style={styles.li}>• Bhakti Yoga - The path of devotion</Text>
-          <Text style={styles.li}>• Jnana Yoga - The path of knowledge</Text>
-          <Text style={styles.p}>Core Philosophical Concepts:</Text>
-          <Text style={styles.li}>• Dharma - Righteous duty according to one's position in life</Text>
-          <Text style={styles.li}>• Detached Action - Performing duty without attachment to results</Text>
-          <Text style={styles.li}>• Immortality of the Soul - The eternal nature of the atman (soul)</Text>
-          <Text style={styles.li}>• Divine Presence - God's accessibility to all sincere devotees</Text>
-          <Text style={styles.p}>
-            The Gita represents a synthesis of various strands of Indian religious thought, including Vedic concepts of dharma, Samkhya-based yoga and jnana (knowledge), and bhakti (devotion). Krishna reminds Arjuna that it is best to fulfill one's destiny with detachment because detachment leads to liberation.[5][3]
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.gita.crownJewel.title.hi : translations.content.gita.crownJewel.title.en}
           </Text>
-          <Text style={styles.h3}>Universal Appeal and Influence</Text>
           <Text style={styles.p}>
-            The Bhagavad Gita became Hinduism's most popular scripture and continues to be read for daily reference - a work that Mahatma Gandhi described as "an infallible guide to conduct". Its messages resonate globally, making it one of the most widely read and translated Indian texts in the world.[6][2]
+            {isHindi ? translations.content.gita.crownJewel.description.hi : translations.content.gita.crownJewel.description.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.gita.philosophical.title.hi : translations.content.gita.philosophical.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.gita.philosophical.intro.hi : translations.content.gita.philosophical.intro.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.gita.philosophical.paths.item1.hi : translations.content.gita.philosophical.paths.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.gita.philosophical.paths.item2.hi : translations.content.gita.philosophical.paths.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.gita.philosophical.paths.item3.hi : translations.content.gita.philosophical.paths.item3.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.gita.philosophical.concepts.title.hi : translations.content.gita.philosophical.concepts.title.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.gita.philosophical.concepts.list.item1.hi : translations.content.gita.philosophical.concepts.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.gita.philosophical.concepts.list.item2.hi : translations.content.gita.philosophical.concepts.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.gita.philosophical.concepts.list.item3.hi : translations.content.gita.philosophical.concepts.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.gita.philosophical.concepts.list.item4.hi : translations.content.gita.philosophical.concepts.list.item4.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.gita.philosophical.synthesis.hi : translations.content.gita.philosophical.synthesis.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.gita.universal.title.hi : translations.content.gita.universal.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.gita.universal.description.hi : translations.content.gita.universal.description.en}
           </Text>
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['ramcharit'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>Ramcharitmanas - The Lake of Rama's Deeds</Text>
-          <Text style={styles.p}>
-            The Ramcharitmanas, composed by the poet-saint Tulsidas in the 16th century, represents a devotional retelling of the Ramayan in the Awadhi dialect of Hindi. This beloved text makes the story of Rama accessible to common people and emphasizes bhakti (devotion) as the primary path to spiritual realization.
+          <Text style={styles.h2}>
+            {isHindi ? translations.content.ramcharit.title.hi : translations.content.ramcharit.title.en}
           </Text>
-          <Text style={styles.p}>The Ramcharitmanas differs from Valmiki's Sanskrit Ramayan by:</Text>
-          <Text style={styles.li}>• Devotional emphasis over purely narrative approach</Text>
-          <Text style={styles.li}>• Accessibility through vernacular language</Text>
-          <Text style={styles.li}>• Emotional connection between devotee and deity</Text>
-          <Text style={styles.li}>• Musical composition suitable for congregational singing</Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.ramcharit.description.hi : translations.content.ramcharit.description.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.ramcharit.differences.title.hi : translations.content.ramcharit.differences.title.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.ramcharit.differences.list.item1.hi : translations.content.ramcharit.differences.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.ramcharit.differences.list.item2.hi : translations.content.ramcharit.differences.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.ramcharit.differences.list.item3.hi : translations.content.ramcharit.differences.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.ramcharit.differences.list.item4.hi : translations.content.ramcharit.differences.list.item4.en}
+          </Text>
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['puranas'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>The Puranas - Mythological Treasures</Text>
-          <Text style={styles.p}>
-            The Puranas, composed starting from around 300 CE, contain extensive mythologies and are central to distributing common themes of Hinduism through vivid narratives. These eighteen major texts and eighteen sub-puranas, traditionally attributed to Sage Vyasa, include:
+          <Text style={styles.h2}>
+            {isHindi ? translations.content.puranas.title.hi : translations.content.puranas.title.en}
           </Text>
-          <Text style={styles.h3}>Major Puranas:</Text>
-          <Text style={styles.li}>• Bhagavata Purana - Stories of Vishnu's incarnations, especially Krishna</Text>
-          <Text style={styles.li}>• Shiva Purana - Tales and teachings related to Lord Shiva</Text>
-          <Text style={styles.li}>• Devi Bhagavata Purana - Stories of the Divine Mother</Text>
-          <Text style={styles.li}>• Vishnu Purana - Comprehensive account of Vishnu's manifestations</Text>
           <Text style={styles.p}>
-            The Puranas generally emphasize valued Hindu morals through stories about Hindu deities fighting to uphold these principles. They serve as accessible repositories of complex philosophical concepts presented through engaging narratives.[1]
+            {isHindi ? translations.content.puranas.description.hi : translations.content.puranas.description.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.puranas.major.title.hi : translations.content.puranas.major.title.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.puranas.major.list.item1.hi : translations.content.puranas.major.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.puranas.major.list.item2.hi : translations.content.puranas.major.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.puranas.major.list.item3.hi : translations.content.puranas.major.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.puranas.major.list.item4.hi : translations.content.puranas.major.list.item4.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.puranas.significance.hi : translations.content.puranas.significance.en}
           </Text>
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['additional'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>Additional Sacred Literature</Text>
-          <Text style={styles.h3}>The Upanishads - Philosophical Wisdom</Text>
-          <Text style={styles.p}>The Upanishads form the concluding portion of the Vedas and contain profound philosophical discussions on the nature of reality, consciousness, and liberation. These texts explore concepts like Brahman (ultimate reality), Atman (individual soul), and moksha (liberation).</Text>
-          <Text style={styles.h3}>The Agamas - Tantric Literature</Text>
-          <Text style={styles.p}>The Agamas represent a collection of Tantric literature and scriptures from various Hindu schools. The term means "tradition" or "that which has come down," and these texts cover philosophical doctrines, meditation practices, deity worship, and temple construction.[1]</Text>
-          <Text style={styles.h3}>Regional and Sectarian Texts</Text>
-          <Text style={styles.p}>Hindu literature also includes numerous regional works and sectarian texts that preserve local traditions while maintaining connection to the broader Hindu philosophical framework.</Text>
+          <Text style={styles.h2}>
+            {isHindi ? translations.content.additional.title.hi : translations.content.additional.title.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.additional.upanishads.title.hi : translations.content.additional.upanishads.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.additional.upanishads.description.hi : translations.content.additional.upanishads.description.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.additional.agamas.title.hi : translations.content.additional.agamas.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.additional.agamas.description.hi : translations.content.additional.agamas.description.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.additional.regional.title.hi : translations.content.additional.regional.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.additional.regional.description.hi : translations.content.additional.regional.description.en}
+          </Text>
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['cultural'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>Cultural and Spiritual Significance</Text>
-          <Text style={styles.h3}>Living Traditions</Text>
-          <Text style={styles.p}>These sacred texts remain living documents that continue to influence contemporary Hindu practice and thought. They are not merely historical artifacts but active guides for:</Text>
-          <Text style={styles.li}>• Daily spiritual practice through prayer, meditation, and study</Text>
-          <Text style={styles.li}>• Moral guidance in ethical decision-making</Text>
-          <Text style={styles.li}>• Cultural identity preservation across diverse communities</Text>
-          <Text style={styles.li}>• Philosophical exploration of life's fundamental questions</Text>
-          <Text style={styles.h3}>Universal Themes</Text>
-          <Text style={styles.p}>The Hindu holy books address universal human concerns:</Text>
-          <Text style={styles.li}>• The struggle between good and evil</Text>
-          <Text style={styles.li}>• The nature of duty and responsibility</Text>
-          <Text style={styles.li}>• The quest for meaning and purpose</Text>
-          <Text style={styles.li}>• The relationship between individual and cosmic consciousness</Text>
-          <Text style={styles.li}>• The path to spiritual liberation and fulfillment</Text>
-          <Text style={styles.h3}>Educational and Literary Value</Text>
-          <Text style={styles.p}>Beyond their religious significance, these texts represent:</Text>
-          <Text style={styles.li}>• Literary masterpieces showcasing sophisticated narrative techniques</Text>
-          <Text style={styles.li}>• Historical documents preserving ancient Indian culture and values</Text>
-          <Text style={styles.li}>• Philosophical treatises exploring complex metaphysical concepts</Text>
-          <Text style={styles.li}>• Psychological insights into human nature and behavior</Text>
+          <Text style={styles.h2}>
+            {isHindi ? translations.content.cultural.title.hi : translations.content.cultural.title.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.cultural.living.title.hi : translations.content.cultural.living.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.cultural.living.intro.hi : translations.content.cultural.living.intro.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.living.list.item1.hi : translations.content.cultural.living.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.living.list.item2.hi : translations.content.cultural.living.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.living.list.item3.hi : translations.content.cultural.living.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.living.list.item4.hi : translations.content.cultural.living.list.item4.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.cultural.universal.title.hi : translations.content.cultural.universal.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.cultural.universal.intro.hi : translations.content.cultural.universal.intro.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.universal.list.item1.hi : translations.content.cultural.universal.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.universal.list.item2.hi : translations.content.cultural.universal.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.universal.list.item3.hi : translations.content.cultural.universal.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.universal.list.item4.hi : translations.content.cultural.universal.list.item4.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.universal.list.item5.hi : translations.content.cultural.universal.list.item5.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.cultural.educational.title.hi : translations.content.cultural.educational.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.cultural.educational.intro.hi : translations.content.cultural.educational.intro.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.educational.list.item1.hi : translations.content.cultural.educational.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.educational.list.item2.hi : translations.content.cultural.educational.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.educational.list.item3.hi : translations.content.cultural.educational.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.cultural.educational.list.item4.hi : translations.content.cultural.educational.list.item4.en}
+          </Text>
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['modern'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>Modern Relevance and Global Impact</Text>
-          <Text style={styles.h3}>Contemporary Application</Text>
-          <Text style={styles.p}>The teachings of these holy books continue to offer guidance for modern challenges:</Text>
-          <Text style={styles.li}>• Leadership principles from Rama's ideal kingship</Text>
-          <Text style={styles.li}>• Conflict resolution through Krishna's diplomatic wisdom</Text>
-          <Text style={styles.li}>• Work-life balance through the Gita's concept of detached action</Text>
-          <Text style={styles.li}>• Environmental consciousness reflected in Vedic reverence for nature</Text>
-          <Text style={styles.h3}>Global Influence</Text>
-          <Text style={styles.p}>Hindu sacred literature has influenced thinkers, writers, and spiritual seekers worldwide, contributing to:</Text>
-          <Text style={styles.li}>• Comparative philosophy and religious studies</Text>
-          <Text style={styles.li}>• Literary traditions in various cultures</Text>
-          <Text style={styles.li}>• Spiritual movements emphasizing meditation and inner transformation</Text>
-          <Text style={styles.li}>• Ethical frameworks for personal and social conduct</Text>
+          <Text style={styles.h2}>
+            {isHindi ? translations.content.modern.title.hi : translations.content.modern.title.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.modern.contemporary.title.hi : translations.content.modern.contemporary.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.modern.contemporary.intro.hi : translations.content.modern.contemporary.intro.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.modern.contemporary.list.item1.hi : translations.content.modern.contemporary.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.modern.contemporary.list.item2.hi : translations.content.modern.contemporary.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.modern.contemporary.list.item3.hi : translations.content.modern.contemporary.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.modern.contemporary.list.item4.hi : translations.content.modern.contemporary.list.item4.en}
+          </Text>
+          <Text style={styles.h3}>
+            {isHindi ? translations.content.modern.global.title.hi : translations.content.modern.global.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.modern.global.intro.hi : translations.content.modern.global.intro.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.modern.global.list.item1.hi : translations.content.modern.global.list.item1.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.modern.global.list.item2.hi : translations.content.modern.global.list.item2.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.modern.global.list.item3.hi : translations.content.modern.global.list.item3.en}
+          </Text>
+          <Text style={styles.li}>
+            {isHindi ? translations.content.modern.global.list.item4.hi : translations.content.modern.global.list.item4.en}
+          </Text>
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['conclusion'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>Conclusion: The Eternal Wisdom</Text>
-          <Text style={styles.p}>The Hindu holy books collectively represent humanity's most comprehensive exploration of spiritual wisdom, ethical conduct, and the quest for ultimate truth. From the cosmic hymns of the Vedas to the intimate devotional poetry of the Ramcharitmanas, these texts offer multiple paths to understanding the divine and achieving human fulfillment.</Text>
-          <Text style={styles.p}>For millions of Hindus, these are not just ancient scriptures but living guides that continue to illuminate the path toward truth, righteousness, and liberation. Their enduring relevance lies in their ability to address the eternal questions of human existence while providing practical guidance for navigating life's complexities with wisdom, compassion, and spiritual insight.</Text>
-          <Text style={styles.p}>These sacred texts stand as testament to the profound spiritual achievements of ancient India and continue to serve as beacons of wisdom for seekers across the globe, regardless of their cultural or religious background. Their universal messages of duty, devotion, and the ultimate unity of all existence remain as relevant today as they were thousands of years ago.</Text>
+          <Text style={styles.h2}>
+            {isHindi ? translations.content.conclusion.title.hi : translations.content.conclusion.title.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.conclusion.text1.hi : translations.content.conclusion.text1.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.conclusion.text2.hi : translations.content.conclusion.text2.en}
+          </Text>
+          <Text style={styles.p}>
+            {isHindi ? translations.content.conclusion.text3.hi : translations.content.conclusion.text3.en}
+          </Text>
         </View>
 
         <View style={styles.card} onLayout={(e) => (sectionY.current['references'] = e.nativeEvent.layout.y)}>
-          <Text style={styles.h2}>References</Text>
+          <Text style={styles.h2}>
+            {isHindi ? translations.sections.references.hi : translations.sections.references.en}
+          </Text>
           {references.map(ref => (
             <Text key={ref.id} style={[styles.p, styles.link]} onPress={() => Linking.openURL(ref.url)}>
               [{ref.id}] {ref.url}
