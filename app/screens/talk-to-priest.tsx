@@ -581,6 +581,9 @@ const TalkToPriestScreen: React.FC = () => {
                         {isSubmitting ? 'Booking...' : 'Book Appointment'}
                       </Text>
                     </TouchableOpacity>
+                    
+                    {/* 100px white space at the end */}
+                    <View style={styles.modalBottomSpacing} />
                   </View>
                 </View>
               </>
@@ -1003,6 +1006,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  modalBottomSpacing: {
+    height: 100,
   },
   // Expanded provider details styles
   providerCardHeader: {

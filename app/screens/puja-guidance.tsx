@@ -584,6 +584,9 @@ const PujaGuidanceScreen: React.FC = () => {
                         {isSubmitting ? 'Booking...' : 'Book Appointment'}
                       </Text>
                     </TouchableOpacity>
+                    
+                    {/* 100px white space at the end */}
+                    <View style={styles.modalBottomSpacing} />
                   </View>
                 </View>
               </>
@@ -1111,6 +1114,9 @@ const styles = StyleSheet.create({
      color: '#333',
      textAlign: 'center',
      lineHeight: 24,
+  },
+  modalBottomSpacing: {
+    height: 100,
   },
 }); 
 

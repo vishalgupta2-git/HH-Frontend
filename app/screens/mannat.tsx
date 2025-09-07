@@ -607,6 +607,9 @@ export default function MannatScreen() {
               >
                 <Text style={styles.submitButtonText}>Submit Mannat</Text>
               </TouchableOpacity>
+              
+              {/* 100px white space at the end */}
+              <View style={styles.mannatFormBottomSpacing} />
             </ScrollView>
           </View>
         </View>
@@ -963,6 +966,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  mannatFormBottomSpacing: {
+    height: 100,
   },
   // Mannat option styles
   mannatOptionGrid: {
