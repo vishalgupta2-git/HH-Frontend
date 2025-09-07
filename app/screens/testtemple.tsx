@@ -348,6 +348,9 @@ export default function TestTempleScreen() {
   const router = useRouter();
   const { isHindi } = useLanguage();
   
+  // State management for navigation (3 states: myTemple, todaysPuja, allTemples)
+  const [currentScreen, setCurrentScreen] = useState<'myTemple' | 'todaysPuja' | 'allTemples'>('myTemple');
+  
   // State management for temple configuration
   const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'statues'>(null);
   const [selectedStyle, setSelectedStyle] = useState<string>(templeStyles[0].id);
@@ -1286,8 +1289,21 @@ export default function TestTempleScreen() {
     loadTempleDimensions();
   }, []);
 
-  // Debug: Log screen dimensions
-  
+  // Debug: Log screen dimensions and z-index values when screen changes
+  useEffect(() => {
+    console.log('🔍 Z-Index Debug - Current Screen:', currentScreen);
+    console.log('📊 Z-Index Values:');
+    console.log('  - Background Gradient: 1');
+    console.log('  - Temple Bells: 199');
+    console.log('  - Flower Animation: 215');
+    console.log('  - Arch: 220');
+    console.log('  - Navigation Buttons: 225');
+    console.log('  - Configuration Icons: 230');
+    console.log('  - Puja Icons: 240');
+    console.log('🎯 Temple Bells should be visible (zIndex: 199)');
+    console.log('🌸 Flower Animation should be visible (zIndex: 215)');
+    console.log('🧪 TEST: Deities moved +1000px X position in Today\'s Puja & All Temples modes');
+  }, [currentScreen]);
 
   return (
     <View style={styles.container}>
@@ -1307,8 +1323,8 @@ export default function TestTempleScreen() {
       <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
       </View>
       
-      {/* Temple Display */}
-      {templeDimensions[selectedStyle] && (
+      {/* Temple Display - Hide when in All Temples or Today's Puja mode */}
+      {currentScreen === 'myTemple' && templeDimensions[selectedStyle] && (
         <View pointerEvents="none">
         <Image
           source={templeStyles.find(t => t.id === selectedStyle)?.image}
@@ -1339,7 +1355,7 @@ export default function TestTempleScreen() {
         </View>
       )}
       
-      {/* Selected Deities Display */}
+      {/* Selected Deities Display - Move outside screen in Today's Puja and All Temples modes */}
               {Object.entries(selectedDeities).map(([deityId, statueUrl], index) => {
           const deity = deityData.find(d => d._id === deityId);
           if (!deity) return null;
@@ -1349,6 +1365,17 @@ export default function TestTempleScreen() {
             x: screenWidth * 0.1, 
             y: screenHeight * 0.7 
           };
+          
+          // Move deities outside screen when in Today's Puja or All Temples modes
+          const adjustedPosition = {
+            x: currentScreen === 'myTemple' ? currentPosition.x : currentPosition.x + 1000,
+            y: currentPosition.y
+          };
+          
+          // Debug logging
+          if (currentScreen !== 'myTemple') {
+            console.log(`🏛️ Deity ${deityId} moved from x:${currentPosition.x} to x:${adjustedPosition.x} (screen: ${currentScreen})`);
+          }
           const currentSize = deitySizes[deityId] || { 
             width: screenWidth * 0.3, 
             height: screenWidth * 0.36 
@@ -1365,9 +1392,12 @@ export default function TestTempleScreen() {
                 height: currentSize.height,
                 borderWidth: 0,
                 borderColor: 'transparent',
-                transform: [
+                transform: currentScreen === 'myTemple' ? [
                   { translateX: getDeityAnim(deityId, currentPosition.x, currentPosition.y).x },
                   { translateY: getDeityAnim(deityId, currentPosition.x, currentPosition.y).y },
+                ] : [
+                  { translateX: adjustedPosition.x },
+                  { translateY: adjustedPosition.y },
                 ]
               }]}
             >
@@ -1555,8 +1585,9 @@ export default function TestTempleScreen() {
       ))}
       
       {/* Temple Configuration Controls */}
-      {/* Configuration Icons - Always visible */}
-      <View style={styles.configurationIconsContainer}>
+      {/* Configuration Icons - Hide when in All Temples or Today's Puja mode */}
+      {currentScreen === 'myTemple' && (
+        <View style={styles.configurationIconsContainer}>
         {/* Temple Style Icon */}
               <View style={styles.configIconWrapper}>
                 <TouchableOpacity 
@@ -1626,11 +1657,12 @@ export default function TestTempleScreen() {
           <Text style={styles.saveTempleConfigButtonText}>{isHindi ? 'सहेजें' : 'Save'}</Text>
             </View>
           </View>
+      )}
       
       {/* Content */}
       <View style={styles.content}>
         </View>
-      
+
 
 
       {/* Puja Icons - Always visible */}
@@ -1664,8 +1696,7 @@ export default function TestTempleScreen() {
               <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'आरती' : 'Aarti'}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]}
-              disabled={isFlowerAnimationRunning}
+              style={styles.pujaIconItem}
               onPress={handleMusic}
               activeOpacity={0.7}
             >
@@ -2163,36 +2194,57 @@ export default function TestTempleScreen() {
               style={[styles.secondRowButton, {
                 width: screenWidth * 0.29,
                 height: screenHeight * 0.05,
+                backgroundColor: currentScreen === 'myTemple' ? 'rgba(255, 106, 0, 1)' : 'rgba(255, 106, 0, 0.8)',
+                borderWidth: currentScreen === 'myTemple' ? 2 : 0,
+                borderColor: currentScreen === 'myTemple' ? '#fff' : 'transparent',
               }]}
               onPress={() => {
+                setCurrentScreen('myTemple');
                 console.log('My Temple pressed');
               }}
             >
-              <Text style={styles.secondRowButtonText}>{isHindi ? 'मेरा मंदिर' : 'My Temple'}</Text>
+              <Text style={[styles.secondRowButtonText, {
+                fontWeight: currentScreen === 'myTemple' ? '700' : '600',
+                fontSize: currentScreen === 'myTemple' ? 13 : 12,
+              }]}>{isHindi ? 'मेरा मंदिर' : 'My Temple'}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
               style={[styles.secondRowButton, {
                 width: screenWidth * 0.29,
                 height: screenHeight * 0.05,
+                backgroundColor: currentScreen === 'todaysPuja' ? 'rgba(255, 106, 0, 1)' : 'rgba(255, 106, 0, 0.8)',
+                borderWidth: currentScreen === 'todaysPuja' ? 2 : 0,
+                borderColor: currentScreen === 'todaysPuja' ? '#fff' : 'transparent',
               }]}
               onPress={() => {
+                setCurrentScreen('todaysPuja');
                 console.log('Today\'s Pujas pressed');
               }}
             >
-              <Text style={styles.secondRowButtonText}>{isHindi ? 'आज की पूजा' : 'Today\'s Pujas'}</Text>
+              <Text style={[styles.secondRowButtonText, {
+                fontWeight: currentScreen === 'todaysPuja' ? '700' : '600',
+                fontSize: currentScreen === 'todaysPuja' ? 13 : 12,
+              }]}>{isHindi ? 'आज की पूजा' : 'Today\'s Pujas'}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
               style={[styles.secondRowButton, {
                 width: screenWidth * 0.29,
                 height: screenHeight * 0.05,
+                backgroundColor: currentScreen === 'allTemples' ? 'rgba(255, 106, 0, 1)' : 'rgba(255, 106, 0, 0.8)',
+                borderWidth: currentScreen === 'allTemples' ? 2 : 0,
+                borderColor: currentScreen === 'allTemples' ? '#fff' : 'transparent',
               }]}
               onPress={() => {
+                setCurrentScreen('allTemples');
                 console.log('All Temples pressed');
               }}
             >
-              <Text style={styles.secondRowButtonText}>{isHindi ? 'सभी मंदिर' : 'All Temples'}</Text>
+              <Text style={[styles.secondRowButtonText, {
+                fontWeight: currentScreen === 'allTemples' ? '700' : '600',
+                fontSize: currentScreen === 'allTemples' ? 13 : 12,
+              }]}>{isHindi ? 'सभी मंदिर' : 'All Temples'}</Text>
             </TouchableOpacity>
           </View>
         </>
@@ -2922,7 +2974,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 4,
-    zIndex: 220,
+    zIndex: 240,
   },
   rightPujaIconsColumn: {
     position: 'absolute',
@@ -2931,7 +2983,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 4,
-    zIndex: 220,
+    zIndex: 240,
   },
   pujaIconItem: {
     alignItems: 'center',
