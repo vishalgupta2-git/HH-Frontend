@@ -207,65 +207,6 @@ const getImageSource = (imagePath: string) => {
   }
 };
 
-function GridSVG(props: { width?: number; height?: number; style?: any }) {
-  const width = props.width || screenWidth;
-  const height = props.height || screenHeight;
-  
-  // Grid lines every 10% of width and height
-  const verticalSpacing = width / 10; // 10% of width
-  const horizontalSpacing = height / 10; // 10% of height
-  
-  // Calculate number of lines needed (10 lines for 10% spacing)
-  const verticalLines = 10;
-  const horizontalLines = 10;
-  
-  // Generate vertical lines with alternating colors
-  const verticalLineElements = [];
-  for (let i = 0; i <= verticalLines; i++) {
-    const x = i * verticalSpacing;
-    const strokeColor = i % 2 === 0 ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
-    verticalLineElements.push(
-      <Line
-        key={`v-${i}`}
-        x1={x}
-        y1={0}
-        x2={x}
-        y2={height}
-        stroke={strokeColor}
-        strokeWidth={1}
-      />
-    );
-  }
-  
-  // Generate horizontal lines with alternating colors
-  const horizontalLineElements = [];
-  for (let i = 0; i <= horizontalLines; i++) {
-    const y = i * horizontalSpacing;
-    const strokeColor = i % 2 === 0 ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
-    horizontalLineElements.push(
-      <Line
-        key={`h-${i}`}
-        x1={0}
-        y1={y}
-        x2={width}
-        y2={y}
-        stroke={strokeColor}
-        strokeWidth={1}
-      />
-    );
-  }
-  
-  return (
-    <Svg
-      width={width}
-      height={height}
-      style={props.style}
-    >
-      {verticalLineElements}
-      {horizontalLineElements}
-    </Svg>
-  );
-}
 
 function ArchSVG(props: { width?: number; height?: number; style?: any }) {
   return (
@@ -682,6 +623,8 @@ export default function TestTempleScreen() {
   const [deityError, setDeityError] = useState('');
   const [deityData, setDeityData] = useState<DeityData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(true);
+  const [showSaveMessage, setShowSaveMessage] = useState(false);
   const [selectedDeityForStatues, setSelectedDeityForStatues] = useState<DeityData | null>(null);
   const [templeDimensions, setTempleDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
   // State management: always in puja mode now
@@ -1092,6 +1035,12 @@ export default function TestTempleScreen() {
       
       const success = await saveTempleConfigurationNewStyle(templeConfig);
       if (success) {
+        // Show success message
+        setShowSaveMessage(true);
+        // Hide message after 2 seconds
+        setTimeout(() => {
+          setShowSaveMessage(false);
+        }, 2000);
       } else {
         console.error('Failed to save temple configuration');
       }
@@ -1534,6 +1483,7 @@ export default function TestTempleScreen() {
   useEffect(() => {
     const loadTempleConfig = async () => {
       try {
+        setBackgroundLoading(true);
         const templeConfig = await loadTempleConfigurationNewStyle();
         
         if (templeConfig) {
@@ -1565,6 +1515,8 @@ export default function TestTempleScreen() {
         }
       } catch (error) {
         console.error('Error loading temple configuration:', error);
+      } finally {
+        setBackgroundLoading(false);
       }
     };
 
@@ -1649,8 +1601,22 @@ export default function TestTempleScreen() {
         end={{ x: 1, y: 1 }}
       />
       
-      {/* Grid overlay */}
-      <GridSVG width={screenWidth} height={screenHeight} style={styles.gridOverlay} />
+      {/* Background Loading Indicator */}
+      {backgroundLoading && (
+        <View style={styles.backgroundLoadingContainer}>
+          <ActivityIndicator size="large" color="#fff" />
+          <Text style={styles.backgroundLoadingText}>
+            {isHindi ? 'पृष्ठभूमि लोड हो रही है...' : 'Loading background...'}
+          </Text>
+        </View>
+      )}
+      
+      {/* Save Success Message */}
+      {showSaveMessage && (
+        <View style={styles.saveMessageContainer}>
+          <Text style={styles.saveMessageText}>ॐ Temple Saved ॐ</Text>
+        </View>
+      )}
       
       {/* Arch on top */}
       <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 220 }}>
@@ -3047,6 +3013,45 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 0,
+  },
+  backgroundLoadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  backgroundLoadingText: {
+    color: '#fff',
+    fontSize: 16,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  saveMessageContainer: {
+    position: 'absolute',
+    top: '30%',
+    left: '50%',
+    transform: [{ translateX: -100 }, { translateY: -25 }],
+    backgroundColor: '#FF9933',
+    borderRadius: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    zIndex: 1001,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveMessageText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   gridOverlay: {
     position: 'absolute',

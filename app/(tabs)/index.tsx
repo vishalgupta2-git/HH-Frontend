@@ -134,8 +134,8 @@ export default function HomeScreen() {
            <HomeIconGrid key={`home-icon-grid-${isHindi}`} isHindi={isHindi} />
          </View>
          
-         {/* Test Temple Button */}
-         <View style={styles.section}>
+         {/* Test Temple Button - Hidden */}
+         {/* <View style={styles.section}>
            <TouchableOpacity
              style={styles.testTempleButton}
              onPress={() => router.push('/screens/testtemple')}
@@ -145,10 +145,10 @@ export default function HomeScreen() {
                {isHindi ? 'टेस्ट मंदिर' : 'Test Temple'}
              </Text>
            </TouchableOpacity>
-         </View>
+         </View> */}
 
-         {/* 3D Ganesha Temple Button */}
-         <View style={styles.section}>
+         {/* 3D Ganesha Temple Button - Hidden */}
+         {/* <View style={styles.section}>
            <TouchableOpacity
              style={styles.testTempleButton}
              onPress={() => router.push('/screens/3d-ganesha')}
@@ -158,7 +158,7 @@ export default function HomeScreen() {
                {isHindi ? '3D गणेश मंदिर' : '3D Ganesha Temple'}
              </Text>
            </TouchableOpacity>
-         </View>
+         </View> */}
 
         
          {/* Spiritual & Astrology Block Section */}

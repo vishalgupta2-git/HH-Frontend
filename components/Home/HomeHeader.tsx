@@ -289,7 +289,7 @@ export default function HomeHeader({
       {/* Daily Puja Button - Separated from search section */}
       {showDailyPujaButton && (
         <View style={styles.dailyPujaButtonContainer}>
-          <TouchableOpacity style={styles.dailyPujaButton} onPress={() => router.push('/screens/DailyPujaCustomTemple')}>
+          <TouchableOpacity style={styles.dailyPujaButton} onPress={() => router.push('/screens/testtemple')}>
             <Text style={styles.dailyPujaButtonText}>
               {isHindi ? 'अपनी दैनिक पूजा शुरू करें' : 'Start Your Daily Puja'}
             </Text>

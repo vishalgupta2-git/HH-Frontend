@@ -8,7 +8,7 @@ const getIcons = (isHindi: boolean) => [
   { 
     label: isHindi ? 'मेरा आभासी मंदिर' : 'My Virtual Temple', 
     image: require('@/assets/images/icons/home page icons/temple.png'),
-    route: '/screens/create-temple'
+    route: '/screens/testtemple'
   },
   { 
     label: isHindi ? 'पूजा' : 'Puja', 

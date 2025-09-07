@@ -42,8 +42,8 @@ export default function DailyPujaReminderModal({
       // Mark that user has visited daily puja today
       await markDailyPujaVisited();
       
-      // Navigate to daily puja screen
-      router.push('/screens/DailyPujaCustomTemple');
+      // Navigate to test temple screen
+      router.push('/screens/testtemple');
       
       // Close the modal
       onClose();
