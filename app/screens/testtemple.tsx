@@ -339,8 +339,8 @@ export default function TestTempleScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedDeityForStatues, setSelectedDeityForStatues] = useState<DeityData | null>(null);
   const [templeDimensions, setTempleDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
-  // State management: 'puja' | 'configuringTemple'
-  const [templeState, setTempleState] = useState<'puja' | 'configuringTemple'>('puja');
+  // State management: always in puja mode now
+  const [templeState] = useState<'puja'>('puja');
 
   // Flower offering state (aligned with Daily Puja Custom Template)
   const [showFlowerModal, setShowFlowerModal] = useState(false);
@@ -760,16 +760,10 @@ export default function TestTempleScreen() {
     }
   };
 
-  // Reset wizard when entering configuringTemple mode
+  // Reset wizard step
   React.useEffect(() => {
-    if (templeState === 'configuringTemple') {
       setWizardStep(1);
-    } else {
-      // Clear selected deity when exiting configuring mode
-      setSelectedDeityForEdit(null);
-      setShowDeityDropdown(false);
-    }
-  }, [templeState]);
+  }, []);
   
   // Flashing animation state
   const [isFlashing, setIsFlashing] = useState(false);
@@ -869,14 +863,12 @@ export default function TestTempleScreen() {
   
   // Flash animation for current step icon
   React.useEffect(() => {
-    if (templeState === 'configuringTemple') {
       const interval = setInterval(() => {
         setIsFlashing(prev => !prev);
       }, 2000);
       
       return () => clearInterval(interval);
-    }
-  }, [templeState, wizardStep]);
+  }, [wizardStep]);
   
   // Initialize deity positions and sizes when NEW deities are selected
   React.useEffect(() => {
@@ -1357,153 +1349,85 @@ export default function TestTempleScreen() {
       ))}
       
       {/* Temple Configuration Controls */}
-      {templeState === 'puja' ? (
-        // Create/Modify Temple Button
+      {/* Configuration Icons - Always visible */}
+      <View style={styles.configurationIconsContainer}>
+        {/* Temple Style Icon */}
+        <View style={styles.configIconWrapper}>
         <TouchableOpacity
-          style={styles.createModifyButton}
-          onPress={() => setTempleState('configuringTemple')}
-        >
-          <Text style={styles.createModifyButtonText}>
-            {Object.keys(selectedDeities).length > 0 ? 'Modify my Temple' : 'Create my Temple'}
-          </Text>
+            style={styles.configIcon}
+            onPress={() => setModal('temple')}
+            activeOpacity={0.7}
+          >
+            <Image 
+              source={require('@/assets/images/temple/Temple1.png')} 
+              style={styles.configIconImage} 
+              resizeMode="contain" 
+            />
         </TouchableOpacity>
-      ) : templeState === 'configuringTemple' ? (
-        <>
-          {/* Temple Configuration Icons - Moved into bottom banner */}
+          <Text style={styles.configIconLabel}>{isHindi ? 'मंदिर' : 'Temple'}</Text>
+        </View>
+          
+        {/* Deity Icon */}
+        <View style={styles.configIconWrapper}>
+          <TouchableOpacity
+            style={styles.configIcon}
+            onPress={() => setModal('deities')}
+            activeOpacity={0.7}
+          >
+            <Image 
+              source={require('@/assets/images/temple/Ganesha1.png')} 
+              style={styles.configIconImage} 
+              resizeMode="contain" 
+            />
+          </TouchableOpacity>
+          <Text style={styles.configIconLabel}>{isHindi ? 'देवता' : 'Deity'}</Text>
+        </View>
+
+        {/* Background Icon */}
+        <View style={styles.configIconWrapper}>
+          <TouchableOpacity
+            style={styles.configIcon}
+            onPress={() => setModal('background')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.gradientIconContainer}>
+              <LinearGradient
+                colors={bgGradient as any}
+                style={styles.gradientIcon}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.configIconLabel}>{isHindi ? 'बैकग्राउंड' : 'BG'}</Text>
+        </View>
           
           {/* Save Temple Button */}
+        <View style={styles.configIconWrapper}>
           <TouchableOpacity
-            style={styles.saveTempleButton}
+            style={styles.saveTempleConfigButton}
             onPress={async () => {
               await saveTempleConfig();
-              setTempleState('puja');
             }}
+            activeOpacity={0.7}
           >
-            <Text style={styles.saveTempleButtonText}>Save My Temple</Text>
+            <Image 
+              source={require('@/assets/images/icons/otherIcons/SaveIcon.png')} 
+              style={styles.saveIconImage} 
+              resizeMode="contain" 
+            />
           </TouchableOpacity>
-        </>
-      ) : null}
+          <Text style={styles.saveTempleConfigButtonText}>{isHindi ? 'सहेजें' : 'Save'}</Text>
+        </View>
+      </View>
       
       {/* Content */}
       <View style={styles.content}>
       </View>
       
-      {/* Wizard Banner - Only show in configuringTemple mode */}
-      {templeState === 'configuringTemple' && (
-        <TouchableWithoutFeedback onPress={() => setShowDeityDropdown(false)}>
-          <View style={styles.wizardBanner}>
-          <View style={styles.wizardContent}>
-            {wizardStep !== 1 && (
-            <Text style={styles.wizardStepText}>
-                Step {wizardStep} of 4 - {wizardStep === 2 && 'Select Temple Style'}
-              {wizardStep === 3 && 'Select up to 3 Deities'}
-              {wizardStep === 4 && 'Adjust Deities Size & Position'}
-            </Text>
-            )}
-            
-            {/* Step 4: Size/Position icons and deity dropdown removed as requested */}
-            
-            {/* Config Icons inside banner */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', width: '100%', marginBottom: 12 }}>
-              <View style={styles.configIconWrapper}>
-                <TouchableOpacity 
-                  style={styles.configIconItem}
-                  onPress={() => setModal('temple')}
-                >
-                  <Image 
-                    source={require('@/assets/images/temple/Temple1.png')} 
-                    style={styles.configIconImage} 
-                    resizeMode="contain" 
-                  />
-                  </TouchableOpacity>
-                <Text style={styles.configIconLabel} numberOfLines={1}>Temple Style</Text>
-              </View>
-              <View style={styles.configIconWrapper}>
-                  <TouchableOpacity 
-                    style={styles.configIconItem}
-                    onPress={() => setModal('deities')}
-                >
-                  <Image 
-                    source={require('@/assets/images/temple/Ganesha1.png')} 
-                    style={styles.configIconImage} 
-                    resizeMode="contain" 
-                  />
-                  </TouchableOpacity>
-                <Text style={styles.configIconLabel} numberOfLines={1}>Deity</Text>
-              </View>
-              <View style={styles.configIconWrapper}>
-                  <TouchableOpacity 
-                    style={styles.configIconItem}
-                    onPress={() => setModal('background')}
-                >
-                  <View style={styles.gradientIconContainer}>
-                    <LinearGradient
-                      colors={bgGradient as any}
-                      style={styles.gradientIcon}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                    />
-                  </View>
-                  </TouchableOpacity>
-                <Text style={styles.configIconLabel} numberOfLines={1}>Background</Text>
-                </View>
-              </View>
-            
-            {/* Action Buttons */}
-            <View style={styles.wizardButtonsContainer}>
-              {/* Back Button - Only show if not on step 1 */}
-              {wizardStep > 1 && (
-                <TouchableOpacity
-                  style={styles.wizardBackButton}
-                  onPress={() => {
-                    setWizardStep((wizardStep - 1) as 1 | 2 | 3 | 4);
-                  }}
-                >
-                  <Text style={styles.wizardBackButtonText}>Back</Text>
-                </TouchableOpacity>
-              )}
-              
-              {/* Next/Save Button - hidden on step 1 */}
-              {wizardStep !== 1 && (
-              <TouchableOpacity
-                style={[
-                  styles.wizardActionButton,
-                  {
-                    opacity: (
-                        wizardStep === 2 ||
-                        (wizardStep === 3 && Object.keys(selectedDeities).length > 0) ||
-                        wizardStep === 4
-                    ) ? 1 : 0.5
-                  }
-                ]}
-                onPress={async () => {
-                  if (wizardStep < 4) {
-                    setWizardStep((wizardStep + 1) as 1 | 2 | 3 | 4);
-                  } else {
-                    await saveTempleConfig();
-                    setTempleState('puja');
-                  }
-                }}
-                disabled={!(
-                    wizardStep === 2 ||
-                    (wizardStep === 3 && Object.keys(selectedDeities).length > 0) ||
-                    wizardStep === 4
-                )}
-              >
-                <Text style={styles.wizardActionButtonText}>
-                  {wizardStep === 4 ? 'Save' : 'Next'}
-                </Text>
-              </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </View>
-        </TouchableWithoutFeedback>
-      )}
       
 
-      {/* Puja Icons - Only show in puja mode */}
-      {templeState === 'puja' && (
+      {/* Puja Icons - Always visible */}
         <>
           {/* Left Puja Icons Column - Flowers, Thali, Music */}
           <View style={[styles.leftPujaIconsColumn, isPujaTemporarilyDisabled && { opacity: 0.5 }]} pointerEvents={isPujaTemporarilyDisabled ? 'none' : 'auto'}>
@@ -1518,12 +1442,12 @@ export default function TestTempleScreen() {
                 style={styles.pujaIconImage}
                 resizeMode="contain"
               />
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'फूल' : 'Flowers'}</Text>
+            <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'फूल' : 'Flowers'}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]}
               disabled={isFlowerAnimationRunning}
-              onPress={handleAarti}
+            onPress={handleAarti}
               activeOpacity={0.7}
             >
               <Image 
@@ -1540,7 +1464,7 @@ export default function TestTempleScreen() {
               activeOpacity={0.7}
             >
               <Text style={styles.pujaIcon}>🎵</Text>
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'भक्ति संगीत' : 'Music'}</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'संगीत' : 'Music'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -1570,7 +1494,6 @@ export default function TestTempleScreen() {
             </TouchableOpacity>
           </View>
         </>
-      )}
 
       {/* Flower Selection Modal */}
       <Modal
@@ -1902,8 +1825,7 @@ export default function TestTempleScreen() {
         </View>
       </Modal>
 
-      {/* Bottom Action Buttons - Only show in puja mode */}
-      {templeState === 'puja' && (
+      {/* Bottom Action Buttons - Always visible */}
         <>
           {/* Perform Puja Button - 79% from top, 90% width, 5% height */}
           <TouchableOpacity
@@ -1965,7 +1887,6 @@ export default function TestTempleScreen() {
             </TouchableOpacity>
           </View>
         </>
-      )}
       
       {/* Modal Implementation for Temple Configuration */}
       <Modal
@@ -2424,29 +2345,18 @@ const styles = StyleSheet.create({
     height: 50,
   },
   configIconImage: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     marginBottom: 0,
-  },
-  configIconLabel: {
-    fontSize: 10,
-    color: '#fff',
-    fontWeight: 'bold',
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.8)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-    marginTop: 4,
-    position: 'absolute',
-    top: 58,
-    width: 80,
   },
   gradientIconContainer: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     marginBottom: 0,
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   gradientIcon: {
     width: '100%',
@@ -3320,5 +3230,71 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // Configuration Icons Styles
+  configurationIconsContainer: {
+    position: 'absolute',
+    top: 40,
+    left: '5%',
+    right: '5%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    zIndex: 1000,
+    elevation: 1000,
+  },
+  configIcon: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 106, 0, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: 65,
+    height: 65,
+  },
+  configIconLabel: {
+    fontSize: 12,
+    color: '#000000',
+    fontWeight: '600',
+    marginTop: 8,
+    textAlign: 'center',
+    width: 65,
+  },
+  saveTempleConfigButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 106, 0, 0.3)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: 65,
+    height: 65,
+  },
+  saveIconImage: {
+    width: 36,
+    height: 36,
+    marginBottom: 0,
+  },
+  saveTempleConfigButtonText: {
+    fontSize: 12,
+    color: '#000000',
+    fontWeight: '600',
+    marginTop: 8,
+    textAlign: 'center',
+    width: 65,
   },
 });
