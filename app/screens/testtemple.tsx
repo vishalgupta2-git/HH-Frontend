@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing, PanResponder, GestureResponderEvent, PanResponderGestureState, ActivityIndicator } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing, PanResponder, GestureResponderEvent, PanResponderGestureState, ActivityIndicator, TextInput, AppState } from 'react-native';
 import { Audio } from 'expo-av';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient, Line } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -361,6 +361,56 @@ export default function TestTempleScreen() {
   const [showAartiModal, setShowAartiModal] = useState(false);
   const [thaliImageLoaded, setThaliImageLoaded] = useState(false);
 
+  // Music state
+  const [showMusicModal, setShowMusicModal] = useState(false);
+  const [musicSearchQuery, setMusicSearchQuery] = useState('');
+  const [selectedMusicFilter, setSelectedMusicFilter] = useState('All');
+  const [musicFiles, setMusicFiles] = useState<any[]>([]);
+  const [musicLoading, setMusicLoading] = useState(false);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
+  const [loadingMusicId, setLoadingMusicId] = useState<string | null>(null);
+  const [currentPlaylist, setCurrentPlaylist] = useState<any[]>([]);
+  const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState<number>(0);
+  const [autoPlayEnabled, setAutoPlayEnabled] = useState(true);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+  // Configure audio session for background playback
+  useEffect(() => {
+    const configureAudioSession = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+        });
+      } catch (error) {
+        console.error('Failed to configure audio session:', error);
+      }
+    };
+
+    configureAudioSession();
+  }, []);
+
+  // Handle app state changes for background audio
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'active') {
+        // Resume audio if it was playing before going to background
+        if (sound && currentlyPlaying) {
+          sound.playAsync().catch(error => {
+            console.error('Error resuming audio:', error);
+          });
+        }
+      }
+      // Audio will continue playing in background due to staysActiveInBackground: true
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [sound, currentlyPlaying]);
+
   const generateUniqueFlowerId = () => {
     flowerIdCounter.current += 1;
     return `flower_${Date.now()}_${flowerIdCounter.current}`;
@@ -377,6 +427,187 @@ export default function TestTempleScreen() {
 
   const handleCloseAartiModal = () => {
     setShowAartiModal(false);
+  };
+
+  // Music functions
+  const fetchMusicFiles = async () => {
+    try {
+      setMusicLoading(true);
+      const url = getEndpointUrl('MEDIA_FILES');
+      
+      const res = await fetch(url, {
+        headers: getAuthHeaders()
+      });
+      
+      if (!res.ok) {
+        return;
+      }
+      
+      const data = await res.json();
+      
+      if (Array.isArray(data)) {
+        // Filter for audio files based on Classification or Type
+        const audioFiles = data.filter((file: any) => {
+          // Check if it's an audio file based on Classification or Type
+          const isAudio = file.Classification?.toLowerCase() === 'audio' || 
+                         file.Type?.toLowerCase().includes('audio') ||
+                         file.MediaType?.toLowerCase() === 'mp3';
+          
+          return isAudio;
+        });
+        
+        setMusicFiles(audioFiles);
+      } else {
+        setMusicFiles([]);
+      }
+    } catch (error) {
+      console.error('❌ [MUSIC] Error fetching music files:', error);
+      setMusicFiles([]);
+    } finally {
+      setMusicLoading(false);
+    }
+  };
+
+  const extractMusicMetadata = (file: any) => {
+    return {
+      title: file.VideoName || 'Untitled',
+      category: file.Type || file.Classification || 'Music',
+      duration: file.Duration || '--:--',
+      deity: file.Deity || '',
+      language: file.Language || '',
+      artists: file.Artists || '',
+      link: file.Link || ''
+    };
+  };
+
+  const playMusicFile = async (file: any) => {
+    try {
+      // Validate file object
+      if (!file || !file.avld) {
+        console.error('❌ [MUSIC] Invalid file object:', file);
+        return;
+      }
+
+      setLoadingMusicId(file.avld);
+      const metadata = extractMusicMetadata(file);
+      
+      // Stop current music if playing
+      if (sound) {
+        try {
+          const status = await sound.getStatusAsync();
+          if (status.isLoaded) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+          }
+        } catch (error) {
+          console.error('❌ [MUSIC] Error stopping current music:', error);
+        }
+      }
+
+      // Use the Link field from the API response (contains S3 filename)
+      if (!metadata.link) {
+        console.error('❌ [MUSIC] No audio link available for file:', file.avld);
+        console.error('❌ [MUSIC] File object:', file);
+        console.error('❌ [MUSIC] Metadata:', metadata);
+        setLoadingMusicId(null);
+        return;
+      }
+
+      // Get presigned URL from backend API (same as audio-video screen)
+      const apiUrl = getEndpointUrl('S3_AUDIO_URL');
+      
+      const response = await fetch(`${apiUrl}?filename=${encodeURIComponent(metadata.link)}`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get presigned URL from API: ${response.status} ${response.statusText}`);
+      }
+      
+      const responseData = await response.json();
+      
+      if (!responseData.success || !responseData.presignedUrl) {
+        throw new Error(`Invalid API response: ${JSON.stringify(responseData)}`);
+      }
+      
+      const presignedUrl = responseData.presignedUrl;
+
+      // Load and play the music using the presigned URL
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: presignedUrl },
+        { shouldPlay: true }
+      );
+      
+      setSound(newSound);
+      setCurrentlyPlaying(file.avld);
+      setLoadingMusicId(null);
+
+      // Set up auto-play next song when current ends (using proper completion detection)
+      newSound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          // Song naturally finished, playing next...
+          // Use setTimeout to avoid state update during render
+          setTimeout(() => {
+            if (autoPlayEnabled) {
+              playNextSong();
+            } else {
+              setCurrentlyPlaying(null);
+              setSound(null);
+            }
+          }, 100);
+        }
+      });
+
+    } catch (error) {
+      console.error('❌ [MUSIC] Error playing music:', error);
+      console.error('❌ [MUSIC] File that failed:', file);
+      console.error('❌ [MUSIC] Error details:', error instanceof Error ? error.message : String(error), error instanceof Error ? error.stack : 'No stack trace');
+      
+      // Don't show alert for background music restart attempts
+      if (!file.avld.includes('background')) {
+        Alert.alert('Error', 'Failed to play music file');
+      }
+      
+      setLoadingMusicId(null);
+    }
+  };
+
+  const stopCurrentMusic = async () => {
+    try {
+      if (sound) {
+        try {
+          const status = await sound.getStatusAsync();
+          if (status.isLoaded) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+          }
+        } catch (error) {
+          console.error('❌ [MUSIC] Error stopping music:', error);
+        }
+      }
+      setSound(null);
+      setCurrentlyPlaying(null);
+    } catch (error) {
+      console.error('❌ [MUSIC] Error in stopCurrentMusic:', error);
+    }
+  };
+
+  const playNextSong = async () => {
+    if (currentPlaylist.length === 0) return;
+    
+    const nextIndex = (currentPlaylistIndex + 1) % currentPlaylist.length;
+    setCurrentPlaylistIndex(nextIndex);
+    
+    const nextSong = currentPlaylist[nextIndex];
+    if (nextSong) {
+      await playMusicFile(nextSong);
+    }
+  };
+
+  const handleMusic = async () => {
+    setShowMusicModal(true);
+    // Fetch music files when modal opens
+    fetchMusicFiles();
   };
 
   const dropFlowers = async (flowerType: string = 'hibiscus') => {
@@ -1303,10 +1534,7 @@ export default function TestTempleScreen() {
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]}
               disabled={isFlowerAnimationRunning}
-              onPress={() => {
-                console.log('Music pressed');
-                // TODO: Add music functionality
-              }}
+              onPress={handleMusic}
               activeOpacity={0.7}
             >
               <Text style={styles.pujaIcon}>🎵</Text>
@@ -1456,6 +1684,218 @@ export default function TestTempleScreen() {
               </View>
             )}
             <DraggableThali onImageLoad={() => setThaliImageLoaded(true)} />
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* Music Modal */}
+      <Modal
+        visible={showMusicModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {
+          setShowMusicModal(false);
+        }}
+        statusBarTranslucent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity 
+            style={{ flex: 1, width: '100%' }}
+            activeOpacity={1}
+            onPress={() => setShowMusicModal(false)}
+          >
+            <View style={styles.musicModalContent}>
+              {/* Header */}
+              <View style={styles.musicModalHeader}>
+                <Text style={styles.musicModalTitle}>🎵 Divine Music</Text>
+                <View style={styles.musicModalHeaderButtons}>
+                  <TouchableOpacity 
+                    style={styles.musicModalCloseButton}
+                    onPress={() => {
+                      setShowMusicModal(false);
+                    }}
+                  >
+                    <Text style={styles.musicModalCloseText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Search Bar */}
+              <View style={styles.musicSearchContainer}>
+                <TextInput
+                  style={styles.musicSearchInput}
+                  placeholder="Search for bhajans, aartis, mantras..."
+                  placeholderTextColor="#999"
+                  value={musicSearchQuery}
+                  onChangeText={setMusicSearchQuery}
+                />
+                <MaterialCommunityIcons 
+                  name="magnify" 
+                  size={20} 
+                  color="#666" 
+                  style={styles.musicSearchIcon}
+                />
+              </View>
+
+              {/* Filter Buttons */}
+              <View style={styles.musicFilterContainer}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.musicFilterContent}
+                >
+                  {['All', 'Aarti', 'Bhajan', 'Chalisa', 'Katha', 'Paath / Strotam', 'Famous'].map((filter) => (
+                    <TouchableOpacity
+                      key={filter}
+                      style={[
+                        styles.musicFilterButton,
+                        selectedMusicFilter === filter && styles.musicFilterButtonActive
+                      ]}
+                      onPress={() => setSelectedMusicFilter(filter)}
+                    >
+                      <Text style={[
+                        styles.musicFilterText,
+                        selectedMusicFilter === filter && styles.musicFilterButtonActive
+                      ]}>{filter}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                
+                {/* Stop Music Button */}
+                <TouchableOpacity 
+                  style={[
+                    styles.stopMusicButton,
+                    currentlyPlaying ? styles.stopMusicButtonActive : styles.stopMusicButtonDisabled
+                  ]}
+                  onPress={stopCurrentMusic}
+                  disabled={!currentlyPlaying}
+                >
+                  <Text style={[
+                    styles.stopMusicButtonText,
+                    currentlyPlaying ? styles.stopMusicButtonTextActive : styles.stopMusicButtonTextDisabled
+                  ]}>⏹️ Stop Music</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Music List */}
+              <ScrollView 
+                style={styles.musicListContainer}
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={{ paddingBottom: 20 }}
+              >
+                {musicLoading ? (
+                  <View style={{ padding: 40, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#FF6A00" />
+                    <Text style={{ marginTop: 16, fontSize: 16, color: '#666' }}>
+                      Loading music library...
+                    </Text>
+                  </View>
+                ) : musicFiles.length === 0 ? (
+                  <View style={{ padding: 40, alignItems: 'center' }}>
+                    <MaterialCommunityIcons name="music-off" size={48} color="#ccc" />
+                    <Text style={{ marginTop: 16, fontSize: 16, color: '#666', textAlign: 'center' }}>
+                      No music files found in S3
+                    </Text>
+                    <Text style={{ marginTop: 8, fontSize: 14, color: '#999', textAlign: 'center' }}>
+                      Please upload music files to the 'music/' folder in S3
+                    </Text>
+                  </View>
+                ) : (
+                  // Filter music files based on search and category
+                  musicFiles
+                    .filter(file => {
+                      if (!file) return false;
+                      
+                      // Apply search filter
+                      if (musicSearchQuery.trim()) {
+                        const searchLower = musicSearchQuery.toLowerCase();
+                        const title = file.VideoName?.toLowerCase() || '';
+                        const deity = file.Deity?.toLowerCase() || '';
+                        const artists = file.Artists?.toLowerCase() || '';
+                        return title.includes(searchLower) || deity.includes(searchLower) || artists.includes(searchLower);
+                      }
+                      
+                      // Apply category filter
+                      if (selectedMusicFilter !== 'All') {
+                        if (selectedMusicFilter === 'Famous') {
+                          return file.famous === true;
+                        }
+                        return file.Type === selectedMusicFilter;
+                      }
+                      
+                      return true;
+                    })
+                    .map((file, index) => {
+                      const metadata = extractMusicMetadata(file);
+                      
+                      return (
+                        <TouchableOpacity key={file.avld || index} style={styles.musicItem}>
+                          <View style={styles.musicItemContent}>
+                            <Text style={styles.musicItemTitle}>{metadata.title}</Text>
+                            <Text style={styles.musicItemSubtitle}>
+                              {metadata.deity ? `${metadata.deity} • ${metadata.category}` : metadata.category}
+                            </Text>
+                            <Text style={styles.musicItemDuration}>
+                              {metadata.duration} {metadata.language ? `• ${metadata.language}` : ''}
+                            </Text>
+                          </View>
+                          <TouchableOpacity 
+                            style={styles.musicPlayButton}
+                            onPress={async () => {
+                              // If this music is already playing, stop it
+                              if (currentlyPlaying === file.avld) {
+                                await stopCurrentMusic();
+                                return;
+                              }
+
+                              // Otherwise, play this music
+                              // Set up playlist for auto-play functionality
+                              const filteredFiles = musicFiles.filter(file => {
+                                if (!file) return false;
+                                
+                                // Apply search filter
+                                if (musicSearchQuery.trim()) {
+                                  const searchLower = musicSearchQuery.trim().toLowerCase();
+                                  const title = file.VideoName?.toLowerCase() || '';
+                                  const deity = file.Deity?.toLowerCase() || '';
+                                  const artists = file.Artists?.toLowerCase() || '';
+                                  return title.includes(searchLower) || deity.includes(searchLower) || artists.includes(searchLower);
+                                }
+                                
+                                // Apply category filter
+                                if (selectedMusicFilter !== 'All') {
+                                  if (selectedMusicFilter === 'Famous') {
+                                    return file.famous === true;
+                                  }
+                                  return file.Type === selectedMusicFilter;
+                                }
+                                
+                                return true;
+                              });
+                              
+                              setCurrentPlaylist(filteredFiles);
+                              setCurrentPlaylistIndex(filteredFiles.findIndex(f => f.avld === file.avld));
+                              
+                              // Play the selected music file
+                              await playMusicFile(file);
+                            }}
+                          >
+                            {loadingMusicId === file.avld ? (
+                              <ActivityIndicator size="small" color="#FF6A00" />
+                            ) : (
+                              <MaterialCommunityIcons 
+                                name={currentlyPlaying === file.avld ? "pause-circle" : "play-circle"} 
+                                size={32} 
+                                color="#FF6A00" 
+                              />
+                            )}
+                          </TouchableOpacity>
+                        </TouchableOpacity>
+                      );
+                    })
+                )}
+              </ScrollView>
+            </View>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -2725,5 +3165,158 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 10,
     textAlign: 'center',
+  },
+  // Music Modal Styles
+  musicModalContent: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 24,
+    marginHorizontal: 20,
+    width: '90%',
+    height: '80%',
+    zIndex: 1001,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  musicModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  musicModalHeaderButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  musicModalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FF6A00',
+  },
+  musicModalCloseButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  musicModalCloseText: {
+    fontSize: 18,
+    color: '#666',
+    fontWeight: 'bold',
+  },
+  musicSearchContainer: {
+    position: 'relative',
+    marginBottom: 20,
+  },
+  musicSearchInput: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: '#333',
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  musicSearchIcon: {
+    position: 'absolute',
+    right: 16,
+    top: 12,
+  },
+  musicFilterContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  musicFilterContent: {
+    paddingRight: 16,
+  },
+  musicFilterButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: '#f8f9fa',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  musicFilterButtonActive: {
+    backgroundColor: '#FF6A00',
+    borderColor: '#FF6A00',
+  },
+  musicFilterText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
+  stopMusicButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  stopMusicButtonActive: {
+    backgroundColor: '#dc3545',
+    borderColor: '#dc3545',
+  },
+  stopMusicButtonDisabled: {
+    backgroundColor: '#f8f9fa',
+    borderColor: '#e9ecef',
+  },
+  stopMusicButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  stopMusicButtonTextActive: {
+    color: '#fff',
+  },
+  stopMusicButtonTextDisabled: {
+    color: '#999',
+  },
+  musicListContainer: {
+    flex: 1,
+  },
+  musicItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  musicItemContent: {
+    flex: 1,
+    marginRight: 16,
+  },
+  musicItemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  musicItemSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 2,
+  },
+  musicItemDuration: {
+    fontSize: 12,
+    color: '#999',
+  },
+  musicPlayButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
