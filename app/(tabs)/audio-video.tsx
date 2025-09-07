@@ -38,6 +38,49 @@ function extractYouTubeId(url: string): string | null {
 }
 
 export default function AudioVideoScreen() {
+  const { isHindi } = useLanguage();
+  
+  const translations = {
+    searchPlaceholder: { en: 'Search for music, artists, or deities...', hi: 'संगीत, कलाकार या देवताओं की खोज करें...' },
+    audio: { en: 'Audio', hi: 'ऑडियो' },
+    video: { en: 'Video', hi: 'वीडियो' },
+    stopMusic: { en: '⏹️ Stop Music', hi: '⏹️ संगीत बंद करें' },
+    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
+    noMediaFound: { en: 'No media files found. Please check the database.', hi: 'कोई मीडिया फाइल नहीं मिली। कृपया डेटाबेस जांचें।' },
+    noMatches: { en: 'No media files match your current filters. Try adjusting your search or filters.', hi: 'आपके वर्तमान फिल्टर से कोई मीडिया फाइल मेल नहीं खाती। अपनी खोज या फिल्टर को समायोजित करने का प्रयास करें।' },
+    loadingAudio: { en: 'Loading audio...', hi: 'ऑडियो लोड हो रहा है...' },
+    unsupportedMedia: { en: 'Unsupported media type', hi: 'असमर्थित मीडिया प्रकार' },
+    by: { en: 'by', hi: 'द्वारा' },
+    filterButtons: {
+      all: { en: 'All', hi: 'सभी' },
+      aarti: { en: 'Aarti', hi: 'आरती' },
+      bhajan: { en: 'Bhajan', hi: 'भजन' },
+      chalisa: { en: 'Chalisa', hi: 'चालीसा' },
+      katha: { en: 'Katha', hi: 'कथा' },
+      paath: { en: 'Paath / Strotam', hi: 'पाठ / स्तोत्र' },
+      famous: { en: 'Famous', hi: 'प्रसिद्ध' }
+    },
+    deityNames: {
+      brahma: { en: 'Brahma Ji', hi: 'ब्रह्मा जी' },
+      brihaspati: { en: 'Brihaspati Dev', hi: 'बृहस्पति देव' },
+      durga: { en: 'Durga Maa', hi: 'दुर्गा मां' },
+      ganga: { en: 'Ganga Maiya', hi: 'गंगा मैया' },
+      khatuShyam: { en: 'Khatu Shyam Ji', hi: 'खाटू श्याम जी' },
+      lakshmi: { en: 'Lakshmi Maa', hi: 'लक्ष्मी मां' },
+      kali: { en: 'Maa Kali', hi: 'मां काली' },
+      shiv: { en: 'Mahadev Shiv Ji', hi: 'महादेव शिव जी' },
+      hanuman: { en: 'Mahaveer Hanuman', hi: 'महावीर हनुमान' },
+      navgrah: { en: 'Navgrah', hi: 'नवग्रह' },
+      rahuKetu: { en: 'Rahu Ketu', hi: 'राहु केतु' },
+      saraswati: { en: 'Saraswati Maa', hi: 'सरस्वती मां' },
+      shani: { en: 'Shani Dev', hi: 'शनि देव' },
+      krishna: { en: 'Shri Krishna', hi: 'श्री कृष्ण' },
+      ram: { en: 'Shri Ram', hi: 'श्री राम' },
+      ganesh: { en: 'Vighnaharta Ganesh', hi: 'विघ्नहर्ता गणेश' },
+      vishnu: { en: 'Vishnu Bhagwan', hi: 'विष्णु भगवान' }
+    }
+  };
+
   const [modalVisible, setModalVisible] = useState(false);
   const [currentMedia, setCurrentMedia] = useState<MediaFile | null>(null);
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
@@ -433,7 +476,7 @@ export default function AudioVideoScreen() {
       <View style={styles.searchInputContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search for music, artists, or deities..."
+          placeholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en}
           placeholderTextColor="#666"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -467,7 +510,7 @@ export default function AudioVideoScreen() {
                 ]}
               />
             </LinearGradient>
-            <Text style={styles.toggleLabel}>Audio</Text>
+            <Text style={styles.toggleLabel}>{isHindi ? translations.audio.hi : translations.audio.en}</Text>
           </TouchableOpacity>
 
           {/* Video Toggle */}
@@ -488,7 +531,7 @@ export default function AudioVideoScreen() {
                 ]}
               />
             </LinearGradient>
-            <Text style={styles.toggleLabel}>Video</Text>
+            <Text style={styles.toggleLabel}>{isHindi ? translations.video.hi : translations.video.en}</Text>
           </TouchableOpacity>
         </View>
 
@@ -504,7 +547,7 @@ export default function AudioVideoScreen() {
           <Text style={[
             styles.stopMusicButtonText,
             currentlyPlaying ? styles.stopMusicButtonTextActive : styles.stopMusicButtonTextDisabled
-          ]}>⏹️ Stop Music</Text>
+          ]}>{isHindi ? translations.stopMusic.hi : translations.stopMusic.en}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -518,6 +561,7 @@ export default function AudioVideoScreen() {
         showDailyPujaButton={false}
         onSearchChange={handleSearchChange}
         showSearchBar={false}
+        showLanguageToggle={false}
       />
       
       {/* Deity Icons - Horizontal Scrollable */}
@@ -535,7 +579,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Brahma Ji')}
           >
             <Image source={require('@/assets/images/temple/Brahma1.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel} numberOfLines={1}>Brahma Ji</Text>
+            <Text style={styles.deityIconLabel} numberOfLines={1}>{isHindi ? translations.deityNames.brahma.hi : translations.deityNames.brahma.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -546,7 +590,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Brihaspati Dev')}
           >
             <Image source={require('@/assets/images/temple/BrihaspatiIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Brihaspati Dev</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.brihaspati.hi : translations.deityNames.brihaspati.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -557,7 +601,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Durga Maa')}
           >
             <Image source={require('@/assets/images/temple/Durga1.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Durga Maa</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.durga.hi : translations.deityNames.durga.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -568,7 +612,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Ganga Maiya')}
           >
             <Image source={require('@/assets/images/temple/gangaMaiyaaIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Ganga Maiya</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.ganga.hi : translations.deityNames.ganga.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -579,7 +623,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Khatu Shyam Ji')}
           >
             <Image source={require('@/assets/images/temple/KhatuShyamIcon.jpg')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Khatu Shyam Ji</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.khatuShyam.hi : translations.deityNames.khatuShyam.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -590,7 +634,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Lakshmi Maa')}
           >
             <Image source={require('@/assets/images/temple/Lakshmi1.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Lakshmi Maa</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.lakshmi.hi : translations.deityNames.lakshmi.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -601,7 +645,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Maa Kali')}
           >
             <Image source={require('@/assets/images/temple/maaKaliIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Maa Kali</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.kali.hi : translations.deityNames.kali.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -612,7 +656,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Mahadev Shiv Ji')}
           >
             <Image source={require('@/assets/images/temple/New folder/Shiv4.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Mahadev Shiv Ji</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.shiv.hi : translations.deityNames.shiv.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -623,7 +667,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Mahaveer Hanuman')}
           >
             <Image source={require('@/assets/images/temple/Hanuman1.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Mahaveer Hanuman</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.hanuman.hi : translations.deityNames.hanuman.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -634,7 +678,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Navgrah')}
           >
             <Image source={require('@/assets/images/temple/navgrahIcon.jpg')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Navgrah</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.navgrah.hi : translations.deityNames.navgrah.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -645,7 +689,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Rahu Ketu')}
           >
             <Image source={require('@/assets/images/temple/RahuKetuIcon.jpg')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Rahu Ketu</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.rahuKetu.hi : translations.deityNames.rahuKetu.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -656,7 +700,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Saraswati Maa')}
           >
             <Image source={require('@/assets/images/temple/Saraswati1.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Saraswati Maa</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.saraswati.hi : translations.deityNames.saraswati.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -667,7 +711,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Shani Dev')}
           >
             <Image source={require('@/assets/images/temple/shaniDevIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Shani Dev</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.shani.hi : translations.deityNames.shani.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -678,7 +722,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Shri Krishna')}
           >
             <Image source={require('@/assets/images/temple/Krishna1.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Shri Krishna</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.krishna.hi : translations.deityNames.krishna.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -689,7 +733,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Shri Ram')}
           >
             <Image source={require('@/assets/images/temple/Rama1.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Shri Ram</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.ram.hi : translations.deityNames.ram.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -700,7 +744,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Vighnaharta Ganesh')}
           >
             <Image source={require('@/assets/images/temple/Ganesha1.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Vighnaharta Ganesh</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.ganesh.hi : translations.deityNames.ganesh.en}</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -711,7 +755,7 @@ export default function AudioVideoScreen() {
             onPress={() => handleDeitySelect('Vishnu Bhagwan')}
           >
             <Image source={require('@/assets/images/temple/VishnuIcon.png')} style={styles.deityIconImage} resizeMode="contain" />
-            <Text style={styles.deityIconLabel}>Vishnu Bhagwan</Text>
+            <Text style={styles.deityIconLabel}>{isHindi ? translations.deityNames.vishnu.hi : translations.deityNames.vishnu.en}</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -723,20 +767,28 @@ export default function AudioVideoScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterButtonsContent}
         >
-          {['All', 'Aarti', 'Bhajan', 'Chalisa', 'Katha', 'Paath / Strotam', 'Famous'].map((filter) => (
+          {[
+            { key: 'All', label: isHindi ? translations.filterButtons.all.hi : translations.filterButtons.all.en },
+            { key: 'Aarti', label: isHindi ? translations.filterButtons.aarti.hi : translations.filterButtons.aarti.en },
+            { key: 'Bhajan', label: isHindi ? translations.filterButtons.bhajan.hi : translations.filterButtons.bhajan.en },
+            { key: 'Chalisa', label: isHindi ? translations.filterButtons.chalisa.hi : translations.filterButtons.chalisa.en },
+            { key: 'Katha', label: isHindi ? translations.filterButtons.katha.hi : translations.filterButtons.katha.en },
+            { key: 'Paath / Strotam', label: isHindi ? translations.filterButtons.paath.hi : translations.filterButtons.paath.en },
+            { key: 'Famous', label: isHindi ? translations.filterButtons.famous.hi : translations.filterButtons.famous.en }
+          ].map((filter) => (
             <TouchableOpacity
-              key={filter}
+              key={filter.key}
               style={[
                 styles.filterButton,
-                selectedFilter === filter && styles.filterButtonActive
+                selectedFilter === filter.key && styles.filterButtonActive
               ]}
-              onPress={() => setSelectedFilter(filter)}
+              onPress={() => setSelectedFilter(filter.key)}
             >
               <Text style={[
                 styles.filterButtonText,
-                selectedFilter === filter && styles.filterButtonTextActive
+                selectedFilter === filter.key && styles.filterButtonTextActive
               ]}>
-                {filter}
+                {filter.label}
               </Text>
             </TouchableOpacity>
           ))}
@@ -746,12 +798,12 @@ export default function AudioVideoScreen() {
       {/* Media List */}
       <ScrollView style={styles.content}>
          {loading ? (
-           <Text>Loading...</Text>
+           <Text>{isHindi ? translations.loading.hi : translations.loading.en}</Text>
          ) : (
            <>
              {mediaFiles.length === 0 && (
                <Text style={{ color: '#999', textAlign: 'center', marginTop: 20 }}>
-                 No media files found. Please check the database.
+                 {isHindi ? translations.noMediaFound.hi : translations.noMediaFound.en}
                </Text>
              )}
              {(() => {
@@ -797,7 +849,7 @@ export default function AudioVideoScreen() {
                if (filteredMedia.length === 0) {
                  return (
                    <Text style={{ color: '#999', textAlign: 'center', marginTop: 20 }}>
-                     No media files match your current filters. Try adjusting your search or filters.
+                     {isHindi ? translations.noMatches.hi : translations.noMatches.en}
                    </Text>
                  );
                }
@@ -845,7 +897,7 @@ export default function AudioVideoScreen() {
                          // Inline audio controls for MP3
                          <View style={styles.audioControlsInline}>
                            {currentMedia?.avld === media.avld && isLoading ? (
-                             <Text style={styles.loadingTextInline}>Loading...</Text>
+                             <Text style={styles.loadingTextInline}>{isHindi ? translations.loading.hi : translations.loading.en}</Text>
                            ) : currentMedia?.avld === media.avld && sound ? (
                              <View style={styles.audioControlsContainer}>
                                {/* Timer Display - Above Audio Controls */}
@@ -977,13 +1029,13 @@ export default function AudioVideoScreen() {
                     {currentMedia.Deity ? ` | ${currentMedia.Deity}` : ''}
                   </Text>
                   {currentMedia.Artists && (
-                    <Text style={styles.audioArtist}>by {currentMedia.Artists}</Text>
+                    <Text style={styles.audioArtist}>{isHindi ? translations.by.hi : translations.by.en} {currentMedia.Artists}</Text>
                   )}
                 </View>
                 
                 <View style={styles.audioControls}>
                   {isLoading ? (
-                    <Text style={styles.loadingText}>Loading audio...</Text>
+                    <Text style={styles.loadingText}>{isHindi ? translations.loadingAudio.hi : translations.loadingAudio.en}</Text>
                   ) : (
                     <>
                       <TouchableOpacity
@@ -1012,7 +1064,7 @@ export default function AudioVideoScreen() {
                 </View>
               </View>
             ) : (
-              <Text style={{ color: '#fff', textAlign: 'center', marginTop: 100 }}>Unsupported media type</Text>
+              <Text style={{ color: '#fff', textAlign: 'center', marginTop: 100 }}>{isHindi ? translations.unsupportedMedia.hi : translations.unsupportedMedia.en}</Text>
             )
           )}
         </View>
