@@ -351,6 +351,91 @@ export default function TestTempleScreen() {
   // State management for navigation (3 states: myTemple, todaysPuja, allTemples)
   const [currentScreen, setCurrentScreen] = useState<'myTemple' | 'todaysPuja' | 'allTemples'>('myTemple');
   
+  // All Temples data with image dimensions
+  const allTemplesData = [
+    { id: 'ganesh', name: 'Vighnaharta Ganesh', nameHindi: 'विघ्नहर्ता गणेश', icon: require('@/assets/images/AllTemples/Vighnaharta Ganesh/LordGaneshaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Vighnaharta Ganesh/LordGaneshaTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'shiv', name: 'Mahadev Shiv Ji', nameHindi: 'महादेव शिव जी', icon: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple1.png'), templeImage: require('@/assets/images/AllTemples/Mahadev Shiv Ji/MahadevTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'vishnu', name: 'Vishnu Bhagwan', nameHindi: 'विष्णु भगवान', icon: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple1.png'), templeImage: require('@/assets/images/AllTemples/Vishnu Bhagwan/LordVishnuTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'durga', name: 'Durga Maa', nameHindi: 'दुर्गा माँ', icon: require('@/assets/images/AllTemples/Durga Maa/MaaDurgaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Durga Maa/MaaDurgaTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'lakshmi', name: 'Lakshmi Maa', nameHindi: 'लक्ष्मी माँ', icon: require('@/assets/images/AllTemples/Lakshmi Maa/MaaLaxmiTemple1.png'), templeImage: require('@/assets/images/AllTemples/Lakshmi Maa/MaaLaxmiTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'hanuman', name: 'Mahaveer Hanuman', nameHindi: 'महावीर हनुमान', icon: require('@/assets/images/AllTemples/Mahaveer Hanuman/VeerHanumanTemple1.png'), templeImage: require('@/assets/images/AllTemples/Mahaveer Hanuman/VeerHanumanTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'ram', name: 'Shri Ram', nameHindi: 'श्री राम', icon: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple1.png'), templeImage: require('@/assets/images/AllTemples/Shri Ram/ShreeRamTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'krishna', name: 'Shri Krishna', nameHindi: 'श्री कृष्ण', icon: require('@/assets/images/AllTemples/Shri Krishna/SreeKrishnaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Shri Krishna/SreeKrishnaTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'balgopal', name: 'Bal Gopal', nameHindi: 'बाल गोपाल', icon: require('@/assets/images/AllTemples/Bal Gopal/BalGopalIcon.png'), templeImage: require('@/assets/images/AllTemples/Bal Gopal/BalGopalTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'kali', name: 'Kali Maa', nameHindi: 'काली माँ', icon: require('@/assets/images/AllTemples/Mahakali Maa/MaaKaliTemple1.png'), templeImage: require('@/assets/images/AllTemples/Mahakali Maa/MaaKaliTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'saraswati', name: 'Saraswati Maa', nameHindi: 'सरस्वती माँ', icon: require('@/assets/images/AllTemples/Saraswati Maa/MaaSaraswatiTemple1.png'), templeImage: require('@/assets/images/AllTemples/Saraswati Maa/MaaSaraswatiTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'ganga', name: 'Ganga Maiyaa', nameHindi: 'गंगा मैया', icon: require('@/assets/images/AllTemples/Ganga Maiyaa/MaaGangaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Ganga Maiyaa/MaaGangaTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'shani', name: 'Shani Dev', nameHindi: 'शनि देव', icon: require('@/assets/images/AllTemples/Shani Dev/ShaniDevTemple1.png'), templeImage: require('@/assets/images/AllTemples/Shani Dev/ShaniDevTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'surya', name: 'Surya Dev', nameHindi: 'सूर्य देव', icon: require('@/assets/images/AllTemples/Surya Dev/LordSuryaTemple1.png'), templeImage: require('@/assets/images/AllTemples/Surya Dev/LordSuryaTemple1.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'tirupati', name: 'Tirupati Balaji', nameHindi: 'तिरुपति बालाजी', icon: require('@/assets/images/AllTemples/Tirupati Balaji/TirupatiBalajiTemple.png'), templeImage: require('@/assets/images/AllTemples/Tirupati Balaji/TirupatiBalajiTemple.png'), imageWidth: 0, imageHeight: 0 },
+    { id: 'brihaspati', name: 'Brihaspati Dev', nameHindi: 'बृहस्पति देव', icon: require('@/assets/images/AllTemples/Brihaspati Dev/BrihaspatiTemple.png'), templeImage: require('@/assets/images/AllTemples/Brihaspati Dev/BrihaspatiTemple.png'), imageWidth: 0, imageHeight: 0 },
+  ];
+  
+  // State for selected temple in All Temples mode
+  const [selectedAllTemple, setSelectedAllTemple] = useState<string>('ganesh'); // Default to first temple
+  
+  // State to store actual image dimensions
+  const [templeImageDimensions, setTempleImageDimensions] = useState<{[key: string]: {width: number, height: number}}>({});
+  
+  // Function to load actual image dimensions
+  const loadTempleImageDimensions = async () => {
+    const dimensions: {[key: string]: {width: number, height: number}} = {};
+    
+    for (const temple of allTemplesData) {
+      try {
+        const result = await new Promise<{width: number, height: number}>((resolve, reject) => {
+          Image.getSize(
+            Image.resolveAssetSource(temple.templeImage).uri,
+            (width, height) => resolve({width, height}),
+            (error) => reject(error)
+          );
+        });
+        
+        dimensions[temple.id] = result;
+      } catch (error) {
+        // Fallback to default dimensions
+        dimensions[temple.id] = {width: 400, height: 600};
+      }
+    }
+    
+    setTempleImageDimensions(dimensions);
+  };
+  
+  // Function to calculate optimal image size and position
+  const calculateImageDimensions = (imageWidth: number, imageHeight: number, imageName: string) => {
+    const maxWidth = screenWidth * 0.98; // 98% of screen width
+    const maxHeight = screenHeight * 0.45; // 45% of screen height
+    
+    // Calculate scale factor based on height (45% of screen height)
+    const heightScale = maxHeight / imageHeight;
+    
+    // Calculate what the width would be with this scale
+    const scaledWidth = imageWidth * heightScale;
+    
+    let finalWidth: number;
+    let finalHeight: number;
+    
+    if (scaledWidth <= maxWidth) {
+      // Use height-based scaling
+      finalWidth = scaledWidth;
+      finalHeight = maxHeight;
+    } else {
+      // Use width-based scaling
+      const widthScale = maxWidth / imageWidth;
+      finalWidth = maxWidth;
+      finalHeight = imageHeight * widthScale;
+    }
+    
+    // Calculate position: (76% of screenHeight) - ImageHeight
+    const topPosition = (screenHeight * 0.76) - finalHeight;
+    
+    return {
+      width: finalWidth,
+      height: finalHeight,
+      top: topPosition,
+    };
+  };
+  
   // State management for temple configuration
   const [modal, setModal] = useState<null | 'temple' | 'deities' | 'background' | 'statues'>(null);
   const [selectedStyle, setSelectedStyle] = useState<string>(templeStyles[0].id);
@@ -1287,6 +1372,7 @@ export default function TestTempleScreen() {
     };
     
     loadTempleDimensions();
+    loadTempleImageDimensions();
   }, []);
 
   // Debug: Log screen dimensions and z-index values when screen changes
@@ -1303,6 +1389,7 @@ export default function TestTempleScreen() {
     console.log('🎯 Temple Bells should be visible (zIndex: 199)');
     console.log('🌸 Flower Animation should be visible (zIndex: 215)');
     console.log('🧪 TEST: Deities moved +1000px X position in Today\'s Puja & All Temples modes');
+    
   }, [currentScreen]);
 
   return (
@@ -1322,6 +1409,76 @@ export default function TestTempleScreen() {
       <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 220 }}>
       <ArchSVG width={screenWidth} height={(screenWidth * 295) / 393} style={styles.archImage} />
       </View>
+      
+      {/* All Temples View - Show when in All Temples mode */}
+      {currentScreen === 'allTemples' && (
+        <View style={styles.allTemplesContainer}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.allTemplesScrollContent}
+          >
+            {allTemplesData.map((temple, index) => (
+              <View key={temple.id} style={styles.allTemplesIconWrapper}>
+                <TouchableOpacity 
+                  style={styles.allTemplesIcon}
+                  onPress={() => {
+                    setSelectedAllTemple(temple.id);
+                    console.log(`Selected temple: ${temple.name}`);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Image
+                    source={temple.icon}
+                    style={styles.allTemplesIconImage}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+                <Text style={styles.allTemplesIconLabel} numberOfLines={2}>
+                  {isHindi ? temple.nameHindi : temple.name}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+          
+          {/* Current Deity Name */}
+          <View style={styles.currentDeityNameContainer}>
+            <Text style={styles.currentDeityName}>
+              {(() => {
+                const selectedTemple = allTemplesData.find(t => t.id === selectedAllTemple);
+                return selectedTemple ? (isHindi ? selectedTemple.nameHindi : selectedTemple.name) : '';
+              })()}
+            </Text>
+          </View>
+        </View>
+      )}
+      
+      {/* All Temples Temple Display - Show when in All Temples mode */}
+      {currentScreen === 'allTemples' && (() => {
+        const selectedTemple = allTemplesData.find(t => t.id === selectedAllTemple);
+        if (!selectedTemple) return null;
+        
+        const actualDimensions = templeImageDimensions[selectedTemple.id];
+        if (!actualDimensions) {
+          return null;
+        }
+        
+        const dimensions = calculateImageDimensions(actualDimensions.width, actualDimensions.height, selectedTemple.name);
+        
+        return (
+          <View style={styles.allTemplesTempleDisplay}>
+            <Image
+              source={selectedTemple.templeImage}
+              style={[styles.allTemplesTempleImage, {
+                width: dimensions.width,
+                height: dimensions.height,
+                top: dimensions.top,
+              }]}
+              resizeMode="contain"
+            />
+          </View>
+        );
+      })()}
       
       {/* Temple Display - Hide when in All Temples or Today's Puja mode */}
       {currentScreen === 'myTemple' && templeDimensions[selectedStyle] && (
@@ -2575,6 +2732,81 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 220,
+  },
+  // All Temples Styles
+  allTemplesContainer: {
+    position: 'absolute',
+    top: 30,
+    left: 0,
+    right: 0,
+    height: 120, // Increased height to accommodate deity name
+    zIndex: 250, // Higher than arch to be visible
+  },
+  allTemplesScrollContent: {
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  allTemplesIconWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 8,
+    width: 60,
+  },
+  allTemplesIcon: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  allTemplesIconImage: {
+    width: 32,
+    height: 32,
+  },
+  allTemplesIconLabel: {
+    fontSize: 10,
+    color: '#000',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 4,
+    lineHeight: 12,
+  },
+  allTemplesTempleDisplay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    zIndex: 212, // As requested
+  },
+  allTemplesTempleImage: {
+    position: 'absolute',
+    // Dimensions and position will be calculated dynamically
+  },
+  currentDeityNameContainer: {
+    position: 'absolute',
+    top: 90, // Below the icons
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  currentDeityName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   templeDisplay: {
     position: 'absolute',
