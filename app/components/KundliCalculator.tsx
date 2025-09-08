@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getEndpointUrl, getAuthHeaders, API_CONFIG } from '../../constants/ApiConfig';
+import { useLanguage } from '@/contexts/LanguageContext';
 
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
   
@@ -51,6 +52,8 @@ import { getEndpointUrl, getAuthHeaders, API_CONFIG } from '../../constants/ApiC
 }
 
 const KundliCalculator: React.FC = () => {
+  const { isHindi } = useLanguage();
+  
   // Provider states
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
@@ -70,6 +73,32 @@ const KundliCalculator: React.FC = () => {
   // Date picker states
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  const translations = {
+    title: { en: 'Kundli Calculator', hi: 'कुंडली कैलकुलेटर' },
+    loading: { en: 'Loading providers...', hi: 'प्रदाता लोड हो रहे हैं...' },
+    noProviders: { en: 'No providers available', hi: 'कोई प्रदाता उपलब्ध नहीं' },
+    bookAppointment: { en: 'Book Appointment', hi: 'अपॉइंटमेंट बुक करें' },
+    about: { en: 'About', hi: 'के बारे में' },
+    close: { en: 'Close', hi: 'बंद करें' },
+    bookingForm: { en: 'Booking Form', hi: 'बुकिंग फॉर्म' },
+    name: { en: 'Name', hi: 'नाम' },
+    phone: { en: 'Phone', hi: 'फोन' },
+    date: { en: 'Date', hi: 'तारीख' },
+    timeSlot: { en: 'Time Slot', hi: 'समय स्लॉट' },
+    submit: { en: 'Submit', hi: 'जमा करें' },
+    submitting: { en: 'Submitting...', hi: 'जमा किया जा रहा है...' },
+    success: { en: 'Success', hi: 'सफलता' },
+    error: { en: 'Error', hi: 'त्रुटि' },
+    bookingSuccess: { en: 'Booking submitted successfully!', hi: 'बुकिंग सफलतापूर्वक जमा हो गई!' },
+    bookingError: { en: 'Failed to submit booking', hi: 'बुकिंग जमा करने में विफल' },
+    validation: {
+      nameRequired: { en: 'Name is required', hi: 'नाम आवश्यक है' },
+      phoneRequired: { en: 'Phone is required', hi: 'फोन आवश्यक है' },
+      dateRequired: { en: 'Date is required', hi: 'तारीख आवश्यक है' },
+      timeSlotRequired: { en: 'Time slot is required', hi: 'समय स्लॉट आवश्यक है' }
+    }
+  };
 
   // Fetch providers from API
   const fetchProviders = async () => {
@@ -292,11 +321,11 @@ const KundliCalculator: React.FC = () => {
          {loadingProviders ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FFA040" />
-            <Text style={styles.loadingText}>Loading providers...</Text>
+            <Text style={styles.loadingText}>{isHindi ? translations.loading.hi : translations.loading.en}</Text>
           </View>
         ) : providers.length === 0 ? (
           <View style={styles.noProvidersContainer}>
-            <Text style={styles.noProvidersText}>No Kundli service providers available at the moment.</Text>
+            <Text style={styles.noProvidersText}>{isHindi ? translations.noProviders.hi : translations.noProviders.en}</Text>
           </View>
         ) : (
                      <View style={styles.providersGrid}>
@@ -374,7 +403,7 @@ const KundliCalculator: React.FC = () => {
                         style={styles.bookButton}
                         onPress={() => openBookingModal(provider)}
                       >
-                        <Text style={styles.bookButtonText}>Book Appointment</Text>
+                        <Text style={styles.bookButtonText}>{isHindi ? translations.bookAppointment.hi : translations.bookAppointment.en}</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -482,7 +511,7 @@ const KundliCalculator: React.FC = () => {
              {selectedProvider && (
                <>
                  <View style={styles.modalHeader}>
-                   <Text style={styles.modalTitle}>Book Appointment</Text>
+                   <Text style={styles.modalTitle}>{isHindi ? translations.bookingForm.hi : translations.bookingForm.en}</Text>
                    <TouchableOpacity
                      style={styles.closeButton}
                      onPress={() => setShowBookingModal(false)}
@@ -557,7 +586,7 @@ const KundliCalculator: React.FC = () => {
                         disabled={isSubmitting}
                       >
                         <Text style={styles.submitButtonText}>
-                          {isSubmitting ? 'Booking...' : 'Book Appointment'}
+                          {isSubmitting ? (isHindi ? translations.submitting.hi : translations.submitting.en) : (isHindi ? translations.bookAppointment.hi : translations.bookAppointment.en)}
                         </Text>
                       </TouchableOpacity>
                       

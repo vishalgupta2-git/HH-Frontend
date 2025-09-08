@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DAILY_PUJA_VISIT_KEY = 'dailyPujaVisitDate';
+const DAILY_PUJA_COMPLETED_KEY = 'dailyPujaCompletedDate';
 
 // Check if user has visited daily puja screen today
 export const hasVisitedDailyPujaToday = async (): Promise<boolean> => {
@@ -23,6 +24,30 @@ export const markDailyPujaVisited = async (): Promise<void> => {
     await AsyncStorage.setItem(DAILY_PUJA_VISIT_KEY, today);
   } catch (error) {
     console.error('Error marking daily puja visit:', error);
+  }
+};
+
+// Check if user has completed daily puja today
+export const hasCompletedDailyPujaToday = async (): Promise<boolean> => {
+  try {
+    const completedDate = await AsyncStorage.getItem(DAILY_PUJA_COMPLETED_KEY);
+    if (!completedDate) return false;
+    
+    const today = new Date().toISOString().split('T')[0];
+    return completedDate === today;
+  } catch (error) {
+    console.error('Error checking daily puja completion:', error);
+    return false;
+  }
+};
+
+// Mark that user has completed daily puja today
+export const markDailyPujaCompleted = async (): Promise<void> => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    await AsyncStorage.setItem(DAILY_PUJA_COMPLETED_KEY, today);
+  } catch (error) {
+    console.error('Error marking daily puja completed:', error);
   }
 };
 

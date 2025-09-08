@@ -554,7 +554,7 @@ const PujaGuidanceScreen: React.FC = () => {
                   </TouchableOpacity>
                 </View>
                 
-                <View style={styles.bookingContent}>
+                <ScrollView style={styles.bookingContent} contentContainerStyle={styles.bookingContentContainer} showsVerticalScrollIndicator={false}>
                   <Text style={styles.bookingWelcomeText}>
                     {isHindi ? translations.thankYouText.hi : translations.thankYouText.en}
                   </Text>
@@ -624,10 +624,10 @@ const PujaGuidanceScreen: React.FC = () => {
                       </Text>
                     </TouchableOpacity>
                     
-                    {/* 100px white space at the end */}
+                    {/* 300px white space at the end */}
                     <View style={styles.modalBottomSpacing} />
                   </View>
-                </View>
+                </ScrollView>
               </>
             )}
           </View>
@@ -1012,6 +1012,9 @@ const styles = StyleSheet.create({
   },
   // Booking modal styles
   bookingContent: {
+    // ScrollView container styles
+  },
+  bookingContentContainer: {
     alignItems: 'center',
   },
   bookingProviderName: {
@@ -1155,7 +1158,7 @@ const styles = StyleSheet.create({
      lineHeight: 24,
   },
   modalBottomSpacing: {
-    height: 100,
+    height: 300,
   },
 }); 
 

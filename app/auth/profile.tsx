@@ -378,7 +378,7 @@ export default function ProfileScreen() {
     }
   };
 
-  if (loading) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>Loading...</Text></View>;
+  if (loading) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>{isHindi ? translations.loading.hi : translations.loading.en}</Text></View>;
 
   return (
     <View style={styles.container}>
@@ -402,22 +402,22 @@ export default function ProfileScreen() {
             <Ionicons name="arrow-undo" size={24} color="#666" />
           </TouchableOpacity>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>Profile</Text>
+            <Text style={styles.title}>{isHindi ? translations.title.hi : translations.title.en}</Text>
           </View>
         </View>
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 400 }} keyboardShouldPersistTaps="handled">
-          <Text style={styles.sectionLabel}>Contact Information</Text>
+          <Text style={styles.sectionLabel}>{isHindi ? translations.contactInformation.hi : translations.contactInformation.en}</Text>
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder="First Name *"
+              placeholder={isHindi ? translations.fields.firstName.hi : translations.fields.firstName.en}
               placeholderTextColor="#888"
               value={firstName}
               onChangeText={handleFirstNameChange}
             />
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder="Last Name"
+              placeholder={isHindi ? translations.fields.lastName.hi : translations.fields.lastName.en}
               placeholderTextColor="#888"
               value={lastName}
               onChangeText={setLastName}
@@ -426,7 +426,7 @@ export default function ProfileScreen() {
           {firstNameError ? <Text style={styles.errorText}>{firstNameError}</Text> : null}
           <TextInput
             style={[styles.input, { backgroundColor: '#EEE', color: '#AAA' }]}
-            placeholder="E-mail ID (cannot be changed)"
+            placeholder={isHindi ? translations.fields.emailId.hi : translations.fields.emailId.en}
             placeholderTextColor="#888"
             value={email}
             editable={false}
@@ -437,7 +437,7 @@ export default function ProfileScreen() {
             </View>
             <TextInput
               style={styles.phoneInput}
-              placeholder="Enter Your Phone No"
+              placeholder={isHindi ? translations.fields.phoneNumber.hi : translations.fields.phoneNumber.en}
               placeholderTextColor="#888"
               value={phone}
               onChangeText={handlePhoneChange}
@@ -447,19 +447,19 @@ export default function ProfileScreen() {
           </View>
           {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
           
-          <Text style={styles.sectionLabel}>About Yourself</Text>
+          <Text style={styles.sectionLabel}>{isHindi ? translations.aboutYourself.hi : translations.aboutYourself.en}</Text>
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
             <TouchableOpacity
               style={[styles.dropdown, { flex: 1 }]}
               onPress={() => setGenderDropdownOpen(true)}
             >
-              <Text style={styles.dropdownText}>{gender || 'Gender'}</Text>
+              <Text style={styles.dropdownText}>{gender || (isHindi ? translations.fields.gender.hi : translations.fields.gender.en)}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.dropdown, { flex: 1 }]}
               onPress={() => setRashiDropdownOpen(true)}
             >
-              <Text style={styles.dropdownText}>{rashi || 'Rashi'}</Text>
+              <Text style={styles.dropdownText}>{rashi || (isHindi ? translations.fields.rashi.hi : translations.fields.rashi.en)}</Text>
             </TouchableOpacity>
           </View>
           
@@ -475,7 +475,11 @@ export default function ProfileScreen() {
                 <View style={styles.modalDropdownList}>
                   {genderOptions.map(option => (
                     <TouchableOpacity key={option} onPress={() => { setGender(option); setGenderDropdownOpen(false); }}>
-                      <Text style={styles.dropdownText}>{option}</Text>
+                      <Text style={styles.dropdownText}>
+                        {option === 'Male' ? (isHindi ? translations.options.male.hi : translations.options.male.en) :
+                         option === 'Female' ? (isHindi ? translations.options.female.hi : translations.options.female.en) :
+                         option === 'Other' ? (isHindi ? translations.options.other.hi : translations.options.other.en) : option}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -530,7 +534,7 @@ export default function ProfileScreen() {
           
                      {/* Date-Time Picker */}
                        <TouchableOpacity style={styles.input} onPress={() => setShowDateTime(true)}>
-              <Text style={styles.dropdownText}>{dob ? dob.toLocaleString() : 'Select Date & Time of Birth'}</Text>
+              <Text style={styles.dropdownText}>{dob ? dob.toLocaleString() : (isHindi ? translations.fields.dateTimeOfBirth.hi : translations.fields.dateTimeOfBirth.en)}</Text>
             </TouchableOpacity>
           
                      {/* Date of Birth Picker */}
@@ -666,33 +670,33 @@ export default function ProfileScreen() {
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder="Place of Birth"
+              placeholder={isHindi ? translations.fields.placeOfBirth.hi : translations.fields.placeOfBirth.en}
               placeholderTextColor="#888"
               value={placeOfBirth}
               onChangeText={setPlaceOfBirth}
             />
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder="Gotra"
+              placeholder={isHindi ? translations.fields.gotra.hi : translations.fields.gotra.en}
               placeholderTextColor="#888"
               value={gotra}
               onChangeText={setGotra}
             />
           </View>
           
-          <Text style={styles.sectionLabel}>Your Family</Text>
+          <Text style={styles.sectionLabel}>{isHindi ? translations.yourFamily.hi : translations.yourFamily.en}</Text>
           
           {/* Parents Divider */}
           <View style={styles.dividerContainer}>
-            <Text style={styles.dividerText}>Parents</Text>
+            <Text style={styles.dividerText}>{isHindi ? translations.parents.hi : translations.parents.en}</Text>
             <View style={styles.dividerLine} />
           </View>
           
           {/* Mother Information */}
-          <Text style={styles.subsectionLabel}>Mother's Information</Text>
+          <Text style={styles.subsectionLabel}>{isHindi ? translations.mothersInformation.hi : translations.mothersInformation.en}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Mother's Name"
+            placeholder={isHindi ? translations.fields.mothersName.hi : translations.fields.mothersName.en}
             placeholderTextColor="#888"
             value={motherName}
             onChangeText={setMotherName}
@@ -713,32 +717,32 @@ export default function ProfileScreen() {
               <View style={[styles.checkbox, motherDeceased && styles.checkboxSelected]}>
                 {motherDeceased && <Text style={styles.checkboxText}>✓</Text>}
               </View>
-              <Text style={styles.checkboxLabel}>Deceased</Text>
+              <Text style={styles.checkboxLabel}>{isHindi ? translations.labels.deceased.hi : translations.labels.deceased.en}</Text>
             </TouchableOpacity>
           </View>
           
           <Text style={styles.dateLabel}>
-            {motherDeceased ? 'Death Anniversary' : 'Date of Birth'}
+            {motherDeceased ? (isHindi ? translations.labels.deathAnniversary.hi : translations.labels.deathAnniversary.en) : (isHindi ? translations.labels.dateOfBirth.hi : translations.labels.dateOfBirth.en)}
           </Text>
           {!motherDeceased ? (
             <TouchableOpacity style={styles.input} onPress={() => setShowMotherDob(true)}>
               <Text style={styles.dropdownText}>
-                {motherDob ? motherDob.toLocaleDateString() : 'Select Date of Birth'}
+                {motherDob ? motherDob.toLocaleDateString() : (isHindi ? translations.labels.selectDateOfBirth.hi : translations.labels.selectDateOfBirth.en)}
               </Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.input} onPress={() => setShowMotherDeathAnniversary(true)}>
               <Text style={styles.dropdownText}>
-                {motherDeathAnniversary ? motherDeathAnniversary.toLocaleDateString() : 'Select Death Anniversary'}
+                {motherDeathAnniversary ? motherDeathAnniversary.toLocaleDateString() : (isHindi ? translations.labels.selectDeathAnniversary.hi : translations.labels.selectDeathAnniversary.en)}
               </Text>
             </TouchableOpacity>
           )}
           
           {/* Father Information */}
-          <Text style={styles.subsectionLabel}>Father's Information</Text>
+          <Text style={styles.subsectionLabel}>{isHindi ? translations.fathersInformation.hi : translations.fathersInformation.en}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Father's Name"
+            placeholder={isHindi ? translations.fields.fathersName.hi : translations.fields.fathersName.en}
             placeholderTextColor="#888"
             value={fatherName}
             onChangeText={setFatherName}

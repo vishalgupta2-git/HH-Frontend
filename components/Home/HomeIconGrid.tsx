@@ -41,7 +41,7 @@ const getIcons = (isHindi: boolean) => [
     route: '/screens/special-puja'
   },
   { 
-    label: isHindi ? 'पेशेवर पूजा' : 'Professional Puja', 
+    label: isHindi ? 'प्रोफेशनल पूजा' : 'Professional Puja', 
     image: require('@/assets/images/icons/home page icons/professional-puja.jpg'),
     route: '/screens/professional-puja'
   },

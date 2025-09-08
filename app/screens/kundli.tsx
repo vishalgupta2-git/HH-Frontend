@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
 import KundliCalculator from '../components/KundliCalculator';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
 const CARD_TOP = 250;
@@ -10,6 +11,12 @@ const CARD_MARGIN_TOP = -40;
 export const options = { headerShown: false };
 
 export default function KundliScreen() {
+  const { isHindi } = useLanguage();
+  
+  const translations = {
+    headerTitle: { en: 'Hindu Heritage', hi: 'द हिंदू हेरिटेज' }
+  };
+
   return (
     <View style={styles.container}>
       <LinearGradient
@@ -19,7 +26,7 @@ export default function KundliScreen() {
         end={{ x: 1, y: 0 }}
       >
         <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>Hindu Heritage</Text>
+        <Text style={styles.headerTitle}>{isHindi ? translations.headerTitle.hi : translations.headerTitle.en}</Text>
         <Image
           source={require('@/assets/images/temple illustration.png')}
           style={styles.temple}

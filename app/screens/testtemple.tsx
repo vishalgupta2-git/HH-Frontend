@@ -9,6 +9,7 @@ import axios from 'axios';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { loadTempleConfigurationNewStyle, saveTempleConfigurationNewStyle, checkUserAuthentication } from '@/utils/templeUtils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { markDailyPujaCompleted } from '@/utils/dailyPujaUtils';
 
 export const options = { headerShown: false };
 
@@ -1156,7 +1157,7 @@ export default function TestTempleScreen() {
   };
 
   // Stop puja ritual function
-  const stopPujaRitual = () => {
+  const stopPujaRitual = async () => {
     if (!isPujaRitualActive) return;
     
     
@@ -1182,6 +1183,13 @@ export default function TestTempleScreen() {
     
     // Close modal immediately
     setIsPujaRitualActive(false);
+    
+    // Mark daily puja as completed when manually stopped
+    try {
+      await markDailyPujaCompleted();
+    } catch (error) {
+      console.error('Error marking daily puja completed:', error);
+    }
   };
 
   // Perform Puja Ritual with elliptical thali motion
@@ -1215,7 +1223,7 @@ export default function TestTempleScreen() {
           useNativeDriver: true,
         });
         
-        animation.start(({ finished }) => {
+        animation.start(async ({ finished }) => {
           
           // Stop flower dropping when thali motion completes
           if (flowerIntervalRef.current) {
@@ -1236,6 +1244,13 @@ export default function TestTempleScreen() {
           
           // Close modal immediately
           setIsPujaRitualActive(false);
+          
+          // Mark daily puja as completed
+          try {
+            await markDailyPujaCompleted();
+          } catch (error) {
+            console.error('Error marking daily puja completed:', error);
+          }
         });
       };
       

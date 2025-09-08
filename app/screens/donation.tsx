@@ -1156,16 +1156,17 @@ export default function DonationScreen() {
               </TouchableOpacity>
     </View>
             
-            <Text style={{
-              fontSize: 16,
-              color: '#333',
-              textAlign: 'center',
-              marginBottom: 20,
-              lineHeight: 24
-            }}>
-              {isHindi ? `${selectedItem?.name} ${translations.modal.thankYouSupporting.hi}` : `${translations.modal.thankYouSupporting.en} ${selectedItem?.name}`}
-              {'\n'}{isHindi ? translations.modal.contactInfo.hi : translations.modal.contactInfo.en}
-            </Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={{
+                fontSize: 16,
+                color: '#333',
+                textAlign: 'center',
+                marginBottom: 20,
+                lineHeight: 24
+              }}>
+                {isHindi ? `${selectedItem?.name} ${translations.modal.thankYouSupporting.hi}` : `${translations.modal.thankYouSupporting.en} ${selectedItem?.name}`}
+                {'\n'}{isHindi ? translations.modal.contactInfo.hi : translations.modal.contactInfo.en}
+              </Text>
             
             <View style={{ marginBottom: 15 }}>
               <Text style={{
@@ -1445,6 +1446,10 @@ export default function DonationScreen() {
                 {isHindi ? translations.donationForm.submit.hi : translations.donationForm.submit.en}
               </Text>
             </TouchableOpacity>
+            
+            {/* 300px white space at the end */}
+            <View style={{ height: 300 }} />
+            </ScrollView>
           </View>
         </View>
       </Modal>

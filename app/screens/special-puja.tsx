@@ -491,11 +491,12 @@ export default function SpecialPujaScreen() {
             <TouchableOpacity style={styles.closeButton} onPress={() => setBookingModalVisible(false)}>
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
-            <View style={styles.modalTitleContainer}>
-              <Text style={styles.modalTitlePrefix}>Thanks for requesting </Text>
-              <Text style={styles.modalTitleBold}>"{currentPuja?.pujaName}"</Text>
-              <Text style={styles.modalTitleSuffix}> please enter the following to let us contact you</Text>
-            </View>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.modalTitleContainer}>
+                <Text style={styles.modalTitlePrefix}>Thanks for requesting </Text>
+                <Text style={styles.modalTitleBold}>"{currentPuja?.pujaName}"</Text>
+                <Text style={styles.modalTitleSuffix}> please enter the following to let us contact you</Text>
+              </View>
             <TextInput
               style={styles.modalInput}
               placeholder="Full Name"
@@ -544,6 +545,10 @@ export default function SpecialPujaScreen() {
                 <Text style={styles.modalCancelText}>{isHindi ? translations.bookingForm.cancel.hi : translations.bookingForm.cancel.en}</Text>
               </TouchableOpacity>
             </View>
+            
+            {/* 300px white space at the end */}
+            <View style={{ height: 300 }} />
+            </ScrollView>
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>

@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { Audio } from 'expo-av';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
-import { hasVisitedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUtils';
+import { hasVisitedDailyPujaToday, hasCompletedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUtils';
 import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
 import DailyPujaReminderModal from '@/components/Home/DailyPujaReminderModal';
 import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
@@ -233,8 +233,8 @@ export default function RootLayout() {
       const firstName = await getUserFirstName();
       setUserFirstName(firstName);
       
-      // Check if user has visited daily puja today
-      const hasVisitedToday = await hasVisitedDailyPujaToday();
+      // Check if user has completed daily puja today
+      const hasCompletedToday = await hasCompletedDailyPujaToday();
       
       // Check for upcoming special pujas
       const specialPujas = await getUpcomingSpecialPujas();
@@ -242,12 +242,12 @@ export default function RootLayout() {
       
               // Show modals with delay to ensure app is fully loaded
         setTimeout(() => {
-          // Show daily puja modal first if user hasn't visited today
-          if (!hasVisitedToday) {
+          // Show daily puja modal first if user hasn't completed today
+          if (!hasCompletedToday) {
             setShowDailyPujaModal(true);
             setDailyPujaShown(true);
           } else {
-            // If daily puja already done, show special puja modal immediately
+            // If daily puja already completed, show special puja modal immediately
             if (specialPujas.length > 0) {
               setShowSpecialPujaModal(true);
             }
