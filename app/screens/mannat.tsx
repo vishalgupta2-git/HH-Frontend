@@ -100,38 +100,30 @@ export default function MannatScreen() {
   // Fetch temples and charities data
   const fetchData = async () => {
     try {
-      console.log('🔍 Starting to fetch data...');
       setLoading(true);
       setError(null);
       
       const endpoint = getEndpointUrl('TEMPLES_CHARITIES');
-      console.log('🔍 Fetching from endpoint:', endpoint);
       
       const response = await axios.get(endpoint, {
         headers: getAuthHeaders(),
         params: { limit: 100, offset: 0 }
       });
 
-      console.log('🔍 Response received:', response.status);
-      console.log('🔍 Response data:', response.data);
 
       if (response.data.success) {
         const fetchedData = response.data.data || [];
-        console.log('🔍 Fetched data count:', fetchedData.length);
-        console.log('🔍 First item sample:', fetchedData[0]);
         setData(fetchedData);
         setFilteredData(fetchedData);
       } else {
         throw new Error(response.data.error || 'Failed to fetch data');
       }
     } catch (error: any) {
-      console.error('❌ Error fetching data:', error);
       setError(error.message || 'Failed to fetch data');
       setData([]);
       setFilteredData([]);
     } finally {
       setLoading(false);
-      console.log('🔍 Loading finished, data count:', data.length);
     }
   };
 
@@ -159,8 +151,6 @@ export default function MannatScreen() {
 
   // Monitor modal state changes
   useEffect(() => {
-    console.log('🔍 Modal state changed:', showModal);
-    console.log('🔍 Selected item changed:', selectedItem?.name || 'None');
   }, [showModal, selectedItem]);
 
   // Handle refresh
@@ -172,25 +162,17 @@ export default function MannatScreen() {
 
   // Handle tile click - open modal with temple information
   const handleTileClick = (item: TempleCharity) => {
-    console.log('🔍 Tile clicked:', item.name);
-    console.log('🔍 About text:', item.about);
-    console.log('🔍 Full item data:', JSON.stringify(item, null, 2));
     setSelectedItem(item);
     setShowModal(true);
-    console.log('🔍 Modal state set to true');
   };
 
   // Handle mannat button click
   const handleMannatButtonClick = () => {
-    console.log('🔍 Mannat button clicked');
-    console.log('🔍 Selected item for mannat:', selectedItem?.name);
-    console.log('🔍 Setting showMannatModal to true');
     setShowMannatModal(true);
   };
 
   // Handle modal close
   const handleCloseModal = () => {
-    console.log('🔍 Closing modal');
     setShowModal(false);
     setSelectedItem(null);
   };
@@ -331,9 +313,6 @@ export default function MannatScreen() {
         onRequestClose={handleCloseModal}
         statusBarTranslucent={true}
         onShow={() => {
-          console.log('🔍 Modal onShow triggered');
-          console.log('🔍 showModal state:', showModal);
-          console.log('🔍 selectedItem:', selectedItem);
         }}
       >
         <View style={styles.modalOverlay}>
@@ -383,10 +362,6 @@ export default function MannatScreen() {
         animationType="slide"
         onRequestClose={() => setShowMannatModal(false)}
         onShow={() => {
-          console.log('🔍 Mannat Modal onShow triggered');
-          console.log('🔍 showMannatModal state:', showMannatModal);
-          console.log('🔍 selectedItem:', selectedItem?.name);
-          console.log('🔍 mannatForm state:', JSON.stringify(mannatForm, null, 2));
         }}
       >
         <View style={styles.mannatModalOverlay}>
@@ -406,10 +381,8 @@ export default function MannatScreen() {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.mannatModalScrollContent}
               onContentSizeChange={(width, height) => {
-                console.log('🔍 ScrollView content size changed:', { width, height });
               }}
               onLayout={(event) => {
-                console.log('🔍 ScrollView layout:', event.nativeEvent.layout);
               }}
             >
               <Text style={styles.mannatModalSubtitle}>
@@ -600,7 +573,6 @@ export default function MannatScreen() {
                       Alert.alert('Error', errorData.error || 'Failed to submit mannat. Please try again.');
                     }
                   } catch (error) {
-                    console.error('Error submitting mannat:', error);
                     Alert.alert('Error', 'Failed to submit mannat. Please try again.');
                   }
                 }}

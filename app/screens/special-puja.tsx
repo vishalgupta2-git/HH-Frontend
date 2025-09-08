@@ -112,8 +112,6 @@ export default function SpecialPujaScreen() {
         // Filtered special puja data processed
         setPujaFiles(filteredData);
       } catch (e: any) {
-        console.error('❌ Error fetching special pujas:', e.message);
-        console.error('❌ Error response:', e.response?.data);
         Alert.alert(isHindi ? 'विशेष पूजाएं लोड करने में विफल' : 'Failed to fetch special pujas', e.response?.data?.error || e.message);
       } finally {
         setLoading(false);
@@ -168,8 +166,6 @@ export default function SpecialPujaScreen() {
       setPhone('');
       Alert.alert(isHindi ? 'सफलता' : 'Success', isHindi ? translations.success.hi : translations.success.en);
     } catch (err: any) {
-      console.error('❌ Booking error:', err.message);
-      console.error('❌ Booking error response:', err.response?.data);
       Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? `बुकिंग सेव करने में विफल: ${err.response?.data?.error || err.message}` : `Failed to save booking: ${err.response?.data?.error || err.message}`);
     }
   };

@@ -193,7 +193,6 @@ const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) 
         style={{ width: '100%', height: '100%' }}
         resizeMode="contain"
         onLoad={handleImageLoad}
-        onError={(error) => console.error('🔍 [DEBUG] PujaThali1.png failed to load:', error)}
       />
     </Animated.View>
   );
@@ -362,7 +361,6 @@ export default function DailyPujaCustomTemple() {
           playThroughEarpieceAndroid: false,
         });
       } catch (error) {
-        console.error('Failed to configure audio session:', error);
       }
     };
 
@@ -376,7 +374,6 @@ export default function DailyPujaCustomTemple() {
         // Resume audio if it was playing before going to background
         if (sound && currentlyPlaying) {
           sound.playAsync().catch(error => {
-            console.error('Error resuming audio:', error);
           });
         }
       }
@@ -396,7 +393,6 @@ export default function DailyPujaCustomTemple() {
 
     // Prevent multiple simultaneous sounds
     if (isPlayingGhanti) {
-      console.log('🔔 [WELCOME] Already playing ghanti sound, skipping...');
       return;
     }
 
@@ -411,10 +407,8 @@ export default function DailyPujaCustomTemple() {
           if (status.isLoaded) {
             await ghantiSound.stopAsync();
             await ghantiSound.unloadAsync();
-            console.log('🔔 [WELCOME] Stopped existing ghanti sound');
           }
         } catch (error) {
-          console.error('🔔 [WELCOME] Error stopping existing ghanti sound:', error);
         }
       }
 
@@ -448,13 +442,11 @@ export default function DailyPujaCustomTemple() {
           setGhantiSound(null);
           setIsPlayingGhanti(false);
         } catch (error) {
-          console.error('🔔 [WELCOME] Error stopping welcome bell:', error);
           setIsPlayingGhanti(false);
         }
       }, 2000);
 
     } catch (error) {
-      console.error('🔔 [WELCOME] Error playing welcome bell sound:', error);
       setIsPlayingGhanti(false);
       // Don't set sound state if there's an error
     }
@@ -523,11 +515,9 @@ export default function DailyPujaCustomTemple() {
               await newGhantiSound.stopAsync();
               await newGhantiSound.unloadAsync();
             } catch (error) {
-              console.error('Error stopping ghanti sound:', error);
             }
           }, 3000);
         } catch (error) {
-          console.error('Error playing ghanti sound:', error);
         }
       };
 
@@ -1181,7 +1171,6 @@ export default function DailyPujaCustomTemple() {
     const preloadAllAssets = async () => {
       // Prevent multiple executions
       if (assetPreloading) {
-        console.log('Preloading already in progress, skipping...');
         return;
       }
       
@@ -1830,7 +1819,6 @@ export default function DailyPujaCustomTemple() {
   const swingBothBells = async () => {
     // Prevent multiple simultaneous sounds
     if (isPlayingGhanti) {
-      console.log('🔔 [BELL] Already playing ghanti sound, skipping...');
       return;
     }
 
@@ -1868,12 +1856,9 @@ export default function DailyPujaCustomTemple() {
             if (status.isLoaded) {
               await ghantiSound.stopAsync();
               await ghantiSound.unloadAsync();
-              console.log('🔔 [BELL] Successfully stopped and unloaded ghanti sound');
             } else {
-              console.log('🔔 [BELL] Ghanti sound was not loaded, skipping stop/unload');
             }
           } catch (error) {
-            console.error('🔔 [BELL] Error stopping ghanti sound:', error);
             // Try to unload anyway to clean up the state
             try {
               await ghantiSound.unloadAsync();

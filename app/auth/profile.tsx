@@ -139,7 +139,12 @@ export default function ProfileScreen() {
       widowDate: { en: 'Select Widow Date', hi: 'विधवा/विधुर की तारीख चुनें' },
       spousesDateOfBirth: { en: 'Spouse\'s Date of Birth', hi: 'पति/पत्नी की जन्म तिथि' },
       selectDateOfBirth: { en: 'Select Date of Birth', hi: 'जन्म तिथि चुनें' },
-      selectDeathAnniversary: { en: 'Select Death Anniversary', hi: 'पुण्यतिथि चुनें' }
+      selectDeathAnniversary: { en: 'Select Death Anniversary', hi: 'पुण्यतिथि चुनें' },
+      spouseAndKids: { en: 'Spouse and Kids', hi: 'पति/पत्नी और बच्चे' },
+      maritalStatus: { en: 'Marital Status', hi: 'वैवाहिक स्थिति' },
+      doYouHaveKids: { en: 'Do you have kids?', hi: 'क्या आपके बच्चे हैं?' },
+      yes: { en: 'Yes', hi: 'हाँ' },
+      no: { en: 'No', hi: 'नहीं' }
     },
     kids: {
       kid: { en: 'Kid', hi: 'बच्चा' },
@@ -524,7 +529,12 @@ export default function ProfileScreen() {
                       if (option !== 'Married') setAnniversaryDate(null);
                       if (option !== 'Widowed') setWidowDate(null);
                     }}>
-                      <Text style={styles.dropdownText}>{option}</Text>
+                      <Text style={styles.dropdownText}>
+                        {option === 'Single' ? (isHindi ? translations.options.single.hi : translations.options.single.en) :
+                         option === 'Married' ? (isHindi ? translations.options.married.hi : translations.options.married.en) :
+                         option === 'Divorced' ? (isHindi ? translations.options.divorced.hi : translations.options.divorced.en) :
+                         option === 'Widowed' ? (isHindi ? translations.options.widowed.hi : translations.options.widowed.en) : option}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -603,7 +613,11 @@ export default function ProfileScreen() {
                       }
                       setShowKidGender(null);
                     }}>
-                      <Text style={styles.dropdownText}>{option}</Text>
+                      <Text style={styles.dropdownText}>
+                        {option === 'Male' ? (isHindi ? translations.options.male.hi : translations.options.male.en) :
+                         option === 'Female' ? (isHindi ? translations.options.female.hi : translations.options.female.en) :
+                         option === 'Other' ? (isHindi ? translations.options.other.hi : translations.options.other.en) : option}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -763,40 +777,40 @@ export default function ProfileScreen() {
               <View style={[styles.checkbox, fatherDeceased && styles.checkboxSelected]}>
                 {fatherDeceased && <Text style={styles.checkboxText}>✓</Text>}
               </View>
-              <Text style={styles.checkboxLabel}>Deceased</Text>
+              <Text style={styles.checkboxLabel}>{isHindi ? translations.labels.deceased.hi : translations.labels.deceased.en}</Text>
             </TouchableOpacity>
           </View>
           
           <Text style={styles.dateLabel}>
-            {fatherDeceased ? 'Death Anniversary' : 'Date of Birth'}
+            {fatherDeceased ? (isHindi ? translations.labels.deathAnniversary.hi : translations.labels.deathAnniversary.en) : (isHindi ? translations.labels.dateOfBirth.hi : translations.labels.dateOfBirth.en)}
           </Text>
           {!fatherDeceased ? (
             <TouchableOpacity style={styles.input} onPress={() => setShowFatherDob(true)}>
               <Text style={styles.dropdownText}>
-                {fatherDob ? fatherDob.toLocaleDateString() : 'Select Date of Birth'}
+                {fatherDob ? fatherDob.toLocaleDateString() : (isHindi ? translations.labels.selectDateOfBirth.hi : translations.labels.selectDateOfBirth.en)}
               </Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity style={styles.input} onPress={() => setShowFatherDeathAnniversary(true)}>
               <Text style={styles.dropdownText}>
-                {fatherDeathAnniversary ? fatherDeathAnniversary.toLocaleDateString() : 'Select Death Anniversary'}
+                {fatherDeathAnniversary ? fatherDeathAnniversary.toLocaleDateString() : (isHindi ? translations.labels.selectDeathAnniversary.hi : translations.labels.selectDeathAnniversary.en)}
               </Text>
             </TouchableOpacity>
           )}
           
           {/* Spouse and Kids Divider */}
           <View style={styles.dividerContainer}>
-            <Text style={styles.dividerText}>Spouse and Kids</Text>
+            <Text style={styles.dividerText}>{isHindi ? translations.labels.spouseAndKids.hi : translations.labels.spouseAndKids.en}</Text>
             <View style={styles.dividerLine} />
           </View>
           
           {/* Marital Status */}
-          <Text style={styles.subsectionLabel}>Marital Status</Text>
+          <Text style={styles.subsectionLabel}>{isHindi ? translations.maritalStatus.hi : translations.maritalStatus.en}</Text>
           <TouchableOpacity
             style={styles.dropdown}
             onPress={() => setMaritalStatusDropdownOpen(true)}
           >
-            <Text style={styles.dropdownText}>{maritalStatus || 'Marital Status'}</Text>
+            <Text style={styles.dropdownText}>{maritalStatus || (isHindi ? translations.labels.maritalStatus.hi : translations.labels.maritalStatus.en)}</Text>
           </TouchableOpacity>
           
           {/* Anniversary Date - Only show if Married */}
@@ -820,7 +834,7 @@ export default function ProfileScreen() {
           {/* Spouse Information - Only show if Married */}
           {maritalStatus === 'Married' && (
             <>
-              <Text style={styles.subsectionLabel}>Spouse's Information</Text>
+              <Text style={styles.subsectionLabel}>{isHindi ? translations.spousesInformation.hi : translations.spousesInformation.en}</Text>
               <TextInput
                 style={styles.input}
                 placeholder="Spouse's Name"
@@ -838,7 +852,7 @@ export default function ProfileScreen() {
           )}
           
           {/* Do you have kids? */}
-          <Text style={styles.questionLabel}>Do you have kids?</Text>
+          <Text style={styles.questionLabel}>{isHindi ? translations.labels.doYouHaveKids.hi : translations.labels.doYouHaveKids.en}</Text>
           <View style={styles.radioGroup}>
             <TouchableOpacity 
               style={styles.radioOption} 
@@ -847,7 +861,7 @@ export default function ProfileScreen() {
               <View style={[styles.radioButton, hasKids === true && styles.radioButtonSelected]}>
                 {hasKids === true && <View style={styles.radioButtonInner} />}
               </View>
-              <Text style={styles.radioText}>Yes</Text>
+              <Text style={styles.radioText}>{isHindi ? translations.labels.yes.hi : translations.labels.yes.en}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.radioOption} 
@@ -856,24 +870,24 @@ export default function ProfileScreen() {
               <View style={[styles.radioButton, hasKids === false && styles.radioButtonSelected]}>
                 {hasKids === false && <View style={styles.radioButtonInner} />}
               </View>
-              <Text style={styles.radioText}>No</Text>
+              <Text style={styles.radioText}>{isHindi ? translations.labels.no.hi : translations.labels.no.en}</Text>
             </TouchableOpacity>
           </View>
           
           {/* Kids Information - Only show if hasKids is true */}
           {hasKids === true && (
             <View style={styles.kidsSection}>
-              <Text style={styles.subsectionLabel}>Kids Information</Text>
+              <Text style={styles.subsectionLabel}>{isHindi ? translations.kidsInformation.hi : translations.kidsInformation.en}</Text>
               {kids.map((kid, index) => (
                 <View key={index} style={styles.kidCard}>
                   <View style={styles.kidHeader}>
-                    <Text style={styles.kidTitle}>Kid {index + 1}</Text>
+                    <Text style={styles.kidTitle}>{isHindi ? translations.kids.kid.hi : translations.kids.kid.en} {index + 1}</Text>
                     {kids.length > 1 && (
                       <TouchableOpacity 
                         style={styles.removeKidButton}
                         onPress={() => removeKid(index)}
                       >
-                        <Text style={styles.removeKidText}>Remove</Text>
+                        <Text style={styles.removeKidText}>{isHindi ? translations.kids.remove.hi : translations.kids.remove.en}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -915,13 +929,13 @@ export default function ProfileScreen() {
               ))}
               
               <TouchableOpacity style={styles.addKidTextButton} onPress={addKid}>
-                <Text style={styles.addKidTextLink}>+ Add Another Kid</Text>
+                <Text style={styles.addKidTextLink}>{isHindi ? translations.kids.addAnotherKid.hi : translations.kids.addAnotherKid.en}</Text>
               </TouchableOpacity>
             </View>
           )}
           
           <TouchableOpacity style={styles.button} onPress={handleSave}>
-            <Text style={styles.buttonText}>Save Profile</Text>
+            <Text style={styles.buttonText}>{isHindi ? translations.saveProfile.hi : translations.saveProfile.en}</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>

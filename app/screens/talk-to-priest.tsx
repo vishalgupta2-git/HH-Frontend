@@ -82,21 +82,14 @@ const TalkToPriestScreen: React.FC = () => {
       const apiUrl = getEndpointUrl('PROVIDERS') + '/kundli';
       const headers = getAuthHeaders();
       
-      console.log('🔍 [PROVIDERS] Starting to fetch providers...');
-      console.log('🔍 [PROVIDERS] Full API URL:', apiUrl);
-      console.log('🔍 [PROVIDERS] Base URL from config:', API_CONFIG.BASE_URL);
-      console.log('🔍 [PROVIDERS] Headers:', headers);
       
       const response = await fetch(apiUrl, {
         method: 'GET',
         headers: headers,
       });
       
-      console.log('🔍 [PROVIDERS] Response status:', response.status);
-      console.log('🔍 [PROVIDERS] Response headers:', response.headers);
       
       const responseText = await response.text();
-      console.log('🔍 [PROVIDERS] Raw response text:', responseText);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}, body: ${responseText}`);
@@ -105,29 +98,16 @@ const TalkToPriestScreen: React.FC = () => {
       let data;
       try {
         data = JSON.parse(responseText);
-        console.log('🔍 [PROVIDERS] Parsed JSON data:', data);
       } catch (parseError: any) {
-        console.error('🔍 [PROVIDERS] JSON parse error:', parseError);
-        console.error('🔍 [PROVIDERS] Response that failed to parse:', responseText);
         throw new Error(`Failed to parse JSON response: ${parseError.message}`);
       }
       
       if (data.success) {
-        console.log('🔍 [PROVIDERS] Success! Providers count:', data.providers?.length || 0);
-        console.log('🔍 [PROVIDERS] First provider data:', data.providers?.[0]);
-        console.log('🔍 [PROVIDERS] All provider fields:', data.providers?.[0] ? Object.keys(data.providers[0]) : []);
         setProviders(data.providers || []);
       } else {
-        console.error('🔍 [PROVIDERS] API returned success: false:', data.error);
         throw new Error(`API error: ${data.error}`);
       }
     } catch (error: any) {
-      console.error('🔍 [PROVIDERS] Error fetching providers:', error);
-      console.error('🔍 [PROVIDERS] Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
       // Don't set any providers - let the UI show the error state
       setProviders([]);
     } finally {
@@ -137,7 +117,6 @@ const TalkToPriestScreen: React.FC = () => {
 
   // Load providers on component mount
   useEffect(() => {
-    console.log('🔍 [PROVIDERS] Component mounted, fetching providers...');
     fetchProviders();
   }, []);
 
@@ -216,12 +195,7 @@ const TalkToPriestScreen: React.FC = () => {
         timeslotToContact: bookingTimeSlot,
       };
       
-      console.log('🔍 [BOOKING] Phone number:', bookingPhone);
-      console.log('🔍 [BOOKING] Date before conversion:', bookingDate);
-      console.log('🔍 [BOOKING] Date after conversion:', new Date(bookingDate).toISOString());
       
-      console.log('🔍 [BOOKING] Submitting booking with data:', requestBody);
-      console.log('🔍 [BOOKING] API URL:', `${API_CONFIG.BASE_URL}/api/bookings`);
       
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/bookings`, {
         method: 'POST',
@@ -232,21 +206,16 @@ const TalkToPriestScreen: React.FC = () => {
         body: JSON.stringify(requestBody),
       });
       
-      console.log('🔍 [BOOKING] Response status:', response.status);
-      console.log('🔍 [BOOKING] Response headers:', response.headers);
       
       const responseText = await response.text();
-      console.log('🔍 [BOOKING] Raw response:', responseText);
       
       if (response.ok) {
         let responseData;
         try {
           responseData = JSON.parse(responseText);
         } catch (parseError) {
-          console.error('🔍 [BOOKING] Failed to parse response:', parseError);
         }
         
-        console.log('🔍 [BOOKING] Parsed response data:', responseData);
         
         Alert.alert(
           'Booking Successful!',
@@ -266,11 +235,9 @@ const TalkToPriestScreen: React.FC = () => {
           ]
         );
       } else {
-        console.error('🔍 [BOOKING] HTTP error:', response.status, responseText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
-      console.error('🔍 [BOOKING] Error submitting booking:', error);
       Alert.alert('Error', 'Failed to book appointment. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -336,7 +303,6 @@ const TalkToPriestScreen: React.FC = () => {
                           style={styles.providerImage}
                           resizeMode="cover"
                           onError={() => {
-                            console.log(`🔍 [PROVIDERS] Image failed to load for provider: ${provider.providerId}, showing placeholder`);
                           }}
                         />
                       ) : null}
@@ -434,7 +400,6 @@ const TalkToPriestScreen: React.FC = () => {
                         style={styles.providerDetailImage}
                         resizeMode="cover"
                         onError={() => {
-                          console.log(`🔍 [PROVIDERS] Detail image failed to load for provider: ${selectedProvider.providerId}, showing placeholder`);
                         }}
                       />
                     ) : null}

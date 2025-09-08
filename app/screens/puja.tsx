@@ -65,7 +65,9 @@ export default function PujaScreen() {
     loadingPujas: { en: 'Loading upcoming pujas...', hi: 'आगामी पूजाएं लोड हो रही हैं...' },
     noItemsToDisplay: { en: 'No items to display', hi: 'दिखाने के लिए कोई आइटम नहीं' },
     error: { en: 'Error:', hi: 'त्रुटि:' },
-    noMatches: { en: 'No pujas match your current filters. Try adjusting your search or filters.', hi: 'आपके वर्तमान फिल्टर से कोई पूजा मेल नहीं खाती। अपनी खोज या फिल्टर को समायोजित करने का प्रयास करें।' }
+    noMatches: { en: 'No pujas match your current filters. Try adjusting your search or filters.', hi: 'आपके वर्तमान फिल्टर से कोई पूजा मेल नहीं खाती। अपनी खोज या फिल्टर को समायोजित करने का प्रयास करें।' },
+    showingPujas: { en: 'Showing {count} pujas', hi: '{count} पूजाएं दिखाई जा रही हैं' },
+    showingPujasOfTotal: { en: 'Showing {count} of {total} total pujas', hi: 'कुल {total} में से {count} पूजाएं दिखाई जा रही हैं' }
   };
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,12 +115,6 @@ export default function PujaScreen() {
         const fetchedData = response.data.data || [];
         const newPagination = response.data.pagination;
         
-        console.log('🔍 PujaScreen: API response received:', {
-          success: response.data.success,
-          dataLength: fetchedData.length,
-          pagination: newPagination,
-          status: response.status
-        });
         
         if (append) {
           // Append new data for pagination
@@ -311,7 +307,6 @@ export default function PujaScreen() {
                                     style={styles.pricingButton}
                                     onPress={() => {
                                       // Handle booking for this specific option
-                                      console.log(`Book ${offeringName} - ${option} for ₹${price}`);
                                     }}
                                   >
                                     <Text style={styles.pricingButtonText}>
@@ -393,9 +388,15 @@ export default function PujaScreen() {
         <View style={styles.statsContainer}>
           <Text style={styles.statsText}>
             {pagination.total > 0 
-              ? `Showing ${filteredData.length} of ${pagination.total} total pujas`
+              ? (isHindi 
+                  ? translations.showingPujasOfTotal.hi.replace('{count}', filteredData.length.toString()).replace('{total}', pagination.total.toString())
+                  : translations.showingPujasOfTotal.en.replace('{count}', filteredData.length.toString()).replace('{total}', pagination.total.toString())
+                )
               : filteredData.length > 0 
-                ? `Showing ${filteredData.length} pujas`
+                ? (isHindi 
+                    ? translations.showingPujas.hi.replace('{count}', filteredData.length.toString())
+                    : translations.showingPujas.en.replace('{count}', filteredData.length.toString())
+                  )
                 : (isHindi ? 'कोई पूजा नहीं मिली' : 'No pujas found')
             }
           </Text>

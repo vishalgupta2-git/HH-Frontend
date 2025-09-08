@@ -94,7 +94,6 @@ export default function MyBookingsScreen() {
         router.push('/auth/login');
       }
     } catch (error) {
-      console.error('Error checking user access:', error);
       Alert.alert('Error', 'Unable to verify user access.');
       router.back();
     }
@@ -124,13 +123,9 @@ export default function MyBookingsScreen() {
         Alert.alert('Error', response.data.message || 'Failed to fetch bookings');
       }
     } catch (error) {
-      console.error('Error fetching bookings:', error);
       if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
         Alert.alert('Error', `Server error: ${error.response.data?.error || error.response.statusText}`);
       } else if (error.request) {
-        console.error('Request error:', error.request);
         Alert.alert('Error', 'Network error: Unable to connect to server');
       } else {
         Alert.alert('Error', 'Failed to load bookings. Please try again.');

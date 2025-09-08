@@ -64,7 +64,6 @@ export default function HomeIconGrid({ isHindi = false }: { isHindi?: boolean })
             style={styles.tile}
             activeOpacity={0.8}
             onPress={() => {
-              console.log('Icon pressed:', item.label, 'Route:', item.route);
               router.push(item.route as any);
             }}
           >

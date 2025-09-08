@@ -677,7 +677,6 @@ export default function TestTempleScreen() {
           playThroughEarpieceAndroid: false,
         });
       } catch (error) {
-        console.error('Failed to configure audio session:', error);
       }
     };
 
@@ -691,7 +690,6 @@ export default function TestTempleScreen() {
         // Resume audio if it was playing before going to background
         if (sound && currentlyPlaying) {
           sound.playAsync().catch(error => {
-            console.error('Error resuming audio:', error);
           });
         }
       }
@@ -752,7 +750,6 @@ export default function TestTempleScreen() {
         setMusicFiles([]);
       }
     } catch (error) {
-      console.error('❌ [MUSIC] Error fetching music files:', error);
       setMusicFiles([]);
     } finally {
       setMusicLoading(false);
@@ -775,7 +772,6 @@ export default function TestTempleScreen() {
     try {
       // Validate file object
       if (!file || !file.avld) {
-        console.error('❌ [MUSIC] Invalid file object:', file);
         return;
       }
 
@@ -791,15 +787,11 @@ export default function TestTempleScreen() {
             await sound.unloadAsync();
           }
         } catch (error) {
-          console.error('❌ [MUSIC] Error stopping current music:', error);
         }
       }
 
       // Use the Link field from the API response (contains S3 filename)
       if (!metadata.link) {
-        console.error('❌ [MUSIC] No audio link available for file:', file.avld);
-        console.error('❌ [MUSIC] File object:', file);
-        console.error('❌ [MUSIC] Metadata:', metadata);
         setLoadingMusicId(null);
         return;
       }
@@ -850,9 +842,6 @@ export default function TestTempleScreen() {
       });
 
     } catch (error) {
-      console.error('❌ [MUSIC] Error playing music:', error);
-      console.error('❌ [MUSIC] File that failed:', file);
-      console.error('❌ [MUSIC] Error details:', error instanceof Error ? error.message : String(error), error instanceof Error ? error.stack : 'No stack trace');
       
       // Don't show alert for background music restart attempts
       if (!file.avld.includes('background')) {
@@ -873,13 +862,11 @@ export default function TestTempleScreen() {
             await sound.unloadAsync();
           }
         } catch (error) {
-          console.error('❌ [MUSIC] Error stopping music:', error);
         }
       }
       setSound(null);
       setCurrentlyPlaying(null);
     } catch (error) {
-      console.error('❌ [MUSIC] Error in stopCurrentMusic:', error);
     }
   };
 
@@ -1043,10 +1030,8 @@ export default function TestTempleScreen() {
           setShowSaveMessage(false);
         }, 2000);
       } else {
-        console.error('Failed to save temple configuration');
       }
     } catch (error) {
-      console.error('Error saving temple configuration:', error);
     }
   };
 
@@ -1079,7 +1064,6 @@ export default function TestTempleScreen() {
         bellSoundRef.current = sound;
       }
     } catch (error) {
-      console.error('Error preloading bell sound:', error);
     }
   }, []);
 
@@ -1090,7 +1074,6 @@ export default function TestTempleScreen() {
         conchSoundRef.current = sound;
       }
     } catch (error) {
-      console.error('Error preloading conch sound:', error);
     }
   }, []);
 
@@ -1151,7 +1134,6 @@ export default function TestTempleScreen() {
       // Finish
       setTimeout(() => setIsBellAnimationRunning(false), 1200);
     } catch (e) {
-      console.error('Error triggering bells:', e);
       setIsBellAnimationRunning(false);
     }
   };
@@ -1188,7 +1170,6 @@ export default function TestTempleScreen() {
     try {
       await markDailyPujaCompleted();
     } catch (error) {
-      console.error('Error marking daily puja completed:', error);
     }
   };
 
@@ -1249,7 +1230,6 @@ export default function TestTempleScreen() {
           try {
             await markDailyPujaCompleted();
           } catch (error) {
-            console.error('Error marking daily puja completed:', error);
           }
         });
       };
@@ -1339,7 +1319,6 @@ export default function TestTempleScreen() {
       startFlowerDropping();
       
     } catch (error) {
-      console.error('Error in perform puja ritual:', error);
       setIsPujaRitualActive(false);
     }
   };
@@ -1525,7 +1504,6 @@ export default function TestTempleScreen() {
           }
         }
       } catch (error) {
-        console.error('Error loading temple configuration:', error);
       } finally {
         setBackgroundLoading(false);
       }
@@ -1565,7 +1543,6 @@ export default function TestTempleScreen() {
           dimensions[temple.id] = dims;
           
         } catch (error) {
-          console.error(`Failed to get dimensions for ${temple.id}:`, error);
         }
       }
       

@@ -166,7 +166,6 @@ export default function DonationScreen() {
 
   // Debug search query changes
   useEffect(() => {
-    console.log('🔍 Search query changed:', searchQuery);
   }, [searchQuery]);
 
   // Fetch temples and charities data - always use base endpoint
@@ -218,7 +217,6 @@ export default function DonationScreen() {
 
   // Filter data based on search query and toggle states - LOCAL FILTERING
   useEffect(() => {
-    console.log('🔍 Filtering data:', { searchQuery, templesEnabled, charitiesEnabled, dataLength: data.length });
     
     let filtered = data;
 
@@ -236,7 +234,6 @@ export default function DonationScreen() {
     // Filter by search query - LOCAL SEARCH
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      console.log('🔍 Applying search filter:', query);
       
       filtered = filtered.filter(item =>
         item.name?.toLowerCase().includes(query) ||
@@ -248,7 +245,6 @@ export default function DonationScreen() {
         item.zip_pinCode?.includes(query)
       );
       
-      console.log('🔍 Search results:', filtered.length);
     }
 
     setFilteredData(filtered);
@@ -351,7 +347,6 @@ export default function DonationScreen() {
           });
         }
       } catch (err: any) {
-        console.error('Error fetching temples:', err);
         // Fallback to local filtering
       } finally {
         setLoading(false);
@@ -374,7 +369,6 @@ export default function DonationScreen() {
           });
         }
       } catch (err: any) {
-        console.error('Error fetching charities:', err);
         // Fallback to local filtering
       } finally {
         setLoading(false);
@@ -407,7 +401,6 @@ export default function DonationScreen() {
           });
         }
       } catch (err: any) {
-        console.error('Error fetching charities:', err);
         // Fallback to local filtering
       } finally {
         setLoading(false);
@@ -429,7 +422,6 @@ export default function DonationScreen() {
           });
         }
       } catch (err: any) {
-        console.error('Error fetching temples:', err);
         // Fallback to local filtering
       } finally {
         setLoading(false);
@@ -464,7 +456,6 @@ export default function DonationScreen() {
         });
       }
     } catch (err: any) {
-      console.error('Error fetching by location:', err);
       // Fallback to local filtering
     } finally {
       setLoading(false);
@@ -1433,7 +1424,6 @@ export default function DonationScreen() {
                     Alert.alert(isHindi ? 'त्रुटि' : 'Error', errorData.error || (isHindi ? 'दान जमा करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to submit donation. Please try again.'));
                   }
                 } catch (error) {
-                  console.error('Error submitting donation:', error);
                   Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'दान जमा करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to submit donation. Please try again.');
                 }
               }}
