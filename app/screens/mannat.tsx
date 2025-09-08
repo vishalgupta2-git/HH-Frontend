@@ -15,6 +15,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getEndpointUrl, getAuthHeaders, API_CONFIG } from '@/constants/ApiConfig';
 import axios from 'axios';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Time slots for mannat
 const timeSlots = [
@@ -58,12 +59,42 @@ interface TempleCharity {
 }
 
 export default function MannatScreen() {
+  const { isHindi } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [data, setData] = useState<TempleCharity[]>([]);
   const [filteredData, setFilteredData] = useState<TempleCharity[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const translations = {
+    searchPlaceholder: { en: "Search for 'Temples'", hi: "'मंदिरों' की खोज करें" },
+    loadingTemples: { en: 'Loading temples and charities...', hi: 'मंदिर और धर्मार्थ संस्थाएं लोड हो रही हैं...' },
+    retry: { en: 'Retry', hi: 'पुनः प्रयास करें' },
+    noResults: { en: 'No results found for', hi: 'के लिए कोई परिणाम नहीं मिला' },
+    noTemplesAvailable: { en: 'No temples or charities available', hi: 'कोई मंदिर या धर्मार्थ संस्थाएं उपलब्ध नहीं' },
+    about: { en: 'About', hi: 'के बारे में' },
+    noDescription: { en: 'No description available for this location.', hi: 'इस स्थान के लिए कोई विवरण उपलब्ध नहीं।' },
+    makeAMannat: { en: 'Make a Mannat', hi: 'मन्नत मांगें' },
+    mannatForm: { en: 'Mannat Form', hi: 'मन्नत फॉर्म' },
+    makeYourMannat: { en: 'Make your mannat (wish) at', hi: 'अपनी मन्नत (इच्छा) मांगें' },
+    pleaseProvideInfo: { en: 'Please provide the following information for us to contact you', hi: 'कृपया हमसे संपर्क करने के लिए निम्नलिखित जानकारी प्रदान करें' },
+    nameMin3: { en: 'Name (Min 3 characters) *', hi: 'नाम (न्यूनतम 3 अक्षर) *' },
+    enterYourName: { en: 'Enter your name', hi: 'अपना नाम दर्ज करें' },
+    phoneNumber: { en: 'Phone Number *', hi: 'फोन नंबर *' },
+    enterPhoneNumber: { en: 'Enter your phone number', hi: 'अपना फोन नंबर दर्ज करें' },
+    preferredDate: { en: 'Preferred Date *', hi: 'पसंदीदा तारीख *' },
+    selectDate: { en: 'Select Date', hi: 'तारीख चुनें' },
+    timeSlot: { en: 'Time Slot *', hi: 'समय स्लॉट *' },
+    selectTimeSlot: { en: 'Select Time Slot', hi: 'समय स्लॉट चुनें' },
+    mannatOption: { en: 'Mannat Option *', hi: 'मन्नत विकल्प *' },
+    selectMannatOption: { en: 'Select Mannat Option', hi: 'मन्नत विकल्प चुनें' },
+    yourWish: { en: 'Your Wish (Optional)', hi: 'आपकी इच्छा (वैकल्पिक)' },
+    enterYourWish: { en: 'Enter your wish', hi: 'अपनी इच्छा दर्ज करें' },
+    submitMannat: { en: 'Submit Mannat', hi: 'मन्नत जमा करें' },
+    submitting: { en: 'Submitting...', hi: 'जमा किया जा रहा है...' },
+    mannatAction: { en: 'Mannat Action', hi: 'मन्नत कार्य' }
+  };
   
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -182,13 +213,14 @@ export default function MannatScreen() {
     return (
       <View style={styles.container}>
         <HomeHeader 
-          searchPlaceholder="Search for 'Temples'" 
+          searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en} 
           showDailyPujaButton={false} 
+          showLanguageToggle={false}
           onSearchChange={setSearchQuery}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6A00" />
-          <Text style={styles.loadingText}>Loading temples and charities...</Text>
+          <Text style={styles.loadingText}>{isHindi ? translations.loadingTemples.hi : translations.loadingTemples.en}</Text>
         </View>
       </View>
     );
@@ -199,14 +231,15 @@ export default function MannatScreen() {
     return (
       <View style={styles.container}>
         <HomeHeader 
-          searchPlaceholder="Search for 'Temples'" 
+          searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en} 
           showDailyPujaButton={false} 
+          showLanguageToggle={false}
           onSearchChange={setSearchQuery}
         />
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => fetchData()}>
-            <Text style={styles.retryButtonText}>Retry</Text>
+            <Text style={styles.retryButtonText}>{isHindi ? translations.retry.hi : translations.retry.en}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -218,15 +251,16 @@ export default function MannatScreen() {
   return (
     <View style={styles.container}>
         <HomeHeader 
-          searchPlaceholder="Search for 'Temples'" 
+          searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en} 
           showDailyPujaButton={false} 
+          showLanguageToggle={false}
           onSearchChange={setSearchQuery}
         />
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>
             {searchQuery.trim() !== '' 
-              ? `No results found for "${searchQuery}"`
-              : 'No temples or charities available'
+              ? `${isHindi ? translations.noResults.hi : translations.noResults.en} "${searchQuery}"`
+              : (isHindi ? translations.noTemplesAvailable.hi : translations.noTemplesAvailable.en)
             }
           </Text>
       </View>
@@ -334,9 +368,9 @@ export default function MannatScreen() {
             <View style={styles.modalBody}>
               {/* About Section */}
               <View style={styles.aboutSection}>
-                <Text style={styles.aboutTitle}>About</Text>
+                <Text style={styles.aboutTitle}>{isHindi ? translations.about.hi : translations.about.en}</Text>
                 <Text style={styles.aboutText}>
-                  {selectedItem?.about || 'No description available for this location.'}
+                  {selectedItem?.about || (isHindi ? translations.noDescription.hi : translations.noDescription.en)}
                 </Text>
               </View>
 
@@ -347,7 +381,7 @@ export default function MannatScreen() {
                 activeOpacity={0.8}
               >
                 <Text style={styles.mannatButtonText}>
-                  Make a Mannat
+                  {isHindi ? translations.makeAMannat.hi : translations.makeAMannat.en}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -367,7 +401,7 @@ export default function MannatScreen() {
         <View style={styles.mannatModalOverlay}>
           <View style={styles.mannatModalContent}>
             <View style={styles.mannatModalHeader}>
-              <Text style={styles.mannatModalTitle}>Mannat Form</Text>
+              <Text style={styles.mannatModalTitle}>{isHindi ? translations.mannatForm.hi : translations.mannatForm.en}</Text>
               <TouchableOpacity
                 style={styles.mannatCloseButton}
                 onPress={() => setShowMannatModal(false)}
@@ -386,40 +420,40 @@ export default function MannatScreen() {
               }}
             >
               <Text style={styles.mannatModalSubtitle}>
-                Make your mannat (wish) at {selectedItem?.name}
-                {'\n'}Please provide the following information for us to contact you
+                {isHindi ? translations.makeYourMannat.hi : translations.makeYourMannat.en} {selectedItem?.name}
+                {'\n'}{isHindi ? translations.pleaseProvideInfo.hi : translations.pleaseProvideInfo.en}
               </Text>
               
               <View style={styles.mannatFormField}>
-                <Text style={styles.mannatFormLabel}>Name (Min 3 characters) *</Text>
+                <Text style={styles.mannatFormLabel}>{isHindi ? translations.nameMin3.hi : translations.nameMin3.en}</Text>
                 <TextInput
                   style={styles.mannatFormInput}
                   value={mannatForm.name}
                   onChangeText={(text) => setMannatForm(prev => ({ ...prev, name: text }))}
-                  placeholder="Enter your full name"
+                  placeholder={isHindi ? translations.enterYourName.hi : translations.enterYourName.en}
                   placeholderTextColor="#999"
                 />
               </View>
               
               <View style={styles.mannatFormField}>
-                <Text style={styles.mannatFormLabel}>Phone Number (Min 10 digits) *</Text>
+                <Text style={styles.mannatFormLabel}>{isHindi ? 'फोन नंबर (न्यूनतम 10 अंक) *' : 'Phone Number (Min 10 digits) *'}</Text>
                 <TextInput
                   style={styles.mannatFormInput}
                   value={mannatForm.phone}
                   onChangeText={(text) => setMannatForm(prev => ({ ...prev, phone: text }))}
-                  placeholder="Enter your phone number"
+                  placeholder={isHindi ? translations.enterPhoneNumber.hi : translations.enterPhoneNumber.en}
                   placeholderTextColor="#999"
                   keyboardType="phone-pad"
                 />
               </View>
               
               <View style={styles.mannatFormField}>
-                <Text style={styles.mannatFormLabel}>Your Wish (Mannat) *</Text>
+                <Text style={styles.mannatFormLabel}>{isHindi ? 'आपकी इच्छा (मन्नत) *' : 'Your Wish (Mannat) *'}</Text>
                 <TextInput
                   style={styles.mannatFormTextArea}
                   value={mannatForm.wish}
                   onChangeText={(text) => setMannatForm(prev => ({ ...prev, wish: text }))}
-                  placeholder="Describe your wish or prayer..."
+                  placeholder={isHindi ? 'अपनी इच्छा या प्रार्थना का वर्णन करें...' : 'Describe your wish or prayer...'}
                   placeholderTextColor="#999"
                   multiline={true}
                   numberOfLines={4}
@@ -427,7 +461,7 @@ export default function MannatScreen() {
               </View>
               
               <View style={styles.mannatFormField}>
-                <Text style={styles.mannatFormLabel}>Mannat Action *</Text>
+                <Text style={styles.mannatFormLabel}>{isHindi ? translations.mannatAction.hi : translations.mannatAction.en}</Text>
                 <View style={styles.mannatOptionGrid}>
                   {mannatOptions.map((option) => (
                     <TouchableOpacity
@@ -456,7 +490,7 @@ export default function MannatScreen() {
               </View>
               
               <View style={styles.mannatFormField}>
-                <Text style={styles.mannatFormLabel}>Preferred Date *</Text>
+                <Text style={styles.mannatFormLabel}>{isHindi ? translations.preferredDate.hi : translations.preferredDate.en}</Text>
                 <TouchableOpacity
                   style={styles.dateSelector}
                   onPress={showDatePickerModal}
@@ -465,13 +499,13 @@ export default function MannatScreen() {
                     styles.dateSelectorText,
                     mannatForm.date && styles.dateSelectorTextActive
                   ]}>
-                    {mannatForm.date ? mannatForm.date : 'Select Date'}
+                    {mannatForm.date ? mannatForm.date : (isHindi ? translations.selectDate.hi : translations.selectDate.en)}
                   </Text>
                 </TouchableOpacity>
               </View>
               
               <View style={styles.mannatFormField}>
-                <Text style={styles.mannatFormLabel}>Preferred Time Slot *</Text>
+                <Text style={styles.mannatFormLabel}>{isHindi ? translations.timeSlot.hi : translations.timeSlot.en}</Text>
                 <View style={styles.timeSlotGrid}>
                   {timeSlots.map((slot) => (
                     <TouchableOpacity
@@ -498,32 +532,32 @@ export default function MannatScreen() {
                 onPress={async () => {
                   // Validation
                   if (!mannatForm.name || mannatForm.name.trim().length < 3) {
-                    Alert.alert('Invalid Name', 'Name must be at least 3 characters long.');
+                    Alert.alert(isHindi ? 'अमान्य नाम' : 'Invalid Name', isHindi ? 'नाम कम से कम 3 अक्षर का होना चाहिए।' : 'Name must be at least 3 characters long.');
                     return;
                   }
                   
                   if (!mannatForm.phone || mannatForm.phone.length < 10) {
-                    Alert.alert('Invalid Phone', 'Please enter a valid phone number.');
+                    Alert.alert(isHindi ? 'अमान्य फोन' : 'Invalid Phone', isHindi ? 'कृपया एक वैध फोन नंबर दर्ज करें।' : 'Please enter a valid phone number.');
                     return;
                   }
                   
                   if (!mannatForm.wish || mannatForm.wish.trim().length < 5) {
-                    Alert.alert('Invalid Wish', 'Please describe your wish (minimum 5 characters).');
+                    Alert.alert(isHindi ? 'अमान्य इच्छा' : 'Invalid Wish', isHindi ? 'कृपया अपनी इच्छा का वर्णन करें (न्यूनतम 5 अक्षर)।' : 'Please describe your wish (minimum 5 characters).');
                     return;
                   }
                   
                   if (!mannatForm.mannatOption) {
-                    Alert.alert('Invalid Mannat Action', 'Please select a mannat action.');
+                    Alert.alert(isHindi ? 'अमान्य मन्नत कार्य' : 'Invalid Mannat Action', isHindi ? 'कृपया एक मन्नत कार्य चुनें।' : 'Please select a mannat action.');
                     return;
                   }
                   
                   if (!mannatForm.date) {
-                    Alert.alert('Invalid Date', 'Please select a preferred date.');
+                    Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया एक पसंदीदा तारीख चुनें।' : 'Please select a preferred date.');
                     return;
                   }
                   
                   if (!mannatForm.timeSlot) {
-                    Alert.alert('Invalid Time', 'Please select a preferred time slot.');
+                    Alert.alert(isHindi ? 'अमान्य समय' : 'Invalid Time', isHindi ? 'कृपया एक पसंदीदा समय स्लॉट चुनें।' : 'Please select a preferred time slot.');
                     return;
                   }
                   
@@ -548,11 +582,11 @@ export default function MannatScreen() {
                     if (response.ok) {
                       const result = await response.json();
                       Alert.alert(
-                        'Mannat Submitted Successfully!',
-                        'Your wish has been submitted. We will contact you soon.',
+                        isHindi ? 'मन्नत सफलतापूर्वक जमा!' : 'Mannat Submitted Successfully!',
+                        isHindi ? 'आपकी इच्छा जमा हो गई है। हम जल्द ही आपसे संपर्क करेंगे।' : 'Your wish has been submitted. We will contact you soon.',
                         [
                           {
-                            text: 'OK',
+                            text: isHindi ? 'ठीक है' : 'OK',
                             onPress: () => {
                               setShowMannatModal(false);
                               setMannatForm({
@@ -570,14 +604,14 @@ export default function MannatScreen() {
                       );
                     } else {
                       const errorData = await response.json();
-                      Alert.alert('Error', errorData.error || 'Failed to submit mannat. Please try again.');
+                      Alert.alert(isHindi ? 'त्रुटि' : 'Error', errorData.error || (isHindi ? 'मन्नत जमा करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to submit mannat. Please try again.'));
                     }
                   } catch (error) {
-                    Alert.alert('Error', 'Failed to submit mannat. Please try again.');
+                    Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'मन्नत जमा करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to submit mannat. Please try again.');
                   }
                 }}
               >
-                <Text style={styles.submitButtonText}>Submit Mannat</Text>
+                <Text style={styles.submitButtonText}>{isHindi ? translations.submitMannat.hi : translations.submitMannat.en}</Text>
               </TouchableOpacity>
               
               {/* 100px white space at the end */}

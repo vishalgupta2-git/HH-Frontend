@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'react-native';
 import { Calendar, DateData } from 'react-native-calendars';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_TOP = 250;
@@ -132,11 +133,23 @@ const hinduMonths: HinduMonth[] = [
 
 const HinduCalendarScreen: React.FC = () => {
   const router = useRouter();
+  const { isHindi } = useLanguage();
   const [selectedMonth, setSelectedMonth] = useState<HinduMonth | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<'calendar' | 'summary'>('calendar');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedFestival, setSelectedFestival] = useState<{ name: string; date: string; description?: string; image?: any } | null>(null);
+
+  const translations = {
+    updatedUpTo: { en: 'Updated up to March 2026', hi: 'मार्च 2026 तक अपडेट किया गया' },
+    festivalsThisMonth: { en: 'Festivals this Month:', hi: 'इस महीने के त्योहार:' },
+    calendar: { en: 'Calendar', hi: 'कैलेंडर' },
+    summary: { en: 'Summary', hi: 'सारांश' },
+    hinduCalendar: { en: 'Hindu Calendar 2025-2026', hi: 'हिंदू कैलेंडर 2025-2026' },
+    keyFestivals: { en: 'Key Festivals / Vrats:', hi: 'मुख्य त्योहार / व्रत:' },
+    noMajorFestivals: { en: '(No major pan-Indian festivals listed in this period)', hi: '(इस अवधि में कोई प्रमुख पैन-भारतीय त्योहार सूचीबद्ध नहीं)' },
+    tellMeMore: { en: 'Tell me more', hi: 'और बताएं' }
+  };
 
   // Function to get festival image based on festival name
   const getFestivalImage = (festivalName: string): any => {
@@ -395,7 +408,7 @@ const HinduCalendarScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
              {/* Update notice */}
-       <Text style={styles.updateNotice}>Updated up to March 2026</Text>
+       <Text style={styles.updateNotice}>{isHindi ? translations.updatedUpTo.hi : translations.updatedUpTo.en}</Text>
        
        {/* Month Title */}
        <Text style={styles.monthTitle}>{getHinduMonthTitle(currentDate)}</Text>
@@ -453,7 +466,7 @@ const HinduCalendarScreen: React.FC = () => {
       {/* Month Festivals List */}
       {monthFestivals.length > 0 && (
         <View style={styles.monthFestivalsList}>
-          <Text style={styles.monthFestivalsTitle}>Festivals this Month:</Text>
+          <Text style={styles.monthFestivalsTitle}>{isHindi ? translations.festivalsThisMonth.hi : translations.festivalsThisMonth.en}</Text>
           {monthFestivals.map((festival, index) => (
             <View key={index} style={styles.monthFestivalItem}>
               <Text style={styles.monthFestivalName}>{festival.name}</Text>
@@ -479,10 +492,10 @@ const HinduCalendarScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
        {/* Update notice */}
-       <Text style={styles.updateNotice}>Updated up to March 2026</Text>
+       <Text style={styles.updateNotice}>{isHindi ? translations.updatedUpTo.hi : translations.updatedUpTo.en}</Text>
        
        {/* Hindu Months Overview */}
-       <Text style={styles.sectionTitle}>Hindu Calendar 2025-2026</Text>
+       <Text style={styles.sectionTitle}>{isHindi ? translations.hinduCalendar.hi : translations.hinduCalendar.en}</Text>
       
       {hinduMonths.map((month, index) => (
         <TouchableOpacity
@@ -497,7 +510,7 @@ const HinduCalendarScreen: React.FC = () => {
           
           {month.festivals.length > 0 ? (
             <View style={styles.festivalsContainer}>
-              <Text style={styles.festivalsTitle}>Key Festivals / Vrats:</Text>
+              <Text style={styles.festivalsTitle}>{isHindi ? translations.keyFestivals.hi : translations.keyFestivals.en}</Text>
               {month.festivals.map((festival, fIndex) => (
                 <Text key={fIndex} style={styles.festivalText}>
                   {festival.name} – {festival.date}
@@ -541,7 +554,7 @@ const HinduCalendarScreen: React.FC = () => {
             onPress={() => setActiveTab('calendar')}
           >
             <Text style={[styles.tabText, activeTab === 'calendar' && styles.activeTabText]}>
-              Calendar
+              {isHindi ? translations.calendar.hi : translations.calendar.en}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -549,7 +562,7 @@ const HinduCalendarScreen: React.FC = () => {
             onPress={() => setActiveTab('summary')}
           >
             <Text style={[styles.tabText, activeTab === 'summary' && styles.activeTabText]}>
-              Summary
+              {isHindi ? translations.summary.hi : translations.summary.en}
             </Text>
           </TouchableOpacity>
         </View>

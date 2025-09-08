@@ -119,11 +119,10 @@ export default function DiwaliScreen() {
                   }
                   style={styles.infoImage}
                   resizeMode="contain"
-                  onError={(error) => console.log('Image loading error:', error.nativeEvent.error)}
-                  onLoad={() => console.log('Image loaded successfully')}
+                  onError={(error) => {}}
+                  onLoad={() => {}}
                   onLayout={(event) => {
                     const {width, height} = event.nativeEvent.layout;
-                    console.log('Image layout - Width:', width, 'Height:', height);
                   }}
                 />
                 
