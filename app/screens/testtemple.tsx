@@ -1569,7 +1569,7 @@ export default function TestTempleScreen() {
       }
     }
   }, [currentScreen, selectedTodaysTemple]);
-
+  
 
   return (
     <View style={styles.container}>
@@ -1617,7 +1617,6 @@ export default function TestTempleScreen() {
                   style={styles.allTemplesIcon}
                   onPress={() => {
                     setSelectedAllTemple(temple.id);
-                    console.log(`Selected temple: ${temple.name}`);
                   }}
                   activeOpacity={0.7}
                 >
@@ -1664,7 +1663,6 @@ export default function TestTempleScreen() {
                     style={styles.allTemplesIcon}
                     onPress={() => {
                       setSelectedTodaysTemple(temple.id);
-                      console.log(`Selected today's temple: ${temple.name}`);
                     }}
                     activeOpacity={0.7}
                   >
@@ -2627,7 +2625,6 @@ export default function TestTempleScreen() {
               }]}
               onPress={() => {
                 setCurrentScreen('myTemple');
-                console.log('My Temple pressed');
               }}
             >
               <Text style={[styles.secondRowButtonText, {
@@ -2646,7 +2643,6 @@ export default function TestTempleScreen() {
               }]}
               onPress={() => {
                 setCurrentScreen('todaysPuja');
-                console.log('Today\'s Pujas pressed');
               }}
             >
               <Text style={[styles.secondRowButtonText, {
