@@ -186,27 +186,27 @@ const KundliCalculator: React.FC = () => {
     
     // Validation
     if (bookingName.trim().length < 3) {
-      Alert.alert('Invalid Name', 'Name must be at least 3 characters long.');
+      Alert.alert(isHindi ? 'अमान्य नाम' : 'Invalid Name', isHindi ? 'नाम कम से कम 3 अक्षर का होना चाहिए।' : 'Name must be at least 3 characters long.');
       return;
     }
     
     if (!bookingPhone || bookingPhone.length < 10) {
-      Alert.alert('Invalid Phone', 'Please enter a valid phone number.');
+      Alert.alert(isHindi ? 'अमान्य फोन' : 'Invalid Phone', isHindi ? 'कृपया एक वैध फोन नंबर दर्ज करें।' : 'Please enter a valid phone number.');
       return;
     }
     
     if (!bookingDate) {
-      Alert.alert('Invalid Date', 'Please select a preferred date.');
+      Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया एक पसंदीदा तारीख चुनें।' : 'Please select a preferred date.');
       return;
     }
     
     if (!isValidFutureDate(bookingDate)) {
-      Alert.alert('Invalid Date', 'Please select a date at least 18 hours in the future.');
+      Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया भविष्य में कम से कम 18 घंटे की तारीख चुनें।' : 'Please select a date at least 18 hours in the future.');
       return;
     }
     
     if (!bookingTimeSlot) {
-      Alert.alert('Invalid Time', 'Please select a preferred time slot.');
+      Alert.alert(isHindi ? 'अमान्य समय' : 'Invalid Time', isHindi ? 'कृपया एक पसंदीदा समय स्लॉट चुनें।' : 'Please select a preferred time slot.');
       return;
     }
     
@@ -245,11 +245,11 @@ const KundliCalculator: React.FC = () => {
         
         
         Alert.alert(
-          'Booking Successful!',
-          'Your appointment has been booked. We will contact you soon.',
+          isHindi ? 'बुकिंग सफल!' : 'Booking Successful!',
+          isHindi ? 'आपका अपॉइंटमेंट बुक हो गया है। हम जल्द ही आपसे संपर्क करेंगे।' : 'Your appointment has been booked. We will contact you soon.',
           [
             {
-              text: 'OK',
+              text: isHindi ? 'ठीक है' : 'OK',
                              onPress: () => {
                  setShowBookingModal(false);
                  setBookingName('');
@@ -265,7 +265,7 @@ const KundliCalculator: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
      } catch (error) {
-       Alert.alert('Error', 'Failed to book appointment. Please try again.');
+       Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'अपॉइंटमेंट बुक करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to book appointment. Please try again.');
      } finally {
        setIsSubmitting(false);
      }
@@ -275,7 +275,7 @@ const KundliCalculator: React.FC = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
              <View style={styles.providersSection}>
          <View style={styles.titleContainer}>
-           <Text style={styles.sectionTitle}>Kundli Service Providers</Text>
+           <Text style={styles.sectionTitle}>{isHindi ? 'कुंडली सेवा प्रदाता' : 'Kundli Service Providers'}</Text>
            <TouchableOpacity 
              style={styles.infoIcon}
              onPress={() => setShowInfoModal(true)}
@@ -283,7 +283,7 @@ const KundliCalculator: React.FC = () => {
              <Text style={styles.infoIconText}>ℹ️</Text>
            </TouchableOpacity>
          </View>
-         <Text style={styles.instructionText}>Click on any provider to book kundli services</Text>
+         <Text style={styles.instructionText}>{isHindi ? 'कुंडली सेवाओं को बुक करने के लिए किसी भी प्रदाता पर क्लिक करें' : 'Click on any provider to book kundli services'}</Text>
          
          {loadingProviders ? (
           <View style={styles.loadingContainer}>
@@ -487,7 +487,7 @@ const KundliCalculator: React.FC = () => {
                  
                                    <View style={styles.bookingContent}>
                     <Text style={styles.bookingWelcomeText}>
-                      Thank you for your interest in our Kundli Services, please fill in the following details for us to contact you for booking
+                      {isHindi ? 'हमारी कुंडली सेवाओं में आपकी रुचि के लिए धन्यवाद, कृपया बुकिंग के लिए हमसे संपर्क करने के लिए निम्नलिखित विवरण भरें' : 'Thank you for your interest in our Kundli Services, please fill in the following details for us to contact you for booking'}
                     </Text>
                     
                     <Text style={styles.bookingProviderName}>
@@ -495,36 +495,36 @@ const KundliCalculator: React.FC = () => {
                     </Text>
                     
                     <View style={styles.bookingForm}>
-                      <Text style={styles.formLabel}>Name *</Text>
+                      <Text style={styles.formLabel}>{isHindi ? 'नाम *' : 'Name *'}</Text>
                       <TextInput
                         style={styles.formInput}
                         value={bookingName}
                         onChangeText={setBookingName}
-                        placeholder="Enter your full name"
+                        placeholder={isHindi ? 'अपना पूरा नाम दर्ज करें' : 'Enter your full name'}
                         placeholderTextColor="#999"
                       />
                       
-                      <Text style={styles.formLabel}>Phone Number *</Text>
+                      <Text style={styles.formLabel}>{isHindi ? 'फोन नंबर *' : 'Phone Number *'}</Text>
                       <TextInput
                         style={styles.formInput}
                         value={bookingPhone}
                         onChangeText={setBookingPhone}
-                        placeholder="Enter your phone number"
+                        placeholder={isHindi ? 'अपना फोन नंबर दर्ज करें' : 'Enter your phone number'}
                         placeholderTextColor="#999"
                         keyboardType="phone-pad"
                       />
                       
-                      <Text style={styles.formLabel}>Preferred Date *</Text>
+                      <Text style={styles.formLabel}>{isHindi ? 'पसंदीदा तारीख *' : 'Preferred Date *'}</Text>
                       <TouchableOpacity
                         style={styles.datePickerButton}
                         onPress={showDatePickerModal}
                       >
                                             <Text style={styles.datePickerButtonText}>
-                      {bookingDate ? bookingDate : 'Select Date'}
+                      {bookingDate ? bookingDate : (isHindi ? 'तारीख चुनें' : 'Select Date')}
                     </Text>
                       </TouchableOpacity>
                       
-                      <Text style={styles.formLabel}>Preferred Time Slot *</Text>
+                      <Text style={styles.formLabel}>{isHindi ? 'पसंदीदा समय स्लॉट *' : 'Preferred Time Slot *'}</Text>
                       <View style={styles.timeSlotContainer}>
                         {timeSlots.map((slot) => (
                           <TouchableOpacity
@@ -594,7 +594,7 @@ const KundliCalculator: React.FC = () => {
               onPress={(e) => e.stopPropagation()}
             >
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>About Kundli Services</Text>
+                <Text style={styles.modalTitle}>{isHindi ? 'कुंडली सेवाओं के बारे में' : 'About Kundli Services'}</Text>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => setShowInfoModal(false)}
@@ -605,7 +605,7 @@ const KundliCalculator: React.FC = () => {
               
               <View style={styles.infoContent}>
                 <Text style={styles.infoText}>
-                  Avail professional Kundli services for accurate birth chart analysis and life guidance. Discover insights on career, health, relationships, and future opportunities with expert astrologers.
+                  {isHindi ? 'सटीक जन्म चार्ट विश्लेषण और जीवन मार्गदर्शन के लिए पेशेवर कुंडली सेवाओं का लाभ उठाएं। विशेषज्ञ ज्योतिषियों के साथ करियर, स्वास्थ्य, रिश्तों और भविष्य के अवसरों पर अंतर्दृष्टि की खोज करें।' : 'Avail professional Kundli services for accurate birth chart analysis and life guidance. Discover insights on career, health, relationships, and future opportunities with expert astrologers.'}
                 </Text>
               </View>
             </TouchableOpacity>

@@ -4,10 +4,12 @@ import React, { useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View, ActivityIndicator, Alert } from 'react-native';
 import { getEndpointUrl } from '@/constants/ApiConfig';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const options = { headerShown: false };
 
 export default function AstrologyScreen() {
+  const { isHindi } = useLanguage();
   const [selectedRashi, setSelectedRashi] = useState<string | null>(null);
   const [selectedFrequency, setSelectedFrequency] = useState<string | null>(null);
   const [rashiDropdownOpen, setRashiDropdownOpen] = useState(false);
@@ -22,13 +24,65 @@ export default function AstrologyScreen() {
   const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
   const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
 
+  const translations = {
+    headline: { en: 'Discover the timeless wisdom of the stars.', hi: 'तारों के कालातीत ज्ञान की खोज करें।' },
+    content1: { en: 'Astrology isn\'t just about predicting the future. It\'s a guide to understanding yourself, your relationships, and the energies shaping your life.', hi: 'ज्योतिष केवल भविष्य की भविष्यवाणी के बारे में नहीं है। यह अपने आप को समझने, अपने रिश्तों को समझने और आपके जीवन को आकार देने वाली ऊर्जाओं के लिए एक मार्गदर्शक है।' },
+    content2: { en: 'In our astrology section, you\'ll soon find personalized insights — from your birth chart to daily cosmic updates — helping you align your thoughts and actions with the rhythms of the universe.', hi: 'हमारे ज्योतिष अनुभाग में, आपको जल्द ही व्यक्तिगत अंतर्दृष्टि मिलेगी — आपके जन्म चार्ट से लेकर दैनिक ब्रह्मांडीय अपडेट तक — जो आपको ब्रह्मांड की लय के साथ अपने विचारों और कार्यों को संरेखित करने में मदद करेगी।' },
+    content3: { en: 'Whether you seek clarity on your career, relationships, or simply wish to explore the mysteries of your zodiac sign, this space will become your trusted spiritual companion.', hi: 'चाहे आप अपने करियर, रिश्तों पर स्पष्टता चाहते हों, या बस अपने राशि चिन्ह के रहस्यों का पता लगाना चाहते हों, यह स्थान आपका भरोसेमंद आध्यात्मिक साथी बन जाएगा।' },
+    selectRashi: { en: 'Select Rashi', hi: 'राशि चुनें' },
+    duration: { en: 'Duration', hi: 'अवधि' },
+    selectRashiFirst: { en: 'Select Rashi first', hi: 'पहले राशि चुनें' },
+    selectDurationFirst: { en: 'Select Duration first', hi: 'पहले अवधि चुनें' },
+    showMyRashifal: { en: 'Show my rashifal now', hi: 'अब मेरा राशिफल दिखाएं' },
+    dontKnowRashi: { en: 'Don\'t know your Rashi?', hi: 'अपनी राशि नहीं जानते?' },
+    clickHere: { en: 'Click here', hi: 'यहाँ क्लिक करें' },
+    fetchingRashifal: { en: 'Fetching your rashifal...', hi: 'आपका राशिफल लाया जा रहा है...' },
+    compatibility: { en: 'Compatibility', hi: 'अनुकूलता' },
+    mood: { en: 'Mood', hi: 'मनोदशा' },
+    color: { en: 'Color', hi: 'रंग' },
+    luckyNumber: { en: 'Lucky Number', hi: 'भाग्यशाली संख्या' },
+    luckyTime: { en: 'Lucky Time', hi: 'भाग्यशाली समय' },
+    close: { en: 'Close', hi: 'बंद करें' },
+    findYourRashi: { en: 'Find Your Rashi', hi: 'अपनी राशि खोजें' },
+    enterDateMonth: { en: 'Enter your date and month of birth to find your Rashi (Zodiac Sign)', hi: 'अपनी राशि (राशि चिन्ह) खोजने के लिए अपनी जन्म तिथि और महीना दर्ज करें' },
+    dateOfBirth: { en: 'Date of Birth:', hi: 'जन्म तिथि:' },
+    monthOfBirth: { en: 'Month of Birth:', hi: 'जन्म का महीना:' },
+    calculateMyRashi: { en: 'Calculate My Rashi', hi: 'मेरी राशि की गणना करें' },
+    yourRashiIs: { en: 'Your Rashi is:', hi: 'आपकी राशि है:' },
+    useThisRashi: { en: 'Use This Rashi', hi: 'इस राशि का उपयोग करें' },
+    daily: { en: 'Daily', hi: 'दैनिक' },
+    weekly: { en: 'Weekly', hi: 'साप्ताहिक' },
+    monthly: { en: 'Monthly', hi: 'मासिक' },
+    todaysHoroscope: { en: 'Today\'s Horoscope', hi: 'आज का राशिफल' },
+    horoscopeForWeek: { en: 'Horoscope for the Week', hi: 'सप्ताह का राशिफल' },
+    horoscopeForMonth: { en: 'Horoscope for the Month', hi: 'महीने का राशिफल' },
+    months: {
+      january: { en: 'January', hi: 'जनवरी' },
+      february: { en: 'February', hi: 'फरवरी' },
+      march: { en: 'March', hi: 'मार्च' },
+      april: { en: 'April', hi: 'अप्रैल' },
+      may: { en: 'May', hi: 'मई' },
+      june: { en: 'June', hi: 'जून' },
+      july: { en: 'July', hi: 'जुलाई' },
+      august: { en: 'August', hi: 'अगस्त' },
+      september: { en: 'September', hi: 'सितंबर' },
+      october: { en: 'October', hi: 'अक्टूबर' },
+      november: { en: 'November', hi: 'नवंबर' },
+      december: { en: 'December', hi: 'दिसंबर' }
+    }
+  };
+
   const rashiList = [
     'Aries (Mesh)', 'Taurus (Vrishabh)', 'Gemini (Mithun)', 'Cancer (Kark)',
     'Leo (Singh)', 'Virgo (Kanya)', 'Libra (Tula)', 'Scorpio (Vrishchik)',
     'Sagittarius (Dhanu)', 'Capricorn (Makar)', 'Aquarius (Kumbh)', 'Pisces (Meen)'
   ];
 
-  const frequencyList = ['Daily', 'Weekly', 'Monthly'];
+  const frequencyList = [
+    isHindi ? translations.daily.hi : translations.daily.en,
+    isHindi ? translations.weekly.hi : translations.weekly.en,
+    isHindi ? translations.monthly.hi : translations.monthly.en
+  ];
 
   // Function to calculate Rashi based on date and month
   const calculateRashi = (date: number, month: number): string => {
@@ -68,33 +122,35 @@ export default function AstrologyScreen() {
 
   // Function to get endpoint based on frequency
   const getEndpoint = (frequency: string) => {
-    switch (frequency) {
-      case 'Daily': return 'daily';
-      case 'Weekly': return 'weekly';
-      case 'Monthly': return 'monthly';
-      default: return 'daily';
-    }
+    if (frequency === translations.daily.hi || frequency === translations.daily.en) return 'daily';
+    if (frequency === translations.weekly.hi || frequency === translations.weekly.en) return 'weekly';
+    if (frequency === translations.monthly.hi || frequency === translations.monthly.en) return 'monthly';
+    return 'daily';
   };
 
   // Function to get horoscope title based on frequency
   const getHoroscopeTitle = (frequency: string) => {
-    switch (frequency) {
-      case 'Daily': return "Today's Horoscope";
-      case 'Weekly': return 'Horoscope for the Week';
-      case 'Monthly': return 'Horoscope for the Month';
-      default: return "Today's Horoscope";
+    if (frequency === translations.daily.hi || frequency === translations.daily.en) {
+      return isHindi ? translations.todaysHoroscope.hi : translations.todaysHoroscope.en;
     }
+    if (frequency === translations.weekly.hi || frequency === translations.weekly.en) {
+      return isHindi ? translations.horoscopeForWeek.hi : translations.horoscopeForWeek.en;
+    }
+    if (frequency === translations.monthly.hi || frequency === translations.monthly.en) {
+      return isHindi ? translations.horoscopeForMonth.hi : translations.horoscopeForMonth.en;
+    }
+    return isHindi ? translations.todaysHoroscope.hi : translations.todaysHoroscope.en;
   };
 
   // Function to fetch rashifal from FreeAstrologyAPI
   const fetchRashifal = async () => {
     if (!selectedRashi) {
-      Alert.alert('Please select your Rashi first');
+      Alert.alert(isHindi ? translations.selectRashiFirst.hi : translations.selectRashiFirst.en);
       return;
     }
 
     if (!selectedFrequency) {
-      Alert.alert('Please select Duration (Daily/Weekly/Monthly) first');
+      Alert.alert(isHindi ? translations.selectDurationFirst.hi : translations.selectDurationFirst.en);
       return;
     }
 
@@ -215,7 +271,7 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
             onPress={() => setRashiDropdownOpen(open => !open)}
           >
             <Text style={styles.filterDropdownText}>
-              {selectedRashi || 'Select Rashi'}
+              {selectedRashi || (isHindi ? translations.selectRashi.hi : translations.selectRashi.en)}
             </Text>
             <MaterialCommunityIcons
               name={rashiDropdownOpen ? 'chevron-up' : 'chevron-down'}
@@ -272,7 +328,7 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
             onPress={() => setFrequencyDropdownOpen(open => !open)}
           >
             <Text style={styles.filterDropdownText}>
-              {selectedFrequency || 'Duration'}
+              {selectedFrequency || (isHindi ? translations.duration.hi : translations.duration.en)}
             </Text>
             <MaterialCommunityIcons
               name={frequencyDropdownOpen ? 'chevron-up' : 'chevron-down'}
@@ -335,15 +391,15 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
            styles.rashifalButtonText,
            (!selectedRashi || !selectedFrequency) && styles.rashifalButtonTextDisabled
          ]}>
-           {!selectedRashi ? 'Select Rashi first' : 
-            !selectedFrequency ? 'Select Duration first' : 
-            'Show my rashifal now'}
+           {!selectedRashi ? (isHindi ? translations.selectRashiFirst.hi : translations.selectRashiFirst.en) : 
+            !selectedFrequency ? (isHindi ? translations.selectDurationFirst.hi : translations.selectDurationFirst.en) : 
+            (isHindi ? translations.showMyRashifal.hi : translations.showMyRashifal.en)}
          </Text>
        </TouchableOpacity>
              <View style={styles.rashifalHelpText}>
-         <Text style={styles.rashifalHelpTextRegular}>Don't know your Rashi? </Text>
+         <Text style={styles.rashifalHelpTextRegular}>{isHindi ? translations.dontKnowRashi.hi : translations.dontKnowRashi.en} </Text>
          <TouchableOpacity onPress={() => setRashiCalculatorModalVisible(true)}>
-           <Text style={styles.rashifalHelpTextLink}>Click here</Text>
+           <Text style={styles.rashifalHelpTextLink}>{isHindi ? translations.clickHere.hi : translations.clickHere.en}</Text>
          </TouchableOpacity>
        </View>
     </View>
@@ -354,20 +410,20 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
       <HomeHeader extraContent={filterRow} showDailyPujaButton={false} showSearchBar={false} />
       <View style={styles.content}>
         <View style={styles.contentCard}>
-          <Text style={styles.headline}>Discover the timeless wisdom of the stars.</Text>
+          <Text style={styles.headline}>{isHindi ? translations.headline.hi : translations.headline.en}</Text>
           <ScrollView 
             style={styles.contentScrollView} 
             contentContainerStyle={{ paddingBottom: 200 }}
             showsVerticalScrollIndicator={true}
           >
             <Text style={styles.contentText}>
-              Astrology isn't just about predicting the future. It's a guide to understanding yourself, your relationships, and the energies shaping your life.
+              {isHindi ? translations.content1.hi : translations.content1.en}
             </Text>
             <Text style={styles.contentText}>
-              In our astrology section, you'll soon find personalized insights — from your birth chart to daily cosmic updates — helping you align your thoughts and actions with the rhythms of the universe.
+              {isHindi ? translations.content2.hi : translations.content2.en}
             </Text>
             <Text style={styles.contentText}>
-              Whether you seek clarity on your career, relationships, or simply wish to explore the mysteries of your zodiac sign, this space will become your trusted spiritual companion.
+              {isHindi ? translations.content3.hi : translations.content3.en}
             </Text>
           </ScrollView>
         </View>
@@ -404,7 +460,7 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
                {loading ? (
                  <View style={styles.loadingContainer}>
                    <ActivityIndicator size="large" color="#FF6A00" />
-                   <Text style={styles.loadingText}>Fetching your rashifal...</Text>
+                   <Text style={styles.loadingText}>{isHindi ? translations.fetchingRashifal.hi : translations.fetchingRashifal.en}</Text>
                  </View>
                ) : rashifalData ? (
                  <View style={styles.rashifalContent}>
@@ -419,27 +475,27 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
                    </View>
 
                    <View style={styles.rashifalSection}>
-                     <Text style={styles.rashifalSectionTitle}>Compatibility</Text>
+                     <Text style={styles.rashifalSectionTitle}>{isHindi ? translations.compatibility.hi : translations.compatibility.en}</Text>
                      <Text style={styles.rashifalText}>{rashifalData.compatibility}</Text>
                    </View>
 
                    <View style={styles.rashifalSection}>
-                     <Text style={styles.rashifalSectionTitle}>Mood</Text>
+                     <Text style={styles.rashifalSectionTitle}>{isHindi ? translations.mood.hi : translations.mood.en}</Text>
                      <Text style={styles.rashifalText}>{rashifalData.mood}</Text>
                    </View>
 
                    <View style={styles.rashifalSection}>
-                     <Text style={styles.rashifalSectionTitle}>Color</Text>
+                     <Text style={styles.rashifalSectionTitle}>{isHindi ? translations.color.hi : translations.color.en}</Text>
                      <Text style={styles.rashifalText}>{rashifalData.color}</Text>
                    </View>
 
                    <View style={styles.rashifalSection}>
-                     <Text style={styles.rashifalSectionTitle}>Lucky Number</Text>
+                     <Text style={styles.rashifalSectionTitle}>{isHindi ? translations.luckyNumber.hi : translations.luckyNumber.en}</Text>
                      <Text style={styles.rashifalText}>{rashifalData.lucky_number}</Text>
                    </View>
 
                    <View style={styles.rashifalSection}>
-                     <Text style={styles.rashifalSectionTitle}>Lucky Time</Text>
+                     <Text style={styles.rashifalSectionTitle}>{isHindi ? translations.luckyTime.hi : translations.luckyTime.en}</Text>
                      <Text style={styles.rashifalText}>{rashifalData.lucky_time}</Text>
                    </View>
 
@@ -454,7 +510,7 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
                style={styles.modalCloseButton}
                onPress={() => setRashifalModalVisible(false)}
              >
-               <Text style={styles.modalCloseButtonText}>Close</Text>
+               <Text style={styles.modalCloseButtonText}>{isHindi ? translations.close.hi : translations.close.en}</Text>
                            </TouchableOpacity>
             </View>
           </View>
@@ -473,7 +529,7 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
                  <View style={styles.modalContent}>
                              {/* Header with X button */}
                <View style={styles.modalHeader}>
-                 <Text style={styles.modalTitle}>Find Your Rashi</Text>
+                 <Text style={styles.modalTitle}>{isHindi ? translations.findYourRashi.hi : translations.findYourRashi.en}</Text>
                  <TouchableOpacity 
                    style={styles.closeButton}
                    onPress={() => setRashiCalculatorModalVisible(false)}
@@ -490,12 +546,12 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
               >
                 <View style={styles.calculatorContent}>
                   <Text style={styles.calculatorDescription}>
-                    Enter your date and month of birth to find your Rashi (Zodiac Sign)
+                    {isHindi ? translations.enterDateMonth.hi : translations.enterDateMonth.en}
                   </Text>
 
                                      {/* Date Selection */}
                    <View style={styles.selectionSection}>
-                     <Text style={styles.selectionLabel}>Date of Birth:</Text>
+                     <Text style={styles.selectionLabel}>{isHindi ? translations.dateOfBirth.hi : translations.dateOfBirth.en}</Text>
                      <View style={styles.calculatorDropdownWrapper}>
                        <TouchableOpacity
                          style={styles.calculatorDropdown}
@@ -552,7 +608,7 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
 
                    {/* Month Selection */}
                    <View style={styles.selectionSection}>
-                     <Text style={styles.selectionLabel}>Month of Birth:</Text>
+                     <Text style={styles.selectionLabel}>{isHindi ? translations.monthOfBirth.hi : translations.monthOfBirth.en}</Text>
                      <View style={styles.calculatorDropdownWrapper}>
                        <TouchableOpacity
                          style={styles.calculatorDropdown}
@@ -560,11 +616,19 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
                        >
                          <Text style={styles.calculatorDropdownText}>
                            {[
-                             { num: 1, name: 'January' }, { num: 2, name: 'February' }, { num: 3, name: 'March' },
-                             { num: 4, name: 'April' }, { num: 5, name: 'May' }, { num: 6, name: 'June' },
-                             { num: 7, name: 'July' }, { num: 8, name: 'August' }, { num: 9, name: 'September' },
-                             { num: 10, name: 'October' }, { num: 11, name: 'November' }, { num: 12, name: 'December' }
-                           ].find(m => m.num === selectedMonth)?.name || 'January'}
+                             { num: 1, name: isHindi ? translations.months.january.hi : translations.months.january.en }, 
+                             { num: 2, name: isHindi ? translations.months.february.hi : translations.months.february.en }, 
+                             { num: 3, name: isHindi ? translations.months.march.hi : translations.months.march.en },
+                             { num: 4, name: isHindi ? translations.months.april.hi : translations.months.april.en }, 
+                             { num: 5, name: isHindi ? translations.months.may.hi : translations.months.may.en }, 
+                             { num: 6, name: isHindi ? translations.months.june.hi : translations.months.june.en },
+                             { num: 7, name: isHindi ? translations.months.july.hi : translations.months.july.en }, 
+                             { num: 8, name: isHindi ? translations.months.august.hi : translations.months.august.en }, 
+                             { num: 9, name: isHindi ? translations.months.september.hi : translations.months.september.en },
+                             { num: 10, name: isHindi ? translations.months.october.hi : translations.months.october.en }, 
+                             { num: 11, name: isHindi ? translations.months.november.hi : translations.months.november.en }, 
+                             { num: 12, name: isHindi ? translations.months.december.hi : translations.months.december.en }
+                           ].find(m => m.num === selectedMonth)?.name || (isHindi ? translations.months.january.hi : translations.months.january.en)}
                          </Text>
                          <MaterialCommunityIcons
                            name={monthDropdownOpen ? 'chevron-up' : 'chevron-down'}
@@ -583,10 +647,18 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
                              <View style={styles.calculatorDropdownModalList}>
                                <ScrollView style={{ maxHeight: 320 }}>
                                  {[
-                                   { num: 1, name: 'January' }, { num: 2, name: 'February' }, { num: 3, name: 'March' },
-                                   { num: 4, name: 'April' }, { num: 5, name: 'May' }, { num: 6, name: 'June' },
-                                   { num: 7, name: 'July' }, { num: 8, name: 'August' }, { num: 9, name: 'September' },
-                                   { num: 10, name: 'October' }, { num: 11, name: 'November' }, { num: 12, name: 'December' }
+                                   { num: 1, name: isHindi ? translations.months.january.hi : translations.months.january.en }, 
+                                   { num: 2, name: isHindi ? translations.months.february.hi : translations.months.february.en }, 
+                                   { num: 3, name: isHindi ? translations.months.march.hi : translations.months.march.en },
+                                   { num: 4, name: isHindi ? translations.months.april.hi : translations.months.april.en }, 
+                                   { num: 5, name: isHindi ? translations.months.may.hi : translations.months.may.en }, 
+                                   { num: 6, name: isHindi ? translations.months.june.hi : translations.months.june.en },
+                                   { num: 7, name: isHindi ? translations.months.july.hi : translations.months.july.en }, 
+                                   { num: 8, name: isHindi ? translations.months.august.hi : translations.months.august.en }, 
+                                   { num: 9, name: isHindi ? translations.months.september.hi : translations.months.september.en },
+                                   { num: 10, name: isHindi ? translations.months.october.hi : translations.months.october.en }, 
+                                   { num: 11, name: isHindi ? translations.months.november.hi : translations.months.november.en }, 
+                                   { num: 12, name: isHindi ? translations.months.december.hi : translations.months.december.en }
                                  ].map(month => (
                                    <TouchableOpacity
                                      key={month.num}
@@ -625,13 +697,13 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
                       setCalculatedRashi(rashi);
                     }}
                   >
-                    <Text style={styles.calculateButtonText}>Calculate My Rashi</Text>
+                    <Text style={styles.calculateButtonText}>{isHindi ? translations.calculateMyRashi.hi : translations.calculateMyRashi.en}</Text>
                   </TouchableOpacity>
 
                   {/* Result */}
                   {calculatedRashi && (
                     <View style={styles.resultSection}>
-                      <Text style={styles.resultTitle}>Your Rashi is:</Text>
+                      <Text style={styles.resultTitle}>{isHindi ? translations.yourRashiIs.hi : translations.yourRashiIs.en}</Text>
                       <Text style={styles.resultRashi}>{calculatedRashi}</Text>
                       <TouchableOpacity 
                         style={styles.useRashiButton}
@@ -641,7 +713,7 @@ Whether you seek clarity on your career, relationships, or simply wish to explor
                           setCalculatedRashi(null);
                         }}
                       >
-                        <Text style={styles.useRashiButtonText}>Use This Rashi</Text>
+                        <Text style={styles.useRashiButtonText}>{isHindi ? translations.useThisRashi.hi : translations.useThisRashi.en}</Text>
                       </TouchableOpacity>
                     </View>
                   )}

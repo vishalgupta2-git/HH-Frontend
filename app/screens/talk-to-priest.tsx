@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getEndpointUrl, getAuthHeaders, API_CONFIG } from '../../constants/ApiConfig';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const { width } = Dimensions.get('window');
@@ -55,6 +56,52 @@ interface Provider {
 }
 
 const TalkToPriestScreen: React.FC = () => {
+  const { isHindi } = useLanguage();
+  
+  const translations = {
+    headerTitle: { en: 'Hindu Heritage', hi: 'द हिंदू हेरिटेज' },
+    priestConsultationServices: { en: 'Priest Consultation Services', hi: 'पुजारी परामर्श सेवाएं' },
+    clickProviderToBook: { en: 'Click on any provider to book priest consultation services', hi: 'पुजारी परामर्श सेवाओं को बुक करने के लिए किसी भी प्रदाता पर क्लिक करें' },
+    loadingProviders: { en: 'Loading providers...', hi: 'प्रदाता लोड हो रहे हैं...' },
+    noProvidersAvailable: { en: 'No priest consultation providers available at the moment.', hi: 'इस समय कोई पुजारी परामर्श प्रदाता उपलब्ध नहीं है।' },
+    areasServed: { en: 'Areas served:', hi: 'सेवित क्षेत्र:' },
+    location: { en: 'Location:', hi: 'स्थान:' },
+    about: { en: 'About:', hi: 'के बारे में:' },
+    bookAppointment: { en: 'Book Appointment', hi: 'अपॉइंटमेंट बुक करें' },
+    providerDetails: { en: 'Provider Details', hi: 'प्रदाता विवरण' },
+    servicesOffered: { en: 'Services Offered:', hi: 'प्रदान की जाने वाली सेवाएं:' },
+    contactProvider: { en: 'Contact Provider', hi: 'प्रदाता से संपर्क करें' },
+    bookAppointmentTitle: { en: 'Book Appointment', hi: 'अपॉइंटमेंट बुक करें' },
+    thankYouInterest: { en: 'Thank you for your interest in our Priest Consultation Services, please fill in the following details for us to contact you for booking', hi: 'हमारी पुजारी परामर्श सेवाओं में आपकी रुचि के लिए धन्यवाद, कृपया बुकिंग के लिए हमसे संपर्क करने के लिए निम्नलिखित विवरण भरें' },
+    name: { en: 'Name *', hi: 'नाम *' },
+    enterFullName: { en: 'Enter your full name', hi: 'अपना पूरा नाम दर्ज करें' },
+    phoneNumber: { en: 'Phone Number *', hi: 'फोन नंबर *' },
+    enterPhoneNumber: { en: 'Enter your phone number', hi: 'अपना फोन नंबर दर्ज करें' },
+    preferredDate: { en: 'Preferred Date *', hi: 'पसंदीदा तारीख *' },
+    selectDate: { en: 'Select Date', hi: 'तारीख चुनें' },
+    preferredTimeSlot: { en: 'Preferred Time Slot *', hi: 'पसंदीदा समय स्लॉट *' },
+    booking: { en: 'Booking...', hi: 'बुकिंग...' },
+    bookAppointmentButton: { en: 'Book Appointment', hi: 'अपॉइंटमेंट बुक करें' },
+    aboutPriestConsultation: { en: 'About Priest Consultation', hi: 'पुजारी परामर्श के बारे में' },
+    aboutPriestConsultationText: { en: 'Avail trusted Priest Consultation services for your religious and spiritual needs. Get expert guidance for pujas, rituals, and ceremonies performed with authenticity and devotion.', hi: 'अपनी धार्मिक और आध्यात्मिक आवश्यकताओं के लिए भरोसेमंद पुजारी परामर्श सेवाओं का लाभ उठाएं। पूजा, अनुष्ठान और समारोहों के लिए विशेषज्ञ मार्गदर्शन प्राप्त करें जो प्रामाणिकता और भक्ति के साथ किए जाते हैं।' },
+    bookingSuccessful: { en: 'Booking Successful!', hi: 'बुकिंग सफल!' },
+    appointmentBooked: { en: 'Your appointment has been booked. We will contact you soon.', hi: 'आपका अपॉइंटमेंट बुक हो गया है। हम जल्द ही आपसे संपर्क करेंगे।' },
+    ok: { en: 'OK', hi: 'ठीक है' },
+    error: { en: 'Error', hi: 'त्रुटि' },
+    failedToBook: { en: 'Failed to book appointment. Please try again.', hi: 'अपॉइंटमेंट बुक करने में विफल। कृपया पुनः प्रयास करें।' },
+    invalidName: { en: 'Invalid Name', hi: 'अमान्य नाम' },
+    nameMinLength: { en: 'Name must be at least 3 characters long.', hi: 'नाम कम से कम 3 अक्षर का होना चाहिए।' },
+    invalidPhone: { en: 'Invalid Phone', hi: 'अमान्य फोन' },
+    enterValidPhone: { en: 'Please enter a valid phone number.', hi: 'कृपया एक वैध फोन नंबर दर्ज करें।' },
+    invalidDate: { en: 'Invalid Date', hi: 'अमान्य तारीख' },
+    selectPreferredDate: { en: 'Please select a preferred date.', hi: 'कृपया एक पसंदीदा तारीख चुनें।' },
+    selectDate18Hours: { en: 'Please select a date at least 18 hours in the future.', hi: 'कृपया भविष्य में कम से कम 18 घंटे की तारीख चुनें।' },
+    invalidTime: { en: 'Invalid Time', hi: 'अमान्य समय' },
+    selectTimeSlot: { en: 'Please select a preferred time slot.', hi: 'कृपया एक पसंदीदा समय स्लॉट चुनें।' },
+    contact: { en: 'Contact', hi: 'संपर्क' },
+    contactProviderAt: { en: 'Contact', hi: 'संपर्क करें' }
+  };
+
   // Provider states
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
@@ -159,27 +206,27 @@ const TalkToPriestScreen: React.FC = () => {
     
     // Validation
     if (bookingName.trim().length < 3) {
-      Alert.alert('Invalid Name', 'Name must be at least 3 characters long.');
+      Alert.alert(isHindi ? translations.invalidName.hi : translations.invalidName.en, isHindi ? translations.nameMinLength.hi : translations.nameMinLength.en);
       return;
     }
     
     if (!bookingPhone || bookingPhone.length < 10) {
-      Alert.alert('Invalid Phone', 'Please enter a valid phone number.');
+      Alert.alert(isHindi ? translations.invalidPhone.hi : translations.invalidPhone.en, isHindi ? translations.enterValidPhone.hi : translations.enterValidPhone.en);
       return;
     }
     
     if (!bookingDate) {
-      Alert.alert('Invalid Date', 'Please select a preferred date.');
+      Alert.alert(isHindi ? translations.invalidDate.hi : translations.invalidDate.en, isHindi ? translations.selectPreferredDate.hi : translations.selectPreferredDate.en);
       return;
     }
     
     if (!isValidFutureDate(bookingDate)) {
-      Alert.alert('Invalid Date', 'Please select a date at least 18 hours in the future.');
+      Alert.alert(isHindi ? translations.invalidDate.hi : translations.invalidDate.en, isHindi ? translations.selectDate18Hours.hi : translations.selectDate18Hours.en);
       return;
     }
     
     if (!bookingTimeSlot) {
-      Alert.alert('Invalid Time', 'Please select a preferred time slot.');
+      Alert.alert(isHindi ? translations.invalidTime.hi : translations.invalidTime.en, isHindi ? translations.selectTimeSlot.hi : translations.selectTimeSlot.en);
       return;
     }
     
@@ -218,11 +265,11 @@ const TalkToPriestScreen: React.FC = () => {
         
         
         Alert.alert(
-          'Booking Successful!',
-          'Your appointment has been booked. We will contact you soon.',
+          isHindi ? translations.bookingSuccessful.hi : translations.bookingSuccessful.en,
+          isHindi ? translations.appointmentBooked.hi : translations.appointmentBooked.en,
           [
             {
-              text: 'OK',
+              text: isHindi ? translations.ok.hi : translations.ok.en,
               onPress: () => {
                 setShowBookingModal(false);
                 setBookingName('');
@@ -238,7 +285,7 @@ const TalkToPriestScreen: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to book appointment. Please try again.');
+      Alert.alert(isHindi ? translations.error.hi : translations.error.en, isHindi ? translations.failedToBook.hi : translations.failedToBook.en);
     } finally {
       setIsSubmitting(false);
     }
@@ -253,7 +300,7 @@ const TalkToPriestScreen: React.FC = () => {
         end={{ x: 1, y: 0 }}
       >
         <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>Hindu Heritage</Text>
+        <Text style={styles.headerTitle}>{isHindi ? translations.headerTitle.hi : translations.headerTitle.en}</Text>
         <Image
           source={require('@/assets/images/temple illustration.png')}
           style={styles.temple}
@@ -267,7 +314,7 @@ const TalkToPriestScreen: React.FC = () => {
         >
           <View style={styles.providersSection}>
                          <View style={styles.titleContainer}>
-               <Text style={styles.sectionTitle}>Priest Consultation Services</Text>
+               <Text style={styles.sectionTitle}>{isHindi ? translations.priestConsultationServices.hi : translations.priestConsultationServices.en}</Text>
                <TouchableOpacity 
                  style={styles.infoIcon}
                  onPress={() => setShowInfoModal(true)}
@@ -275,16 +322,16 @@ const TalkToPriestScreen: React.FC = () => {
                  <Text style={styles.infoIconText}>ℹ️</Text>
                </TouchableOpacity>
              </View>
-            <Text style={styles.instructionText}>Click on any provider to book priest consultation services</Text>
+            <Text style={styles.instructionText}>{isHindi ? translations.clickProviderToBook.hi : translations.clickProviderToBook.en}</Text>
         
         {loadingProviders ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FFA040" />
-            <Text style={styles.loadingText}>Loading providers...</Text>
+            <Text style={styles.loadingText}>{isHindi ? translations.loadingProviders.hi : translations.loadingProviders.en}</Text>
           </View>
         ) : providers.length === 0 ? (
           <View style={styles.noProvidersContainer}>
-            <Text style={styles.noProvidersText}>No priest consultation providers available at the moment.</Text>
+            <Text style={styles.noProvidersText}>{isHindi ? translations.noProvidersAvailable.hi : translations.noProvidersAvailable.en}</Text>
           </View>
         ) : (
           <View style={styles.providersGrid}>
@@ -332,7 +379,7 @@ const TalkToPriestScreen: React.FC = () => {
                       {/* Areas Served */}
                       {provider.areasServiced && provider.areasServiced.length > 0 && (
                         <View style={styles.areasServedContainer}>
-                          <Text style={styles.areasServedLabel}>Areas served:</Text>
+                          <Text style={styles.areasServedLabel}>{isHindi ? translations.areasServed.hi : translations.areasServed.en}</Text>
                           <Text style={styles.areasServedText}>
                             {provider.areasServiced.map((area: any) => area.city || area).join(', ')}
                           </Text>
@@ -346,13 +393,13 @@ const TalkToPriestScreen: React.FC = () => {
                 {expandedProvider === provider.providerId && (
                   <View style={styles.expandedDetails}>
                     <View style={styles.providerDetailRow}>
-                      <Text style={styles.detailLabel}>📍 Location:</Text>
+                      <Text style={styles.detailLabel}>📍 {isHindi ? translations.location.hi : translations.location.en}</Text>
                       <Text style={styles.detailValue}>{provider.city}, {provider.state}, {provider.country}</Text>
                     </View>
                     
                     {provider.aboutProvider && (
                       <View style={styles.providerDetailRow}>
-                        <Text style={styles.detailLabel}>ℹ️ About:</Text>
+                        <Text style={styles.detailLabel}>ℹ️ {isHindi ? translations.about.hi : translations.about.en}</Text>
                         <Text style={styles.detailValue}>{provider.aboutProvider}</Text>
                       </View>
                     )}
@@ -361,7 +408,7 @@ const TalkToPriestScreen: React.FC = () => {
                       style={styles.bookButton}
                       onPress={() => openBookingModal(provider)}
                     >
-                      <Text style={styles.bookButtonText}>Book Appointment</Text>
+                      <Text style={styles.bookButtonText}>{isHindi ? translations.bookAppointment.hi : translations.bookAppointment.en}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -383,7 +430,7 @@ const TalkToPriestScreen: React.FC = () => {
             {selectedProvider && (
               <>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Provider Details</Text>
+                  <Text style={styles.modalTitle}>{isHindi ? translations.providerDetails.hi : translations.providerDetails.en}</Text>
                   <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => setShowProviderModal(false)}
@@ -432,7 +479,7 @@ const TalkToPriestScreen: React.FC = () => {
                   )}
                   
                   <View style={styles.providerDetailServices}>
-                    <Text style={styles.servicesTitle}>Services Offered:</Text>
+                    <Text style={styles.servicesTitle}>{isHindi ? translations.servicesOffered.hi : translations.servicesOffered.en}</Text>
                     <View style={styles.servicesList}>
                       {selectedProvider.kundli && <Text style={styles.serviceDetailTag}>🔮 Kundli</Text>}
                       {selectedProvider.astrology && <Text style={styles.serviceDetailTag}>⭐ Astrology</Text>}
@@ -444,10 +491,10 @@ const TalkToPriestScreen: React.FC = () => {
                   <TouchableOpacity
                     style={styles.contactButton}
                     onPress={() => {
-                      Alert.alert('Contact', `Contact ${selectedProvider.firstName} at ${selectedProvider.phoneNumber || selectedProvider.email}`);
+                      Alert.alert(isHindi ? translations.contact.hi : translations.contact.en, `${isHindi ? translations.contactProviderAt.hi : translations.contactProviderAt.en} ${selectedProvider.firstName} at ${selectedProvider.phoneNumber || selectedProvider.email}`);
                     }}
                   >
-                    <Text style={styles.contactButtonText}>Contact Provider</Text>
+                    <Text style={styles.contactButtonText}>{isHindi ? translations.contactProvider.hi : translations.contactProvider.en}</Text>
                   </TouchableOpacity>
                 </View>
               </>
@@ -468,7 +515,7 @@ const TalkToPriestScreen: React.FC = () => {
             {selectedProvider && (
               <>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Book Appointment</Text>
+                  <Text style={styles.modalTitle}>{isHindi ? translations.bookAppointmentTitle.hi : translations.bookAppointmentTitle.en}</Text>
                   <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => setShowBookingModal(false)}
@@ -479,7 +526,7 @@ const TalkToPriestScreen: React.FC = () => {
                 
                 <View style={styles.bookingContent}>
                   <Text style={styles.bookingWelcomeText}>
-                    Thank you for your interest in our Priest Consultation Services, please fill in the following details for us to contact you for booking
+                    {isHindi ? translations.thankYouInterest.hi : translations.thankYouInterest.en}
                   </Text>
                   
                   <Text style={styles.bookingProviderName}>
@@ -487,36 +534,36 @@ const TalkToPriestScreen: React.FC = () => {
                   </Text>
                   
                   <View style={styles.bookingForm}>
-                    <Text style={styles.formLabel}>Name *</Text>
+                    <Text style={styles.formLabel}>{isHindi ? translations.name.hi : translations.name.en}</Text>
                     <TextInput
                       style={styles.formInput}
                       value={bookingName}
                       onChangeText={setBookingName}
-                      placeholder="Enter your full name"
+                      placeholder={isHindi ? translations.enterFullName.hi : translations.enterFullName.en}
                       placeholderTextColor="#999"
                     />
                     
-                    <Text style={styles.formLabel}>Phone Number *</Text>
+                    <Text style={styles.formLabel}>{isHindi ? translations.phoneNumber.hi : translations.phoneNumber.en}</Text>
                     <TextInput
                       style={styles.formInput}
                       value={bookingPhone}
                       onChangeText={setBookingPhone}
-                      placeholder="Enter your phone number"
+                      placeholder={isHindi ? translations.enterPhoneNumber.hi : translations.enterPhoneNumber.en}
                       placeholderTextColor="#999"
                       keyboardType="phone-pad"
                     />
                     
-                    <Text style={styles.formLabel}>Preferred Date *</Text>
+                    <Text style={styles.formLabel}>{isHindi ? translations.preferredDate.hi : translations.preferredDate.en}</Text>
                     <TouchableOpacity
                       style={styles.datePickerButton}
                       onPress={showDatePickerModal}
                     >
                                           <Text style={styles.datePickerButtonText}>
-                      {bookingDate ? bookingDate : 'Select Date'}
+                      {bookingDate ? bookingDate : (isHindi ? translations.selectDate.hi : translations.selectDate.en)}
                     </Text>
                     </TouchableOpacity>
                     
-                    <Text style={styles.formLabel}>Preferred Time Slot *</Text>
+                    <Text style={styles.formLabel}>{isHindi ? translations.preferredTimeSlot.hi : translations.preferredTimeSlot.en}</Text>
                     <View style={styles.timeSlotContainer}>
                       {timeSlots.map((slot) => (
                         <TouchableOpacity
@@ -543,7 +590,7 @@ const TalkToPriestScreen: React.FC = () => {
                       disabled={isSubmitting}
                     >
                       <Text style={styles.submitButtonText}>
-                        {isSubmitting ? 'Booking...' : 'Book Appointment'}
+                        {isSubmitting ? (isHindi ? translations.booking.hi : translations.booking.en) : (isHindi ? translations.bookAppointmentButton.hi : translations.bookAppointmentButton.en)}
                       </Text>
                     </TouchableOpacity>
                     
@@ -586,7 +633,7 @@ const TalkToPriestScreen: React.FC = () => {
               onPress={(e) => e.stopPropagation()}
             >
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>About Priest Consultation</Text>
+                <Text style={styles.modalTitle}>{isHindi ? translations.aboutPriestConsultation.hi : translations.aboutPriestConsultation.en}</Text>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => setShowInfoModal(false)}
@@ -597,7 +644,7 @@ const TalkToPriestScreen: React.FC = () => {
               
               <View style={styles.infoContent}>
                 <Text style={styles.infoText}>
-                  Avail trusted Priest Consultation services for your religious and spiritual needs. Get expert guidance for pujas, rituals, and ceremonies performed with authenticity and devotion.
+                  {isHindi ? translations.aboutPriestConsultationText.hi : translations.aboutPriestConsultationText.en}
                 </Text>
               </View>
             </TouchableOpacity>

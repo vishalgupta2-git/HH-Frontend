@@ -301,7 +301,6 @@ export default function HomeHeader({
           <TouchableOpacity 
             style={styles.languageToggleBelow} 
             onPress={() => {
-              console.log('Language toggle pressed!');
               toggleLanguage();
             }}
             activeOpacity={0.7}

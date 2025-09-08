@@ -13,6 +13,7 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -36,6 +37,39 @@ interface CompatibilityResult {
 }
 
 const NumerologyCalculator: React.FC = () => {
+  const { isHindi } = useLanguage();
+  
+  const translations = {
+    title: { en: 'Numerology Calculator', hi: 'अंक ज्योतिष कैलकुलेटर' },
+    fullName: { en: 'Full Name', hi: 'पूरा नाम' },
+    enterFullName: { en: 'Enter your full name', hi: 'अपना पूरा नाम दर्ज करें' },
+    birthDate: { en: 'Birth Date', hi: 'जन्म तिथि' },
+    selectBirthDate: { en: 'Select Birth Date', hi: 'जन्म तिथि चुनें' },
+    calculate: { en: 'Calculate', hi: 'गणना करें' },
+    calculating: { en: 'Calculating...', hi: 'गणना की जा रही है...' },
+    lifePathNumber: { en: 'Life Path Number', hi: 'जीवन पथ संख्या' },
+    destinyNumber: { en: 'Destiny Number', hi: 'भाग्य संख्या' },
+    soulNumber: { en: 'Soul Number', hi: 'आत्मा संख्या' },
+    personalityNumber: { en: 'Personality Number', hi: 'व्यक्तित्व संख्या' },
+    birthDayNumber: { en: 'Birth Day Number', hi: 'जन्म दिन संख्या' },
+    compatibility: { en: 'Compatibility', hi: 'अनुकूलता' },
+    partnerName: { en: 'Partner Name', hi: 'साथी का नाम' },
+    enterPartnerName: { en: 'Enter partner\'s full name', hi: 'साथी का पूरा नाम दर्ज करें' },
+    partnerBirthDate: { en: 'Partner Birth Date', hi: 'साथी की जन्म तिथि' },
+    selectPartnerBirthDate: { en: 'Select Partner Birth Date', hi: 'साथी की जन्म तिथि चुनें' },
+    calculateCompatibility: { en: 'Calculate Compatibility', hi: 'अनुकूलता की गणना करें' },
+    dailyNumber: { en: 'Daily Number', hi: 'दैनिक संख्या' },
+    todayDate: { en: 'Today\'s Date', hi: 'आज की तारीख' },
+    calculateDaily: { en: 'Calculate Daily Number', hi: 'दैनिक संख्या की गणना करें' },
+    aboutNumerology: { en: 'About Numerology', hi: 'अंक ज्योतिष के बारे में' },
+    aboutNumerologyText: { en: 'Numerology is the mystical study of numbers and their influence on human life. Discover your life path, destiny, and personality through the power of numbers.', hi: 'अंक ज्योतिष संख्याओं का रहस्यमय अध्ययन है और मानव जीवन पर उनके प्रभाव का। संख्याओं की शक्ति के माध्यम से अपने जीवन पथ, भाग्य और व्यक्तित्व की खोज करें।' },
+    close: { en: 'Close', hi: 'बंद करें' },
+    nameRequired: { en: 'Name is required', hi: 'नाम आवश्यक है' },
+    birthDateRequired: { en: 'Birth date is required', hi: 'जन्म तिथि आवश्यक है' },
+    partnerNameRequired: { en: 'Partner name is required', hi: 'साथी का नाम आवश्यक है' },
+    partnerBirthDateRequired: { en: 'Partner birth date is required', hi: 'साथी की जन्म तिथि आवश्यक है' }
+  };
+
   const [fullName, setFullName] = useState('');
   const [birthDate, setBirthDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -403,23 +437,23 @@ const NumerologyCalculator: React.FC = () => {
     <>
       {/* Input Section */}
       <View style={styles.inputSection}>
-        <Text style={styles.sectionTitle}>Your Information</Text>
+        <Text style={styles.sectionTitle}>{isHindi ? 'आपकी जानकारी' : 'Your Information'}</Text>
         
         {/* Name Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Full Name</Text>
+          <Text style={styles.inputLabel}>{isHindi ? translations.fullName.hi : translations.fullName.en}</Text>
           <TextInput
             style={styles.textInput}
             value={fullName}
             onChangeText={setFullName}
-            placeholder="Enter your full name"
+            placeholder={isHindi ? translations.enterFullName.hi : translations.enterFullName.en}
             placeholderTextColor="#999"
           />
         </View>
 
         {/* Birth Date Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Birth Date</Text>
+          <Text style={styles.inputLabel}>{isHindi ? translations.birthDate.hi : translations.birthDate.en}</Text>
           <TouchableOpacity
             style={styles.dateButton}
             onPress={() => setShowDatePicker(true)}
@@ -440,12 +474,12 @@ const NumerologyCalculator: React.FC = () => {
             style={styles.calculateButtonGradient}
           >
             <Text style={styles.calculateButtonText}>
-              {isCalculating ? 'Calculating...' : 'Calculate Numerology'}
+              {isCalculating ? (isHindi ? translations.calculating.hi : translations.calculating.en) : (isHindi ? 'अंक ज्योतिष की गणना करें' : 'Calculate Numerology')}
             </Text>
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Clear Button */}
+        {/* {isHindi ? 'साफ करें' : 'Clear'} Button */}
         <TouchableOpacity
           style={styles.clearButton}
           onPress={() => {
@@ -456,20 +490,20 @@ const NumerologyCalculator: React.FC = () => {
             scrollViewRef.current?.scrollTo({ y: 0, animated: true });
           }}
         >
-          <Text style={styles.clearButtonText}>Clear</Text>
+          <Text style={styles.clearButtonText}>{isHindi ? 'साफ करें' : 'Clear'}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Results Section */}
       {results && (
         <View style={styles.resultsSection}>
-          <Text style={styles.sectionTitle}>Your Numerology Numbers</Text>
-          <Text style={styles.clickInstruction}>Click any tile to know more</Text>
+          <Text style={styles.sectionTitle}>{isHindi ? 'आपकी अंक ज्योतिष संख्याएं' : 'Your Numerology Numbers'}</Text>
+          <Text style={styles.clickInstruction}>{isHindi ? 'अधिक जानने के लिए किसी भी टाइल पर क्लिक करें' : 'Click any tile to know more'}</Text>
           
           {/* Life Path Number */}
           <TouchableOpacity onPress={() => showInfo('lifePath')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>Life Path Number</Text>
+              <Text style={styles.numberTitle}>{isHindi ? translations.lifePathNumber.hi : translations.lifePathNumber.en}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.lifePathNumber}</Text>
               </View>
@@ -480,7 +514,7 @@ const NumerologyCalculator: React.FC = () => {
           {/* Destiny Number */}
           <TouchableOpacity onPress={() => showInfo('destiny')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>Destiny Number</Text>
+              <Text style={styles.numberTitle}>{isHindi ? translations.destinyNumber.hi : translations.destinyNumber.en}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.destinyNumber}</Text>
               </View>
@@ -491,7 +525,7 @@ const NumerologyCalculator: React.FC = () => {
           {/* Soul Number */}
           <TouchableOpacity onPress={() => showInfo('soul')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>Soul Number</Text>
+              <Text style={styles.numberTitle}>{isHindi ? translations.soulNumber.hi : translations.soulNumber.en}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.soulNumber}</Text>
               </View>
@@ -502,7 +536,7 @@ const NumerologyCalculator: React.FC = () => {
           {/* Personality Number */}
           <TouchableOpacity onPress={() => showInfo('personality')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>Personality Number</Text>
+              <Text style={styles.numberTitle}>{isHindi ? translations.personalityNumber.hi : translations.personalityNumber.en}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.personalityNumber}</Text>
               </View>
@@ -513,7 +547,7 @@ const NumerologyCalculator: React.FC = () => {
           {/* Birth Day Number */}
           <TouchableOpacity onPress={() => showInfo('birthDay')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>Birth Day Number</Text>
+              <Text style={styles.numberTitle}>{isHindi ? translations.birthDayNumber.hi : translations.birthDayNumber.en}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.birthDayNumber}</Text>
               </View>
@@ -528,22 +562,22 @@ const NumerologyCalculator: React.FC = () => {
   const renderCompatibilityTab = () => (
     <>
       <View style={styles.inputSection}>
-        <Text style={styles.sectionTitle}>Compatibility Calculator</Text>
+          <Text style={styles.sectionTitle}>{isHindi ? 'अनुकूलता कैलकुलेटर' : 'Compatibility Calculator'}</Text>
         
         {/* Person 1 */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Your Name</Text>
+          <Text style={styles.inputLabel}>{isHindi ? 'आपका नाम' : 'Your Name'}</Text>
           <TextInput
             style={styles.textInput}
             value={fullName}
             onChangeText={setFullName}
-            placeholder="Enter your full name"
+            placeholder={isHindi ? 'अपना पूरा नाम दर्ज करें' : 'Enter your full name'}
             placeholderTextColor="#999"
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Your Birth Date</Text>
+          <Text style={styles.inputLabel}>{isHindi ? 'आपकी जन्म तिथि' : 'Your Birth Date'}</Text>
           <TouchableOpacity
             style={styles.dateButton}
             onPress={() => setShowDatePicker(true)}
@@ -555,18 +589,18 @@ const NumerologyCalculator: React.FC = () => {
 
         {/* Person 2 */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Partner's Name</Text>
+          <Text style={styles.inputLabel}>{isHindi ? translations.partnerName.hi : translations.partnerName.en}</Text>
           <TextInput
             style={styles.textInput}
             value={partnerName}
             onChangeText={setPartnerName}
-            placeholder="Enter partner's full name"
+            placeholder={isHindi ? translations.enterPartnerName.hi : translations.enterPartnerName.en}
             placeholderTextColor="#999"
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Partner's Birth Date</Text>
+          <Text style={styles.inputLabel}>{isHindi ? translations.partnerBirthDate.hi : translations.partnerBirthDate.en}</Text>
           <TouchableOpacity
             style={styles.dateButton}
             onPress={() => setShowPartnerDatePicker(true)}
@@ -584,11 +618,11 @@ const NumerologyCalculator: React.FC = () => {
             colors={['#FFA040', '#FF6A00']}
             style={styles.calculateButtonGradient}
           >
-            <Text style={styles.calculateButtonText}>Calculate Compatibility</Text>
+            <Text style={styles.calculateButtonText}>{isHindi ? translations.calculateCompatibility.hi : translations.calculateCompatibility.en}</Text>
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* Clear Button */}
+        {/* {isHindi ? 'साफ करें' : 'Clear'} Button */}
         <TouchableOpacity
           style={styles.clearButton}
           onPress={() => {
@@ -601,18 +635,18 @@ const NumerologyCalculator: React.FC = () => {
             scrollViewRef.current?.scrollTo({ y: 0, animated: true });
           }}
         >
-          <Text style={styles.clearButtonText}>Clear</Text>
+          <Text style={styles.clearButtonText}>{isHindi ? 'साफ करें' : 'Clear'}</Text>
         </TouchableOpacity>
       </View>
 
       {compatibilityResult && (
         <View style={styles.resultsSection}>
-          <Text style={styles.sectionTitle}>Compatibility Results</Text>
+          <Text style={styles.sectionTitle}>{isHindi ? 'अनुकूलता परिणाम' : 'Compatibility Results'}</Text>
           
           <View style={styles.compatibilityCard}>
             <View style={styles.compatibilityHeader}>
               <Text style={styles.compatibilityScore}>{compatibilityResult.compatibility}%</Text>
-              <Text style={styles.compatibilityLabel}>Compatibility</Text>
+              <Text style={styles.compatibilityLabel}>{isHindi ? translations.compatibility.hi : translations.compatibility.en}</Text>
             </View>
             <Text style={styles.compatibilityMeaning}>{compatibilityResult.meaning}</Text>
             <Text style={styles.compatibilityAdvice}>{compatibilityResult.advice}</Text>
@@ -625,10 +659,10 @@ const NumerologyCalculator: React.FC = () => {
   const renderDailyTab = () => (
     <>
       <View style={styles.inputSection}>
-        <Text style={styles.sectionTitle}>Daily Numerology</Text>
+        <Text style={styles.sectionTitle}>{isHindi ? 'दैनिक अंक ज्योतिष' : 'Daily Numerology'}</Text>
         
         <View style={styles.dailyCard}>
-          <Text style={styles.dailyTitle}>Today's Lucky Numbers</Text>
+          <Text style={styles.dailyTitle}>{isHindi ? 'आज के भाग्यशाली नंबर' : 'Today\'s Lucky Numbers'}</Text>
           <View style={styles.luckyNumbersContainer}>
             {getDailyLuckyNumbers().map((number, index) => (
               <View key={index} style={styles.luckyNumberCircle}>
@@ -637,14 +671,14 @@ const NumerologyCalculator: React.FC = () => {
             ))}
           </View>
           <Text style={styles.dailyInfo}>
-            These numbers are calculated based on today's date and may bring you good fortune throughout the day.
+            {isHindi ? 'ये नंबर आज की तारीख के आधार पर गणना किए गए हैं और पूरे दिन आपके लिए सौभाग्य ला सकते हैं।' : 'These numbers are calculated based on today\'s date and may bring you good fortune throughout the day.'}
           </Text>
         </View>
 
         <View style={styles.dailyCard}>
-          <Text style={styles.dailyTitle}>Daily Affirmation</Text>
+          <Text style={styles.dailyTitle}>{isHindi ? 'दैनिक पुष्टि' : 'Daily Affirmation'}</Text>
           <Text style={styles.dailyAffirmation}>
-            "Today I align with the positive vibrations of the universe and embrace the opportunities that come my way."
+            {isHindi ? '"आज मैं ब्रह्मांड की सकारात्मक कंपन के साथ संरेखित होता हूं और अपने रास्ते में आने वाले अवसरों को अपनाता हूं।"' : '"Today I align with the positive vibrations of the universe and embrace the opportunities that come my way."'}
           </Text>
         </View>
       </View>
@@ -665,7 +699,7 @@ const NumerologyCalculator: React.FC = () => {
           onPress={() => setActiveTab('calculator')}
         >
           <Text style={[styles.tabText, activeTab === 'calculator' && styles.activeTabText]}>
-            Calculator
+            {isHindi ? 'कैलकुलेटर' : 'Calculator'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -673,7 +707,7 @@ const NumerologyCalculator: React.FC = () => {
           onPress={() => setActiveTab('compatibility')}
         >
           <Text style={[styles.tabText, activeTab === 'compatibility' && styles.activeTabText]}>
-            Compatibility
+            {isHindi ? translations.compatibility.hi : translations.compatibility.en}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -681,7 +715,7 @@ const NumerologyCalculator: React.FC = () => {
           onPress={() => setActiveTab('daily')}
         >
           <Text style={[styles.tabText, activeTab === 'daily' && styles.activeTabText]}>
-            Daily
+            {isHindi ? 'दैनिक' : 'Daily'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -693,12 +727,12 @@ const NumerologyCalculator: React.FC = () => {
 
         {/* Information Section */}
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>About Numerology</Text>
+          <Text style={styles.sectionTitle}>{isHindi ? translations.aboutNumerology.hi : translations.aboutNumerology.en}</Text>
           <Text style={styles.infoText}>
-            Numerology is an ancient mystical science that reveals the hidden meanings of numbers and their influence on our lives. Each number carries specific vibrations and energies that shape our personality, destiny, and life path.
+            {isHindi ? translations.aboutNumerologyText.hi : translations.aboutNumerologyText.en}
           </Text>
           <Text style={styles.infoText}>
-            Your Life Path Number is the most important number in numerology, calculated from your birth date. It reveals your life's purpose and the path you're meant to follow.
+            {isHindi ? 'आपकी जीवन पथ संख्या अंक ज्योतिष में सबसे महत्वपूर्ण संख्या है, जो आपकी जन्म तिथि से गणना की जाती है। यह आपके जीवन के उद्देश्य और आपके अनुसरण करने वाले मार्ग को प्रकट करती है।' : 'Your Life Path Number is the most important number in numerology, calculated from your birth date. It reveals your life\'s purpose and the path you\'re meant to follow.'}
           </Text>
         </View>
       </View>

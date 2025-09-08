@@ -2,6 +2,7 @@ import React from 'react';
 import { SafeAreaView, StatusBar, Dimensions, Image, StyleSheet, View, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import NumerologyCalculator from '../components/NumerologyCalculator';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
 const CARD_TOP = 250;
@@ -10,6 +11,12 @@ const CARD_MARGIN_TOP = -40;
 export const options = { headerShown: false };
 
 const NumerologyScreen: React.FC = () => {
+  const { isHindi } = useLanguage();
+  
+  const translations = {
+    headerTitle: { en: 'Hindu Heritage', hi: 'द हिंदू हेरिटेज' }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#FFA040" />
@@ -22,7 +29,7 @@ const NumerologyScreen: React.FC = () => {
         end={{ x: 1, y: 0 }}
       >
         <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>Hindu Heritage</Text>
+        <Text style={styles.headerTitle}>{isHindi ? translations.headerTitle.hi : translations.headerTitle.en}</Text>
         <Image
           source={require('@/assets/images/temple illustration.png')}
           style={styles.temple}

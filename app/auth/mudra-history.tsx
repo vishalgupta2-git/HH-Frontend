@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useState, useEffect } from 'react';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getMudraHistory } from '@/utils/mudraUtils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -18,9 +19,20 @@ interface MudraHistoryEntry {
 
 export default function MudraHistoryScreen() {
   const router = useRouter();
+  const { isHindi } = useLanguage();
   const [history, setHistory] = useState<MudraHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalMudras, setTotalMudras] = useState(0);
+
+  const translations = {
+    headerTitle: { en: 'Mudra History', hi: 'मुद्रा इतिहास' },
+    totalMudrasEarned: { en: 'Total Mudras Earned', hi: 'कुल अर्जित मुद्राएं' },
+    activities: { en: 'Activities', hi: 'गतिविधियां' },
+    loadingHistory: { en: 'Loading history...', hi: 'इतिहास लोड हो रहा है...' },
+    noMudraHistory: { en: 'No mudra history yet', hi: 'अभी तक कोई मुद्रा इतिहास नहीं' },
+    startEarningMudras: { en: 'Start earning mudras by completing activities!', hi: 'गतिविधियां पूरी करके मुद्राएं कमाना शुरू करें!' },
+    backToMudras: { en: 'Back to Mudras', hi: 'मुद्राओं पर वापस जाएं' }
+  };
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -67,7 +79,7 @@ export default function MudraHistoryScreen() {
         end={{ x: 1, y: 0 }}
       >
         <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>Mudra History</Text>
+        <Text style={styles.headerTitle}>{isHindi ? translations.headerTitle.hi : translations.headerTitle.en}</Text>
         <Image
           source={require('@/assets/images/temple illustration.png')}
           style={styles.temple}
@@ -76,20 +88,20 @@ export default function MudraHistoryScreen() {
       
       <View style={styles.card}>
         <View style={styles.summarySection}>
-          <Text style={styles.summaryTitle}>Total Mudras Earned</Text>
+          <Text style={styles.summaryTitle}>{isHindi ? translations.totalMudrasEarned.hi : translations.totalMudrasEarned.en}</Text>
           <Text style={styles.totalMudras}>{totalMudras}</Text>
-          <Text style={styles.summarySubtitle}>{history.length} Activities</Text>
+          <Text style={styles.summarySubtitle}>{history.length} {isHindi ? translations.activities.hi : translations.activities.en}</Text>
         </View>
 
         <ScrollView style={styles.historyList} showsVerticalScrollIndicator={false}>
           {loading ? (
             <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Loading history...</Text>
+              <Text style={styles.loadingText}>{isHindi ? translations.loadingHistory.hi : translations.loadingHistory.en}</Text>
             </View>
           ) : history.length === 0 ? (
             <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No mudra history yet</Text>
-              <Text style={styles.emptySubtext}>Start earning mudras by completing activities!</Text>
+              <Text style={styles.emptyText}>{isHindi ? translations.noMudraHistory.hi : translations.noMudraHistory.en}</Text>
+              <Text style={styles.emptySubtext}>{isHindi ? translations.startEarningMudras.hi : translations.startEarningMudras.en}</Text>
             </View>
           ) : (
             history.map((entry, index) => (
@@ -112,7 +124,7 @@ export default function MudraHistoryScreen() {
           style={styles.backButton} 
           onPress={() => router.back()}
         >
-          <Text style={styles.backButtonText}>Back to Mudras</Text>
+          <Text style={styles.backButtonText}>{isHindi ? translations.backToMudras.hi : translations.backToMudras.en}</Text>
         </TouchableOpacity>
       </View>
     </View>
