@@ -5,10 +5,12 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
+  const { isHindi } = useLanguage();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -16,13 +18,35 @@ export default function LoginScreen() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const router = useRouter();
 
+  // Translations
+  const translations = {
+    title: { en: 'Welcome Back', hi: 'वापस स्वागत है' },
+    subtitle: { en: 'Sign in to your account', hi: 'अपने खाते में साइन इन करें' },
+    email: { en: 'Email', hi: 'ईमेल' },
+    emailPlaceholder: { en: 'Enter your email', hi: 'अपना ईमेल दर्ज करें' },
+    loginButton: { en: 'Sign In', hi: 'साइन इन करें' },
+    sendOtp: { en: 'Send OTP', hi: 'OTP भेजें' },
+    sendingOtp: { en: 'Sending OTP...', hi: 'OTP भेजा जा रहा है...' },
+    signupText: { en: 'Don\'t have an account? Sign Up', hi: 'खाता नहीं है? साइन अप करें' },
+    validation: {
+      emailRequired: { en: 'Email is required', hi: 'ईमेल आवश्यक है' },
+      emailInvalid: { en: 'Enter a valid email address', hi: 'एक वैध ईमेल पता दर्ज करें' },
+      otpFailed: { en: 'Failed to send OTP. Please try again.', hi: 'OTP भेजने में विफल। कृपया पुनः प्रयास करें।' },
+      tooManyAttempts: { en: 'Too many failed attempts. Please try again in 30 minutes.', hi: 'बहुत सारे असफल प्रयास। कृपया 30 मिनट बाद पुनः प्रयास करें।' }
+    },
+    terms: { en: 'Terms and Conditions', hi: 'नियम और शर्तें' },
+    privacy: { en: 'Privacy Policy', hi: 'गोपनीयता नीति' },
+    acceptTerms: { en: 'By signing in, you agree to our', hi: 'साइन इन करके, आप हमारी' },
+    and: { en: 'and', hi: 'और' }
+  };
+
   const validateEmail = (email: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/.test(email);
 
   const handleEmailChange = (text: string) => {
     setEmail(text);
     if (text.length > 0 && !validateEmail(text)) {
-      setEmailError('Enter a valid email address');
+      setEmailError(isHindi ? translations.validation.emailInvalid.hi : translations.validation.emailInvalid.en);
     } else {
       setEmailError('');
     }
@@ -31,7 +55,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     let valid = true;
     if (!validateEmail(email)) {
-      setEmailError('Enter a valid email address');
+      setEmailError(isHindi ? translations.validation.emailInvalid.hi : translations.validation.emailInvalid.en);
       valid = false;
     }
     if (!valid) return;
@@ -44,9 +68,9 @@ export default function LoginScreen() {
     } catch (err: any) {
       if (err.response?.status === 429) {
         // Lockout error
-        setEmailError(err.response?.data?.error || 'Too many failed attempts. Please try again in 30 minutes.');
+        setEmailError(err.response?.data?.error || (isHindi ? translations.validation.tooManyAttempts.hi : translations.validation.tooManyAttempts.en));
       } else {
-        setEmailError('Failed to send OTP. Please try again.');
+        setEmailError(isHindi ? translations.validation.otpFailed.hi : translations.validation.otpFailed.en);
       }
     } finally {
       setIsLoading(false);
@@ -74,12 +98,12 @@ export default function LoginScreen() {
             <Ionicons name="arrow-undo" size={24} color="#666" />
           </TouchableOpacity>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>Login to Your Account</Text>
+            <Text style={styles.title}>{isHindi ? translations.subtitle.hi : translations.subtitle.en}</Text>
           </View>
         </View>
         <TextInput
           style={styles.input}
-          placeholder="Enter Your Email"
+          placeholder={isHindi ? translations.emailPlaceholder.hi : translations.emailPlaceholder.en}
           placeholderTextColor="#888"
           value={email}
           onChangeText={handleEmailChange}
@@ -93,27 +117,27 @@ export default function LoginScreen() {
           disabled={isLoading}
         >
           <Text style={[styles.buttonText, isLoading && styles.buttonTextDisabled]}>
-            {isLoading ? 'Sending OTP...' : 'Send OTP'}
+            {isLoading ? (isHindi ? translations.sendingOtp.hi : translations.sendingOtp.en) : (isHindi ? translations.sendOtp.hi : translations.sendOtp.en)}
           </Text>
         </TouchableOpacity>
         
         {/* Terms and Privacy Policy Text */}
         <View style={styles.termsContainer}>
           <Text style={styles.termsText}>
-            By proceeding you agree to the{' '}
+            {isHindi ? translations.acceptTerms.hi : translations.acceptTerms.en}{' '}
             <Text style={styles.termsLink} onPress={() => setShowTermsModal(true)}>
-              Terms & Conditions
+              {isHindi ? translations.terms.hi : translations.terms.en}
             </Text>
-            {' '}and{' '}
+            {' '}{isHindi ? translations.and.hi : translations.and.en}{' '}
             <Text style={styles.termsLink} onPress={() => setShowPrivacyModal(true)}>
-              Privacy Policy
+              {isHindi ? translations.privacy.hi : translations.privacy.en}
             </Text>
             {' '}of The Hindu Heritage
           </Text>
         </View>
         
         <Text style={styles.loginText}>
-          Don't have an account?{' '}
+          {isHindi ? translations.signupText.hi : translations.signupText.en}
           <Text style={styles.loginLink} onPress={() => router.replace('/auth/signup')}>Sign-Up</Text>
         </Text>
       </View>

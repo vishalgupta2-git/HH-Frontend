@@ -6,12 +6,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState, useRef, useEffect } from 'react';
 import { Dimensions, Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
 export const options = { headerShown: false };
 
 export default function OTPScreen() {
+  const { isHindi } = useLanguage();
   const { email, name, from } = useLocalSearchParams();
   const [otp, setOtp] = useState(['', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +24,31 @@ export default function OTPScreen() {
   const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
   const inputRefs = useRef<TextInput[]>([]);
   const router = useRouter();
+
+  const translations = {
+    headerTitle: { en: 'Hindu Heritage', hi: 'द हिंदू हेरिटेज' },
+    verifyEmail: { en: 'Verify Your Email', hi: 'अपना ईमेल सत्यापित करें' },
+    sentCode: { en: 'We\'ve sent a 4-digit code to', hi: 'हमने 4 अंकों का कोड भेजा है' },
+    clear: { en: 'Clear', hi: 'साफ करें' },
+    verifying: { en: 'Verifying...', hi: 'सत्यापित किया जा रहा है...' },
+    verifyOtp: { en: 'Verify OTP', hi: 'OTP सत्यापित करें' },
+    didntReceive: { en: 'Didn\'t receive the code? You can resend in', hi: 'कोड नहीं मिला? आप इसे फिर से भेज सकते हैं' },
+    seconds: { en: 'seconds', hi: 'सेकंड में' },
+    didntReceiveSimple: { en: 'Didn\'t receive the code?', hi: 'कोड नहीं मिला?' },
+    resend: { en: 'Resend', hi: 'फिर से भेजें' },
+    backToSignup: { en: 'Back to Sign-Up', hi: 'साइन-अप पर वापस जाएं' },
+    backToLogin: { en: 'Back to Login', hi: 'लॉगिन पर वापस जाएं' },
+    validation: {
+      validOtp: { en: 'Please enter a valid 4-digit OTP', hi: 'कृपया एक वैध 4 अंकों का OTP दर्ज करें' },
+      accountLocked: { en: 'Account is temporarily locked. Please wait before trying again.', hi: 'खाता अस्थायी रूप से लॉक है। कृपया पुनः प्रयास करने से पहले प्रतीक्षा करें।' },
+      loginSuccessful: { en: 'Login successful! Redirecting...', hi: 'लॉगिन सफल! पुनर्निर्देशित किया जा रहा है...' },
+      invalidOtp: { en: 'Invalid OTP', hi: 'अमान्य OTP' },
+      tooManyAttempts: { en: 'Too many failed attempts. Please try again in 30 minutes.', hi: 'बहुत सारे असफल प्रयास। कृपया 30 मिनट बाद पुनः प्रयास करें।' },
+      failedToVerify: { en: 'Failed to verify OTP', hi: 'OTP सत्यापित करने में विफल' },
+      otpResent: { en: 'OTP has been resent to your email', hi: 'OTP आपके ईमेल पर फिर से भेजा गया है' },
+      failedToResend: { en: 'Failed to resend OTP', hi: 'OTP फिर से भेजने में विफल' }
+    }
+  };
 
   useEffect(() => {
     if (resendTimer > 0) {
@@ -77,13 +104,13 @@ export default function OTPScreen() {
   const handleVerifyOTP = async () => {
     const otpString = otp.join('');
     if (otpString.length !== 4) {
-      setMessage('Please enter a valid 4-digit OTP');
+      setMessage(isHindi ? translations.validation.validOtp.hi : translations.validation.validOtp.en);
       setMessageType('error');
       return;
     }
 
     if (isLockedOut) {
-      setMessage('Account is temporarily locked. Please wait before trying again.');
+      setMessage(isHindi ? translations.validation.accountLocked.hi : translations.validation.accountLocked.en);
       setMessageType('error');
       return;
     }
@@ -133,7 +160,7 @@ export default function OTPScreen() {
         // Note: Referral processing is now handled in the signup endpoint
         // No need to process referrals here since mudras are awarded immediately after user creation
         
-        setMessage('Login successful! Redirecting...');
+        setMessage(isHindi ? translations.validation.loginSuccessful.hi : translations.validation.loginSuccessful.en);
         setMessageType('success');
         
         // Navigate after a short delay
@@ -141,13 +168,13 @@ export default function OTPScreen() {
           router.replace('/(tabs)');
         }, 1500);
       } else {
-        setMessage(response.data.message || 'Invalid OTP');
+        setMessage(response.data.message || (isHindi ? translations.validation.invalidOtp.hi : translations.validation.invalidOtp.en));
         setMessageType('error');
       }
     } catch (error: any) {
       if (error.response?.status === 429) {
         // Lockout error
-        const lockoutMessage = error.response?.data?.error || 'Too many failed attempts. Please try again in 30 minutes.';
+        const lockoutMessage = error.response?.data?.error || (isHindi ? translations.validation.tooManyAttempts.hi : translations.validation.tooManyAttempts.en);
         setMessage(lockoutMessage);
         setMessageType('error');
         
@@ -165,7 +192,7 @@ export default function OTPScreen() {
         // Set timer to 30 minutes
         setResendTimer(1800);
       } else {
-        setMessage(error.response?.data?.message || 'Failed to verify OTP');
+        setMessage(error.response?.data?.message || (isHindi ? translations.validation.failedToVerify.hi : translations.validation.failedToVerify.en));
         setMessageType('error');
       }
     } finally {
@@ -181,10 +208,10 @@ export default function OTPScreen() {
         headers: getAuthHeaders()
       });
       setResendTimer(10);
-      setMessage('OTP has been resent to your email');
+      setMessage(isHindi ? translations.validation.otpResent.hi : translations.validation.otpResent.en);
       setMessageType('success');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Failed to resend OTP';
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || (isHindi ? translations.validation.failedToResend.hi : translations.validation.failedToResend.en);
       setMessage(errorMessage);
       setMessageType('error');
     }
@@ -199,7 +226,7 @@ export default function OTPScreen() {
         end={{ x: 1, y: 0 }}
       >
         <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>Hindu Heritage</Text>
+        <Text style={styles.headerTitle}>{isHindi ? translations.headerTitle.hi : translations.headerTitle.en}</Text>
         <Image
           source={require('@/assets/images/temple illustration.png')}
           style={styles.temple}
@@ -207,9 +234,9 @@ export default function OTPScreen() {
       </LinearGradient>
       
       <View style={styles.card}>
-        <Text style={styles.title}>Verify Your Email</Text>
+        <Text style={styles.title}>{isHindi ? translations.verifyEmail.hi : translations.verifyEmail.en}</Text>
         <Text style={styles.subtitle}>
-          We've sent a 4-digit code to {email}
+          {isHindi ? translations.sentCode.hi : translations.sentCode.en} {email}
         </Text>
         
         <View style={styles.otpContainer}>
@@ -246,7 +273,7 @@ export default function OTPScreen() {
           style={styles.clearButton} 
           onPress={handleClearOTP}
         >
-          <Text style={styles.clearButtonText}>Clear</Text>
+          <Text style={styles.clearButtonText}>{isHindi ? translations.clear.hi : translations.clear.en}</Text>
         </TouchableOpacity>
 
         {/* Verify button - always show but disabled until OTP is complete or during lockout */}
@@ -262,7 +289,7 @@ export default function OTPScreen() {
             styles.buttonText,
             (!isOtpComplete || isLoading || isLockedOut) && styles.buttonTextDisabled
           ]}>
-            {isLoading ? 'Verifying...' : 'Verify OTP'}
+            {isLoading ? (isHindi ? translations.verifying.hi : translations.verifying.en) : (isHindi ? translations.verifyOtp.hi : translations.verifyOtp.en)}
           </Text>
         </TouchableOpacity>
 
@@ -270,13 +297,13 @@ export default function OTPScreen() {
         <View style={styles.resendContainer}>
           <Text style={styles.resendText}>
             {resendTimer > 0 
-              ? `Didn't receive the code? You can resend in ${resendTimer} seconds` 
-              : 'Didn\'t receive the code? '
+              ? `${isHindi ? translations.didntReceive.hi : translations.didntReceive.en} ${resendTimer} ${isHindi ? translations.seconds.hi : translations.seconds.en}` 
+              : `${isHindi ? translations.didntReceiveSimple.hi : translations.didntReceiveSimple.en} `
             }
           </Text>
           {resendTimer === 0 && (
             <TouchableOpacity onPress={handleResendOTP}>
-              <Text style={styles.resendLink}>Resend</Text>
+              <Text style={styles.resendLink}>{isHindi ? translations.resend.hi : translations.resend.en}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -286,7 +313,7 @@ export default function OTPScreen() {
           onPress={() => router.back()}
         >
           <Text style={styles.backButtonText}>
-            {from === 'signup' ? 'Back to Sign-Up' : 'Back to Login'}
+            {from === 'signup' ? (isHindi ? translations.backToSignup.hi : translations.backToSignup.en) : (isHindi ? translations.backToLogin.hi : translations.backToLogin.en)}
           </Text>
         </TouchableOpacity>
       </View>

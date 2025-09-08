@@ -6,7 +6,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: boolean }) {
-  console.log('ReferralConnectBlock rendering with isHindi:', isHindi);
   const [referralCode, setReferralCode] = useState<string>('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -15,9 +14,6 @@ export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: bo
   const router = useRouter();
   
   // Debug: Log when isHindi changes
-  useEffect(() => {
-    console.log('ReferralConnectBlock isHindi changed to:', isHindi);
-  }, [isHindi]);
 
   useEffect(() => {
     checkUserAuthentication();

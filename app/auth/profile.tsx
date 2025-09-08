@@ -8,6 +8,7 @@ import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInpu
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { awardMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -26,6 +27,7 @@ const kidGenderOptions = ['Male', 'Female', 'Other'];
 export const options = { headerShown: false };
 
 export default function ProfileScreen() {
+  const { isHindi } = useLanguage();
   // Basic Information
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -81,6 +83,76 @@ export default function ProfileScreen() {
   const [showMudraModal, setShowMudraModal] = useState(false);
   const [mudrasEarned, setMudrasEarned] = useState(0);
   const router = useRouter();
+
+  const translations = {
+    title: { en: 'Profile', hi: 'प्रोफाइल' },
+    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
+    contactInformation: { en: 'Contact Information', hi: 'संपर्क जानकारी' },
+    aboutYourself: { en: 'About Yourself', hi: 'अपने बारे में' },
+    yourFamily: { en: 'Your Family', hi: 'आपका परिवार' },
+    parents: { en: 'Parents', hi: 'माता-पिता' },
+    spouseAndKids: { en: 'Spouse and Kids', hi: 'पति/पत्नी और बच्चे' },
+    mothersInformation: { en: 'Mother\'s Information', hi: 'माता की जानकारी' },
+    fathersInformation: { en: 'Father\'s Information', hi: 'पिता की जानकारी' },
+    spousesInformation: { en: 'Spouse\'s Information', hi: 'पति/पत्नी की जानकारी' },
+    kidsInformation: { en: 'Kids Information', hi: 'बच्चों की जानकारी' },
+    maritalStatus: { en: 'Marital Status', hi: 'वैवाहिक स्थिति' },
+    doYouHaveKids: { en: 'Do you have kids?', hi: 'क्या आपके बच्चे हैं?' },
+    saveProfile: { en: 'Save Profile', hi: 'प्रोफाइल सहेजें' },
+    congratulations: { en: 'Congratulations!', hi: 'बधाई हो!' },
+    profileUpdatedSuccessfully: { en: 'Profile updated successfully! You earned', hi: 'प्रोफाइल सफलतापूर्वक अपडेट हो गया! आपने कमाए' },
+    mudras: { en: 'mudras!', hi: 'मुद्राएं!' },
+    fields: {
+      firstName: { en: 'First Name *', hi: 'पहला नाम *' },
+      lastName: { en: 'Last Name', hi: 'अंतिम नाम' },
+      emailId: { en: 'E-mail ID (cannot be changed)', hi: 'ई-मेल आईडी (बदला नहीं जा सकता)' },
+      phoneNumber: { en: 'Enter Your Phone No', hi: 'अपना फोन नंबर दर्ज करें' },
+      gender: { en: 'Gender', hi: 'लिंग' },
+      rashi: { en: 'Rashi', hi: 'राशि' },
+      placeOfBirth: { en: 'Place of Birth', hi: 'जन्म स्थान' },
+      gotra: { en: 'Gotra', hi: 'गोत्र' },
+      dateTimeOfBirth: { en: 'Select Date & Time of Birth', hi: 'जन्म की तारीख और समय चुनें' },
+      mothersName: { en: 'Mother\'s Name', hi: 'माता का नाम' },
+      fathersName: { en: 'Father\'s Name', hi: 'पिता का नाम' },
+      spousesName: { en: 'Spouse\'s Name', hi: 'पति/पत्नी का नाम' },
+      kidFirstName: { en: 'First Name', hi: 'पहला नाम' },
+      kidLastName: { en: 'Last Name', hi: 'अंतिम नाम' },
+      kidGender: { en: 'Gender', hi: 'लिंग' },
+      kidDateOfBirth: { en: 'Date of Birth', hi: 'जन्म तिथि' }
+    },
+    options: {
+      male: { en: 'Male', hi: 'पुरुष' },
+      female: { en: 'Female', hi: 'महिला' },
+      other: { en: 'Other', hi: 'अन्य' },
+      single: { en: 'Single', hi: 'अविवाहित' },
+      married: { en: 'Married', hi: 'विवाहित' },
+      divorced: { en: 'Divorced', hi: 'तलाकशुदा' },
+      widowed: { en: 'Widowed', hi: 'विधवा/विधुर' },
+      yes: { en: 'Yes', hi: 'हाँ' },
+      no: { en: 'No', hi: 'नहीं' }
+    },
+    labels: {
+      deceased: { en: 'Deceased', hi: 'स्वर्गवासी' },
+      dateOfBirth: { en: 'Date of Birth', hi: 'जन्म तिथि' },
+      deathAnniversary: { en: 'Death Anniversary', hi: 'पुण्यतिथि' },
+      anniversaryDate: { en: 'Select Anniversary Date', hi: 'विवाह वर्षगांठ की तारीख चुनें' },
+      widowDate: { en: 'Select Widow Date', hi: 'विधवा/विधुर की तारीख चुनें' },
+      spousesDateOfBirth: { en: 'Spouse\'s Date of Birth', hi: 'पति/पत्नी की जन्म तिथि' },
+      selectDateOfBirth: { en: 'Select Date of Birth', hi: 'जन्म तिथि चुनें' },
+      selectDeathAnniversary: { en: 'Select Death Anniversary', hi: 'पुण्यतिथि चुनें' }
+    },
+    kids: {
+      kid: { en: 'Kid', hi: 'बच्चा' },
+      addAnotherKid: { en: '+ Add Another Kid', hi: '+ एक और बच्चा जोड़ें' },
+      remove: { en: 'Remove', hi: 'हटाएं' }
+    },
+    validation: {
+      firstNameMinLength: { en: 'First name must be at least 2 characters', hi: 'पहला नाम कम से कम 2 अक्षर का होना चाहिए' },
+      validPhoneNumber: { en: 'Enter a valid phone number', hi: 'एक वैध फोन नंबर दर्ज करें' },
+      profileUpdateSuccess: { en: 'Profile updated successfully!', hi: 'प्रोफाइल सफलतापूर्वक अपडेट हो गया!' },
+      profileUpdateError: { en: 'Failed to update profile:', hi: 'प्रोफाइल अपडेट करने में विफल:' }
+    }
+  };
 
   // Cleanup mudra modal timeout on unmount
   useEffect(() => {
@@ -199,7 +271,7 @@ export default function ProfileScreen() {
     const numbersOnly = text.replace(/[^0-9]/g, '');
     setPhone(numbersOnly);
     if (numbersOnly.length < 7) {
-      setPhoneError('Enter a valid phone number');
+      setPhoneError(isHindi ? translations.validation.validPhoneNumber.hi : translations.validation.validPhoneNumber.en);
     } else {
       setPhoneError('');
     }
@@ -229,7 +301,7 @@ export default function ProfileScreen() {
     
     const trimmedFirstName = firstName.trim();
     if (trimmedFirstName.length < 2) {
-      setFirstNameError('First name must be at least 2 characters');
+      setFirstNameError(isHindi ? translations.validation.firstNameMinLength.hi : translations.validation.firstNameMinLength.en);
       valid = false;
     }
     

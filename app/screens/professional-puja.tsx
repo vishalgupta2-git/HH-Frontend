@@ -6,6 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import YoutubePlayer from 'react-native-youtube-iframe';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const deityList = [
   'Lord Agni',
@@ -71,6 +72,7 @@ function safeString(value: any): string {
 export const options = { headerShown: false };
 
 export default function ProfessionalPujaScreen() {
+  const { isHindi } = useLanguage();
   const [modalVisible, setModalVisible] = useState(false);
   const [bookingModalVisible, setBookingModalVisible] = useState(false);
   const [currentPuja, setCurrentPuja] = useState<PujaData | null>(null);
@@ -85,6 +87,39 @@ export default function ProfessionalPujaScreen() {
   const [date, setDate] = useState(new Date(Date.now() + 24 * 60 * 60 * 1000));
   const [showDate, setShowDate] = useState(false);
   const [slot, setSlot] = useState('8:00-10:00 AM');
+
+  // Translations
+  const translations = {
+    searchPlaceholder: { en: 'Search professional pujas...', hi: 'पेशेवर पूजाओं की खोज करें...' },
+    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
+    noDataFound: { en: 'No professional pujas found.', hi: 'कोई पेशेवर पूजा नहीं मिली।' },
+    errorLoading: { en: 'Error loading data. Please try again.', hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    pullToRefresh: { en: 'Pull to refresh', hi: 'रिफ्रेश करने के लिए खींचें' },
+    bookingForm: {
+      title: { en: 'Book Professional Puja', hi: 'पेशेवर पूजा बुक करें' },
+      name: { en: 'Your Name', hi: 'आपका नाम' },
+      phone: { en: 'Phone Number', hi: 'फोन नंबर' },
+      date: { en: 'Preferred Date', hi: 'पसंदीदा तारीख' },
+      timeSlot: { en: 'Time Slot', hi: 'समय स्लॉट' },
+      submit: { en: 'Book Puja', hi: 'पूजा बुक करें' },
+      cancel: { en: 'Cancel', hi: 'रद्द करें' }
+    },
+    timeSlots: {
+      slot1: { en: '8:00-10:00 AM', hi: 'सुबह 8:00-10:00' },
+      slot2: { en: '10:00-12:00 PM', hi: 'सुबह 10:00-दोपहर 12:00' },
+      slot3: { en: '12:00-2:00 PM', hi: 'दोपहर 12:00-2:00' },
+      slot4: { en: '2:00-4:00 PM', hi: 'दोपहर 2:00-4:00' },
+      slot5: { en: '4:00-6:00 PM', hi: 'शाम 4:00-6:00' },
+      slot6: { en: '6:00-8:00 PM', hi: 'शाम 6:00-8:00' },
+      slot7: { en: '8:00-10:00 PM', hi: 'रात 8:00-10:00' }
+    },
+    success: { en: 'Professional puja booking submitted successfully!', hi: 'पेशेवर पूजा बुकिंग सफलतापूर्वक जमा हो गई!' },
+    error: { en: 'Error submitting booking. Please try again.', hi: 'बुकिंग जमा करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    pujaLibrary: { en: 'Puja Library', hi: 'पूजा लाइब्रेरी' },
+    deity: { en: 'Deity', hi: 'देवता' },
+    searchPlaceholder: { en: 'Search for pujas, deities, or purposes...', hi: 'पूजाओं, देवताओं या उद्देश्यों की खोज करें...' },
+    mainDeity: { en: 'Main Deity', hi: 'मुख्य देवता' }
+  };
 
   useEffect(() => {
     const fetchPujas = async () => {
@@ -165,7 +200,7 @@ export default function ProfessionalPujaScreen() {
       <View style={styles.searchInputContainer}>
         <TextInput
           style={styles.searchInput}
-          placeholder="Search for pujas, deities, or purposes..."
+          placeholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en}
           placeholderTextColor="#666"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -184,7 +219,7 @@ export default function ProfessionalPujaScreen() {
           onPress={() => setDeityDropdownOpen(open => !open)}
         >
           <Text style={styles.deityDropdownText}>
-            {selectedDeity || 'Deity'}
+            {selectedDeity || (isHindi ? translations.deity.hi : translations.deity.en)}
           </Text>
           <MaterialCommunityIcons
             name={deityDropdownOpen ? 'chevron-up' : 'chevron-down'}
@@ -271,13 +306,13 @@ export default function ProfessionalPujaScreen() {
 
   return (
     <View style={styles.container}>
-      <HomeHeader searchPlaceholder="Search for Pujas" extraContent={iconRowAndDropdown} showDailyPujaButton={false} showSearchBar={false} />
+      <HomeHeader searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en} extraContent={iconRowAndDropdown} showDailyPujaButton={false} showSearchBar={false} showLanguageToggle={false} />
       {/* Puja List */}
               <ScrollView 
           style={styles.content}
           contentContainerStyle={{ paddingBottom: 200 }}
         >
-        <Text style={styles.sectionHeader}>Puja Library</Text>
+        <Text style={styles.sectionHeader}>{isHindi ? translations.pujaLibrary.hi : translations.pujaLibrary.en}</Text>
         {loading ? (
           <Text style={styles.loadingText}>Loading...</Text>
         ) : filteredPujas.length === 0 ? (
@@ -377,7 +412,7 @@ export default function ProfessionalPujaScreen() {
               
               {currentPuja.mainDeity && currentPuja.mainDeity !== '' && (
                 <Text style={styles.modalDetail}>
-                  <Text style={styles.modalDetailLabel}>Main Deity: </Text>
+                  <Text style={styles.modalDetailLabel}>{isHindi ? translations.mainDeity.hi : translations.mainDeity.en}: </Text>
                   {safeString(currentPuja.mainDeity)}
                 </Text>
               )}

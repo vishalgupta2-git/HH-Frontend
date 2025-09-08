@@ -51,14 +51,10 @@ const numColumns = 4;
 const tileSize = (Dimensions.get('window').width - 72) / numColumns;
 
 export default function HomeIconGrid({ isHindi = false }: { isHindi?: boolean }) {
-  console.log('HomeIconGrid rendering with isHindi:', isHindi);
   const router = useRouter();
   const icons = getIcons(isHindi);
   
   // Debug: Log when isHindi changes
-  React.useEffect(() => {
-    console.log('HomeIconGrid isHindi changed to:', isHindi);
-  }, [isHindi]);
   return (
     <View style={styles.gridWrapper}>
       <View style={styles.grid}>

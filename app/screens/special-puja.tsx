@@ -6,6 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useState } from 'react';
 import { Alert, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View, Image } from 'react-native';
 import { getImageSource } from '@/utils/iconMappings';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const timeSlots = [
   '8:00-10:00 AM', '10:00-12:00 PM', '12:00-2:00 PM', '2:00-4:00 PM',
@@ -44,6 +45,7 @@ function safeString(value: any): string {
 export const options = { headerShown: false };
 
 export default function SpecialPujaScreen() {
+  const { isHindi } = useLanguage();
   const [modalVisible, setModalVisible] = useState(false);
   const [bookingModalVisible, setBookingModalVisible] = useState(false);
   const [currentPuja, setCurrentPuja] = useState<SpecialPujaData | null>(null);
@@ -59,6 +61,42 @@ export default function SpecialPujaScreen() {
   // Filter states
   const [selectedFilter, setSelectedFilter] = useState<string>('puja-for');
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+
+  // Translations
+  const translations = {
+    searchPlaceholder: { en: 'Search special day pujas...', hi: 'विशेष दिन की पूजाओं की खोज करें...' },
+    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
+    noDataFound: { en: 'No special day pujas found.', hi: 'कोई विशेष दिन की पूजा नहीं मिली।' },
+    errorLoading: { en: 'Error loading data. Please try again.', hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    pullToRefresh: { en: 'Pull to refresh', hi: 'रिफ्रेश करने के लिए खींचें' },
+    bookingForm: {
+      title: { en: 'Book Special Puja', hi: 'विशेष पूजा बुक करें' },
+      name: { en: 'Your Name', hi: 'आपका नाम' },
+      phone: { en: 'Phone Number', hi: 'फोन नंबर' },
+      date: { en: 'Preferred Date', hi: 'पसंदीदा तारीख' },
+      timeSlot: { en: 'Time Slot', hi: 'समय स्लॉट' },
+      submit: { en: 'Book Puja', hi: 'पूजा बुक करें' },
+      cancel: { en: 'Cancel', hi: 'रद्द करें' }
+    },
+    timeSlots: {
+      slot1: { en: '8:00-10:00 AM', hi: 'सुबह 8:00-10:00' },
+      slot2: { en: '10:00-12:00 PM', hi: 'सुबह 10:00-दोपहर 12:00' },
+      slot3: { en: '12:00-2:00 PM', hi: 'दोपहर 12:00-2:00' },
+      slot4: { en: '2:00-4:00 PM', hi: 'दोपहर 2:00-4:00' },
+      slot5: { en: '4:00-6:00 PM', hi: 'शाम 4:00-6:00' },
+      slot6: { en: '6:00-8:00 PM', hi: 'शाम 6:00-8:00' },
+      slot7: { en: '8:00-10:00 PM', hi: 'रात 8:00-10:00' }
+    },
+    success: { en: 'Puja booking submitted successfully!', hi: 'पूजा बुकिंग सफलतापूर्वक जमा हो गई!' },
+    error: { en: 'Error submitting booking. Please try again.', hi: 'बुकिंग जमा करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    heading: { en: 'Mark your milestones with Divine Blessings', hi: 'दिव्य आशीर्वाद के साथ अपने मील के पत्थर को चिह्नित करें' },
+    searchPlaceholder: { en: 'Search for pujas, details, or categories...', hi: 'पूजाओं, विवरण या श्रेणियों की खोज करें...' },
+    pujaFor: { en: 'Puja for', hi: 'पूजा के लिए' },
+    upcoming: { en: 'Upcoming', hi: 'आगामी' },
+    individual: { en: 'Individual', hi: 'व्यक्तिगत' },
+    couples: { en: 'Couples', hi: 'जोड़े' },
+    families: { en: 'Families', hi: 'परिवार' }
+  };
 
   useEffect(() => {
     const fetchPujas = async () => {
@@ -76,7 +114,7 @@ export default function SpecialPujaScreen() {
       } catch (e: any) {
         console.error('❌ Error fetching special pujas:', e.message);
         console.error('❌ Error response:', e.response?.data);
-        Alert.alert('Failed to fetch special pujas', e.response?.data?.error || e.message);
+        Alert.alert(isHindi ? 'विशेष पूजाएं लोड करने में विफल' : 'Failed to fetch special pujas', e.response?.data?.error || e.message);
       } finally {
         setLoading(false);
       }
@@ -106,7 +144,7 @@ export default function SpecialPujaScreen() {
     }
     
     if (!currentPuja?.pujaName) {
-      Alert.alert('Error', 'No puja selected. Please try again.');
+      Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'कोई पूजा चयनित नहीं। कृपया पुनः प्रयास करें।' : 'No puja selected. Please try again.');
       return;
     }
     
@@ -128,11 +166,11 @@ export default function SpecialPujaScreen() {
       setBookingModalVisible(false);
       setName('');
       setPhone('');
-      Alert.alert('Success', 'Your special puja booking request has been submitted successfully!');
+      Alert.alert(isHindi ? 'सफलता' : 'Success', isHindi ? translations.success.hi : translations.success.en);
     } catch (err: any) {
       console.error('❌ Booking error:', err.message);
       console.error('❌ Booking error response:', err.response?.data);
-      Alert.alert('Error', `Failed to save booking: ${err.response?.data?.error || err.message}`);
+      Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? `बुकिंग सेव करने में विफल: ${err.response?.data?.error || err.message}` : `Failed to save booking: ${err.response?.data?.error || err.message}`);
     }
   };
 
@@ -177,9 +215,10 @@ export default function SpecialPujaScreen() {
   return (
     <View style={styles.container}>
       <HomeHeader 
-        searchPlaceholder="Search for Special Pujas" 
+        searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en}
         showDailyPujaButton={false}
         showSearchBar={false}
+        showLanguageToggle={false}
         extraContent={
            <View style={styles.filterContainer}>
              {/* Search Input */}
@@ -299,14 +338,14 @@ export default function SpecialPujaScreen() {
           style={styles.content}
           contentContainerStyle={{ paddingBottom: 200 }}
         >
-        <Text style={styles.headline}>Mark your milestones with Divine Blessings</Text>
+        <Text style={styles.headline}>{isHindi ? translations.heading.hi : translations.heading.en}</Text>
         {loading ? (
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={styles.loadingText}>{isHindi ? translations.loading.hi : translations.loading.en}</Text>
         ) : filteredPujas.length === 0 ? (
           <Text style={styles.noDataText}>
             {searchQuery.trim() || selectedFilter !== 'puja-for' 
-              ? 'No special pujas found matching your current filters. Try adjusting your search or filters.'
-              : 'No special pujas found. Please check the database.'
+              ? (isHindi ? 'आपके वर्तमान फिल्टर से कोई विशेष पूजा मेल नहीं खाती। अपनी खोज या फिल्टर को समायोजित करने का प्रयास करें।' : 'No special pujas found matching your current filters. Try adjusting your search or filters.')
+              : (isHindi ? translations.noDataFound.hi : translations.noDataFound.en)
             }
           </Text>
         ) : (
@@ -436,7 +475,7 @@ export default function SpecialPujaScreen() {
                 })()}
                 
                 <TouchableOpacity style={styles.bookPujaButton} onPress={handleBookPuja}>
-                  <Text style={styles.bookPujaButtonText}>Book Puja</Text>
+                  <Text style={styles.bookPujaButtonText}>{isHindi ? translations.bookingForm.submit.hi : translations.bookingForm.submit.en}</Text>
                 </TouchableOpacity>
               </ScrollView>
             )}
@@ -465,14 +504,14 @@ export default function SpecialPujaScreen() {
             />
             <TextInput
               style={styles.modalInput}
-              placeholder="Phone Number"
+              placeholder={isHindi ? "फोन नंबर" : "Phone Number"}
               value={phone}
               onChangeText={t => setPhone(t.replace(/[^0-9]/g, ''))}
               keyboardType="phone-pad"
               maxLength={10}
             />
             <TouchableOpacity onPress={() => setShowDate(true)} style={styles.datePickerBtn}>
-              <Text style={styles.datePickerText}>Date: {date.toLocaleDateString()}</Text>
+              <Text style={styles.datePickerText}>{isHindi ? translations.bookingForm.date.hi : translations.bookingForm.date.en}: {date.toLocaleDateString()}</Text>
             </TouchableOpacity>
             {showDate && (
               <DateTimePicker
@@ -499,10 +538,10 @@ export default function SpecialPujaScreen() {
             </View>
             <View style={styles.buttonRow}>
               <TouchableOpacity style={[styles.modalConfirmBtn, {flex: 1, marginRight: 8}]} onPress={handleConfirmBooking}>
-                <Text style={styles.modalConfirmText}>Confirm</Text>
+                <Text style={styles.modalConfirmText}>{isHindi ? translations.bookingForm.submit.hi : translations.bookingForm.submit.en}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modalCancelBtn, {flex: 1, marginLeft: 8}]} onPress={() => setBookingModalVisible(false)}>
-                <Text style={styles.modalCancelText}>Cancel</Text>
+                <Text style={styles.modalCancelText}>{isHindi ? translations.bookingForm.cancel.hi : translations.bookingForm.cancel.en}</Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>

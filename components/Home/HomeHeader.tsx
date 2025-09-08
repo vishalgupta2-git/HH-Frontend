@@ -48,12 +48,8 @@ export default function HomeHeader({
   showLanguageToggle?: boolean
 }) {
   const { isHindi, toggleLanguage } = useLanguage();
-  console.log('HomeHeader props:', { isHindi, showDailyPujaButton });
   
   // Debug: Log when isHindi changes
-  useEffect(() => {
-    console.log('HomeHeader isHindi changed to:', isHindi);
-  }, [isHindi]);
   const [modalVisible, setModalVisible] = useState(false);
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -238,7 +234,7 @@ export default function HomeHeader({
           <Feather name="menu" size={32} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.centeredTitle}>
-          {isHindi ? 'हिंदू हेरिटेज' : 'The Hindu Heritage'}
+          {isHindi ? 'द हिंदू हेरिटेज' : 'The Hindu Heritage'}
         </Text>
         <View style={styles.mudraDisplay}>
           <TouchableOpacity 

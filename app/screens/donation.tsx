@@ -22,6 +22,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, ActivityIn
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getEndpointUrl, getAuthHeaders, API_CONFIG } from '@/constants/ApiConfig';
 import axios from 'axios';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Time slots for donation
 const timeSlots = [
@@ -57,6 +58,59 @@ interface TempleCharity {
 }
 
 export default function DonationScreen() {
+  const { isHindi } = useLanguage();
+  
+  const translations = {
+    searchPlaceholder: { en: 'Search temples and charities...', hi: 'मंदिर और धर्मार्थ संस्थाओं की खोज करें...' },
+    temples: { en: 'Temples', hi: 'मंदिर' },
+    charities: { en: 'Charities', hi: 'धर्मार्थ संस्थाएं' },
+    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
+    noDataFound: { en: 'No temples or charities found.', hi: 'कोई मंदिर या धर्मार्थ संस्था नहीं मिली।' },
+    errorLoading: { en: 'Error loading data. Please try again.', hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    pullToRefresh: { en: 'Pull to refresh', hi: 'रिफ्रेश करने के लिए खींचें' },
+    donationForm: {
+      title: { en: 'Donation Form', hi: 'दान फॉर्म' },
+      amount: { en: 'Donation Amount', hi: 'दान राशि' },
+      currency: { en: 'Currency', hi: 'मुद्रा' },
+      date: { en: 'Donation Date', hi: 'दान की तारीख' },
+      timeSlot: { en: 'Time Slot', hi: 'समय स्लॉट' },
+      name: { en: 'Your Name', hi: 'आपका नाम' },
+      phone: { en: 'Phone Number', hi: 'फोन नंबर' },
+      email: { en: 'Email', hi: 'ईमेल' },
+      message: { en: 'Message (Optional)', hi: 'संदेश (वैकल्पिक)' },
+      submit: { en: 'Submit Donation', hi: 'दान जमा करें' },
+      cancel: { en: 'Cancel', hi: 'रद्द करें' }
+    },
+    timeSlots: {
+      slot1: { en: '8AM-10AM', hi: 'सुबह 8-10 बजे' },
+      slot2: { en: '10AM-12PM', hi: 'सुबह 10-दोपहर 12 बजे' },
+      slot3: { en: '12PM-2PM', hi: 'दोपहर 12-2 बजे' },
+      slot4: { en: '2PM-4PM', hi: 'दोपहर 2-4 बजे' },
+      slot5: { en: '4PM-6PM', hi: 'शाम 4-6 बजे' },
+      slot6: { en: '6PM-8PM', hi: 'शाम 6-8 बजे' }
+    },
+    currencies: {
+      rs: { en: 'Rs', hi: 'रुपये' },
+      dollar: { en: '$', hi: '$' },
+      euro: { en: '€', hi: '€' },
+      pound: { en: '£', hi: '£' }
+    },
+    success: { en: 'Donation submitted successfully!', hi: 'दान सफलतापूर्वक जमा हो गया!' },
+    error: { en: 'Error submitting donation. Please try again.', hi: 'दान जमा करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    modal: {
+      showingItems: { en: 'Showing', hi: 'दिखा रहे हैं' },
+      item: { en: 'item', hi: 'आइटम' },
+      items: { en: 'items', hi: 'आइटम' },
+      about: { en: 'About', hi: 'के बारे में' },
+      gallery: { en: 'Gallery', hi: 'गैलरी' },
+      donate: { en: 'Donate', hi: 'दान करें' },
+      noImagesAvailable: { en: 'No images available', hi: 'कोई छवि उपलब्ध नहीं' },
+      thankYouSupporting: { en: 'Thank you for supporting the', hi: 'का समर्थन करने के लिए धन्यवाद' },
+      contactInfo: { en: 'Please provide the following information for us to contact you', hi: 'हमसे संपर्क करने के लिए कृपया निम्नलिखित जानकारी प्रदान करें' },
+      thankYouDonation: { en: 'Thank you for your donation. We will contact you soon.', hi: 'आपके दान के लिए धन्यवाद। हम जल्द ही आपसे संपर्क करेंगे।' }
+    }
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [templesEnabled, setTemplesEnabled] = useState(true);
   const [charitiesEnabled, setCharitiesEnabled] = useState(true);
@@ -442,7 +496,7 @@ export default function DonationScreen() {
             ]}
           />
         </LinearGradient>
-        <Text style={styles.toggleLabel}>Temples</Text>
+        <Text style={styles.toggleLabel}>{isHindi ? translations.temples.hi : translations.temples.en}</Text>
       </TouchableOpacity>
 
       {/* Charities Toggle */}
@@ -463,7 +517,7 @@ export default function DonationScreen() {
             ]}
           />
         </LinearGradient>
-        <Text style={styles.toggleLabel}>Charities</Text>
+        <Text style={styles.toggleLabel}>{isHindi ? translations.charities.hi : translations.charities.en}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -499,10 +553,11 @@ export default function DonationScreen() {
   return (
     <View style={styles.container}>
       <HomeHeader 
-        searchPlaceholder="Search for Temple or Charity" 
+        searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en}
         showDailyPujaButton={false} 
         onSearchChange={setSearchQuery}
         extraContent={toggleControls}
+        showLanguageToggle={false}
       />
 
       <View style={styles.content}>
@@ -511,7 +566,7 @@ export default function DonationScreen() {
           <View style={{ marginBottom: 20 }}>
             <View style={styles.statsRow}>
               <Text style={styles.statsText}>
-                Showing {filteredData.length} {filteredData.length === 1 ? 'item' : 'items'}
+                {isHindi ? translations.modal.showingItems.hi : translations.modal.showingItems.en} {filteredData.length} {filteredData.length === 1 ? (isHindi ? translations.modal.item.hi : translations.modal.item.en) : (isHindi ? translations.modal.items.hi : translations.modal.items.en)}
                 {searchQuery && ` for "${searchQuery}"`}
                 {pagination.total > 0 && ` of ${pagination.total} total`}
               </Text>
@@ -699,7 +754,7 @@ export default function DonationScreen() {
             alignItems: 'center'
           }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
-              No items to display
+              {isHindi ? 'दिखाने के लिए कोई आइटम नहीं' : 'No items to display'}
             </Text>
             <Text>Data length: {data.length}</Text>
             <Text>Filtered length: {filteredData.length}</Text>
@@ -720,7 +775,7 @@ export default function DonationScreen() {
               marginTop: 15,
               textAlign: 'center'
             }}>
-              {pagination.hasMore ? 'Loading more...' : 'Loading temples and charities...'}
+              {pagination.hasMore ? (isHindi ? 'और लोड हो रहा है...' : 'Loading more...') : (isHindi ? 'मंदिर और धर्मार्थ संस्थाएं लोड हो रही हैं...' : 'Loading temples and charities...')}
             </Text>
           </View>
         )}
@@ -734,7 +789,7 @@ export default function DonationScreen() {
             alignItems: 'center'
           }}>
             <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>
-              Error:
+              {isHindi ? 'त्रुटि:' : 'Error:'}
             </Text>
             <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>
               {error}
@@ -821,7 +876,7 @@ export default function DonationScreen() {
                   color: '#333',
                   marginBottom: 10
                 }}>
-                  About
+                  {isHindi ? translations.modal.about.hi : translations.modal.about.en}
                 </Text>
                 <Text style={{
                   fontSize: 14,
@@ -851,7 +906,7 @@ export default function DonationScreen() {
                 fontSize: 18,
                 fontWeight: 'bold'
               }}>
-                Donate
+                {isHindi ? translations.modal.donate.hi : translations.modal.donate.en}
               </Text>
             </TouchableOpacity>
 
@@ -863,7 +918,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 15
               }}>
-                Gallery
+                {isHindi ? translations.modal.gallery.hi : translations.modal.gallery.en}
               </Text>
               
               {modalLoading ? (
@@ -1091,7 +1146,7 @@ export default function DonationScreen() {
                 fontWeight: 'bold',
                 color: '#FF6A00'
               }}>
-                Donation Form
+                {isHindi ? translations.donationForm.title.hi : translations.donationForm.title.en}
               </Text>
               <TouchableOpacity
                 style={{ padding: 5 }}
@@ -1108,8 +1163,8 @@ export default function DonationScreen() {
               marginBottom: 20,
               lineHeight: 24
             }}>
-              Thank you for supporting the {selectedItem?.name}
-              {'\n'}Please provide the following information for us to contact you
+              {isHindi ? `${selectedItem?.name} ${translations.modal.thankYouSupporting.hi}` : `${translations.modal.thankYouSupporting.en} ${selectedItem?.name}`}
+              {'\n'}{isHindi ? translations.modal.contactInfo.hi : translations.modal.contactInfo.en}
             </Text>
             
             <View style={{ marginBottom: 15 }}>
@@ -1119,7 +1174,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                Name (Min 3 characters) *
+                {isHindi ? "नाम (न्यूनतम 3 अक्षर) *" : "Name (Min 3 characters) *"}
               </Text>
               <TextInput
                 style={{
@@ -1132,7 +1187,7 @@ export default function DonationScreen() {
                 }}
                 value={donationForm.name}
                 onChangeText={(text) => setDonationForm(prev => ({ ...prev, name: text }))}
-                placeholder="Enter your full name"
+                placeholder={isHindi ? "अपना पूरा नाम दर्ज करें" : "Enter your full name"}
                 placeholderTextColor="#999"
               />
             </View>
@@ -1144,7 +1199,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                Phone Number (Min 10 digits) *
+                {isHindi ? "फोन नंबर (न्यूनतम 10 अंक) *" : "Phone Number (Min 10 digits) *"}
               </Text>
               <TextInput
                 style={{
@@ -1157,7 +1212,7 @@ export default function DonationScreen() {
                 }}
                 value={donationForm.phone}
                 onChangeText={(text) => setDonationForm(prev => ({ ...prev, phone: text }))}
-                placeholder="Enter your phone number"
+                placeholder={isHindi ? "अपना फोन नंबर दर्ज करें" : "Enter your phone number"}
                 placeholderTextColor="#999"
                 keyboardType="phone-pad"
               />
@@ -1170,7 +1225,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                Donation Amount *
+                {isHindi ? translations.donationForm.amount.hi + " *" : translations.donationForm.amount.en + " *"}
               </Text>
               <View style={{
                 flexDirection: 'row',
@@ -1222,7 +1277,7 @@ export default function DonationScreen() {
                     const cleanText = text.replace(/[^0-9]/g, '');
                     setDonationForm(prev => ({ ...prev, amount: cleanText }));
                   }}
-                  placeholder="Enter amount"
+                  placeholder={isHindi ? "राशि दर्ज करें" : "Enter amount"}
                   placeholderTextColor="#999"
                   keyboardType="numeric"
                 />
@@ -1236,7 +1291,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                Preferred Date *
+                {isHindi ? "पसंदीदा तारीख *" : "Preferred Date *"}
               </Text>
               <TouchableOpacity
                 style={{
@@ -1252,7 +1307,7 @@ export default function DonationScreen() {
                   fontSize: 16,
                   color: donationForm.date ? '#333' : '#999'
                 }}>
-                  {donationForm.date ? donationForm.date : 'Select Date'}
+                  {donationForm.date ? donationForm.date : (isHindi ? 'तारीख चुनें' : 'Select Date')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1264,7 +1319,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                Preferred Time Slot *
+                {isHindi ? "पसंदीदा समय स्लॉट *" : "Preferred Time Slot *"}
               </Text>
               <View style={{
                 flexDirection: 'row',
@@ -1306,27 +1361,27 @@ export default function DonationScreen() {
               onPress={async () => {
                 // Validation
                 if (!donationForm.name || donationForm.name.trim().length < 3) {
-                  Alert.alert('Invalid Name', 'Name must be at least 3 characters long.');
+                  Alert.alert(isHindi ? 'अमान्य नाम' : 'Invalid Name', isHindi ? 'नाम कम से कम 3 अक्षर का होना चाहिए।' : 'Name must be at least 3 characters long.');
                   return;
                 }
                 
                 if (!donationForm.phone || donationForm.phone.length < 10) {
-                  Alert.alert('Invalid Phone', 'Please enter a valid phone number.');
+                  Alert.alert(isHindi ? 'अमान्य फोन' : 'Invalid Phone', isHindi ? 'कृपया एक वैध फोन नंबर दर्ज करें।' : 'Please enter a valid phone number.');
                   return;
                 }
                 
                 if (!donationForm.amount || parseFloat(donationForm.amount) <= 0) {
-                  Alert.alert('Invalid Amount', 'Please enter a valid donation amount.');
+                  Alert.alert(isHindi ? 'अमान्य राशि' : 'Invalid Amount', isHindi ? 'कृपया एक वैध दान राशि दर्ज करें।' : 'Please enter a valid donation amount.');
                   return;
                 }
                 
                 if (!donationForm.date) {
-                  Alert.alert('Invalid Date', 'Please select a preferred date.');
+                  Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया एक पसंदीदा तारीख चुनें।' : 'Please select a preferred date.');
                   return;
                 }
                 
                 if (!donationForm.timeSlot) {
-                  Alert.alert('Invalid Time', 'Please select a preferred time slot.');
+                  Alert.alert(isHindi ? 'अमान्य समय' : 'Invalid Time', isHindi ? 'कृपया एक पसंदीदा समय स्लॉट चुनें।' : 'Please select a preferred time slot.');
                   return;
                 }
                 
@@ -1351,7 +1406,7 @@ export default function DonationScreen() {
                   if (response.ok) {
                     const result = await response.json();
                     Alert.alert(
-                      'Donation Successful!',
+                      isHindi ? 'दान सफल!' : 'Donation Successful!',
                       'Thank you for your donation. We will contact you soon.',
                       [
                         {
@@ -1374,11 +1429,11 @@ export default function DonationScreen() {
                     );
                   } else {
                     const errorData = await response.json();
-                    Alert.alert('Error', errorData.error || 'Failed to submit donation. Please try again.');
+                    Alert.alert(isHindi ? 'त्रुटि' : 'Error', errorData.error || (isHindi ? 'दान जमा करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to submit donation. Please try again.'));
                   }
                 } catch (error) {
                   console.error('Error submitting donation:', error);
-                  Alert.alert('Error', 'Failed to submit donation. Please try again.');
+                  Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'दान जमा करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to submit donation. Please try again.');
                 }
               }}
             >
@@ -1387,7 +1442,7 @@ export default function DonationScreen() {
                 fontSize: 18,
                 fontWeight: 'bold'
               }}>
-                Submit Donation
+                {isHindi ? translations.donationForm.submit.hi : translations.donationForm.submit.en}
               </Text>
             </TouchableOpacity>
           </View>

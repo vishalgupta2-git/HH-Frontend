@@ -21,6 +21,7 @@ import React, { useState, useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, ActivityIndicator, RefreshControl, Modal, TextInput } from 'react-native';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import axios from 'axios';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const options = { headerShown: false };
 
@@ -44,6 +45,29 @@ interface UpcomingPuja {
 }
 
 export default function PujaScreen() {
+  const { isHindi } = useLanguage();
+  
+  const translations = {
+    searchPlaceholder: { en: 'Search upcoming pujas...', hi: 'आगामी पूजाओं की खोज करें...' },
+    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
+    noDataFound: { en: 'No upcoming pujas found.', hi: 'कोई आगामी पूजा नहीं मिली।' },
+    errorLoading: { en: 'Error loading data. Please try again.', hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    pullToRefresh: { en: 'Pull to refresh', hi: 'रिफ्रेश करने के लिए खींचें' },
+    pujaDetails: {
+      title: { en: 'Puja Details', hi: 'पूजा विवरण' },
+      temple: { en: 'Temple', hi: 'मंदिर' },
+      date: { en: 'Date', hi: 'तारीख' },
+      time: { en: 'Time', hi: 'समय' },
+      description: { en: 'Description', hi: 'विवरण' },
+      close: { en: 'Close', hi: 'बंद करें' }
+    },
+    loadingMore: { en: 'Loading more...', hi: 'और लोड हो रहा है...' },
+    loadingPujas: { en: 'Loading upcoming pujas...', hi: 'आगामी पूजाएं लोड हो रही हैं...' },
+    noItemsToDisplay: { en: 'No items to display', hi: 'दिखाने के लिए कोई आइटम नहीं' },
+    error: { en: 'Error:', hi: 'त्रुटि:' },
+    noMatches: { en: 'No pujas match your current filters. Try adjusting your search or filters.', hi: 'आपके वर्तमान फिल्टर से कोई पूजा मेल नहीं खाती। अपनी खोज या फिल्टर को समायोजित करने का प्रयास करें।' }
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [data, setData] = useState<UpcomingPuja[]>([]);
   const [filteredData, setFilteredData] = useState<UpcomingPuja[]>([]);
@@ -317,7 +341,7 @@ export default function PujaScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B35" />
-        <Text style={styles.loadingText}>Loading upcoming pujas...</Text>
+        <Text style={styles.loadingText}>{isHindi ? translations.loadingPujas.hi : translations.loadingPujas.en}</Text>
       </View>
     );
   }
@@ -336,10 +360,11 @@ export default function PujaScreen() {
   return (
     <View style={styles.container}>
       <HomeHeader 
-        searchPlaceholder="Search pujas..."
+        searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en}
         onSearchChange={setSearchQuery}
         showSearchBar={true}
         showDailyPujaButton={false}
+        showLanguageToggle={false}
       />
       
       <ScrollView
@@ -371,7 +396,7 @@ export default function PujaScreen() {
               ? `Showing ${filteredData.length} of ${pagination.total} total pujas`
               : filteredData.length > 0 
                 ? `Showing ${filteredData.length} pujas`
-                : 'No pujas found'
+                : (isHindi ? 'कोई पूजा नहीं मिली' : 'No pujas found')
             }
           </Text>
           {pagination.hasMore && (
@@ -381,9 +406,9 @@ export default function PujaScreen() {
 
         {filteredData.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No pujas found</Text>
+            <Text style={styles.emptyText}>{isHindi ? translations.noDataFound.hi : translations.noDataFound.en}</Text>
             <Text style={styles.emptySubtext}>
-              Try adjusting your search or filters
+              {isHindi ? translations.noMatches.hi : translations.noMatches.en}
             </Text>
           </View>
         ) : (
@@ -395,7 +420,7 @@ export default function PujaScreen() {
         {pagination.hasMore && (
           <View style={styles.loadingMoreContainer}>
             <ActivityIndicator size="small" color="#FF6B35" />
-            <Text style={styles.loadingMoreText}>Loading more pujas...</Text>
+            <Text style={styles.loadingMoreText}>{isHindi ? translations.loadingMore.hi : translations.loadingMore.en}</Text>
           </View>
         )}
       </ScrollView>
@@ -419,7 +444,7 @@ export default function PujaScreen() {
             >
               <View style={styles.textModalBody}>
                 <View style={styles.textModalHeader}>
-                  <Text style={styles.textModalTitle}>{selectedTextTitle}</Text>
+                  <Text style={styles.textModalTitle}>{isHindi ? translations.pujaDetails.title.hi : translations.pujaDetails.title.en}</Text>
                   <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => setShowTextModal(false)}

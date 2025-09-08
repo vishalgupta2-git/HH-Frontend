@@ -1159,7 +1159,6 @@ export default function TestTempleScreen() {
   const stopPujaRitual = () => {
     if (!isPujaRitualActive) return;
     
-    console.log('Stopping puja ritual manually');
     
     // Stop all animations and intervals
     if (flowerIntervalRef.current) {
@@ -1183,7 +1182,6 @@ export default function TestTempleScreen() {
     
     // Close modal immediately
     setIsPujaRitualActive(false);
-    console.log('Puja ritual stopped manually - modal should close');
   };
 
   // Perform Puja Ritual with elliptical thali motion
@@ -1218,7 +1216,6 @@ export default function TestTempleScreen() {
         });
         
         animation.start(({ finished }) => {
-          console.log('Thali motion completed - ending ritual immediately');
           
           // Stop flower dropping when thali motion completes
           if (flowerIntervalRef.current) {
@@ -1239,7 +1236,6 @@ export default function TestTempleScreen() {
           
           // Close modal immediately
           setIsPujaRitualActive(false);
-          console.log('Puja ritual completed - thali at rest, ritual ended');
         });
       };
       
@@ -1574,22 +1570,6 @@ export default function TestTempleScreen() {
     }
   }, [currentScreen, selectedTodaysTemple]);
 
-  // Debug: Log screen dimensions and z-index values when screen changes
-  useEffect(() => {
-    console.log('🔍 Z-Index Debug - Current Screen:', currentScreen);
-    console.log('📊 Z-Index Values:');
-    console.log('  - Background Gradient: 1');
-    console.log('  - Temple Bells: 199');
-    console.log('  - Flower Animation: 215');
-    console.log('  - Arch: 220');
-    console.log('  - Navigation Buttons: 225');
-    console.log('  - Configuration Icons: 230');
-    console.log('  - Puja Icons: 240');
-    console.log('🎯 Temple Bells should be visible (zIndex: 199)');
-    console.log('🌸 Flower Animation should be visible (zIndex: 215)');
-    console.log('🧪 TEST: Deities moved +1000px X position in Today\'s Puja & All Temples modes');
-    
-  }, [currentScreen]);
 
   return (
     <View style={styles.container}>
@@ -1823,10 +1803,6 @@ export default function TestTempleScreen() {
             y: currentPosition.y
           };
           
-          // Debug logging
-          if (currentScreen !== 'myTemple') {
-            console.log(`🏛️ Deity ${deityId} moved from x:${currentPosition.x} to x:${adjustedPosition.x} (screen: ${currentScreen})`);
-          }
           const currentSize = deitySizes[deityId] || { 
             width: screenWidth * 0.3, 
             height: screenWidth * 0.36 
@@ -2689,7 +2665,6 @@ export default function TestTempleScreen() {
               }]}
               onPress={() => {
                 setCurrentScreen('allTemples');
-                console.log('All Temples pressed');
               }}
             >
               <Text style={[styles.secondRowButtonText, {

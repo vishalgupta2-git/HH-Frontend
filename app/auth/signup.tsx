@@ -7,6 +7,7 @@ import { Alert, Dimensions, Image, Modal, ScrollView, StyleSheet, Text, TextInpu
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { awardMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -181,6 +182,7 @@ const countries = [
 export const options = { headerShown: false };
 
 export default function SignUpScreen() {
+  const { isHindi } = useLanguage();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -245,6 +247,103 @@ export default function SignUpScreen() {
   // ScrollView ref for scrolling to errors
   const scrollViewRef = useRef<ScrollView>(null);
 
+  // Translations
+  const translations = {
+    form: {
+      title: { en: 'Create Account', hi: 'खाता बनाएं' },
+      firstName: { en: 'First Name', hi: 'पहला नाम' },
+      lastName: { en: 'Last Name', hi: 'अंतिम नाम' },
+      email: { en: 'Email', hi: 'ईमेल' },
+      phone: { en: 'Phone Number', hi: 'फोन नंबर' },
+      referralCode: { en: 'Referral Code (Optional)', hi: 'रेफरल कोड (वैकल्पिक)' },
+      dateOfBirth: { en: 'Date of Birth', hi: 'जन्म तिथि' },
+      gender: { en: 'Gender', hi: 'लिंग' },
+      placeOfBirth: { en: 'Place of Birth', hi: 'जन्म स्थान' },
+      rashi: { en: 'Rashi', hi: 'राशि' },
+      gotra: { en: 'Gotra', hi: 'गोत्र' },
+      maritalStatus: { en: 'Marital Status', hi: 'वैवाहिक स्थिति' },
+      anniversaryDate: { en: 'Anniversary Date', hi: 'विवाह वर्षगांठ' },
+      widowDate: { en: 'Widow Date', hi: 'विधवा तिथि' },
+      hasKids: { en: 'Do you have kids?', hi: 'क्या आपके बच्चे हैं?' },
+      kidsInfo: { en: 'Kids Information', hi: 'बच्चों की जानकारी' },
+      motherName: { en: 'Mother\'s Name', hi: 'माता का नाम' },
+      fatherName: { en: 'Father\'s Name', hi: 'पिता का नाम' },
+      spouseName: { en: 'Spouse\'s Name', hi: 'पति/पत्नी का नाम' },
+      termsAccepted: { en: 'I accept the Terms and Conditions', hi: 'मैं नियम और शर्तों को स्वीकार करता हूं' },
+      privacyAccepted: { en: 'I accept the Privacy Policy', hi: 'मैं गोपनीयता नीति को स्वीकार करता हूं' },
+      submit: { en: 'Create Account', hi: 'खाता बनाएं' },
+      login: { en: 'Already have an account? Login', hi: 'पहले से खाता है? लॉगिन करें' }
+    },
+    genderOptions: {
+      male: { en: 'Male', hi: 'पुरुष' },
+      female: { en: 'Female', hi: 'महिला' },
+      other: { en: 'Other', hi: 'अन्य' }
+    },
+    maritalStatusOptions: {
+      single: { en: 'Single', hi: 'अविवाहित' },
+      married: { en: 'Married', hi: 'विवाहित' },
+      divorced: { en: 'Divorced', hi: 'तलाकशुदा' },
+      widowed: { en: 'Widowed', hi: 'विधवा' }
+    },
+    validation: {
+      firstNameRequired: { en: 'First name is required', hi: 'पहला नाम आवश्यक है' },
+      firstNameMinLength: { en: 'First name must be at least 2 characters', hi: 'पहला नाम कम से कम 2 अक्षर का होना चाहिए' },
+      lastNameRequired: { en: 'Last name is required', hi: 'अंतिम नाम आवश्यक है' },
+      emailRequired: { en: 'Email is required', hi: 'ईमेल आवश्यक है' },
+      emailInvalid: { en: 'Please enter a valid email', hi: 'कृपया एक वैध ईमेल दर्ज करें' },
+      phoneRequired: { en: 'Phone number is required', hi: 'फोन नंबर आवश्यक है' },
+      phoneInvalid: { en: 'Please enter a valid phone number', hi: 'कृपया एक वैध फोन नंबर दर्ज करें' },
+      phoneEnter: { en: 'Please enter your phone number', hi: 'कृपया अपना फोन नंबर दर्ज करें' },
+      dateOfBirthRequired: { en: 'Date of birth is required', hi: 'जन्म तिथि आवश्यक है' },
+      ageRestriction: { en: 'You must be at least 18 years old', hi: 'आपकी आयु कम से कम 18 वर्ष होनी चाहिए' },
+      genderRequired: { en: 'Gender is required', hi: 'लिंग आवश्यक है' },
+      placeOfBirthRequired: { en: 'Place of birth is required', hi: 'जन्म स्थान आवश्यक है' },
+      rashiRequired: { en: 'Rashi is required', hi: 'राशि आवश्यक है' },
+      gotraRequired: { en: 'Gotra is required', hi: 'गोत्र आवश्यक है' },
+      maritalStatusRequired: { en: 'Marital status is required', hi: 'वैवाहिक स्थिति आवश्यक है' },
+      termsRequired: { en: 'Please accept the terms and conditions', hi: 'कृपया नियम और शर्तों को स्वीकार करें' },
+      privacyRequired: { en: 'Please accept the privacy policy', hi: 'कृपया गोपनीयता नीति को स्वीकार करें' },
+      referralCodeInvalid: { en: 'Invalid referral code format', hi: 'अमान्य रेफरल कोड प्रारूप' },
+      emailAlreadyExists: { en: 'An account already exists with this ID. Please go to login screen to access your account.', hi: 'इस आईडी के साथ पहले से एक खाता मौजूद है। अपने खाते तक पहुंचने के लिए कृपया लॉगिन स्क्रीन पर जाएं।' },
+      accountCreationFailed: { en: 'Failed to create account or send OTP. Please try again.', hi: 'खाता बनाने या OTP भेजने में विफल। कृपया पुनः प्रयास करें।' },
+      error: { en: 'Error', hi: 'त्रुटि' }
+    },
+    success: { en: 'Account created successfully!', hi: 'खाता सफलतापूर्वक बनाया गया!' },
+    error: { en: 'Error creating account. Please try again.', hi: 'खाता बनाने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    contactInformation: { en: 'Contact Information', hi: 'संपर्क जानकारी' },
+    emailPlaceholder: { en: 'Enter E-mail ID *', hi: 'ईमेल आईडी दर्ज करें *' },
+    referralCodeLabel: { en: '🎯 Referral Code (Optional)', hi: '🎯 रेफरल कोड (वैकल्पिक)' },
+    referralCodePlaceholder: { en: 'Enter referral code if you have one', hi: 'यदि आपके पास रेफरल कोड है तो दर्ज करें' },
+    aboutYourself: { en: 'About Yourself', hi: 'अपने बारे में' },
+    selectDateOfBirth: { en: 'Please select your date of birth', hi: 'कृपया अपनी जन्म तिथि चुनें' },
+    ageRequired: { en: 'Age Required', hi: 'आयु आवश्यक' },
+    selectDateToContinue: { en: 'Please select your date of birth to continue.', hi: 'जारी रखने के लिए कृपया अपनी जन्म तिथि चुनें।' },
+    dateTimeOfBirth: { en: '📅 Date & Time of Birth * (Must be 18 or older to sign up)', hi: '📅 जन्म की तिथि और समय * (साइन अप करने के लिए कम से कम 18 वर्ष का होना चाहिए)' },
+    selectDateTimeOfBirth: { en: 'Select Date & Time of Birth', hi: 'जन्म की तिथि और समय चुनें' },
+    yourFamily: { en: 'Your Family', hi: 'आपका परिवार' },
+    parents: { en: 'Parents', hi: 'माता-पिता' },
+    selectDateOfBirthPlaceholder: { en: 'Select Date of Birth', hi: 'जन्म तिथि चुनें' },
+    spouseDateOfBirth: { en: 'Spouse\'s Date of Birth', hi: 'पति/पत्नी की जन्म तिथि' },
+    mothersInformation: { en: 'Mother\'s Information', hi: 'माता की जानकारी' },
+    mothersName: { en: 'Mother\'s Name', hi: 'माता का नाम' },
+    deceased: { en: 'Deceased', hi: 'स्वर्गवासी' },
+    fathersInformation: { en: 'Father\'s Information', hi: 'पिता की जानकारी' },
+    fathersName: { en: 'Father\'s Name', hi: 'पिता का नाम' },
+    spouseAndKids: { en: 'Spouse and Kids', hi: 'पति/पत्नी और बच्चे' },
+    doYouHaveKids: { en: 'Do you have kids?', hi: 'क्या आपके बच्चे हैं?' },
+    yes: { en: 'Yes', hi: 'हाँ' },
+    no: { en: 'No', hi: 'नहीं' },
+    allFieldsRequired: { en: 'All fields with * are required', hi: '* के साथ सभी फील्ड आवश्यक हैं' },
+    byProceedingAgree: { en: 'By proceeding you agree to the', hi: 'आगे बढ़कर आप इससे सहमत हैं' },
+    alreadyHaveAccount: { en: 'Already have an account?', hi: 'पहले से खाता है?' },
+    deathAnniversary: { en: 'Death Anniversary', hi: 'पुण्यतिथि' },
+    selectDeathAnniversary: { en: 'Select Death Anniversary', hi: 'पुण्यतिथि चुनें' },
+    addAnotherKid: { en: '+ Add Another Kid', hi: '+ एक और बच्चा जोड़ें' },
+    kidNumber: { en: 'Kid', hi: 'बच्चा' },
+    spouseInformation: { en: 'Spouse\'s Information', hi: 'पति/पत्नी की जानकारी' },
+    pleaseFixErrors: { en: '⚠️ Please fix the following errors:', hi: '⚠️ कृपया निम्नलिखित त्रुटियों को ठीक करें:' }
+  };
+
   // Function to scroll to the first field with an error
   const scrollToFirstError = () => {
     // Use setTimeout to ensure the scroll happens after the current execution cycle
@@ -270,7 +369,7 @@ export default function SignUpScreen() {
     if (nameError) return nameError;
     if (emailError) return emailError;
     if (phoneError) return phoneError;
-    if (!dob) return 'Please select your date of birth';
+    if (!dob) return isHindi ? translations.selectDateOfBirth.hi : translations.selectDateOfBirth.en;
     return null;
   };
 
@@ -288,7 +387,7 @@ export default function SignUpScreen() {
   const handleEmailChange = (text: string) => {
     setEmail(text);
     if (text.length > 0 && !validateEmail(text)) {
-      setEmailError('Enter a valid email address');
+      setEmailError(isHindi ? translations.validation.emailInvalid.hi : translations.validation.emailInvalid.en);
     } else {
       setEmailError('');
     }
@@ -332,24 +431,23 @@ export default function SignUpScreen() {
 
   const handleCreateAccount = async () => {
     let valid = true;
-    setIsLoading(true);
     
     // Trim trailing spaces and check overall name validation on submit
     const trimmedFirstName = firstName.trim();
     const trimmedLastName = lastName.trim();
     if (trimmedFirstName.length < 2) {
-      setNameError('First name must be at least 2 characters');
+      setNameError(isHindi ? translations.validation.firstNameMinLength.hi : translations.validation.firstNameMinLength.en);
       valid = false;
     }
     
     if (!validateEmail(email)) {
-      setEmailError('Enter a valid email address');
+      setEmailError(isHindi ? translations.validation.emailInvalid.hi : translations.validation.emailInvalid.en);
       valid = false;
     }
     
     // Phone validation
     if (!phone || phone.length === 0) {
-      setPhoneError('Please enter your phone number');
+      setPhoneError(isHindi ? translations.validation.phoneEnter.hi : translations.validation.phoneEnter.en);
       valid = false;
     } else if (phoneError) {
       valid = false; // Phone already has an error
@@ -357,7 +455,7 @@ export default function SignUpScreen() {
     
     // Age validation - must be 18 or older
     if (!dob) {
-      Alert.alert('Age Required', 'Please select your date of birth to continue.');
+      Alert.alert(isHindi ? translations.ageRequired.hi : translations.ageRequired.en, isHindi ? translations.selectDateToContinue.hi : translations.selectDateToContinue.en);
       valid = false;
       // Scroll to date of birth field after alert is dismissed
       setTimeout(() => {
@@ -387,7 +485,7 @@ export default function SignUpScreen() {
 
     // Referral code validation
     if (referralCode.trim() && !validateReferralCode(referralCode.trim())) {
-      setReferralCodeError('Invalid referral code format');
+      setReferralCodeError(isHindi ? translations.validation.referralCodeInvalid.hi : translations.validation.referralCodeInvalid.en);
       valid = false;
     }
     
@@ -396,6 +494,9 @@ export default function SignUpScreen() {
       scrollToFirstError();
       return;
     }
+    
+    // All validations passed, now start loading
+    setIsLoading(true);
     
          const signupData = {
        firstName: trimmedFirstName,
@@ -444,7 +545,7 @@ export default function SignUpScreen() {
       });
       
       if (signupRes.data && signupRes.data.error === 'Email already registered.') {
-        setEmailError('An account already exists with this ID. Please go to login screen to access your account.');
+        setEmailError(isHindi ? translations.validation.emailAlreadyExists.hi : translations.validation.emailAlreadyExists.en);
         return;
       }
       
@@ -463,12 +564,12 @@ export default function SignUpScreen() {
       router.push({ pathname: '/auth/otp', params: { email, name: trimmedFirstName + ' ' + trimmedLastName, from: 'signup' } });
     } catch (err: any) {
       if (err.response && err.response.data && err.response.data.error === 'Email already registered.') {
-        setEmailError('An account already exists with this ID. Please go to login screen to access your account.');
+        setEmailError(isHindi ? translations.validation.emailAlreadyExists.hi : translations.validation.emailAlreadyExists.en);
         return;
       }
       
-      const errorMessage = err.response?.data?.error || err.message || 'Failed to create account or send OTP. Please try again.';
-      Alert.alert('Error', errorMessage);
+      const errorMessage = err.response?.data?.error || err.message || (isHindi ? translations.validation.accountCreationFailed.hi : translations.validation.accountCreationFailed.en);
+      Alert.alert(isHindi ? translations.validation.error.hi : translations.validation.error.en, errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -508,23 +609,23 @@ export default function SignUpScreen() {
                    {/* Error Summary - Show when there are validation errors */}
                    {(nameError || emailError || phoneError || !dob) && (
                      <View style={styles.errorSummary}>
-                       <Text style={styles.errorSummaryTitle}>⚠️ Please fix the following errors:</Text>
+                       <Text style={styles.errorSummaryTitle}>{isHindi ? translations.pleaseFixErrors.hi : translations.pleaseFixErrors.en}</Text>
                        <Text style={styles.errorSummaryText}>{getFirstErrorMessage()}</Text>
                      </View>
                    )}
                    
-                   <Text style={styles.sectionLabel}>Contact Information</Text>
+                   <Text style={styles.sectionLabel}>{isHindi ? translations.contactInformation.hi : translations.contactInformation.en}</Text>
            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
                            <TextInput
                 style={[styles.input, { flex: 1 }]}
-                placeholder="First Name *"
+                placeholder={isHindi ? translations.form.firstName.hi + " *" : translations.form.firstName.en + " *"}
                 placeholderTextColor="#888"
                 value={firstName}
                 onChangeText={handleFirstNameChange}
               />
              <TextInput
                style={[styles.input, { flex: 1 }]}
-               placeholder="Last Name"
+               placeholder={isHindi ? translations.form.lastName.hi : translations.form.lastName.en}
                placeholderTextColor="#888"
                value={lastName}
                onChangeText={setLastName}
@@ -533,7 +634,7 @@ export default function SignUpScreen() {
            {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
                                            <TextInput
               style={styles.input}
-              placeholder="Enter E-mail ID *"
+              placeholder={isHindi ? translations.emailPlaceholder.hi : translations.emailPlaceholder.en}
               placeholderTextColor="#888"
               value={email}
               onChangeText={handleEmailChange}
@@ -542,7 +643,7 @@ export default function SignUpScreen() {
             />
           {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
           <Text style={styles.fieldNote}>
-            📱 Phone Number *
+            📱 {isHindi ? translations.form.phone.hi + " *" : translations.form.phone.en + " *"}
           </Text>
           <View style={styles.phoneRow}>
             <TouchableOpacity 
@@ -554,7 +655,7 @@ export default function SignUpScreen() {
             </TouchableOpacity>
             <TextInput
               style={styles.phoneInput}
-              placeholder="Enter Your Phone No"
+              placeholder={isHindi ? "अपना फोन नंबर दर्ज करें" : "Enter Your Phone No"}
               placeholderTextColor="#888"
               value={phone}
               onChangeText={handlePhoneChange}
@@ -599,11 +700,11 @@ export default function SignUpScreen() {
           
           {/* Referral Code Field */}
           <Text style={styles.fieldNote}>
-            🎯 Referral Code (Optional)
+            {isHindi ? translations.referralCodeLabel.hi : translations.referralCodeLabel.en}
           </Text>
           <TextInput
             style={[styles.input, referralCodeError ? styles.inputError : null]}
-            placeholder="Enter referral code if you have one"
+            placeholder={isHindi ? translations.referralCodePlaceholder.hi : translations.referralCodePlaceholder.en}
             placeholderTextColor="#888"
             value={referralCode}
             onChangeText={(text) => {
@@ -620,20 +721,20 @@ export default function SignUpScreen() {
             </Text>
           )}
           
-          <Text style={styles.sectionLabel}>About Yourself</Text>
+          <Text style={styles.sectionLabel}>{isHindi ? translations.aboutYourself.hi : translations.aboutYourself.en}</Text>
           {/* Gender and Rashi Dropdowns on the same line, no labels */}
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
                          <TouchableOpacity
                style={[styles.dropdown, { flex: 1 }]}
                onPress={() => setGenderDropdownOpen(true)}
              >
-               <Text style={styles.dropdownText}>{gender || 'Gender'}</Text>
+               <Text style={styles.dropdownText}>{gender || (isHindi ? translations.form.gender.hi : translations.form.gender.en)}</Text>
              </TouchableOpacity>
              <TouchableOpacity
                style={[styles.dropdown, { flex: 1 }]}
                onPress={() => setRashiDropdownOpen(true)}
              >
-               <Text style={styles.dropdownText}>{rashi || 'Rashi'}</Text>
+               <Text style={styles.dropdownText}>{rashi || (isHindi ? translations.form.rashi.hi : translations.form.rashi.en)}</Text>
              </TouchableOpacity>
           </View>
           {/* Gender Modal */}
@@ -706,7 +807,7 @@ export default function SignUpScreen() {
              📅 Date & Time of Birth * (Must be 18 or older to sign up)
            </Text>
            <TouchableOpacity style={styles.input} onPress={() => setShowDateTime(true)}>
-             <Text style={styles.dropdownText}>{dob ? dob.toLocaleString() : 'Select Date & Time of Birth'}</Text>
+             <Text style={styles.dropdownText}>{dob ? dob.toLocaleString() : (isHindi ? translations.selectDateTimeOfBirth.hi : translations.selectDateTimeOfBirth.en)}</Text>
            </TouchableOpacity>
            
            {/* Age Indicator */}
@@ -858,33 +959,33 @@ export default function SignUpScreen() {
            <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
              <TextInput
                style={[styles.input, { flex: 1 }]}
-               placeholder="Place of Birth"
+               placeholder={isHindi ? translations.form.placeOfBirth.hi : translations.form.placeOfBirth.en}
                placeholderTextColor="#888"
                value={placeOfBirth}
                onChangeText={setPlaceOfBirth}
              />
              <TextInput
                style={[styles.input, { flex: 1 }]}
-               placeholder="Gotra"
+               placeholder={isHindi ? translations.form.gotra.hi : translations.form.gotra.en}
                placeholderTextColor="#888"
                value={gotra}
                onChangeText={setGotra}
              />
            </View>
           
-                                <Text style={styles.sectionLabel}>Your Family</Text>
+                                <Text style={styles.sectionLabel}>{isHindi ? translations.yourFamily.hi : translations.yourFamily.en}</Text>
            
            {/* Parents Divider */}
            <View style={styles.dividerContainer}>
-             <Text style={styles.dividerText}>Parents</Text>
+             <Text style={styles.dividerText}>{isHindi ? translations.parents.hi : translations.parents.en}</Text>
              <View style={styles.dividerLine} />
            </View>
            
            {/* Mother Information */}
-           <Text style={styles.subsectionLabel}>Mother's Information</Text>
+           <Text style={styles.subsectionLabel}>{isHindi ? translations.mothersInformation.hi : translations.mothersInformation.en}</Text>
            <TextInput
              style={styles.input}
-             placeholder="Mother's Name"
+             placeholder={isHindi ? translations.mothersName.hi : translations.mothersName.en}
              placeholderTextColor="#888"
              value={motherName}
              onChangeText={setMotherName}
@@ -906,32 +1007,32 @@ export default function SignUpScreen() {
                 <View style={[styles.checkbox, motherDeceased && styles.checkboxSelected]}>
                   {motherDeceased && <Text style={styles.checkboxText}>✓</Text>}
                 </View>
-                <Text style={styles.checkboxLabel}>Deceased</Text>
+                <Text style={styles.checkboxLabel}>{isHindi ? translations.deceased.hi : translations.deceased.en}</Text>
               </TouchableOpacity>
             </View>
             
             <Text style={styles.dateLabel}>
-              {motherDeceased ? 'Death Anniversary' : 'Date of Birth'}
+              {motherDeceased ? (isHindi ? translations.deathAnniversary.hi : translations.deathAnniversary.en) : (isHindi ? translations.form.dateOfBirth.hi : translations.form.dateOfBirth.en)}
             </Text>
             {!motherDeceased ? (
               <TouchableOpacity style={styles.input} onPress={() => setShowMotherDob(true)}>
                 <Text style={styles.dropdownText}>
-                  {motherDob ? motherDob.toLocaleDateString() : 'Select Date of Birth'}
+                  {motherDob ? motherDob.toLocaleDateString() : (isHindi ? translations.selectDateOfBirthPlaceholder.hi : translations.selectDateOfBirthPlaceholder.en)}
                 </Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity style={styles.input} onPress={() => setShowMotherDeathAnniversary(true)}>
                 <Text style={styles.dropdownText}>
-                  {motherDeathAnniversary ? motherDeathAnniversary.toLocaleDateString() : 'Select Death Anniversary'}
+                  {motherDeathAnniversary ? motherDeathAnniversary.toLocaleDateString() : (isHindi ? translations.selectDeathAnniversary.hi : translations.selectDeathAnniversary.en)}
                 </Text>
               </TouchableOpacity>
             )}
            
            {/* Father Information */}
-           <Text style={styles.subsectionLabel}>Father's Information</Text>
+           <Text style={styles.subsectionLabel}>{isHindi ? translations.fathersInformation.hi : translations.fathersInformation.en}</Text>
            <TextInput
              style={styles.input}
-             placeholder="Father's Name"
+             placeholder={isHindi ? translations.fathersName.hi : translations.fathersName.en}
              placeholderTextColor="#888"
              value={fatherName}
              onChangeText={setFatherName}
@@ -953,40 +1054,40 @@ export default function SignUpScreen() {
                 <View style={[styles.checkbox, fatherDeceased && styles.checkboxSelected]}>
                   {fatherDeceased && <Text style={styles.checkboxText}>✓</Text>}
                 </View>
-                <Text style={styles.checkboxLabel}>Deceased</Text>
+                <Text style={styles.checkboxLabel}>{isHindi ? translations.deceased.hi : translations.deceased.en}</Text>
               </TouchableOpacity>
             </View>
             
             <Text style={styles.dateLabel}>
-              {fatherDeceased ? 'Death Anniversary' : 'Date of Birth'}
+              {fatherDeceased ? (isHindi ? translations.deathAnniversary.hi : translations.deathAnniversary.en) : (isHindi ? translations.form.dateOfBirth.hi : translations.form.dateOfBirth.en)}
             </Text>
             {!fatherDeceased ? (
               <TouchableOpacity style={styles.input} onPress={() => setShowFatherDob(true)}>
                 <Text style={styles.dropdownText}>
-                  {fatherDob ? fatherDob.toLocaleDateString() : 'Select Date of Birth'}
+                  {fatherDob ? fatherDob.toLocaleDateString() : (isHindi ? translations.selectDateOfBirthPlaceholder.hi : translations.selectDateOfBirthPlaceholder.en)}
                 </Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity style={styles.input} onPress={() => setShowFatherDeathAnniversary(true)}>
                 <Text style={styles.dropdownText}>
-                  {fatherDeathAnniversary ? fatherDeathAnniversary.toLocaleDateString() : 'Select Death Anniversary'}
+                  {fatherDeathAnniversary ? fatherDeathAnniversary.toLocaleDateString() : (isHindi ? translations.selectDeathAnniversary.hi : translations.selectDeathAnniversary.en)}
                 </Text>
               </TouchableOpacity>
             )}
            
            {/* Spouse and Kids Divider */}
            <View style={styles.dividerContainer}>
-             <Text style={styles.dividerText}>Spouse and Kids</Text>
+             <Text style={styles.dividerText}>{isHindi ? translations.spouseAndKids.hi : translations.spouseAndKids.en}</Text>
              <View style={styles.dividerLine} />
            </View>
            
            {/* Marital Status */}
-           <Text style={styles.subsectionLabel}>Marital Status</Text>
+           <Text style={styles.subsectionLabel}>{isHindi ? translations.form.maritalStatus.hi : translations.form.maritalStatus.en}</Text>
            <TouchableOpacity
              style={styles.dropdown}
              onPress={() => setMaritalStatusDropdownOpen(true)}
            >
-             <Text style={styles.dropdownText}>{maritalStatus || 'Marital Status'}</Text>
+             <Text style={styles.dropdownText}>{maritalStatus || (isHindi ? translations.form.maritalStatus.hi : translations.form.maritalStatus.en)}</Text>
            </TouchableOpacity>
            
            {/* Anniversary Date - Only show if Married */}
@@ -1010,7 +1111,7 @@ export default function SignUpScreen() {
            {/* Spouse Information - Only show if Married */}
            {maritalStatus === 'Married' && (
              <>
-               <Text style={styles.subsectionLabel}>Spouse's Information</Text>
+               <Text style={styles.subsectionLabel}>{isHindi ? translations.spouseInformation.hi : translations.spouseInformation.en}</Text>
                <TextInput
                  style={styles.input}
                  placeholder="Spouse's Name"
@@ -1021,14 +1122,14 @@ export default function SignUpScreen() {
                
                <TouchableOpacity style={styles.input} onPress={() => setShowSpouseDob(true)}>
                  <Text style={styles.dropdownText}>
-                   {spouseDob ? spouseDob.toLocaleDateString() : 'Spouse\'s Date of Birth'}
+                   {spouseDob ? spouseDob.toLocaleDateString() : (isHindi ? translations.spouseDateOfBirth.hi : translations.spouseDateOfBirth.en)}
                  </Text>
                </TouchableOpacity>
              </>
            )}
            
            {/* Do you have kids? */}
-           <Text style={styles.questionLabel}>Do you have kids?</Text>
+           <Text style={styles.questionLabel}>{isHindi ? translations.doYouHaveKids.hi : translations.doYouHaveKids.en}</Text>
            <View style={styles.radioGroup}>
              <TouchableOpacity 
                style={styles.radioOption} 
@@ -1037,7 +1138,7 @@ export default function SignUpScreen() {
                <View style={[styles.radioButton, hasKids === true && styles.radioButtonSelected]}>
                  {hasKids === true && <View style={styles.radioButtonInner} />}
                </View>
-               <Text style={styles.radioText}>Yes</Text>
+               <Text style={styles.radioText}>{isHindi ? translations.yes.hi : translations.yes.en}</Text>
              </TouchableOpacity>
              <TouchableOpacity 
                style={styles.radioOption} 
@@ -1046,18 +1147,18 @@ export default function SignUpScreen() {
                <View style={[styles.radioButton, hasKids === false && styles.radioButtonSelected]}>
                  {hasKids === false && <View style={styles.radioButtonInner} />}
                </View>
-               <Text style={styles.radioText}>No</Text>
+               <Text style={styles.radioText}>{isHindi ? translations.no.hi : translations.no.en}</Text>
              </TouchableOpacity>
            </View>
           
           {/* Kids Information - Only show if hasKids is true */}
           {hasKids === true && (
             <View style={styles.kidsSection}>
-              <Text style={styles.subsectionLabel}>Kids Information</Text>
+              <Text style={styles.subsectionLabel}>{isHindi ? translations.form.kidsInfo.hi : translations.form.kidsInfo.en}</Text>
               {kids.map((kid, index) => (
                 <View key={index} style={styles.kidCard}>
                   <View style={styles.kidHeader}>
-                    <Text style={styles.kidTitle}>Kid {index + 1}</Text>
+                    <Text style={styles.kidTitle}>{isHindi ? translations.kidNumber.hi : translations.kidNumber.en} {index + 1}</Text>
                     {kids.length > 1 && (
                       <TouchableOpacity 
                         style={styles.removeKidButton}
@@ -1070,7 +1171,7 @@ export default function SignUpScreen() {
                   
                   <TextInput
                     style={styles.input}
-                    placeholder="First Name"
+                    placeholder={isHindi ? translations.form.firstName.hi : translations.form.firstName.en}
                     placeholderTextColor="#888"
                     value={kid.firstName}
                     onChangeText={(text) => updateKid(index, 'firstName', text)}
@@ -1078,7 +1179,7 @@ export default function SignUpScreen() {
                   
                   <TextInput
                     style={styles.input}
-                    placeholder="Last Name"
+                    placeholder={isHindi ? translations.form.lastName.hi : translations.form.lastName.en}
                     placeholderTextColor="#888"
                     value={kid.lastName}
                     onChangeText={(text) => updateKid(index, 'lastName', text)}
@@ -1089,7 +1190,7 @@ export default function SignUpScreen() {
                       style={[styles.dropdown, { flex: 1, marginRight: 8 }]}
                       onPress={() => setShowKidGender(index)}
                     >
-                      <Text style={styles.dropdownText}>{kid.gender || 'Gender'}</Text>
+                      <Text style={styles.dropdownText}>{kid.gender || (isHindi ? translations.form.gender.hi : translations.form.gender.en)}</Text>
                     </TouchableOpacity>
                     
                     <TouchableOpacity 
@@ -1097,7 +1198,7 @@ export default function SignUpScreen() {
                       onPress={() => setShowKidDob(index)}
                     >
                       <Text style={styles.dropdownText}>
-                        {kid.dateOfBirth ? kid.dateOfBirth.toLocaleDateString() : 'Date of Birth'}
+                        {kid.dateOfBirth ? kid.dateOfBirth.toLocaleDateString() : (isHindi ? translations.form.dateOfBirth.hi : translations.form.dateOfBirth.en)}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -1105,16 +1206,16 @@ export default function SignUpScreen() {
               ))}
               
               <TouchableOpacity style={styles.addKidTextButton} onPress={addKid}>
-                <Text style={styles.addKidTextLink}>+ Add Another Kid</Text>
+                <Text style={styles.addKidTextLink}>{isHindi ? translations.addAnotherKid.hi : translations.addAnotherKid.en}</Text>
               </TouchableOpacity>
             </View>
                      )}
-           <Text style={styles.requiredNote}>All fields with * are required</Text>
+           <Text style={styles.requiredNote}>{isHindi ? translations.allFieldsRequired.hi : translations.allFieldsRequired.en}</Text>
            
            {/* Terms and Privacy Policy Text */}
            <View style={styles.termsContainer}>
              <Text style={styles.termsText}>
-               By proceeding you agree to the{' '}
+               {isHindi ? translations.byProceedingAgree.hi : translations.byProceedingAgree.en}{' '}
                <Text style={styles.termsLink} onPress={() => setShowTermsModal(true)}>
                  Terms & Conditions
                </Text>
@@ -1132,11 +1233,11 @@ export default function SignUpScreen() {
              disabled={isLoading}
            >
              <Text style={[styles.buttonText, isLoading && styles.buttonTextDisabled]}>
-               {isLoading ? 'Creating Account...' : 'Create Account'}
+               {isLoading ? (isHindi ? 'खाता बनाया जा रहा है...' : 'Creating Account...') : (isHindi ? translations.form.submit.hi : translations.form.submit.en)}
              </Text>
            </TouchableOpacity>
           <Text style={styles.loginText}>
-            Already have an account?{' '}
+            {isHindi ? translations.alreadyHaveAccount.hi : translations.alreadyHaveAccount.en}{' '}
             <Text style={styles.loginLink} onPress={() => router.replace('/auth/login')}>Login</Text>
           </Text>
         </ScrollView>

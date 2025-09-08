@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { markDailyPujaVisited } from '@/utils/dailyPujaUtils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DailyPujaReminderModalProps {
   visible: boolean;
@@ -15,8 +16,16 @@ export default function DailyPujaReminderModal({
   onClose, 
   firstName 
 }: DailyPujaReminderModalProps) {
+  const { isHindi } = useLanguage();
   const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(4);
+
+  const translations = {
+    title: { en: 'ॐ Daily Puja ॐ', hi: 'ॐ दैनिक पूजा ॐ' },
+    message: { en: 'Do your daily puja and earn Divine Blessings', hi: 'अपनी दैनिक पूजा करें और दिव्य आशीर्वाद प्राप्त करें' },
+    autoCloses: { en: 'Auto-closes in', hi: 'स्वचालित रूप से बंद होगा' },
+    startDailyPuja: { en: 'Start Daily Puja', hi: 'दैनिक पूजा शुरू करें' }
+  };
 
   // Auto-close timer
   useEffect(() => {
@@ -72,15 +81,15 @@ export default function DailyPujaReminderModal({
 
           {/* Content */}
           <View style={styles.content}>
-            <Text style={styles.title}>ॐ Daily Puja ॐ</Text>
+            <Text style={styles.title}>{isHindi ? translations.title.hi : translations.title.en}</Text>
             
             <Text style={styles.message}>
-              {firstName ? `${firstName}, ` : ''}Do your daily puja and earn Divine Blessings
+              {firstName ? `${firstName}, ` : ''}{isHindi ? translations.message.hi : translations.message.en}
             </Text>
 
             {/* Timer indicator */}
             <View style={styles.timerContainer}>
-              <Text style={styles.timerText}>Auto-closes in {timeLeft}s</Text>
+              <Text style={styles.timerText}>{isHindi ? translations.autoCloses.hi : translations.autoCloses.en} {timeLeft}s</Text>
             </View>
 
             {/* Start button */}
@@ -91,7 +100,7 @@ export default function DailyPujaReminderModal({
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
               >
-                <Text style={styles.startButtonText}>Start Daily Puja</Text>
+                <Text style={styles.startButtonText}>{isHindi ? translations.startDailyPuja.hi : translations.startDailyPuja.en}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>

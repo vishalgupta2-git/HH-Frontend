@@ -33,15 +33,10 @@ const getAstrologyItems = (isHindi: boolean) => [
 const tileWidth = (Dimensions.get('window').width - 60) / 2;
 
 export default function SpiritualAstrologyBlock({ isHindi = false }: { isHindi?: boolean }) {
-  console.log('SpiritualAstrologyBlock rendering with isHindi:', isHindi);
   const router = useRouter();
   const spiritualItems = getSpiritualItems(isHindi);
   const astrologyItems = getAstrologyItems(isHindi);
   
-  // Debug: Log when isHindi changes
-  useEffect(() => {
-    console.log('SpiritualAstrologyBlock isHindi changed to:', isHindi);
-  }, [isHindi]);
 
   return (
     <View style={styles.container}>

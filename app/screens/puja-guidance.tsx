@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getEndpointUrl, getAuthHeaders, API_CONFIG } from '../../constants/ApiConfig';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const { width } = Dimensions.get('window');
@@ -55,6 +56,7 @@ interface Provider {
 }
 
 const PujaGuidanceScreen: React.FC = () => {
+  const { isHindi } = useLanguage();
   // Provider states
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
@@ -74,6 +76,43 @@ const PujaGuidanceScreen: React.FC = () => {
   // Date picker states
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Translations
+  const translations = {
+    searchPlaceholder: { en: 'Search puja guidance providers...', hi: 'पूजा मार्गदर्शन प्रदाताओं की खोज करें...' },
+    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
+    noDataFound: { en: 'No puja guidance providers found.', hi: 'कोई पूजा मार्गदर्शन प्रदाता नहीं मिला।' },
+    errorLoading: { en: 'Error loading data. Please try again.', hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    pullToRefresh: { en: 'Pull to refresh', hi: 'रिफ्रेश करने के लिए खींचें' },
+    bookingForm: {
+      title: { en: 'Book Puja Guidance', hi: 'पूजा मार्गदर्शन बुक करें' },
+      name: { en: 'Your Name', hi: 'आपका नाम' },
+      phone: { en: 'Phone Number', hi: 'फोन नंबर' },
+      date: { en: 'Preferred Date', hi: 'पसंदीदा तारीख' },
+      timeSlot: { en: 'Time Slot', hi: 'समय स्लॉट' },
+      submit: { en: 'Book Guidance', hi: 'मार्गदर्शन बुक करें' },
+      cancel: { en: 'Cancel', hi: 'रद्द करें' }
+    },
+    timeSlots: {
+      slot1: { en: '8AM-10AM', hi: 'सुबह 8-10 बजे' },
+      slot2: { en: '10AM-12PM', hi: 'सुबह 10-दोपहर 12 बजे' },
+      slot3: { en: '12PM-2PM', hi: 'दोपहर 12-2 बजे' },
+      slot4: { en: '2PM-4PM', hi: 'दोपहर 2-4 बजे' },
+      slot5: { en: '4PM-6PM', hi: 'शाम 4-6 बजे' },
+      slot6: { en: '6PM-8PM', hi: 'शाम 6-8 बजे' }
+    },
+    success: { en: 'Puja guidance booking submitted successfully!', hi: 'पूजा मार्गदर्शन बुकिंग सफलतापूर्वक जमा हो गई!' },
+    error: { en: 'Error submitting booking. Please try again.', hi: 'बुकिंग जमा करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    instructionText: { en: 'Click on any provider to book puja guidance services', hi: 'पूजा मार्गदर्शन सेवाओं के लिए किसी भी प्रदाता पर क्लिक करें' },
+    bookAppointment: { en: 'Book Appointment', hi: 'अपॉइंटमेंट बुक करें' },
+    bookingFormTitle: { en: 'Book Appointment', hi: 'अपॉइंटमेंट बुक करें' },
+    thankYouText: { en: 'Thank you for your interest in our Puja Guidance Services, please fill in the following details for us to contact you for booking', hi: 'हमारी पूजा मार्गदर्शन सेवाओं में आपकी रुचि के लिए धन्यवाद, कृपया बुकिंग के लिए हमसे संपर्क करने के लिए निम्नलिखित विवरण भरें' },
+    nameField: { en: 'Name', hi: 'नाम' },
+    enterFullName: { en: 'Enter your full name', hi: 'अपना पूरा नाम दर्ज करें' },
+    pujaGuidanceServices: { en: 'Puja Guidance Services', hi: 'पूजा मार्गदर्शन सेवाएं' },
+    aboutPujaGuidance: { en: 'About Puja Guidance', hi: 'पूजा मार्गदर्शन के बारे में' },
+    pujaGuidanceInfo: { en: 'If you need guidance with any Puja you want to do at home, please book an appointment and our expert Pandit Ji will provide you detailed guidance including Samagri, Puja setup and how to do Puja yourself.', hi: 'यदि आपको घर पर करने वाली किसी भी पूजा के लिए मार्गदर्शन की आवश्यकता है, तो कृपया एक अपॉइंटमेंट बुक करें और हमारे विशेषज्ञ पंडित जी आपको सामग्री, पूजा सेटअप और पूजा कैसे करें सहित विस्तृत मार्गदर्शन प्रदान करेंगे।' }
+  };
 
   // Fetch providers from API
   const fetchProviders = async () => {
@@ -180,27 +219,27 @@ const PujaGuidanceScreen: React.FC = () => {
     
     // Validation
     if (bookingName.trim().length < 3) {
-      Alert.alert('Invalid Name', 'Name must be at least 3 characters long.');
+      Alert.alert(isHindi ? 'अमान्य नाम' : 'Invalid Name', isHindi ? 'नाम कम से कम 3 अक्षर का होना चाहिए।' : 'Name must be at least 3 characters long.');
       return;
     }
     
     if (!bookingPhone || bookingPhone.length < 10) {
-      Alert.alert('Invalid Phone', 'Please enter a valid phone number.');
+      Alert.alert(isHindi ? 'अमान्य फोन' : 'Invalid Phone', isHindi ? 'कृपया एक वैध फोन नंबर दर्ज करें।' : 'Please enter a valid phone number.');
       return;
     }
     
     if (!bookingDate) {
-      Alert.alert('Invalid Date', 'Please select a preferred date.');
+      Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया एक पसंदीदा तारीख चुनें।' : 'Please select a preferred date.');
       return;
     }
     
     if (!isValidFutureDate(bookingDate)) {
-      Alert.alert('Invalid Date', 'Please select a date at least 18 hours in the future.');
+      Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया भविष्य में कम से कम 18 घंटे की तारीख चुनें।' : 'Please select a date at least 18 hours in the future.');
       return;
     }
     
     if (!bookingTimeSlot) {
-      Alert.alert('Invalid Time', 'Please select a preferred time slot.');
+      Alert.alert(isHindi ? 'अमान्य समय' : 'Invalid Time', isHindi ? 'कृपया एक पसंदीदा समय स्लॉट चुनें।' : 'Please select a preferred time slot.');
       return;
     }
     
@@ -271,7 +310,7 @@ const PujaGuidanceScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('🔍 [BOOKING] Error submitting booking:', error);
-      Alert.alert('Error', 'Failed to book appointment. Please try again.');
+      Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? translations.error.hi : translations.error.en);
     } finally {
       setIsSubmitting(false);
     }
@@ -300,7 +339,7 @@ const PujaGuidanceScreen: React.FC = () => {
         >
           <View style={styles.providersSection}>
                          <View style={styles.titleContainer}>
-               <Text style={styles.sectionTitle}>Puja Guidance Services</Text>
+               <Text style={styles.sectionTitle}>{isHindi ? translations.pujaGuidanceServices.hi : translations.pujaGuidanceServices.en}</Text>
                <TouchableOpacity 
                  style={styles.infoIcon}
                  onPress={() => setShowInfoModal(true)}
@@ -308,16 +347,16 @@ const PujaGuidanceScreen: React.FC = () => {
                  <Text style={styles.infoIconText}>ℹ️</Text>
                </TouchableOpacity>
              </View>
-            <Text style={styles.instructionText}>Click on any provider to book puja guidance services</Text>
+            <Text style={styles.instructionText}>{isHindi ? translations.instructionText.hi : translations.instructionText.en}</Text>
         
         {loadingProviders ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FFA040" />
-            <Text style={styles.loadingText}>Loading providers...</Text>
+            <Text style={styles.loadingText}>{isHindi ? translations.loading.hi : translations.loading.en}</Text>
           </View>
         ) : providers.length === 0 ? (
           <View style={styles.noProvidersContainer}>
-            <Text style={styles.noProvidersText}>No puja guidance providers available at the moment.</Text>
+            <Text style={styles.noProvidersText}>{isHindi ? translations.noDataFound.hi : translations.noDataFound.en}</Text>
             <Text style={styles.debugText}>Debug: Loading state: {loadingProviders.toString()}</Text>
             <Text style={styles.debugText}>Debug: Providers count: {providers.length}</Text>
             <Text style={styles.debugText}>Debug: API URL: {getEndpointUrl('PROVIDERS') + '/vastu'}</Text>
@@ -398,7 +437,7 @@ const PujaGuidanceScreen: React.FC = () => {
                       style={styles.bookButton}
                       onPress={() => openBookingModal(provider)}
                     >
-                      <Text style={styles.bookButtonText}>Book Appointment</Text>
+                      <Text style={styles.bookButtonText}>{isHindi ? translations.bookAppointment.hi : translations.bookAppointment.en}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -506,7 +545,7 @@ const PujaGuidanceScreen: React.FC = () => {
             {selectedProvider && (
               <>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Book Appointment</Text>
+                  <Text style={styles.modalTitle}>{isHindi ? translations.bookingFormTitle.hi : translations.bookingFormTitle.en}</Text>
                   <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => setShowBookingModal(false)}
@@ -517,7 +556,7 @@ const PujaGuidanceScreen: React.FC = () => {
                 
                 <View style={styles.bookingContent}>
                   <Text style={styles.bookingWelcomeText}>
-                    Thank you for your interest in our Puja Guidance Services, please fill in the following details for us to contact you for booking
+                    {isHindi ? translations.thankYouText.hi : translations.thankYouText.en}
                   </Text>
                   
                   <Text style={styles.bookingProviderName}>
@@ -525,36 +564,36 @@ const PujaGuidanceScreen: React.FC = () => {
                   </Text>
                   
                   <View style={styles.bookingForm}>
-                    <Text style={styles.formLabel}>Name *</Text>
+                    <Text style={styles.formLabel}>{isHindi ? translations.nameField.hi : translations.nameField.en} *</Text>
                     <TextInput
                       style={styles.formInput}
                       value={bookingName}
                       onChangeText={setBookingName}
-                      placeholder="Enter your full name"
+                      placeholder={isHindi ? translations.enterFullName.hi : translations.enterFullName.en}
                       placeholderTextColor="#999"
                     />
                     
-                    <Text style={styles.formLabel}>Phone Number *</Text>
+                    <Text style={styles.formLabel}>{isHindi ? translations.bookingForm.phone.hi : translations.bookingForm.phone.en} *</Text>
                     <TextInput
                       style={styles.formInput}
                       value={bookingPhone}
                       onChangeText={setBookingPhone}
-                      placeholder="Enter your phone number"
+                      placeholder={isHindi ? "अपना फोन नंबर दर्ज करें" : "Enter your phone number"}
                       placeholderTextColor="#999"
                       keyboardType="phone-pad"
                     />
                     
-                    <Text style={styles.formLabel}>Preferred Date *</Text>
+                    <Text style={styles.formLabel}>{isHindi ? translations.bookingForm.date.hi : translations.bookingForm.date.en} *</Text>
                     <TouchableOpacity
                       style={styles.datePickerButton}
                       onPress={showDatePickerModal}
                     >
                       <Text style={styles.datePickerButtonText}>
-                        {bookingDate ? bookingDate : 'Select Date'}
+                        {bookingDate ? bookingDate : (isHindi ? 'तारीख चुनें' : 'Select Date')}
                       </Text>
                     </TouchableOpacity>
                     
-                    <Text style={styles.formLabel}>Preferred Time Slot *</Text>
+                    <Text style={styles.formLabel}>{isHindi ? translations.bookingForm.timeSlot.hi : translations.bookingForm.timeSlot.en} *</Text>
                     <View style={styles.timeSlotContainer}>
                       {timeSlots.map((slot) => (
                         <TouchableOpacity
@@ -581,7 +620,7 @@ const PujaGuidanceScreen: React.FC = () => {
                       disabled={isSubmitting}
                     >
                       <Text style={styles.submitButtonText}>
-                        {isSubmitting ? 'Booking...' : 'Book Appointment'}
+                        {isSubmitting ? (isHindi ? 'बुकिंग...' : 'Booking...') : (isHindi ? translations.bookingForm.submit.hi : translations.bookingForm.submit.en)}
                       </Text>
                     </TouchableOpacity>
                     
@@ -624,7 +663,7 @@ const PujaGuidanceScreen: React.FC = () => {
               onPress={(e) => e.stopPropagation()}
             >
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>About Puja Guidance</Text>
+                <Text style={styles.modalTitle}>{isHindi ? translations.aboutPujaGuidance.hi : translations.aboutPujaGuidance.en}</Text>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => setShowInfoModal(false)}
@@ -635,7 +674,7 @@ const PujaGuidanceScreen: React.FC = () => {
               
               <View style={styles.infoContent}>
                 <Text style={styles.infoText}>
-                  If you need guidance with any Puja you want to do at home, please book an appointment and our expert Pandit Ji will provide you detailed guidance including Samagri, Puja setup and how to do Puja yourself.
+                  {isHindi ? translations.pujaGuidanceInfo.hi : translations.pujaGuidanceInfo.en}
                 </Text>
               </View>
             </TouchableOpacity>

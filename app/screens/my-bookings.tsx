@@ -103,17 +103,13 @@ export default function MyBookingsScreen() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Fetching bookings from:', getEndpointUrl('MY_BOOKINGS'));
-      console.log('🔑 Headers:', getAuthHeaders());
       
       // First test if backend is accessible
       try {
         const testResponse = await axios.get(getEndpointUrl('PING'), {
           headers: getAuthHeaders()
         });
-        console.log('✅ Backend is accessible:', testResponse.data);
       } catch (testError) {
-        console.error('❌ Backend test failed:', testError);
         Alert.alert('Error', 'Backend server is not accessible. Please check if the server is running.');
         return;
       }
