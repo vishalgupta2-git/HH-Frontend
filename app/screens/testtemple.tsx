@@ -9,7 +9,7 @@ import axios from 'axios';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { loadTempleConfigurationNewStyle, saveTempleConfigurationNewStyle, checkUserAuthentication } from '@/utils/templeUtils';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { markDailyPujaCompleted } from '@/utils/dailyPujaUtils';
+import { markDailyPujaCompleted, markDailyPujaVisited } from '@/utils/dailyPujaUtils';
 
 export const options = { headerShown: false };
 
@@ -1038,6 +1038,18 @@ export default function TestTempleScreen() {
   // Reset wizard step
   React.useEffect(() => {
       setWizardStep(1);
+  }, []);
+
+  // Mark that user has visited daily puja when they open test temple
+  React.useEffect(() => {
+    const markVisit = async () => {
+      try {
+        await markDailyPujaVisited();
+      } catch (error) {
+        console.error('Error marking daily puja visit:', error);
+      }
+    };
+    markVisit();
   }, []);
   
   // Flashing animation state

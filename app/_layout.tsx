@@ -233,8 +233,8 @@ export default function RootLayout() {
       const firstName = await getUserFirstName();
       setUserFirstName(firstName);
       
-      // Check if user has completed daily puja today
-      const hasCompletedToday = await hasCompletedDailyPujaToday();
+      // Check if user has visited daily puja today
+      const hasVisitedToday = await hasVisitedDailyPujaToday();
       
       // Check for upcoming special pujas
       const specialPujas = await getUpcomingSpecialPujas();
@@ -242,12 +242,12 @@ export default function RootLayout() {
       
               // Show modals with delay to ensure app is fully loaded
         setTimeout(() => {
-          // Show daily puja modal first if user hasn't completed today
-          if (!hasCompletedToday) {
+          // Show daily puja modal first if user hasn't visited today
+          if (!hasVisitedToday) {
             setShowDailyPujaModal(true);
             setDailyPujaShown(true);
           } else {
-            // If daily puja already completed, show special puja modal immediately
+            // If daily puja already visited, show special puja modal immediately
             if (specialPujas.length > 0) {
               setShowSpecialPujaModal(true);
             }
@@ -288,13 +288,16 @@ export default function RootLayout() {
         const userData = await AsyncStorage.getItem('user');
         setIsAuthenticated(!!userData);
         
-        // Award daily login mudras
+        // Award daily login mudras (only once per day)
         try {
-          const mudraResult = await awardMudras('DAILY_LOGIN');
-          if (mudraResult.success) {
-            // Daily login mudras awarded successfully
-          } else {
-            // Failed to award mudras
+          const hasEarnedToday = await hasEarnedDailyMudras('DAILY_LOGIN');
+          if (!hasEarnedToday) {
+            const mudraResult = await awardMudras('DAILY_LOGIN');
+            if (mudraResult.success) {
+              // Daily login mudras awarded successfully
+            } else {
+              // Failed to award mudras
+            }
           }
         } catch (mudraError) {
           // Error awarding mudras
