@@ -10,6 +10,7 @@ import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { loadTempleConfigurationNewStyle, saveTempleConfigurationNewStyle, checkUserAuthentication } from '@/utils/templeUtils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { markDailyPujaCompleted, markDailyPujaVisited } from '@/utils/dailyPujaUtils';
+import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
 
 export const options = { headerShown: false };
 
@@ -712,6 +713,21 @@ export default function TestTempleScreen() {
   // Aarti functions
   const handleAarti = () => {
     setShowAartiModal(true);
+    
+    // Award mudras for doing aarti (only once per day) - run in parallel
+    (async () => {
+      try {
+        const hasEarnedToday = await hasEarnedDailyMudras('DO_AARTI');
+        if (!hasEarnedToday) {
+          const mudraResult = await awardMudras('DO_AARTI');
+          if (mudraResult.success) {
+            // Mudras awarded successfully for aarti
+          }
+        }
+      } catch (error) {
+        // Error awarding mudras - continue with aarti
+      }
+    })();
   };
 
   const handleCloseAartiModal = () => {
@@ -886,12 +902,42 @@ export default function TestTempleScreen() {
     setShowMusicModal(true);
     // Fetch music files when modal opens
     fetchMusicFiles();
+    
+    // Award mudras for listening to audio/video (only once per day) - run in parallel
+    (async () => {
+      try {
+        const hasEarnedToday = await hasEarnedDailyMudras('LISTEN_AUDIO_VIDEO');
+        if (!hasEarnedToday) {
+          const mudraResult = await awardMudras('LISTEN_AUDIO_VIDEO');
+          if (mudraResult.success) {
+            // Mudras awarded successfully for listening to music
+          }
+        }
+      } catch (error) {
+        // Error awarding mudras - continue with music
+      }
+    })();
   };
 
   const dropFlowers = async (flowerType: string = 'hibiscus') => {
     if (isFlowerAnimationRunning) return;
     setShowFlowerModal(false);
     setIsFlowerAnimationRunning(true);
+
+    // Start mudra awarding in parallel (don't wait for it)
+    (async () => {
+      try {
+        const hasEarnedToday = await hasEarnedDailyMudras('OFFER_FLOWERS');
+        if (!hasEarnedToday) {
+          const mudraResult = await awardMudras('OFFER_FLOWERS');
+          if (mudraResult.success) {
+            // Mudras awarded successfully
+          }
+        }
+      } catch (error) {
+        // Error awarding mudras - continue with animation
+      }
+    })();
 
     const rows = 5;
     const itemsPerRow = 12;
@@ -1098,6 +1144,7 @@ export default function TestTempleScreen() {
     };
   }, [preloadBellSound, preloadConchSound]);
 
+
   const playConch = async () => {
     try {
       if (!conchSoundRef.current) {
@@ -1107,6 +1154,21 @@ export default function TestTempleScreen() {
       await conchSoundRef.current?.replayAsync();
       // Optional: stop after 4s similar to bell (or let it play through)
       setTimeout(async () => { try { await conchSoundRef.current?.stopAsync(); } catch {} finally { setIsConchPlaying(false); } }, 4000);
+      
+      // Award mudras for playing shankh (only once per day) - run in parallel
+      (async () => {
+        try {
+          const hasEarnedToday = await hasEarnedDailyMudras('PLAY_SHANKH');
+          if (!hasEarnedToday) {
+            const mudraResult = await awardMudras('PLAY_SHANKH');
+            if (mudraResult.success) {
+              // Mudras awarded successfully for shankh
+            }
+          }
+        } catch (error) {
+          // Error awarding mudras - continue with shankh
+        }
+      })();
     } catch (e) {
       console.warn('Conch sound failed', e);
       setIsConchPlaying(false);
@@ -1116,6 +1178,22 @@ export default function TestTempleScreen() {
   const triggerBells = async () => {
     if (isBellAnimationRunning) return;
     setIsBellAnimationRunning(true);
+    
+    // Award mudras for ringing bell (only once per day) - run in parallel
+    (async () => {
+      try {
+        const hasEarnedToday = await hasEarnedDailyMudras('RING_BELL');
+        if (!hasEarnedToday) {
+          const mudraResult = await awardMudras('RING_BELL');
+          if (mudraResult.success) {
+            // Mudras awarded successfully for bell
+          }
+        }
+      } catch (error) {
+        // Error awarding mudras - continue with bell
+      }
+    })();
+    
     try {
       // Play bell from beginning, cap playback to 4s
       if (bellSoundRef.current) {

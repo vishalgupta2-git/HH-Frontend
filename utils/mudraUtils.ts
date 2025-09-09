@@ -23,7 +23,6 @@ export const MUDRA_ACTIVITIES = {
   DO_AARTI: 'Do aarti',
   RING_BELL: 'Ring the bell',
   PLAY_SHANKH: 'Play Shankh',
-  OFFER_DHOOP: 'Offer Dhoop to God',
   LISTEN_AUDIO_VIDEO: 'Listen to Audio / Video',
   CHECK_RASHIFAL: 'Check Rashifal',
 } as const;
@@ -44,7 +43,6 @@ export const MUDRA_AMOUNTS = {
   [MUDRA_ACTIVITIES.DO_AARTI]: 5,
   [MUDRA_ACTIVITIES.RING_BELL]: 5,
   [MUDRA_ACTIVITIES.PLAY_SHANKH]: 5,
-  [MUDRA_ACTIVITIES.OFFER_DHOOP]: 5,
   [MUDRA_ACTIVITIES.LISTEN_AUDIO_VIDEO]: 5,
   [MUDRA_ACTIVITIES.CHECK_RASHIFAL]: 5,
 } as const;
