@@ -11,6 +11,7 @@ interface SpiritualItem {
 }
 
 const getSpiritualItems = (isHindi: boolean): SpiritualItem[] => [
+  { label: isHindi ? 'नवरात्रि' : 'Navratri', image: require('@/assets/images/icons/home page icons/Navratri.png'), route: '/screens/navratri' },
   { label: isHindi ? 'वेद' : 'Vedas', image: require('@/assets/images/icons/home page icons/vedas.png'), route: '/screens/vedas' },
   { label: isHindi ? 'धाम और यात्रा' : 'Dhams and Yatras', image: require('@/assets/images/icons/home page icons/dhams.png'), route: '/screens/dhams' },
   { label: isHindi ? 'पवित्र पुस्तकें' : 'Holy Books', image: require('@/assets/images/icons/home page icons/HolyBooksIcon.png'), route: '/screens/holy-books' },
@@ -20,6 +21,7 @@ const getSpiritualItems = (isHindi: boolean): SpiritualItem[] => [
   { label: isHindi ? 'श्लोक' : 'Shalokas', image: require('@/assets/images/icons/home page icons/shalokasIcon.png'), route: '/screens/shalokas' },
   { label: isHindi ? 'मंत्र' : 'Mantras', image: require('@/assets/images/icons/home page icons/mantrasIcon.png'), route: '/screens/mantras' },
   { label: isHindi ? 'कैलेंडर' : 'Calendar', image: require('@/assets/images/icons/home page icons/hinduCalendarIcon.png'), route: '/screens/hindu-calendar' },
+  { label: isHindi ? 'साधु संत' : 'Sadhu Sant', image: require('@/assets/images/icons/home page icons/Sadhu.png'), route: '/screens/sadhu-sant' },
 ];
 
 const getAstrologyItems = (isHindi: boolean) => [
