@@ -12,6 +12,7 @@ import { hasVisitedDailyPujaToday, hasCompletedDailyPujaToday, getUserFirstName 
 import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
 import DailyPujaReminderModal from '@/components/Home/DailyPujaReminderModal';
 import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
+import AudioVideoModal from '@/components/AudioVideoModal';
 import { View, TouchableOpacity, Text, StyleSheet, Platform, Image } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -21,12 +22,14 @@ import { Colors } from '@/constants/Colors';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useLanguage, LanguageProvider } from '@/contexts/LanguageContext';
+import { AudioVideoModalProvider, useAudioVideoModal } from '@/contexts/AudioVideoModalContext';
 
 // Global Bottom Navigation Component
 function GlobalBottomNavigation() {
   const router = useRouter();
   const pathname = usePathname();
   const colorScheme = useColorScheme();
+  const { showAudioVideoModal } = useAudioVideoModal();
 
   // Hide bottom navigation on 3D Ganesha screen and Daily Puja Custom Temple screen
   if (pathname === '/screens/3d-ganesha' || pathname === '/screens/DailyPujaCustomTemple') {
@@ -57,7 +60,7 @@ function GlobalBottomNavigation() {
     } else if (route === 'yatra') {
       router.push('/(tabs)/yatra');
     } else if (route === 'audio-video') {
-      router.push('/(tabs)/audio-video');
+      showAudioVideoModal();
     }
   };
 
@@ -112,6 +115,7 @@ function BottomNavigationWithLanguage() {
   const router = useRouter();
   const pathname = usePathname();
   const { isHindi } = useLanguage();
+  const { showAudioVideoModal } = useAudioVideoModal();
 
   // Hide bottom navigation on 3D Ganesha screen and Daily Puja Custom Temple screen
   if (pathname === '/screens/3d-ganesha' || pathname === '/screens/DailyPujaCustomTemple') {
@@ -142,7 +146,7 @@ function BottomNavigationWithLanguage() {
     } else if (route === 'yatra') {
       router.push('/(tabs)/yatra');
     } else if (route === 'audio-video') {
-      router.push('/(tabs)/audio-video');
+      showAudioVideoModal();
     }
   };
 
@@ -210,6 +214,7 @@ export default function RootLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [showDailyPujaModal, setShowDailyPujaModal] = useState(false);
   const [showSpecialPujaModal, setShowSpecialPujaModal] = useState(false);
+  const [showAudioVideoModal, setShowAudioVideoModal] = useState(false);
   const [upcomingPujas, setUpcomingPujas] = useState<UpcomingPuja[]>([]);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [appInitialized, setAppInitialized] = useState(false);
@@ -341,34 +346,45 @@ export default function RootLayout() {
 
   return (
     <LanguageProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="screens" options={{ headerShown: false }} />
-            <Stack.Screen name="auth" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-          
-          {/* Global Bottom Navigation */}
-          <BottomNavigationWithLanguage />
-          
-          {/* Daily Puja Reminder Modal */}
-          <DailyPujaReminderModal
-            visible={showDailyPujaModal}
-            onClose={handleDailyPujaModalClose}
-            firstName={userFirstName || undefined}
-          />
-          
-          {/* Special Days Modal */}
-          <SpecialDaysModal
-            visible={showSpecialPujaModal}
-            onClose={() => setShowSpecialPujaModal(false)}
-            upcomingPujas={upcomingPujas}
-          />
-        </ThemeProvider>
-      </GestureHandlerRootView>
+      <AudioVideoModalProvider
+        showModal={() => setShowAudioVideoModal(true)}
+        hideModal={() => setShowAudioVideoModal(false)}
+      >
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="screens" options={{ headerShown: false }} />
+              <Stack.Screen name="auth" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+            
+            {/* Global Bottom Navigation */}
+            <BottomNavigationWithLanguage />
+            
+            {/* Daily Puja Reminder Modal */}
+            <DailyPujaReminderModal
+              visible={showDailyPujaModal}
+              onClose={handleDailyPujaModalClose}
+              firstName={userFirstName || undefined}
+            />
+            
+            {/* Special Days Modal */}
+            <SpecialDaysModal
+              visible={showSpecialPujaModal}
+              onClose={() => setShowSpecialPujaModal(false)}
+              upcomingPujas={upcomingPujas}
+            />
+            
+            {/* Audio/Video Modal */}
+            <AudioVideoModal
+              visible={showAudioVideoModal}
+              onClose={() => setShowAudioVideoModal(false)}
+            />
+          </ThemeProvider>
+        </GestureHandlerRootView>
+      </AudioVideoModalProvider>
     </LanguageProvider>
   );
 }
