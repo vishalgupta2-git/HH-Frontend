@@ -3,8 +3,9 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useAudioVideoModal } from '@/contexts/AudioVideoModalContext';
 
-const getIcons = (isHindi: boolean) => [
+const getIcons = (isHindi: boolean, showAudioVideoModal?: () => void) => [
   { 
     label: isHindi ? 'मेरा आभासी मंदिर' : 'My Virtual Temple', 
     image: require('@/assets/images/icons/home page icons/temple.png'),
@@ -28,7 +29,8 @@ const getIcons = (isHindi: boolean) => [
   { 
     label: isHindi ? 'भक्ति संगीत' : 'Divine Music', 
     icon: 'video',
-    route: '/audio-video'
+    route: showAudioVideoModal ? 'modal' : '/audio-video',
+    onPress: showAudioVideoModal
   },
   { 
     label: isHindi ? 'पूजा मार्गदर्शन' : 'Puja Guidance', 
@@ -52,7 +54,8 @@ const tileSize = (Dimensions.get('window').width - 72) / numColumns;
 
 export default function HomeIconGrid({ isHindi = false }: { isHindi?: boolean }) {
   const router = useRouter();
-  const icons = getIcons(isHindi);
+  const { showAudioVideoModal } = useAudioVideoModal();
+  const icons = getIcons(isHindi, showAudioVideoModal);
   
   // Debug: Log when isHindi changes
   return (
@@ -64,7 +67,11 @@ export default function HomeIconGrid({ isHindi = false }: { isHindi?: boolean })
             style={styles.tile}
             activeOpacity={0.8}
             onPress={() => {
-              router.push(item.route as any);
+              if (item.onPress) {
+                item.onPress();
+              } else {
+                router.push(item.route as any);
+              }
             }}
           >
             <View style={styles.iconCircle}>

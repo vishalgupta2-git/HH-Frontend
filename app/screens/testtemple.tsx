@@ -2202,14 +2202,6 @@ export default function TestTempleScreen() {
               />
               <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'आरती' : 'Aarti'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.pujaIconItem}
-              onPress={handleMusic}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.pujaIcon}>🎵</Text>
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'संगीत' : 'Music'}</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Right Puja Icons Column - Shankh, Ghanti */}

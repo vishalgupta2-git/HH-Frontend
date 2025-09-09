@@ -341,7 +341,7 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
             <MaterialCommunityIcons name="close" size={24} color="#333" />
           </TouchableOpacity>
           <Text style={styles.title}>
-            {isHindi ? translations.title.hi : translations.title.en}
+            ॐ {isHindi ? translations.title.hi : translations.title.en} ॐ
           </Text>
           <View style={styles.placeholder} />
         </View>
@@ -746,7 +746,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FF6A00',
   },
   placeholder: {
     width: 34,

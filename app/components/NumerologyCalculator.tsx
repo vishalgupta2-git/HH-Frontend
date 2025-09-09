@@ -744,6 +744,7 @@ const NumerologyCalculator: React.FC = () => {
           mode="date"
           display="default"
           onChange={onDateChange}
+          minimumDate={new Date(1900, 0, 1)}
           maximumDate={new Date()}
         />
       )}
@@ -754,6 +755,7 @@ const NumerologyCalculator: React.FC = () => {
           mode="date"
           display="default"
           onChange={onPartnerDateChange}
+          minimumDate={new Date(1900, 0, 1)}
           maximumDate={new Date()}
         />
       )}
