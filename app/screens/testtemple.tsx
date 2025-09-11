@@ -11,6 +11,7 @@ import { loadTempleConfigurationNewStyle, saveTempleConfigurationNewStyle, check
 import { useLanguage } from '@/contexts/LanguageContext';
 import { markDailyPujaCompleted, markDailyPujaVisited } from '@/utils/dailyPujaUtils';
 import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
+import { useAudioVideoModal } from '@/contexts/AudioVideoModalContext';
 
 export const options = { headerShown: false };
 
@@ -290,6 +291,7 @@ const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) 
 export default function TestTempleScreen() {
   const router = useRouter();
   const { isHindi } = useLanguage();
+  const { showAudioVideoModal } = useAudioVideoModal();
   
   // State management for navigation (3 states: myTemple, todaysPuja, allTemples)
   const [currentScreen, setCurrentScreen] = useState<'myTemple' | 'todaysPuja' | 'allTemples'>('myTemple');
@@ -2174,7 +2176,7 @@ export default function TestTempleScreen() {
 
       {/* Puja Icons - Always visible */}
         <>
-          {/* Left Puja Icons Column - Flowers, Thali, Music */}
+          {/* Left Puja Icons Column - Flowers, Aarti, Music */}
           <View style={[styles.leftPujaIconsColumn, isPujaTemporarilyDisabled && { opacity: 0.5 }]} pointerEvents={isPujaTemporarilyDisabled ? 'none' : 'auto'}>
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
@@ -2201,6 +2203,18 @@ export default function TestTempleScreen() {
                 resizeMode="contain"
               />
               <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'आरती' : 'Aarti'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.pujaIconItem}
+              onPress={showAudioVideoModal}
+              activeOpacity={0.7}
+            >
+              <MaterialCommunityIcons 
+                name="music-note" 
+                size={36} 
+                color="#FFFFFF" 
+              />
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'संगीत' : 'Music'}</Text>
             </TouchableOpacity>
           </View>
 

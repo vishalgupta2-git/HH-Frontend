@@ -28,7 +28,7 @@ const getIcons = (isHindi: boolean, showAudioVideoModal?: () => void) => [
   },
   { 
     label: isHindi ? 'भक्ति संगीत' : 'Divine Music', 
-    icon: 'video',
+    icon: 'music',
     route: showAudioVideoModal ? 'modal' : '/audio-video',
     onPress: showAudioVideoModal
   },

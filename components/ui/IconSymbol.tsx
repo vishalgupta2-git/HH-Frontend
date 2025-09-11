@@ -23,6 +23,7 @@ const MAPPING = {
   'puja': 'whatshot',
   'yatra': 'route',
   'video': 'ondemand-video',
+  'music': 'music-note',
 } as IconMapping;
 
 /**

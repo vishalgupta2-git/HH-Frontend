@@ -6,6 +6,7 @@ import DateTimePicker from 'react-native-modal-datetime-picker';
 import { UpcomingPuja, formatPujaDate, getDaysUntilText } from '@/utils/specialDaysUtils';
 import axios from 'axios';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SpecialDaysModalProps {
   visible: boolean;
@@ -18,6 +19,7 @@ export default function SpecialDaysModal({
   onClose, 
   upcomingPujas 
 }: SpecialDaysModalProps) {
+  const { isHindi } = useLanguage();
   const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(10);
   const [bookingModalVisible, setBookingModalVisible] = useState(false);
@@ -27,6 +29,29 @@ export default function SpecialDaysModal({
   const [showDate, setShowDate] = useState(false);
   const [slot, setSlot] = useState('9:00 AM');
   const [loading, setLoading] = useState(false);
+
+  const translations = {
+    autoClosesIn: { en: 'Auto-closes in', hi: 'स्वचालित रूप से बंद होगा' },
+    pujaDetails: { en: 'Puja Details:', hi: 'पूजा विवरण:' },
+    specialPujaDetails: { en: 'Special puja details will be available soon.', hi: 'विशेष पूजा विवरण जल्द ही उपलब्ध होगा।' },
+    morePujas: { en: 'more special pujas coming up', hi: 'और विशेष पूजाएं आने वाली हैं' },
+    bookPuja: { en: 'Book Puja', hi: 'पूजा बुक करें' },
+    viewAllSpecialPujas: { en: 'View All Special Pujas', hi: 'सभी विशेष पूजाएं देखें' },
+    thanksForRequesting: { en: 'Thanks for requesting', hi: 'अनुरोध के लिए धन्यवाद' },
+    pleaseEnterFollowing: { en: 'please enter the following to let us contact you', hi: 'कृपया हमसे संपर्क करने के लिए निम्नलिखित दर्ज करें' },
+    fullName: { en: 'Full Name', hi: 'पूरा नाम' },
+    phoneNumber: { en: 'Phone Number', hi: 'फोन नंबर' },
+    date: { en: 'Date:', hi: 'तारीख:' },
+    submitting: { en: 'Submitting...', hi: 'जमा हो रहा है...' },
+    confirm: { en: 'Confirm', hi: 'पुष्टि करें' },
+    cancel: { en: 'Cancel', hi: 'रद्द करें' },
+    pleaseEnterValidName: { en: 'Please enter a valid name and phone number.', hi: 'कृपया एक वैध नाम और फोन नंबर दर्ज करें।' },
+    noPujaSelected: { en: 'No puja selected. Please try again.', hi: 'कोई पूजा चयनित नहीं। कृपया पुनः प्रयास करें।' },
+    success: { en: 'Success', hi: 'सफलता' },
+    bookingSubmitted: { en: 'Your special puja booking request has been submitted successfully!', hi: 'आपका विशेष पूजा बुकिंग अनुरोध सफलतापूर्वक जमा हो गया है!' },
+    error: { en: 'Error', hi: 'त्रुटि' },
+    failedToSave: { en: 'Failed to save booking:', hi: 'बुकिंग सहेजने में विफल:' }
+  };
 
   const timeSlots = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM'];
 

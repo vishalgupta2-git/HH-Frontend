@@ -16,6 +16,7 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showUserNotExistsModal, setShowUserNotExistsModal] = useState(false);
   const router = useRouter();
 
   // Translations
@@ -32,7 +33,8 @@ export default function LoginScreen() {
       emailRequired: { en: 'Email is required', hi: 'ईमेल आवश्यक है' },
       emailInvalid: { en: 'Enter a valid email address', hi: 'एक वैध ईमेल पता दर्ज करें' },
       otpFailed: { en: 'Failed to send OTP. Please try again.', hi: 'OTP भेजने में विफल। कृपया पुनः प्रयास करें।' },
-      tooManyAttempts: { en: 'Too many failed attempts. Please try again in 30 minutes.', hi: 'बहुत सारे असफल प्रयास। कृपया 30 मिनट बाद पुनः प्रयास करें।' }
+      tooManyAttempts: { en: 'Too many failed attempts. Please try again in 30 minutes.', hi: 'बहुत सारे असफल प्रयास। कृपया 30 मिनट बाद पुनः प्रयास करें।' },
+      userNotExists: { en: 'User doesn\'t exist', hi: 'उपयोगकर्ता मौजूद नहीं है' }
     },
     terms: { en: 'Terms and Conditions', hi: 'नियम और शर्तें' },
     privacy: { en: 'Privacy Policy', hi: 'गोपनीयता नीति' },
@@ -61,12 +63,35 @@ export default function LoginScreen() {
     if (!valid) return;
     setIsLoading(true);
     try {
-              await axios.post(getEndpointUrl('SEND_OTP'), { email }, {
-                headers: getAuthHeaders()
-              });
+      // First check if user exists in database
+      const userCheckResponse = await axios.get(`${getEndpointUrl('USER')}?email=${encodeURIComponent(email)}`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (!userCheckResponse.data.user) {
+        // User doesn't exist, show message and redirect to signup
+        setShowUserNotExistsModal(true);
+        setTimeout(() => {
+          setShowUserNotExistsModal(false);
+          router.push('/auth/signup');
+        }, 2000);
+        return;
+      }
+      
+      // User exists, proceed with OTP
+      await axios.post(getEndpointUrl('SEND_OTP'), { email }, {
+        headers: getAuthHeaders()
+      });
       router.push({ pathname: '/auth/otp', params: { email, from: 'login' } });
     } catch (err: any) {
-      if (err.response?.status === 429) {
+      if (err.response?.status === 404) {
+        // User doesn't exist (404 from user check)
+        setShowUserNotExistsModal(true);
+        setTimeout(() => {
+          setShowUserNotExistsModal(false);
+          router.push('/auth/signup');
+        }, 2000);
+      } else if (err.response?.status === 429) {
         // Lockout error
         setEmailError(err.response?.data?.error || (isHindi ? translations.validation.tooManyAttempts.hi : translations.validation.tooManyAttempts.en));
       } else {
@@ -1071,6 +1096,28 @@ export default function LoginScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* User Not Exists Modal */}
+      <Modal
+        visible={showUserNotExistsModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowUserNotExistsModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.userNotExistsModalContent}>
+            <View style={styles.userNotExistsIconContainer}>
+              <Text style={styles.userNotExistsIcon}>⚠️</Text>
+            </View>
+            <Text style={styles.userNotExistsTitle}>
+              {isHindi ? translations.validation.userNotExists.hi : translations.validation.userNotExists.en}
+            </Text>
+            <Text style={styles.userNotExistsMessage}>
+              {isHindi ? 'कृपया साइन अप करें' : 'Please sign up to continue'}
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1336,5 +1383,48 @@ const styles = StyleSheet.create({
     right: 0,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // User Not Exists Modal Styles
+  userNotExistsModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 30,
+    alignItems: 'center',
+    marginHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  userNotExistsIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#FFF3CD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    shadowColor: '#FFC107',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  userNotExistsIcon: {
+    fontSize: 40,
+  },
+  userNotExistsTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  userNotExistsMessage: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 22,
   },
 }); 

@@ -102,7 +102,7 @@ function GlobalBottomNavigation() {
           style={[styles.tab, isActive('audio-video') && styles.activeTab]} 
           onPress={() => navigateTo('audio-video')}
         >
-          <MaterialIcons size={28} name="ondemand-video" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
+          <MaterialIcons size={28} name="music-note" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('audio-video') && styles.activeTabText]}>Divine Music</Text>
         </TouchableOpacity>
       </View>
@@ -194,7 +194,7 @@ function BottomNavigationWithLanguage() {
           style={[styles.tab, isActive('audio-video') && styles.activeTab]} 
           onPress={() => navigateTo('audio-video')}
         >
-          <MaterialIcons size={28} name="ondemand-video" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
+          <MaterialIcons size={28} name="music-note" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('audio-video') && styles.activeTabText]}>
             {isHindi ? 'भक्ति संगीत' : 'Divine Music'}
           </Text>

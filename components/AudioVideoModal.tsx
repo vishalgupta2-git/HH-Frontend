@@ -11,8 +11,9 @@ import {
   Alert,
   Image,
   TextInput,
+  AppState,
 } from 'react-native';
-import { Audio } from 'expo-av';
+import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -166,6 +167,17 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
         { shouldPlay: true }
       );
       
+      // Ensure audio session is configured for background playback
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        staysActiveInBackground: true,
+        playsInSilentModeIOS: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+        interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+        interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+      });
+      
       setSound(newSound);
       setCurrentlyPlaying(file.avld);
       setIsPlaying(true);
@@ -262,6 +274,16 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
           await sound.pauseAsync();
           setIsPlaying(false);
         } else {
+          // Ensure audio session is configured for background playback before resuming
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: false,
+            staysActiveInBackground: true,
+            playsInSilentModeIOS: true,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: false,
+            interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+            interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+          });
           await sound.playAsync();
           setIsPlaying(true);
         }
@@ -311,10 +333,62 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
     return true;
   });
 
-  // Load music files when modal opens
+  // Configure audio session for background playback
+  useEffect(() => {
+    const configureAudioSession = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          staysActiveInBackground: true,
+          playsInSilentModeIOS: true,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false,
+          interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+          interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+        });
+      } catch (error) {
+        console.error('Error configuring audio session:', error);
+      }
+    };
+
+    configureAudioSession();
+  }, []);
+
+  // Handle app state changes to maintain audio playback
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === 'background' && sound && isPlaying) {
+        // Keep audio playing in background
+      } else if (nextAppState === 'active' && sound && isPlaying) {
+        // App came back to foreground
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [sound, isPlaying]);
+
+  // Load music files when modal opens and reconfigure audio session
   useEffect(() => {
     if (visible) {
       fetchMusicFiles();
+      // Reconfigure audio session when modal opens to ensure background playback
+      const reconfigureAudio = async () => {
+        try {
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: false,
+            staysActiveInBackground: true,
+            playsInSilentModeIOS: true,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: false,
+            interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+            interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+          });
+        } catch (error) {
+          console.error('Error reconfiguring audio session:', error);
+        }
+      };
+      reconfigureAudio();
     }
   }, [visible]);
 
