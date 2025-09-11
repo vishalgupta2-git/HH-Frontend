@@ -38,19 +38,8 @@ export default function HomeScreen() {
           setUserFirstName(firstName);
         }
 
-        // Check for upcoming special pujas (show for all users)
-        const upcomingPujas = await getUpcomingSpecialPujas();
-        
-        if (upcomingPujas.length > 0) {
-          // Check if user has already booked the closest upcoming puja in last 30 days
-          const closestPuja = upcomingPujas[0];
-          const shouldShow = await shouldShowSpecialDaysModal(closestPuja.pujaName);
-          
-          if (shouldShow) {
-            setUpcomingPujas(upcomingPujas);
-            setShowSpecialDaysModal(true);
-          }
-        }
+        // Note: Special puja modal is now handled in root layout to prevent duplicates
+        // This useEffect only handles user first name and daily puja check
       } catch (error) {
         // Handle error silently
       }
@@ -159,6 +148,7 @@ export default function HomeScreen() {
              </Text>
            </TouchableOpacity>
          </View> */}
+
 
         
          {/* Spiritual & Astrology Block Section */}
