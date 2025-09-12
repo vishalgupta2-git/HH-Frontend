@@ -63,7 +63,6 @@ export default function Navratri2025Screen() {
         const imageUrls = imageMatches.map(match => 
           match.replace(/<\/?image>/g, '').trim()
         );
-        console.log('Found correct images:', imageUrls); // Debug log
         formattedLines.push({
           type: 'images',
           content: imageUrls,
@@ -73,7 +72,6 @@ export default function Navratri2025Screen() {
         const imageUrls = malformedImageMatches.map(match => 
           match.replace(/<\/image>/g, '').trim()
         );
-        console.log('Found malformed images:', imageUrls); // Debug log
         formattedLines.push({
           type: 'images',
           content: imageUrls,
@@ -81,7 +79,6 @@ export default function Navratri2025Screen() {
         });
       } else if (singleMalformedMatch) {
         const imageUrl = singleMalformedMatch[1].trim();
-        console.log('Found single malformed image:', imageUrl); // Debug log
         formattedLines.push({
           type: 'images',
           content: [imageUrl],
@@ -242,11 +239,7 @@ export default function Navratri2025Screen() {
       }
       
       const textContent = await response.text();
-      console.log('Raw content length:', textContent.length);
-      console.log('Content preview:', textContent.substring(0, 200));
-      
       const { tocItems, sections } = parseTextContent(textContent);
-      console.log('Parsed sections count:', sections.length);
       
       setTocItems(tocItems);
       setSections(sections);
@@ -336,11 +329,11 @@ export default function Navratri2025Screen() {
           }
           
           if (line.type === 'images') {
-            console.log('Rendering images:', line.content); // Debug log
             return (
               <View key={lineIndex} style={styles.imageContainer}>
                 {line.content.map((imageUrl, imageIndex) => {
-                  const targetWidth = width * 0.45;
+                  // Use 35% width for side-by-side images, 45% for single images
+                  const targetWidth = line.content.length > 1 ? width * 0.35 : width * 0.45;
                   const calculatedHeight = getImageHeight(imageUrl, targetWidth);
                   
                   return (
@@ -356,9 +349,8 @@ export default function Navratri2025Screen() {
                         line.content.length > 1 && styles.sideBySideImage
                       ]}
                       resizeMode="cover"
-                      onError={(error) => console.log('Image load error:', error, imageUrl)}
+                      onError={(error) => console.error('Image load error:', error, imageUrl)}
                       onLoad={(event) => {
-                        console.log('Image loaded successfully:', imageUrl);
                         handleImageLoad(imageUrl, event);
                       }}
                     />
