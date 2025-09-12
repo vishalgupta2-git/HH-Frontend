@@ -197,7 +197,7 @@ export default function HomeScreen() {
                <View style={styles.festivalsButtonContent}>
                  <IconSymbol name="calendar" size={24} color="#FF6A00" />
                  <Text style={styles.festivalsButtonText}>
-                   {isHindi ? 'आगामी त्योहार' : 'Upcoming Festivals'}
+                   {isHindi ? 'त्योहारे दिन 2025' : 'Hindu Festival Season 2025'}
                  </Text>
                  <IconSymbol name="chevron.right" size={20} color="#FF6A00" />
                </View>
@@ -275,9 +275,9 @@ export default function HomeScreen() {
             <TouchableWithoutFeedback onPress={() => {}}>
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>
-                    {isHindi ? 'आगामी त्योहार' : 'Upcoming Festivals'}
-                  </Text>
+                   <Text style={styles.modalTitle}>
+                     {isHindi ? 'त्योहारे दिन 2025' : 'Hindu Festival Season 2025'}
+                   </Text>
                   <TouchableOpacity 
                     style={styles.closeButton}
                     onPress={() => setShowFestivalsModal(false)}
