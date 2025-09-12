@@ -296,6 +296,9 @@ export default function TestTempleScreen() {
   // State management for navigation (3 states: myTemple, todaysPuja, allTemples)
   const [currentScreen, setCurrentScreen] = useState<'myTemple' | 'todaysPuja' | 'allTemples'>('myTemple');
   
+  // Animation for flashing deity icon
+  const flashAnim = useRef(new Animated.Value(1)).current;
+  
   // All Temples data with multiple images per deity and their actual dimensions
   const allTemplesData = [
     { 
@@ -625,6 +628,34 @@ export default function TestTempleScreen() {
   const [bgGradient, setBgGradient] = useState(gradientPresets[0]);
   const [selectedDeities, setSelectedDeities] = useState<{[deityId: string]: string}>({}); // deityId -> statueUrl
   const [deityError, setDeityError] = useState('');
+
+  // Start flashing animation when no deities are selected in My Temple mode
+  useEffect(() => {
+    if (currentScreen === 'myTemple' && Object.keys(selectedDeities).length === 0) {
+      const flashAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(flashAnim, {
+            toValue: 0.3,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(flashAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      flashAnimation.start();
+      
+      return () => {
+        flashAnimation.stop();
+      };
+    } else {
+      // Reset animation when deities are selected or not in My Temple mode
+      flashAnim.setValue(1);
+    }
+  }, [currentScreen, selectedDeities, flashAnim]);
   const [deityData, setDeityData] = useState<DeityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [backgroundLoading, setBackgroundLoading] = useState(true);
@@ -1865,6 +1896,28 @@ export default function TestTempleScreen() {
           }]}
           resizeMode="stretch"
         />
+        </View>
+      )}
+
+      {/* No Deity Selected Message - Show when in My Temple mode with no deities */}
+      {currentScreen === 'myTemple' && Object.keys(selectedDeities).length === 0 && (
+        <View style={styles.noDeityMessageContainer}>
+          <Text style={styles.noDeityMessage}>
+            {isHindi ? 'कृपया अपना मंदिर सेटअप करने के लिए देवताओं का चयन करें' : 'Please select deities to setup your own temple'}
+          </Text>
+          <TouchableOpacity 
+            style={styles.flashingDeityButton}
+            onPress={() => setModal('deities')}
+          >
+            <Animated.View style={[styles.flashingDeityIcon, {
+              opacity: flashAnim
+            }]}>
+              <MaterialCommunityIcons name="plus-circle" size={40} color="#FF6A00" />
+            </Animated.View>
+            <Text style={styles.flashingDeityText}>
+              {isHindi ? 'देवता चुनें' : 'Select Deities'}
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
       
@@ -4296,5 +4349,42 @@ const styles = StyleSheet.create({
     zIndex: 9999, // Very high zIndex to ensure visibility
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  // No Deity Selected Message Styles
+  noDeityMessageContainer: {
+    position: 'absolute',
+    top: screenHeight * 0.35,
+    left: '20%',
+    right: '20%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 100,
+  },
+  noDeityMessage: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 24,
+  },
+  flashingDeityButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(255, 106, 0, 0.1)',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#FF6A00',
+    borderStyle: 'dashed',
+  },
+  flashingDeityIcon: {
+    marginBottom: 8,
+  },
+  flashingDeityText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FF6A00',
   },
 });
