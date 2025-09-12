@@ -11,7 +11,6 @@ interface SpiritualItem {
 }
 
 const getSpiritualItems = (isHindi: boolean): SpiritualItem[] => [
-  { label: isHindi ? 'नवरात्रि' : 'Navratri', image: require('@/assets/images/icons/home page icons/Navratri.png'), route: '/screens/navratri-2025' },
   { label: isHindi ? 'वेद' : 'Vedas', image: require('@/assets/images/icons/home page icons/vedas.png'), route: '/screens/vedas' },
   { label: isHindi ? 'धाम और यात्रा' : 'Dhams and Yatras', image: require('@/assets/images/icons/home page icons/dhams.png'), route: '/screens/dhams' },
   { label: isHindi ? 'पवित्र पुस्तकें' : 'Holy Books', image: require('@/assets/images/icons/home page icons/HolyBooksIcon.png'), route: '/screens/holy-books' },

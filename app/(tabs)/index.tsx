@@ -5,8 +5,9 @@ import SpiritualAstrologyBlock from '@/components/Home/SpiritualAstrologyBlock';
 
 import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
 import ReferralSuccessModal from '@/components/Home/ReferralSuccessModal';
-import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, Image, Animated } from 'react-native';
+import { IconSymbol } from '@/components/ui/IconSymbol';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { hasVisitedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUtils';
 import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
@@ -20,8 +21,69 @@ export default function HomeScreen() {
   const { isHindi, toggleLanguage } = useLanguage();
   const [showSpecialDaysModal, setShowSpecialDaysModal] = useState(false);
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
+  const [showFestivalsModal, setShowFestivalsModal] = useState(false);
+  const [narkaTextIndex, setNarkaTextIndex] = useState(0);
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [upcomingPujas, setUpcomingPujas] = useState<UpcomingPuja[]>([]);
+  
+  // Animation for the Upcoming Festivals button
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
+
+  // Text animation for Narka Chaturdashi
+  const narkaTexts = isHindi ? ['नरक चतुर्दशी', 'छोटी दीवाली'] : ['Narka Chaturdashi', 'Chhoti Diwali'];
+  
+  useEffect(() => {
+    if (showFestivalsModal) {
+      const interval = setInterval(() => {
+        setNarkaTextIndex(prev => (prev + 1) % narkaTexts.length);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [showFestivalsModal, narkaTexts.length]);
+
+  // Start button animations on component mount
+  useEffect(() => {
+    // Pulse animation (scale up and down)
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    // Glow animation (opacity change)
+    const glowAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0.3,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    pulseAnimation.start();
+    glowAnimation.start();
+
+    return () => {
+      pulseAnimation.stop();
+      glowAnimation.stop();
+    };
+  }, [pulseAnim, glowAnim]);
   // const [buttonBackgroundColor, setButtonBackgroundColor] = useState('#FF9800');
   // const [buttonTextColor, setButtonTextColor] = useState('#fff');
   
@@ -122,6 +184,26 @@ export default function HomeScreen() {
          <View style={styles.section}>
            <HomeIconGrid key={`home-icon-grid-${isHindi}`} isHindi={isHindi} />
          </View>
+
+         {/* Upcoming Festivals Button */}
+         <View style={styles.section}>
+           <Animated.View style={[styles.buttonContainer, { transform: [{ scale: pulseAnim }] }]}>
+             <Animated.View style={[styles.glowEffect, { opacity: glowAnim }]} />
+             <TouchableOpacity
+               style={styles.upcomingFestivalsButton}
+               onPress={() => setShowFestivalsModal(true)}
+               activeOpacity={0.8}
+             >
+               <View style={styles.festivalsButtonContent}>
+                 <IconSymbol name="calendar" size={24} color="#FF6A00" />
+                 <Text style={styles.festivalsButtonText}>
+                   {isHindi ? 'आगामी त्योहार' : 'Upcoming Festivals'}
+                 </Text>
+                 <IconSymbol name="chevron.right" size={20} color="#FF6A00" />
+               </View>
+             </TouchableOpacity>
+           </Animated.View>
+         </View>
          
          {/* Test Temple Button - Hidden */}
          {/* <View style={styles.section}>
@@ -180,6 +262,102 @@ export default function HomeScreen() {
         visible={showReferralSuccessModal}
         onClose={handleCloseReferralSuccessModal}
       />
+
+      {/* Upcoming Festivals Modal */}
+      <Modal
+        visible={showFestivalsModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowFestivalsModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowFestivalsModal(false)}>
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>
+                    {isHindi ? 'आगामी त्योहार' : 'Upcoming Festivals'}
+                  </Text>
+                  <TouchableOpacity 
+                    style={styles.closeButton}
+                    onPress={() => setShowFestivalsModal(false)}
+                  >
+                    <IconSymbol name="xmark" size={20} color="#666" />
+                  </TouchableOpacity>
+                </View>
+                
+                <View style={styles.festivalsGrid}>
+                  {[
+                    { 
+                      name: isHindi ? 'नवरात्रि' : 'Navratri', 
+                      image: require('@/assets/images/icons/home page icons/Navratri.png'),
+                      route: '/screens/navratri-2025'
+                    },
+                    { 
+                      name: isHindi ? 'दशहरा' : 'Dusshera', 
+                      image: require('@/assets/images/icons/otherIcons/DussheraIcon.png'),
+                      route: '/screens/dusshera-2025'
+                    },
+                    { 
+                      name: isHindi ? 'अहोई अष्टमी' : 'Ahoi Ashtami', 
+                      image: require('@/assets/images/icons/otherIcons/Ahoi Ashtami.png'),
+                      route: '/screens/ahoi-ashtami-2025'
+                    },
+                    { 
+                      name: isHindi ? 'करवा चौथ' : 'Karva Chauth', 
+                      image: require('@/assets/images/icons/otherIcons/KarwaChauthIcon.png'),
+                      route: '/screens/karva-chauth-2025'
+                    },
+                    { 
+                      name: isHindi ? 'धनतेरस' : 'Dhanteras', 
+                      image: require('@/assets/images/icons/otherIcons/DhanterasIcon.png'),
+                      route: '/screens/dhanteras-2025'
+                    },
+                    { 
+                      name: narkaTexts[narkaTextIndex], 
+                      image: require('@/assets/images/icons/otherIcons/NarkaChatrudashiIcon.png'),
+                      route: '/screens/chhoti-diwali-2025'
+                    },
+                    { 
+                      name: isHindi ? 'दीवाली' : 'Diwali', 
+                      image: require('@/assets/images/icons/otherIcons/diwaliIcon.jpg'),
+                      route: '/screens/diwali-2025'
+                    },
+                    { 
+                      name: isHindi ? 'गोवर्धन पूजा' : 'Govardhan Puja', 
+                      image: require('@/assets/images/icons/otherIcons/govardhanPujaIcon.jpg'),
+                      route: '/screens/govardhan-puja-2025'
+                    },
+                    { 
+                      name: isHindi ? 'भाई दूज' : 'Bhai Dooj', 
+                      image: require('@/assets/images/icons/otherIcons/bhaiDoojIcon.jpg'),
+                      route: '/screens/bhai-dooj-2025'
+                    },
+                  ].map((festival, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.festivalItem}
+                      onPress={() => {
+                        setShowFestivalsModal(false);
+                        router.push(festival.route as any);
+                      }}
+                    >
+                      <View style={styles.festivalIconCircle}>
+                        {festival.image ? (
+                          <Image source={festival.image} style={styles.festivalImage} resizeMode="contain" />
+                        ) : (
+                          <IconSymbol name={festival.icon} size={24} color="#FF6A00" />
+                        )}
+                      </View>
+                      <Text style={styles.festivalName}>{festival.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
@@ -264,4 +442,107 @@ const styles = StyleSheet.create({
   //   fontWeight: 'bold',
   //   textAlign: 'center',
   // },
+  // Upcoming Festivals Button styles
+  buttonContainer: {
+    width: '92%',
+    alignSelf: 'center',
+    position: 'relative',
+  },
+  glowEffect: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    backgroundColor: '#FF6A00',
+    borderRadius: 16,
+    opacity: 0.3,
+  },
+  upcomingFestivalsButton: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 2,
+    borderColor: '#FF6A00',
+  },
+  festivalsButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  festivalsButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    flex: 1,
+    marginLeft: 12,
+  },
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  closeButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  festivalsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  festivalItem: {
+    width: '30%',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  festivalIconCircle: {
+    width: 45,
+    height: 45,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  festivalName: {
+    fontSize: 12,
+    color: '#333',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  festivalImage: {
+    width: 45,
+    height: 45,
+  },
 });
