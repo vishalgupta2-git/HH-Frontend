@@ -71,6 +71,7 @@ export default function OTPScreen() {
     }
   }, [resendTimer, isLockedOut, lockoutUntil]);
 
+
   // Check if OTP is complete
   const isOtpComplete = otp.every(digit => digit !== '');
 
@@ -120,6 +121,45 @@ export default function OTPScreen() {
     setMessageType('');
     
     try {
+      // Test user bypass - handle completely in frontend, no backend request
+      if (email === 'playstoreuser@hinduheritage.in' && otpString === '4721') {
+        // Create test user data
+        const testUserData = {
+          userId: `test_user_${Date.now()}`,
+          firstName: 'Play Store',
+          lastName: 'Tester',
+          email: 'playstoreuser@hinduheritage.in',
+          name: 'Play Store Tester',
+          phone: null,
+          gender: null,
+          dateOfBirth: null,
+          dob: null,
+          placeOfBirth: null,
+          rashi: null,
+          gotra: null,
+          maritalStatus: null,
+          anniversaryDate: null,
+          kids: null,
+          parents: null,
+          createdAt: new Date().toISOString()
+        };
+        
+        // Store user data in AsyncStorage
+        await AsyncStorage.setItem('userData', JSON.stringify(testUserData));
+        await AsyncStorage.setItem('isLoggedIn', 'true');
+        
+        setMessage(isHindi ? translations.validation.loginSuccessful.hi : translations.validation.loginSuccessful.en);
+        setMessageType('success');
+        
+        setTimeout(() => {
+          router.replace('/(tabs)');
+        }, 1500);
+        
+        setIsLoading(false);
+        return;
+      }
+      
+      // Only send backend request for non-test users
       const response = await axios.post(getEndpointUrl('VERIFY_OTP'), {
         email,
         otp: otpString,
@@ -202,6 +242,14 @@ export default function OTPScreen() {
 
   const handleResendOTP = async () => {
     if (resendTimer > 0 || isLockedOut) return;
+    
+    // Test user bypass - no backend request needed
+    if (email === 'playstoreuser@hinduheritage.in') {
+      setResendTimer(10);
+      setMessage(isHindi ? translations.validation.otpResent.hi : translations.validation.otpResent.en);
+      setMessageType('success');
+      return;
+    }
     
     try {
       const response = await axios.post(getEndpointUrl('SEND_OTP'), { email }, {

@@ -62,6 +62,14 @@ export default function LoginScreen() {
     }
     if (!valid) return;
     setIsLoading(true);
+    
+    // Test user bypass - don't verify if email exists, just go to OTP screen
+    if (email === 'playstoreuser@hinduheritage.in') {
+      router.push({ pathname: '/auth/otp', params: { email, from: 'login' } });
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       // First check if user exists in database
       const userCheckResponse = await axios.get(`${getEndpointUrl('USER')}?email=${encodeURIComponent(email)}`, {
