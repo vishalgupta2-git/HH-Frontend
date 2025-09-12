@@ -7,7 +7,7 @@ import { useAudioVideoModal } from '@/contexts/AudioVideoModalContext';
 
 const getIcons = (isHindi: boolean, showAudioVideoModal?: () => void) => [
   { 
-    label: isHindi ? 'मेरा आभासी मंदिर' : 'My Virtual Temple', 
+    label: isHindi ? 'मेरा मंदिर' : 'My Virtual Temple', 
     image: require('@/assets/images/icons/home page icons/temple.png'),
     route: '/screens/testtemple'
   },

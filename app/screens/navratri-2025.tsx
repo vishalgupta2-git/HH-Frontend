@@ -408,12 +408,12 @@ export default function Navratri2025Screen() {
               <Ionicons name="arrow-undo" size={24} color="#666" />
             </TouchableOpacity>
             <View style={styles.titleContainer}>
-              <Text style={styles.screenTitle}>Navratri 2025</Text>
+              <Text style={styles.screenTitle}>{isHindi ? 'नवरात्रि 2025' : 'Navratri 2025'}</Text>
             </View>
           </View>
 
           <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading Navratri 2025 content...</Text>
+            <Text style={styles.loadingText}>{isHindi ? 'नवरात्रि 2025 सामग्री लोड हो रही है...' : 'Loading Navratri 2025 content...'}</Text>
           </View>
         </View>
       </View>
@@ -446,7 +446,7 @@ export default function Navratri2025Screen() {
               <Ionicons name="arrow-undo" size={24} color="#666" />
             </TouchableOpacity>
             <View style={styles.titleContainer}>
-              <Text style={styles.screenTitle}>Navratri 2025</Text>
+              <Text style={styles.screenTitle}>{isHindi ? 'नवरात्रि 2025' : 'Navratri 2025'}</Text>
             </View>
           </View>
 
@@ -487,7 +487,7 @@ export default function Navratri2025Screen() {
             <Ionicons name="arrow-undo" size={24} color="#666" />
           </TouchableOpacity>
           <View style={styles.titleContainer}>
-            <Text style={styles.screenTitle}>Navratri 2025</Text>
+            <Text style={styles.screenTitle}>{isHindi ? 'नवरात्रि 2025' : 'Navratri 2025'}</Text>
           </View>
         </View>
 
@@ -510,7 +510,7 @@ export default function Navratri2025Screen() {
           {/* Table of Contents */}
           {tocItems.length > 0 && (
             <View style={styles.tocContainer}>
-              <Text style={styles.tocTitle}>Table of Contents</Text>
+              <Text style={styles.tocTitle}>{isHindi ? 'विषय सूची' : 'Table of Contents'}</Text>
               {tocItems.map((item, index) => (
                 <TouchableOpacity
                   key={index}

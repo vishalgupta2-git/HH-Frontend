@@ -74,7 +74,7 @@ function GlobalBottomNavigation() {
           style={[styles.tab, isActive('home') && styles.activeTab]} 
           onPress={() => navigateTo('home')}
         >
-          <IconSymbol size={28} name="house.fill" color={isActive('home') ? '#FF6A00' : '#666'} />
+          <IconSymbol size={20} name="house.fill" color={isActive('home') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('home') && styles.activeTabText]}>Home</Text>
         </TouchableOpacity>
 
@@ -94,7 +94,7 @@ function GlobalBottomNavigation() {
           style={[styles.tab, isActive('yatra') && styles.activeTab]} 
           onPress={() => navigateTo('yatra')}
         >
-          <MaterialIcons size={28} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
+          <MaterialIcons size={20} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('yatra') && styles.activeTabText]}>Yatra</Text>
         </TouchableOpacity>
 
@@ -102,7 +102,7 @@ function GlobalBottomNavigation() {
           style={[styles.tab, isActive('audio-video') && styles.activeTab]} 
           onPress={() => navigateTo('audio-video')}
         >
-          <MaterialIcons size={28} name="music-note" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
+          <MaterialIcons size={20} name="music-note" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('audio-video') && styles.activeTabText]}>Divine Music</Text>
         </TouchableOpacity>
       </View>
@@ -160,7 +160,7 @@ function BottomNavigationWithLanguage() {
           style={[styles.tab, isActive('home') && styles.activeTab]} 
           onPress={() => navigateTo('home')}
         >
-          <IconSymbol size={28} name="house.fill" color={isActive('home') ? '#FF6A00' : '#666'} />
+          <IconSymbol size={20} name="house.fill" color={isActive('home') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('home') && styles.activeTabText]}>
             {isHindi ? 'होम' : 'Home'}
           </Text>
@@ -184,7 +184,7 @@ function BottomNavigationWithLanguage() {
           style={[styles.tab, isActive('yatra') && styles.activeTab]} 
           onPress={() => navigateTo('yatra')}
         >
-          <MaterialIcons size={28} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
+          <MaterialIcons size={20} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('yatra') && styles.activeTabText]}>
             {isHindi ? 'यात्रा' : 'Yatra'}
           </Text>
@@ -194,7 +194,7 @@ function BottomNavigationWithLanguage() {
           style={[styles.tab, isActive('audio-video') && styles.activeTab]} 
           onPress={() => navigateTo('audio-video')}
         >
-          <MaterialIcons size={28} name="music-note" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
+          <MaterialIcons size={20} name="music-note" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('audio-video') && styles.activeTabText]}>
             {isHindi ? 'भक्ति संगीत' : 'Divine Music'}
           </Text>
@@ -408,34 +408,34 @@ const styles = StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: 'white',
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 42,
+    paddingTop: 2,
   },
   tab: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    paddingVertical: 2,
   },
   activeTab: {
     // Active tab styling - can add background or other visual indicators if needed
   },
   tabIcon: {
-    width: 28,
-    height: 28,
-    marginBottom: 4,
+    width: 20,
+    height: 20,
+    marginBottom: 1,
   },
   activeTabIcon: {
     // Active icon styling - can add transform or other effects if needed
   },
   tabText: {
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 4,
     color: '#666',
   },
   activeTabText: {
     color: '#FF6A00',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: 12,
   },
 });
