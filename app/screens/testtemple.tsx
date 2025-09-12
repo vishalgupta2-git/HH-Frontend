@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import React, { useState, useEffect, useRef } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing, PanResponder, GestureResponderEvent, PanResponderGestureState, ActivityIndicator, TextInput, AppState } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Modal, TouchableWithoutFeedback, ScrollView, Image, Alert, Animated, Easing, PanResponder, GestureResponderEvent, PanResponderGestureState, ActivityIndicator, TextInput, AppState, BackHandler } from 'react-native';
 import { Audio } from 'expo-av';
 import Svg, { Defs, Path, Stop, LinearGradient as SvgLinearGradient, Line } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -656,6 +656,7 @@ export default function TestTempleScreen() {
       flashAnim.setValue(1);
     }
   }, [currentScreen, selectedDeities, flashAnim]);
+
   const [deityData, setDeityData] = useState<DeityData[]>([]);
   const [loading, setLoading] = useState(true);
   const [backgroundLoading, setBackgroundLoading] = useState(true);
@@ -1060,6 +1061,39 @@ export default function TestTempleScreen() {
   const [deitySizes, setDeitySizes] = useState<{[deityId: string]: {width: number, height: number}}>({});
   const [deityDragOffsets, setDeityDragOffsets] = useState<{[deityId: string]: {dx: number, dy: number}}>({});
   const gestureStateRef = useRef<{ [deityId: string]: { startX: number; startY: number; startWidth: number; startHeight: number; initialDistance?: number; } }>({});
+
+  // Auto-save on navigation events
+  useEffect(() => {
+    // Handle Android back button
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      autoSaveTempleConfig();
+      return false; // Let the default back behavior continue
+    });
+
+    return () => {
+      backHandler.remove();
+    };
+  }, [selectedStyle, bgGradient, selectedDeities, deityPositions, deitySizes]);
+
+  // Auto-save when temple configuration changes (debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      autoSaveTempleConfig();
+    }, 2000); // Auto-save 2 seconds after last change
+
+    return () => clearTimeout(timeoutId);
+  }, [selectedStyle, bgGradient, selectedDeities, deityPositions, deitySizes]);
+
+  // Auto-save when user navigates away from the screen
+  useFocusEffect(
+    React.useCallback(() => {
+      // This runs when the screen comes into focus
+      return () => {
+        // This runs when the screen loses focus (user navigates away)
+        autoSaveTempleConfig();
+      };
+    }, [selectedStyle, bgGradient, selectedDeities, deityPositions, deitySizes])
+  );
   const deityAnimPosRef = useRef<{ [deityId: string]: Animated.ValueXY }>({});
 
   const getDeityAnim = (deityId: string, initialX: number, initialY: number) => {
@@ -1111,6 +1145,24 @@ export default function TestTempleScreen() {
       } else {
       }
     } catch (error) {
+    }
+  };
+
+  // Auto-save function (silent save without UI feedback)
+  const autoSaveTempleConfig = async () => {
+    try {
+      const templeConfig = {
+        selectedStyle,
+        bgGradient,
+        selectedDeities,
+        deityPositions,
+        deitySizes
+      };
+      
+      await saveTempleConfigurationNewStyle(templeConfig);
+      console.log('🔄 Auto-saved temple configuration');
+    } catch (error) {
+      console.error('❌ Auto-save failed:', error);
     }
   };
 
