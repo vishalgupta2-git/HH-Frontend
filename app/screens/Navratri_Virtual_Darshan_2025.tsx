@@ -167,7 +167,10 @@ export default function NavratriVirtualDarshan2025() {
   const rightBellSwing = useRef(new Animated.Value(0)).current;
   
   // Gradient animation refs
-  const gradientAnimation = useRef(new Animated.Value(0)).current;
+  const gradientAnimation = useRef(new Animated.Value(0)).current; // Start at 0 degrees
+  
+  // Scrolling text animation refs
+  const scrollTextAnimation = useRef(new Animated.Value(0)).current;
   
   // Flower animation state
   const [flowers, setFlowers] = useState<Array<{
@@ -400,21 +403,16 @@ export default function NavratriVirtualDarshan2025() {
     }
   };
 
-  // Gradient animation function
+  // Gradient animation function - rotate angle every 2 seconds
   const startGradientAnimation = () => {
+    let currentAngle = 0;
     const animateGradient = () => {
-      Animated.sequence([
-        Animated.timing(gradientAnimation, {
-          toValue: 1,
-          duration: 2000, // 2 seconds
-          useNativeDriver: false,
-        }),
-        Animated.timing(gradientAnimation, {
-          toValue: 0,
-          duration: 2000, // 2 seconds
-          useNativeDriver: false,
-        }),
-      ]).start(() => {
+      currentAngle = (currentAngle + 5) % 360; // Rotate 5 degrees clockwise, wrap at 360
+      Animated.timing(gradientAnimation, {
+        toValue: currentAngle,
+        duration: 2000, // 2 seconds
+        useNativeDriver: false,
+      }).start(() => {
         // Loop the animation
         animateGradient();
       });
@@ -422,9 +420,29 @@ export default function NavratriVirtualDarshan2025() {
     animateGradient();
   };
 
-  // Start gradient animation on component mount
+  // Scrolling text animation function
+  const startScrollingTextAnimation = () => {
+    const animateScrollingText = () => {
+      Animated.sequence([
+        Animated.timing(scrollTextAnimation, {
+          toValue: 1,
+          duration: 25000, // 25 seconds to cross the screen - very slow
+          useNativeDriver: true,
+        }),
+        Animated.delay(10000), // 10 second pause before next cycle
+      ]).start(() => {
+        // Reset and loop the animation
+        scrollTextAnimation.setValue(0);
+        animateScrollingText();
+      });
+    };
+    animateScrollingText();
+  };
+
+  // Start animations on component mount
   React.useEffect(() => {
     startGradientAnimation();
+    startScrollingTextAnimation();
   }, []);
 
   const swingBells = () => {
@@ -510,6 +528,27 @@ export default function NavratriVirtualDarshan2025() {
           style={styles.templeBellImage}
           resizeMode="contain"
         />
+        {/* Right Bell Shadow */}
+        <Animated.View
+          style={[
+            styles.bellShadow,
+            {
+              transform: [
+                { translateY: -60 }, // Move up by half the bell height to set pivot at top
+                { rotate: rightBellSwing.interpolate({
+                  inputRange: [-15, 15],
+                  outputRange: ['15deg', '-15deg'],
+                })},
+                { translateY: 60 } // Move back down
+              ]
+            }
+          ]}
+        >
+          {/* Bell-shaped shadow using multiple elements */}
+          <View style={styles.bellShadowTop} />
+          <View style={styles.bellShadowMiddle} />
+          <View style={styles.bellShadowBottom} />
+        </Animated.View>
       </Animated.View>
       <Animated.View
         style={[
@@ -531,23 +570,44 @@ export default function NavratriVirtualDarshan2025() {
           style={styles.templeBellImage}
           resizeMode="contain"
         />
+        {/* Left Bell Shadow */}
+        <Animated.View
+          style={[
+            styles.bellShadow,
+            {
+              transform: [
+                { translateY: -60 }, // Move up by half the bell height to set pivot at top
+                { rotate: leftBellSwing.interpolate({
+                  inputRange: [-15, 15],
+                  outputRange: ['-15deg', '15deg'],
+                })},
+                { translateY: 60 } // Move back down
+              ]
+            }
+          ]}
+        >
+          {/* Bell-shaped shadow using multiple elements */}
+          <View style={styles.bellShadowTop} />
+          <View style={styles.bellShadowMiddle} />
+          <View style={styles.bellShadowBottom} />
+        </Animated.View>
       </Animated.View>
 
       {/* Gradient Header - Z-index 151 */}
       <AnimatedLinearGradient
-        colors={[
-          gradientAnimation.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['#FFAE51', '#FF8C42'], // Slight color shift
-          }),
-          gradientAnimation.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['#E87C00', '#FF6B35'], // Slight color shift
-          }),
-        ]}
+        colors={['#FFAE51', '#FF8C42', '#E87C00', '#FF6B35']}
         style={styles.gradientHeader}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        end={{
+          x: gradientAnimation.interpolate({
+            inputRange: [0, 360],
+            outputRange: [1, 0],
+          }),
+          y: gradientAnimation.interpolate({
+            inputRange: [0, 360],
+            outputRange: [0, 1],
+          }),
+        }}
       />
 
       {/* Temple Name and Day - Z-index 201 */}
@@ -558,6 +618,29 @@ export default function NavratriVirtualDarshan2025() {
         <Text style={styles.templeSubtitle}>
           {currentTemple.name}
         </Text>
+      </View>
+
+      {/* Scrolling Text - Z-index 201 */}
+      <View style={styles.scrollingTextContainer}>
+        <Animated.View
+          style={[
+            styles.scrollingTextWrapper,
+            {
+              transform: [
+                {
+                  translateX: scrollTextAnimation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [screenWidth + 200, -screenWidth * 2 - 200], // Scroll from outside right to outside left with wider range
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <Text style={styles.scrollingText} numberOfLines={1}>
+            Swipe up / down for other temples of {currentTemple.name}, Swipe left / right for temples of other Maa
+          </Text>
+        </Animated.View>
       </View>
 
       {/* Main Image Container with Gesture Handler */}
@@ -884,6 +967,50 @@ const styles = StyleSheet.create({
     width: 52,
     height: 120,
   },
+  bellShadow: {
+    position: 'absolute',
+    width: 52,
+    height: 120,
+    top: 8, // Offset shadow down
+    left: 0,
+    zIndex: -1, // Behind the bell
+    // Create bell-shaped shadow using multiple elements
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5, // Darker shadow
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  bellShadowTop: {
+    position: 'absolute',
+    top: 0,
+    left: 8,
+    width: 36,
+    height: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 18,
+    transform: [{ scaleY: 0.6 }],
+  },
+  bellShadowMiddle: {
+    position: 'absolute',
+    top: 15,
+    left: 4,
+    width: 44,
+    height: 60,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 22,
+    transform: [{ scaleY: 0.8 }],
+  },
+  bellShadowBottom: {
+    position: 'absolute',
+    top: 70,
+    left: 6,
+    width: 40,
+    height: 30,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 20,
+    transform: [{ scaleY: 0.7 }],
+  },
   gradientHeader: {
     position: 'absolute',
     top: 0,
@@ -913,6 +1040,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
     textAlign: 'center',
+  },
+  scrollingTextContainer: {
+    position: 'absolute',
+    top: 100,
+    left: 0,
+    right: 0,
+    height: 30,
+    zIndex: 201,
+    overflow: 'hidden',
+  },
+  scrollingTextWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: 30,
+    justifyContent: 'center',
+    width: screenWidth * 3, // Much wider to accommodate full text
+  },
+  scrollingText: {
+    fontSize: 20, // 6 points bigger than 14
+    fontWeight: '500',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   imageContainer: {
     position: 'absolute',
