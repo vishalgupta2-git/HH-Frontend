@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Modal, TouchableWithoutFeedback, ScrollView, Animated } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Modal, TouchableWithoutFeedback, ScrollView, Animated, PanResponder } from 'react-native';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PanGestureHandler as RNGestureHandler, State } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -147,6 +147,60 @@ const templeData = [
   }
 ];
 
+// Draggable Thali component for Aarti
+const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) => {
+  const pan = useRef(new Animated.ValueXY()).current;
+  const scale = useRef(new Animated.Value(1)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10;
+      },
+      onPanResponderGrant: () => {
+        pan.setOffset({
+          x: pan.x._value || 0,
+          y: pan.y._value || 0,
+        });
+        pan.setValue({ x: 0, y: 0 });
+        Animated.spring(scale, { toValue: 1.1, useNativeDriver: true }).start();
+      },
+      onPanResponderMove: Animated.event(
+        [null, { dx: pan.x, dy: pan.y }],
+        { useNativeDriver: false }
+      ),
+      onPanResponderRelease: () => {
+        pan.flattenOffset();
+        Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
+      },
+    })
+  ).current;
+
+  return (
+    <Animated.View
+      style={[
+        styles.thaliContainer,
+        {
+          transform: [
+            { translateX: pan.x },
+            { translateY: pan.y },
+            { scale },
+          ],
+        },
+      ]}
+      {...panResponder.panHandlers}
+    >
+      <Image
+        source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+        style={styles.thaliImage}
+        resizeMode="contain"
+        onLoad={onImageLoad}
+      />
+    </Animated.View>
+  );
+};
+
 export default function NavratriVirtualDarshan2025() {
   const { currentLanguage } = useLanguage();
   const { showAudioVideoModal } = useAudioVideoModal();
@@ -157,6 +211,7 @@ export default function NavratriVirtualDarshan2025() {
   const [showFlowerModal, setShowFlowerModal] = useState(false);
   const [showAartiModal, setShowAartiModal] = useState(false);
   const [isFlowerAnimationRunning, setIsFlowerAnimationRunning] = useState(false);
+  const [thaliImageLoaded, setThaliImageLoaded] = useState(false);
   
   // Audio refs
   const conchSoundRef = useRef<Audio.Sound | null>(null);
@@ -208,6 +263,10 @@ export default function NavratriVirtualDarshan2025() {
       color: Math.floor(Math.random() * 4), // 0-3 for 4 colors
     }))
   );
+  
+  
+  // Lights on/off state
+  const [lightsOn, setLightsOn] = useState(true);
   
   // Flower animation state
   const [flowers, setFlowers] = useState<Array<{
@@ -440,6 +499,10 @@ export default function NavratriVirtualDarshan2025() {
     }
   };
 
+  const toggleLights = () => {
+    setLightsOn(!lightsOn);
+  };
+
   // Gradient animation function - rotate angle every 2 seconds
   const startGradientAnimation = () => {
     let currentAngle = 0;
@@ -537,11 +600,12 @@ export default function NavratriVirtualDarshan2025() {
       setRightBulbData(Array.from({ length: 15 }, () => ({
         color: Math.floor(Math.random() * 4), // 0-3 for 4 colors
       })));
-    }, 2000 + Math.random() * 2000); // Random interval 2-4 seconds
+    }, 5000); // Change colors every 5 seconds
 
     // Return cleanup function
     return () => clearInterval(colorChangeInterval);
   };
+
 
   // Twinkling lights animation function
   const startTwinklingLightsAnimation = () => {
@@ -804,7 +868,7 @@ export default function NavratriVirtualDarshan2025() {
       </View>
 
       {/* Twinkling Lights - Z-index 101 */}
-      {twinkleAnimations.map((light, index) => {
+      {lightsOn && twinkleAnimations.map((light, index) => {
         const lightPosition = lightPositions[index];
         const colorStyles = getLightColorStyle(lightPosition.color);
         
@@ -827,7 +891,7 @@ export default function NavratriVirtualDarshan2025() {
       })}
 
       {/* Left String Lights - Z-index 250 */}
-      {leftStringLights.map((light, index) => {
+      {lightsOn && leftStringLights.map((light, index) => {
         const bulbSize = screenHeight * 0.02; // 2% of screen height
         const bulbData = leftBulbData[index];
         const bulbColor = getBulbColor(bulbData.color);
@@ -861,7 +925,7 @@ export default function NavratriVirtualDarshan2025() {
       })}
 
       {/* Right String Lights - Z-index 250 */}
-      {rightStringLights.map((light, index) => {
+      {lightsOn && rightStringLights.map((light, index) => {
         const bulbSize = screenHeight * 0.02; // 2% of screen height
         const bulbData = rightBulbData[index];
         const bulbColor = getBulbColor(bulbData.color);
@@ -893,6 +957,7 @@ export default function NavratriVirtualDarshan2025() {
           </Animated.View>
         );
       })}
+
 
       {/* Main Image Container with Gesture Handler */}
       <RNGestureHandler
@@ -983,6 +1048,21 @@ export default function NavratriVirtualDarshan2025() {
         >
           <Text style={styles.pujaIcon}>🔔</Text>
           <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Ghanti</Text>
+        </TouchableOpacity>
+        
+        {/* Light Switch */}
+        <TouchableOpacity 
+          style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
+          disabled={isFlowerAnimationRunning}
+          onPress={toggleLights}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.pujaIcon, { opacity: lightsOn ? 1 : 0.3 }]}>
+            {lightsOn ? '💡' : '🔌'}
+          </Text>
+          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">
+            {lightsOn ? 'Lights ON' : 'Lights OFF'}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -1170,21 +1250,18 @@ export default function NavratriVirtualDarshan2025() {
       <Modal
         visible={showAartiModal}
         transparent={true}
-        animationType="fade"
+        animationType="none"
         onRequestClose={() => setShowAartiModal(false)}
+        statusBarTranslucent={true}
       >
         <TouchableWithoutFeedback onPress={() => setShowAartiModal(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Aarti</Text>
-              <Text style={styles.modalText}>Aarti feature coming soon!</Text>
-              <TouchableOpacity 
-                style={styles.modalButton}
-                onPress={() => setShowAartiModal(false)}
-              >
-                <Text style={styles.modalButtonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.aartiModalOverlay}>
+            {!thaliImageLoaded && (
+              <View style={styles.thaliLoadingContainer}>
+                <Text style={styles.thaliLoadingText}>Loading Aarti Thali...</Text>
+              </View>
+            )}
+            <DraggableThali onImageLoad={() => setThaliImageLoaded(true)} />
           </View>
         </TouchableWithoutFeedback>
       </Modal>
@@ -1515,5 +1592,44 @@ const styles = StyleSheet.create({
   },
   flowerEmoji: {
     fontSize: 30,
+  },
+  thaliContainer: {
+    position: 'absolute',
+    left: screenWidth * 0.5 - 50, // Center horizontally (50 is half of thali width)
+    top: screenHeight * 0.7 - 50, // 70% from top (50 is half of thali height)
+    width: 100, // 30% smaller than default
+    height: 100,
+    zIndex: 1000,
+  },
+  thaliImage: {
+    width: '100%',
+    height: '100%',
+  },
+  thaliLoadingContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -50 }, { translateY: -50 }],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  thaliLoadingText: {
+    color: '#FF6A00',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 10,
+  },
+  aartiModalOverlay: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aartiModalOverlayTouchable: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
