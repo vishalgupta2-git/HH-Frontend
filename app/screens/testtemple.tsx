@@ -290,8 +290,260 @@ const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) 
 
 export default function TestTempleScreen() {
   const router = useRouter();
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
   const { showAudioVideoModal } = useAudioVideoModal();
+
+  // Translation helper function
+  const getTranslation = (translations: any) => {
+    return translations[currentLanguage] || translations.en || '';
+  };
+
+  // Translations
+  const translations = {
+    loadingBackground: {
+      en: 'Loading background...',
+      hi: 'पृष्ठभूमि लोड हो रही है...',
+      bangla: 'পটভূমি লোড হচ্ছে...',
+      kannada: 'ಹಿನ್ನೆಲೆ ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+      punjabi: 'ਬੈਕਗ੍ਰਾਊਂਡ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...',
+      tamil: 'பின்னணி ஏற்றப்படுகிறது...',
+      telugu: 'బ్యాక్గ్రౌండ్ లోడ్ అవుతోంది...'
+    },
+    templeSaved: {
+      en: 'ॐ Temple Saved ॐ',
+      hi: 'ॐ मंदिर सहेजा गया ॐ',
+      bangla: 'ॐ মন্দির সংরক্ষিত ॐ',
+      kannada: 'ॐ ದೇವಾಲಯ ಉಳಿಸಲಾಗಿದೆ ॐ',
+      punjabi: 'ॐ ਮੰਦਰ ਸੇਵ ਕੀਤਾ ਗਿਆ ॐ',
+      tamil: 'ॐ கோவில் சேமிக்கப்பட்டது ॐ',
+      telugu: 'ॐ దేవాలయం సేవ్ చేయబడింది ॐ'
+    },
+    musicSearchPlaceholder: {
+      en: 'Search for bhajans, aartis, mantras...',
+      hi: 'भजन, आरती, मंत्र खोजें...',
+      bangla: 'ভজন, আরতি, মন্ত্র খুঁজুন...',
+      kannada: 'ಭಜನೆ, ಆರತಿ, ಮಂತ್ರಗಳನ್ನು ಹುಡುಕಿ...',
+      punjabi: 'ਭਜਨ, ਆਰਤੀ, ਮੰਤਰ ਖੋਜੋ...',
+      tamil: 'பஜனை, ஆரத்தி, மந்திரங்களைத் தேடுங்கள்...',
+      telugu: 'భజనలు, ఆరతులు, మంత్రాలను వెతకండి...'
+    },
+    errorPlayingMusic: {
+      en: 'Error',
+      hi: 'त्रुटि',
+      bangla: 'ত্রুটি',
+      kannada: 'ದೋಷ',
+      punjabi: 'ਗਲਤੀ',
+      tamil: 'பிழை',
+      telugu: 'లోపం'
+    },
+    failedToPlayMusic: {
+      en: 'Failed to play music file',
+      hi: 'संगीत फ़ाइल चलाने में विफल',
+      bangla: 'সংগীত ফাইল চালাতে ব্যর্থ',
+      kannada: 'ಸಂಗೀತ ಫೈಲ್ ನುಡಿಸಲು ವಿಫಲವಾಗಿದೆ',
+      punjabi: 'ਸੰਗੀਤ ਫਾਈਲ ਚਲਾਉਣ ਵਿੱਚ ਅਸਫਲ',
+      tamil: 'இசை கோப்பை இயக்க முடியவில்லை',
+      telugu: 'సంగీత ఫైల్ ప్లే చేయడంలో విఫలమైంది'
+    },
+    noDeityMessage: {
+      en: 'Please select deities to setup your own temple',
+      hi: 'कृपया अपना मंदिर सेटअप करने के लिए देवताओं का चयन करें',
+      bangla: 'আপনার নিজের মন্দির সেটআপ করার জন্য দেবতাদের নির্বাচন করুন',
+      kannada: 'ನಿಮ್ಮ ಸ್ವಂತ ದೇವಾಲಯವನ್ನು ಸೆಟಪ್ ಮಾಡಲು ದೇವತೆಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ',
+      punjabi: 'ਆਪਣਾ ਮੰਦਰ ਸੈਟਅੱਪ ਕਰਨ ਲਈ ਦੇਵਤਿਆਂ ਦਾ ਚੋਣ ਕਰੋ',
+      tamil: 'உங்கள் சொந்த கோவிலை அமைக்க தெய்வங்களைத் தேர்ந்தெடுக்கவும்',
+      telugu: 'మీ స్వంత దేవాలయాన్ని సెటప్ చేయడానికి దేవుళ్లను ఎంచుకోండి'
+    },
+    selectDeities: {
+      en: 'Select Deities',
+      hi: 'देवता चुनें',
+      bangla: 'দেবতা নির্বাচন করুন',
+      kannada: 'ದೇವತೆಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ',
+      punjabi: 'ਦੇਵਤਿਆਂ ਦਾ ਚੋਣ ਕਰੋ',
+      tamil: 'தெய்வங்களைத் தேர்ந்தெடுக்கவும்',
+      telugu: 'దేవుళ్లను ఎంచుకోండి'
+    },
+    temple: {
+      en: 'Temple',
+      hi: 'मंदिर',
+      bangla: 'মন্দির',
+      kannada: 'ದೇವಾಲಯ',
+      punjabi: 'ਮੰਦਰ',
+      tamil: 'கோவில்',
+      telugu: 'దేవాలయం'
+    },
+    deity: {
+      en: 'Deity',
+      hi: 'देवता',
+      bangla: 'দেবতা',
+      kannada: 'ದೇವತೆ',
+      punjabi: 'ਦੇਵਤਾ',
+      tamil: 'தெய்வம்',
+      telugu: 'దేవుడు'
+    },
+    background: {
+      en: 'BG',
+      hi: 'बैकग्राउंड',
+      bangla: 'পটভূমি',
+      kannada: 'ಹಿನ್ನೆಲೆ',
+      punjabi: 'ਬੈਕਗ੍ਰਾਊਂਡ',
+      tamil: 'பின்னணி',
+      telugu: 'బ్యాక్గ్రౌండ్'
+    },
+    save: {
+      en: 'Save',
+      hi: 'सहेजें',
+      bangla: 'সংরক্ষণ করুন',
+      kannada: 'ಉಳಿಸಿ',
+      punjabi: 'ਸੇਵ ਕਰੋ',
+      tamil: 'சேமி',
+      telugu: 'సేవ్ చేయండి'
+    },
+    flowers: {
+      en: 'Flowers',
+      hi: 'फूल',
+      bangla: 'ফুল',
+      kannada: 'ಹೂವುಗಳು',
+      punjabi: 'ਫੁੱਲ',
+      tamil: 'மலர்கள்',
+      telugu: 'పువ్వులు'
+    },
+    aarti: {
+      en: 'Aarti',
+      hi: 'आरती',
+      bangla: 'আরতি',
+      kannada: 'ಆರತಿ',
+      punjabi: 'ਆਰਤੀ',
+      tamil: 'ஆரத்தி',
+      telugu: 'ఆరతి'
+    },
+    music: {
+      en: 'Music',
+      hi: 'संगीत',
+      bangla: 'সংগীত',
+      kannada: 'ಸಂಗೀತ',
+      punjabi: 'ਸੰਗੀਤ',
+      tamil: 'இசை',
+      telugu: 'సంగీతం'
+    },
+    shankh: {
+      en: 'Shankh',
+      hi: 'शंख',
+      bangla: 'শঙ্খ',
+      kannada: 'ಶಂಖ',
+      punjabi: 'ਸ਼ੰਖ',
+      tamil: 'சங்கு',
+      telugu: 'శంఖం'
+    },
+    ghanti: {
+      en: 'Ghanti',
+      hi: 'घंटी',
+      bangla: 'ঘণ্টা',
+      kannada: 'ಗಂಟೆ',
+      punjabi: 'ਘੰਟੀ',
+      tamil: 'மணி',
+      telugu: 'గంట'
+    },
+    loadingAartiThali: {
+      en: 'Loading Aarti Thali...',
+      hi: 'आरती थाली लोड हो रही है...',
+      bangla: 'আরতি থালি লোড হচ্ছে...',
+      kannada: 'ಆರತಿ ಥಾಲಿ ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+      punjabi: 'ਆਰਤੀ ਥਾਲੀ ਲੋਡ ਹੋ ਰਹੀ ਹੈ...',
+      tamil: 'ஆரத்தி தாலி ஏற்றப்படுகிறது...',
+      telugu: 'ఆరతి థాలి లోడ్ అవుతోంది...'
+    },
+    divineMusic: {
+      en: '🎵 Divine Music',
+      hi: '🎵 दिव्य संगीत',
+      bangla: '🎵 দিব্য সংগীত',
+      kannada: '🎵 ದಿವ್ಯ ಸಂಗೀತ',
+      punjabi: '🎵 ਦਿਵਯ ਸੰਗੀਤ',
+      tamil: '🎵 தெய்வீக இசை',
+      telugu: '🎵 దివ్య సంగీతం'
+    },
+    stopMusic: {
+      en: '⏹️ Stop Music',
+      hi: '⏹️ संगीत बंद करें',
+      bangla: '⏹️ সংগীত বন্ধ করুন',
+      kannada: '⏹️ ಸಂಗೀತ ನಿಲ್ಲಿಸಿ',
+      punjabi: '⏹️ ਸੰਗੀਤ ਬੰਦ ਕਰੋ',
+      tamil: '⏹️ இசையை நிறுத்து',
+      telugu: '⏹️ సంగీతం ఆపండి'
+    },
+    loadingMusicLibrary: {
+      en: 'Loading music library...',
+      hi: 'संगीत लाइब्रेरी लोड हो रही है...',
+      bangla: 'সংগীত লাইব্রেরি লোড হচ্ছে...',
+      kannada: 'ಸಂಗೀತ ಗ್ರಂಥಾಲಯ ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+      punjabi: 'ਸੰਗੀਤ ਲਾਇਬ੍ਰੇਰੀ ਲੋਡ ਹੋ ਰਹੀ ਹੈ...',
+      tamil: 'இசை நூலகம் ஏற்றப்படுகிறது...',
+      telugu: 'సంగీత లైబ్రరీ లోడ్ అవుతోంది...'
+    },
+    noMusicFilesFound: {
+      en: 'No music files found in S3',
+      hi: 'S3 में कोई संगीत फ़ाइल नहीं मिली',
+      bangla: 'S3 এ কোনো সংগীত ফাইল পাওয়া যায়নি',
+      kannada: 'S3 ನಲ್ಲಿ ಸಂಗೀತ ಫೈಲ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ',
+      punjabi: 'S3 ਵਿੱਚ ਕੋਈ ਸੰਗੀਤ ਫਾਈਲ ਨਹੀਂ ਮਿਲੀ',
+      tamil: 'S3 இல் இசை கோப்புகள் கிடைக்கவில்லை',
+      telugu: 'S3 లో సంగీత ఫైల్‌లు కనుగొనబడలేదు'
+    },
+    uploadMusicFiles: {
+      en: 'Please upload music files to the \'music/\' folder in S3',
+      hi: 'कृपया S3 में \'music/\' फ़ोल्डर में संगीत फ़ाइलें अपलोड करें',
+      bangla: 'অনুগ্রহ করে S3 এ \'music/\' ফোল্ডারে সংগীত ফাইল আপলোড করুন',
+      kannada: 'ದಯವಿಟ್ಟು S3 ನಲ್ಲಿ \'music/\' ಫೋಲ್ಡರ್‌ಗೆ ಸಂಗೀತ ಫೈಲ್‌ಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ S3 ਵਿੱਚ \'music/\' ਫੋਲਡਰ ਵਿੱਚ ਸੰਗੀਤ ਫਾਈਲਾਂ ਅਪਲੋਡ ਕਰੋ',
+      tamil: 'தயவுசெய்து S3 இல் \'music/\' கோப்புறையில் இசை கோப்புகளை பதிவேற்றவும்',
+      telugu: 'దయచేసి S3 లో \'music/\' ఫోల్డర్‌లో సంగీత ఫైల్‌లను అప్‌లోడ్ చేయండి'
+    },
+    performingPuja: {
+      en: 'Performing Puja...',
+      hi: 'पूजा हो रही है...',
+      bangla: 'পুজো হচ্ছে...',
+      kannada: 'ಪೂಜೆ ನಡೆಯುತ್ತಿದೆ...',
+      punjabi: 'ਪੂਜਾ ਹੋ ਰਹੀ ਹੈ...',
+      tamil: 'பூஜை நடைபெறுகிறது...',
+      telugu: 'పూజ జరుగుతోంది...'
+    },
+    performPuja: {
+      en: 'Perform Puja',
+      hi: 'पूजा करें',
+      bangla: 'পুজো করুন',
+      kannada: 'ಪೂಜೆ ಮಾಡಿ',
+      punjabi: 'ਪੂਜਾ ਕਰੋ',
+      tamil: 'பூஜை செய்யுங்கள்',
+      telugu: 'పూజ చేయండి'
+    },
+    myTemple: {
+      en: 'My Temple',
+      hi: 'मेरा मंदिर',
+      bangla: 'আমার মন্দির',
+      kannada: 'ನನ್ನ ದೇವಾಲಯ',
+      punjabi: 'ਮੇਰਾ ਮੰਦਰ',
+      tamil: 'என் கோவில்',
+      telugu: 'నా దేవాలయం'
+    },
+    todaysPujas: {
+      en: 'Today\'s Pujas',
+      hi: 'आज की पूजा',
+      bangla: 'আজকের পুজো',
+      kannada: 'ಇಂದಿನ ಪೂಜೆಗಳು',
+      punjabi: 'ਅੱਜ ਦੀ ਪੂਜਾ',
+      tamil: 'இன்றைய பூஜைகள்',
+      telugu: 'ఈ రోజు పూజలు'
+    },
+    allTemples: {
+      en: 'All Temples',
+      hi: 'सभी मंदिर',
+      bangla: 'সব মন্দির',
+      kannada: 'ಎಲ್ಲಾ ದೇವಾಲಯಗಳು',
+      punjabi: 'ਸਾਰੇ ਮੰਦਰ',
+      tamil: 'அனைத்து கோவில்கள்',
+      telugu: 'అన్ని దేవాలయాలు'
+    }
+  };
   
   // State management for navigation (3 states: myTemple, todaysPuja, allTemples)
   const [currentScreen, setCurrentScreen] = useState<'myTemple' | 'todaysPuja' | 'allTemples'>('myTemple');
@@ -895,7 +1147,7 @@ export default function TestTempleScreen() {
       
       // Don't show alert for background music restart attempts
       if (!file.avld.includes('background')) {
-        Alert.alert('Error', 'Failed to play music file');
+        Alert.alert(getTranslation(translations.errorPlayingMusic), getTranslation(translations.failedToPlayMusic));
       }
       
       setLoadingMusicId(null);
@@ -1753,7 +2005,7 @@ export default function TestTempleScreen() {
         <View style={styles.backgroundLoadingContainer}>
           <ActivityIndicator size="large" color="#fff" />
           <Text style={styles.backgroundLoadingText}>
-            {isHindi ? 'पृष्ठभूमि लोड हो रही है...' : 'Loading background...'}
+            {getTranslation(translations.loadingBackground)}
           </Text>
         </View>
       )}
@@ -1761,7 +2013,7 @@ export default function TestTempleScreen() {
       {/* Save Success Message */}
       {showSaveMessage && (
         <View style={styles.saveMessageContainer}>
-          <Text style={styles.saveMessageText}>ॐ Temple Saved ॐ</Text>
+          <Text style={styles.saveMessageText}>{getTranslation(translations.templeSaved)}</Text>
         </View>
       )}
       
@@ -1955,7 +2207,7 @@ export default function TestTempleScreen() {
       {currentScreen === 'myTemple' && Object.keys(selectedDeities).length === 0 && (
         <View style={styles.noDeityMessageContainer}>
           <Text style={styles.noDeityMessage}>
-            {isHindi ? 'कृपया अपना मंदिर सेटअप करने के लिए देवताओं का चयन करें' : 'Please select deities to setup your own temple'}
+            {getTranslation(translations.noDeityMessage)}
           </Text>
           <TouchableOpacity 
             style={styles.flashingDeityButton}
@@ -1967,7 +2219,7 @@ export default function TestTempleScreen() {
               <MaterialCommunityIcons name="plus-circle" size={40} color="#FF6A00" />
             </Animated.View>
             <Text style={styles.flashingDeityText}>
-              {isHindi ? 'देवता चुनें' : 'Select Deities'}
+              {getTranslation(translations.selectDeities)}
             </Text>
           </TouchableOpacity>
         </View>
@@ -2215,7 +2467,7 @@ export default function TestTempleScreen() {
                     resizeMode="contain" 
                   />
                   </TouchableOpacity>
-          <Text style={styles.configIconLabel}>{isHindi ? 'मंदिर' : 'Temple'}</Text>
+          <Text style={styles.configIconLabel}>{getTranslation(translations.temple)}</Text>
               </View>
           
         {/* Deity Icon */}
@@ -2231,7 +2483,7 @@ export default function TestTempleScreen() {
                     resizeMode="contain" 
                   />
                   </TouchableOpacity>
-          <Text style={styles.configIconLabel}>{isHindi ? 'देवता' : 'Deity'}</Text>
+          <Text style={styles.configIconLabel}>{getTranslation(translations.deity)}</Text>
               </View>
 
         {/* Background Icon */}
@@ -2250,7 +2502,7 @@ export default function TestTempleScreen() {
                     />
                   </View>
                   </TouchableOpacity>
-          <Text style={styles.configIconLabel}>{isHindi ? 'बैकग्राउंड' : 'BG'}</Text>
+          <Text style={styles.configIconLabel}>{getTranslation(translations.background)}</Text>
               </View>
             
           {/* Save Temple Button */}
@@ -2268,7 +2520,7 @@ export default function TestTempleScreen() {
               resizeMode="contain" 
             />
               </TouchableOpacity>
-          <Text style={styles.saveTempleConfigButtonText}>{isHindi ? 'सहेजें' : 'Save'}</Text>
+          <Text style={styles.saveTempleConfigButtonText}>{getTranslation(translations.save)}</Text>
             </View>
           </View>
       )}
@@ -2294,7 +2546,7 @@ export default function TestTempleScreen() {
                 style={styles.pujaIconImage}
                 resizeMode="contain"
               />
-            <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'फूल' : 'Flowers'}</Text>
+            <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{getTranslation(translations.flowers)}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]}
@@ -2307,7 +2559,7 @@ export default function TestTempleScreen() {
                 style={styles.pujaIconImage}
                 resizeMode="contain"
               />
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'आरती' : 'Aarti'}</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{getTranslation(translations.aarti)}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.pujaIconItem}
@@ -2319,7 +2571,7 @@ export default function TestTempleScreen() {
                 size={36} 
                 color="#FFFFFF" 
               />
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'संगीत' : 'Music'}</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{getTranslation(translations.music)}</Text>
             </TouchableOpacity>
           </View>
 
@@ -2504,7 +2756,7 @@ export default function TestTempleScreen() {
               <View style={styles.musicSearchContainer}>
                 <TextInput
                   style={styles.musicSearchInput}
-                  placeholder={isHindi ? "भजन, आरती, मंत्र खोजें..." : "Search for bhajans, aartis, mantras..."}
+                  placeholder={getTranslation(translations.musicSearchPlaceholder)}
                   placeholderTextColor="#999"
                   value={musicSearchQuery}
                   onChangeText={setMusicSearchQuery}

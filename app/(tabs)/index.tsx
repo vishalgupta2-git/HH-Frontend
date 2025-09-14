@@ -217,6 +217,29 @@ export default function HomeScreen() {
            </Animated.View>
          </View>
          
+         {/* Navratri 2025 Puja Button */}
+         <View style={styles.section}>
+           <TouchableOpacity
+             style={styles.navratriButton}
+             onPress={() => router.push('/screens/Navratri_Virtual_Darshan_2025')}
+             activeOpacity={0.8}
+           >
+             <View style={styles.navratriButtonContent}>
+               <IconSymbol name="sparkles" size={24} color="#FF6A00" />
+               <Text style={styles.navratriButtonText}>
+                 {currentLanguage === 'hindi' ? 'नवरात्रि 2025 पूजा' : 
+                  currentLanguage === 'bangla' ? 'নবরাত্রি ২০২৫ পূজা' :
+                  currentLanguage === 'kannada' ? 'ನವರಾತ್ರಿ 2025 ಪೂಜೆ' :
+                  currentLanguage === 'punjabi' ? 'ਨਵਰਾਤਰੀ 2025 ਪੂਜਾ' :
+                  currentLanguage === 'tamil' ? 'நவராத்திரி 2025 பூஜை' :
+                  currentLanguage === 'telugu' ? 'నవరాత్రి 2025 పూజ' :
+                  'Navratri 2025 Puja'}
+               </Text>
+               <IconSymbol name="chevron.right" size={20} color="#FF6A00" />
+             </View>
+           </TouchableOpacity>
+         </View>
+         
          {/* Test Temple Button - Hidden */}
          {/* <View style={styles.section}>
            <TouchableOpacity
@@ -555,6 +578,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   festivalsButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    flex: 1,
+    marginLeft: 12,
+  },
+  // Navratri 2025 Puja Button styles
+  navratriButton: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 2,
+    borderColor: '#FF6A00',
+    width: '92%',
+    alignSelf: 'center',
+  },
+  navratriButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  navratriButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
