@@ -56,7 +56,7 @@ interface Provider {
 }
 
 const PujaGuidanceScreen: React.FC = () => {
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
   // Provider states
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
@@ -77,41 +77,284 @@ const PujaGuidanceScreen: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
+  // Helper function to get translations
+  const getTranslation = (translations: any) => {
+    return currentLanguage === 'hindi' ? (translations.hi || translations.en) :
+           currentLanguage === 'bangla' ? (translations.bangla || translations.en) :
+           currentLanguage === 'kannada' ? (translations.kannada || translations.en) :
+           currentLanguage === 'punjabi' ? (translations.punjabi || translations.en) :
+           currentLanguage === 'tamil' ? (translations.tamil || translations.en) :
+           currentLanguage === 'telugu' ? (translations.telugu || translations.en) :
+           translations.en;
+  };
+
   // Translations
   const translations = {
-    searchPlaceholder: { en: 'Search puja guidance providers...', hi: 'पूजा मार्गदर्शन प्रदाताओं की खोज करें...' },
-    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
-    noDataFound: { en: 'No puja guidance providers found.', hi: 'कोई पूजा मार्गदर्शन प्रदाता नहीं मिला।' },
-    errorLoading: { en: 'Error loading data. Please try again.', hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।' },
-    pullToRefresh: { en: 'Pull to refresh', hi: 'रिफ्रेश करने के लिए खींचें' },
+    searchPlaceholder: { 
+      en: 'Search puja guidance providers...', 
+      hi: 'पूजा मार्गदर्शन प्रदाताओं की खोज करें...',
+      bangla: 'পুজো নির্দেশনা প্রদানকারীদের খুঁজুন...',
+      kannada: 'ಪೂಜಾ ಮಾರ್ಗದರ್ಶನ ಒದಗಿಸುವವರನ್ನು ಹುಡುಕಿ...',
+      punjabi: 'ਪੂਜਾ ਮਾਰਗਦਰਸ਼ਨ ਪ੍ਰਦਾਤਾਵਾਂ ਨੂੰ ਖੋਜੋ...',
+      tamil: 'பூஜை வழிகாட்டுதல் வழங்குநர்களைத் தேடுங்கள்...',
+      telugu: 'పూజ మార్గదర్శన అందించేవారిని వెతకండి...'
+    },
+    loading: { 
+      en: 'Loading...', 
+      hi: 'लोड हो रहा है...',
+      bangla: 'লোড হচ্ছে...',
+      kannada: 'ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+      punjabi: 'ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...',
+      tamil: 'ஏற்றப்படுகிறது...',
+      telugu: 'లోడ్ అవుతోంది...'
+    },
+    noDataFound: { 
+      en: 'No puja guidance providers found.', 
+      hi: 'कोई पूजा मार्गदर्शन प्रदाता नहीं मिला।',
+      bangla: 'কোনো পুজো নির্দেশনা প্রদানকারী পাওয়া যায়নি।',
+      kannada: 'ಪೂಜಾ ಮಾರ್ಗದರ್ಶನ ಒದಗಿಸುವವರು ಕಂಡುಬಂದಿಲ್ಲ।',
+      punjabi: 'ਕੋਈ ਪੂਜਾ ਮਾਰਗਦਰਸ਼ਨ ਪ੍ਰਦਾਤਾ ਨਹੀਂ ਮਿਲਿਆ।',
+      tamil: 'பூஜை வழிகாட்டுதல் வழங்குநர்கள் கிடைக்கவில்லை।',
+      telugu: 'పూజ మార్గదర్శన అందించేవారు కనుగొనబడలేదు।'
+    },
+    errorLoading: { 
+      en: 'Error loading data. Please try again.', 
+      hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।',
+      bangla: 'ডেটা লোড করার সময় ত্রুটি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      kannada: 'ಡೇಟಾ ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ದೋಷ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।',
+      punjabi: 'ਡੇਟਾ ਲੋਡ ਕਰਨ ਵਿੱਚ ਗਲਤੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      tamil: 'தரவை ஏற்றுவதில் பிழை। தயவுசெய்து மீண்டும் முயற்சிக்கவும்।',
+      telugu: 'డేటా లోడ్ చేయడంలో లోపం। దయచేసి మళ్లీ ప్రయత్నించండి।'
+    },
+    pullToRefresh: { 
+      en: 'Pull to refresh', 
+      hi: 'रिफ्रेश करने के लिए खींचें',
+      bangla: 'রিফ্রেশ করতে টানুন',
+      kannada: 'ರಿಫ್ರೆಶ್ ಮಾಡಲು ಎಳೆಯಿರಿ',
+      punjabi: 'ਰਿਫਰੈਸ਼ ਕਰਨ ਲਈ ਖਿੱਚੋ',
+      tamil: 'புதுப்பிக்க இழுக்கவும்',
+      telugu: 'రిఫ్రెష్ చేయడానికి లాగండి'
+    },
     bookingForm: {
-      title: { en: 'Book Puja Guidance', hi: 'पूजा मार्गदर्शन बुक करें' },
-      name: { en: 'Your Name', hi: 'आपका नाम' },
-      phone: { en: 'Phone Number', hi: 'फोन नंबर' },
-      date: { en: 'Preferred Date', hi: 'पसंदीदा तारीख' },
-      timeSlot: { en: 'Time Slot', hi: 'समय स्लॉट' },
-      submit: { en: 'Book Guidance', hi: 'मार्गदर्शन बुक करें' },
-      cancel: { en: 'Cancel', hi: 'रद्द करें' }
+      title: { 
+        en: 'Book Puja Guidance', 
+        hi: 'पूजा मार्गदर्शन बुक करें',
+        bangla: 'পুজো নির্দেশনা বুক করুন',
+        kannada: 'ಪೂಜಾ ಮಾರ್ಗದರ್ಶನ ಬುಕ್ ಮಾಡಿ',
+        punjabi: 'ਪੂਜਾ ਮਾਰਗਦਰਸ਼ਨ ਬੁਕ ਕਰੋ',
+        tamil: 'பூஜை வழிகாட்டுதல் புக்கிங்',
+        telugu: 'పూజ మార్గదర్శన బుక్ చేయండి'
+      },
+      name: { 
+        en: 'Your Name', 
+        hi: 'आपका नाम',
+        bangla: 'আপনার নাম',
+        kannada: 'ನಿಮ್ಮ ಹೆಸರು',
+        punjabi: 'ਤੁਹਾਡਾ ਨਾਮ',
+        tamil: 'உங்கள் பெயர்',
+        telugu: 'మీ పేరు'
+      },
+      phone: { 
+        en: 'Phone Number', 
+        hi: 'फोन नंबर',
+        bangla: 'ফোন নম্বর',
+        kannada: 'ಫೋನ್ ನಂಬರ್',
+        punjabi: 'ਫੋਨ ਨੰਬਰ',
+        tamil: 'தொலைபேசி எண்',
+        telugu: 'ఫోన్ నంబర్'
+      },
+      date: { 
+        en: 'Preferred Date', 
+        hi: 'पसंदीदा तारीख',
+        bangla: 'পছন্দের তারিখ',
+        kannada: 'ಅಭಿಮತ ದಿನಾಂಕ',
+        punjabi: 'ਪਸੰਦੀਦਾ ਤਾਰੀਖ',
+        tamil: 'விருப்பமான தேதி',
+        telugu: 'అభిమత తేదీ'
+      },
+      timeSlot: { 
+        en: 'Time Slot', 
+        hi: 'समय स्लॉट',
+        bangla: 'সময় স্লট',
+        kannada: 'ಸಮಯ ಸ್ಲಾಟ್',
+        punjabi: 'ਸਮਾਂ ਸਲਾਟ',
+        tamil: 'நேர இடைவெளி',
+        telugu: 'సమయ స్లాట్'
+      },
+      submit: { 
+        en: 'Book Guidance', 
+        hi: 'मार्गदर्शन बुक करें',
+        bangla: 'নির্দেশনা বুক করুন',
+        kannada: 'ಮಾರ್ಗದರ್ಶನ ಬುಕ್ ಮಾಡಿ',
+        punjabi: 'ਮਾਰਗਦਰਸ਼ਨ ਬੁਕ ਕਰੋ',
+        tamil: 'வழிகாட்டுதல் புக்கிங்',
+        telugu: 'మార్గదర్శన బుక్ చేయండి'
+      },
+      cancel: { 
+        en: 'Cancel', 
+        hi: 'रद्द करें',
+        bangla: 'বাতিল করুন',
+        kannada: 'ರದ್ದುಮಾಡಿ',
+        punjabi: 'ਰੱਦ ਕਰੋ',
+        tamil: 'ரத்துசெய்',
+        telugu: 'రద్దు చేయండి'
+      }
     },
     timeSlots: {
-      slot1: { en: '8AM-10AM', hi: 'सुबह 8-10 बजे' },
-      slot2: { en: '10AM-12PM', hi: 'सुबह 10-दोपहर 12 बजे' },
-      slot3: { en: '12PM-2PM', hi: 'दोपहर 12-2 बजे' },
-      slot4: { en: '2PM-4PM', hi: 'दोपहर 2-4 बजे' },
-      slot5: { en: '4PM-6PM', hi: 'शाम 4-6 बजे' },
-      slot6: { en: '6PM-8PM', hi: 'शाम 6-8 बजे' }
+      slot1: { 
+        en: '8AM-10AM', 
+        hi: 'सुबह 8-10 बजे',
+        bangla: 'সকাল 8-10টা',
+        kannada: 'ಬೆಳಿಗ್ಯೆ 8-10',
+        punjabi: 'ਸਵੇਰੇ 8-10 ਵਜੇ',
+        tamil: 'காலை 8-10 மணி',
+        telugu: 'ఉదయం 8-10 గంటలు'
+      },
+      slot2: { 
+        en: '10AM-12PM', 
+        hi: 'सुबह 10-दोपहर 12 बजे',
+        bangla: 'সকাল 10টা-দুপুর 12টা',
+        kannada: 'ಬೆಳಿಗ್ಯೆ 10-ಮಧ್ಯಾಹ್ನ 12',
+        punjabi: 'ਸਵੇਰੇ 10-ਦੁਪਹਿਰ 12 ਵਜੇ',
+        tamil: 'காலை 10-மதியம் 12 மணி',
+        telugu: 'ఉదయం 10-మధ్యాహ్నం 12 గంటలు'
+      },
+      slot3: { 
+        en: '12PM-2PM', 
+        hi: 'दोपहर 12-2 बजे',
+        bangla: 'দুপুর 12-2টা',
+        kannada: 'ಮಧ್ಯಾಹ್ನ 12-2',
+        punjabi: 'ਦੁਪਹਿਰ 12-2 ਵਜੇ',
+        tamil: 'மதியம் 12-2 மணி',
+        telugu: 'మధ్యాహ్నం 12-2 గంటలు'
+      },
+      slot4: { 
+        en: '2PM-4PM', 
+        hi: 'दोपहर 2-4 बजे',
+        bangla: 'দুপুর 2-4টা',
+        kannada: 'ಮಧ್ಯಾಹ್ನ 2-4',
+        punjabi: 'ਦੁਪਹਿਰ 2-4 ਵਜੇ',
+        tamil: 'மதியம் 2-4 மணி',
+        telugu: 'మధ్యాహ్నం 2-4 గంటలు'
+      },
+      slot5: { 
+        en: '4PM-6PM', 
+        hi: 'शाम 4-6 बजे',
+        bangla: 'বিকেল 4-6টা',
+        kannada: 'ಸಂಜೆ 4-6',
+        punjabi: 'ਸ਼ਾਮ 4-6 ਵਜੇ',
+        tamil: 'மாலை 4-6 மணி',
+        telugu: 'సాయంత్రం 4-6 గంటలు'
+      },
+      slot6: { 
+        en: '6PM-8PM', 
+        hi: 'शाम 6-8 बजे',
+        bangla: 'সন্ধ্যা 6-8টা',
+        kannada: 'ಸಂಜೆ 6-8',
+        punjabi: 'ਸ਼ਾਮ 6-8 ਵਜੇ',
+        tamil: 'மாலை 6-8 மணி',
+        telugu: 'సాయంత్రం 6-8 గంటలు'
+      }
     },
-    success: { en: 'Puja guidance booking submitted successfully!', hi: 'पूजा मार्गदर्शन बुकिंग सफलतापूर्वक जमा हो गई!' },
-    error: { en: 'Error submitting booking. Please try again.', hi: 'बुकिंग जमा करने में त्रुटि। कृपया पुनः प्रयास करें।' },
-    instructionText: { en: 'Click on any provider to book puja guidance services', hi: 'पूजा मार्गदर्शन सेवाओं के लिए किसी भी प्रदाता पर क्लिक करें' },
-    bookAppointment: { en: 'Book Appointment', hi: 'अपॉइंटमेंट बुक करें' },
-    bookingFormTitle: { en: 'Book Appointment', hi: 'अपॉइंटमेंट बुक करें' },
-    thankYouText: { en: 'Thank you for your interest in our Puja Guidance Services, please fill in the following details for us to contact you for booking', hi: 'हमारी पूजा मार्गदर्शन सेवाओं में आपकी रुचि के लिए धन्यवाद, कृपया बुकिंग के लिए हमसे संपर्क करने के लिए निम्नलिखित विवरण भरें' },
-    nameField: { en: 'Name', hi: 'नाम' },
-    enterFullName: { en: 'Enter your full name', hi: 'अपना पूरा नाम दर्ज करें' },
-    pujaGuidanceServices: { en: 'Puja Guidance Services', hi: 'पूजा मार्गदर्शन सेवाएं' },
-    aboutPujaGuidance: { en: 'About Puja Guidance', hi: 'पूजा मार्गदर्शन के बारे में' },
-    pujaGuidanceInfo: { en: 'If you need guidance with any Puja you want to do at home, please book an appointment and our expert Pandit Ji will provide you detailed guidance including Samagri, Puja setup and how to do Puja yourself.', hi: 'यदि आपको घर पर करने वाली किसी भी पूजा के लिए मार्गदर्शन की आवश्यकता है, तो कृपया एक अपॉइंटमेंट बुक करें और हमारे विशेषज्ञ पंडित जी आपको सामग्री, पूजा सेटअप और पूजा कैसे करें सहित विस्तृत मार्गदर्शन प्रदान करेंगे।' }
+    success: { 
+      en: 'Puja guidance booking submitted successfully!', 
+      hi: 'पूजा मार्गदर्शन बुकिंग सफलतापूर्वक जमा हो गई!',
+      bangla: 'পুজো নির্দেশনা বুকিং সফলভাবে জমা হয়েছে!',
+      kannada: 'ಪೂಜಾ ಮಾರ್ಗದರ್ಶನ ಬುಕಿಂಗ್ ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!',
+      punjabi: 'ਪੂਜਾ ਮਾਰਗਦਰਸ਼ਨ ਬੁਕਿੰਗ ਸਫਲਤਾਪੂਰਵਕ ਜਮ੍ਹਾ ਹੋ ਗਈ!',
+      tamil: 'பூஜை வழிகாட்டுதல் புக்கிங் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!',
+      telugu: 'పూజ మార్గదర్శన బుకింగ్ విజయవంతంగా సమర్పించబడింది!'
+    },
+    error: { 
+      en: 'Error submitting booking. Please try again.', 
+      hi: 'बुकिंग जमा करने में त्रुटि। कृपया पुनः प्रयास करें।',
+      bangla: 'বুকিং জমা করার সময় ত্রুটি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      kannada: 'ಬುಕಿಂಗ್ ಸಲ್ಲಿಸುವಲ್ಲಿ ದೋಷ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।',
+      punjabi: 'ਬੁਕਿੰਗ ਜਮ੍ਹਾ ਕਰਨ ਵਿੱਚ ਗਲਤੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      tamil: 'புக்கிங் சமர்ப்பிப்பதில் பிழை। தயவுசெய்து மீண்டும் முயற்சிக்கவும்।',
+      telugu: 'బుకింగ్ సమర్పించడంలో లోపం। దయచేసి మళ్లీ ప్రయత్నించండి।'
+    },
+    instructionText: { 
+      en: 'Click on any provider to book puja guidance services', 
+      hi: 'पूजा मार्गदर्शन सेवाओं के लिए किसी भी प्रदाता पर क्लिक करें',
+      bangla: 'পুজো নির্দেশনা সেবার জন্য যেকোনো প্রদানকারীর উপর ক্লিক করুন',
+      kannada: 'ಪೂಜಾ ಮಾರ್ಗದರ್ಶನ ಸೇವೆಗಳಿಗಾಗಿ ಯಾವುದೇ ಒದಗಿಸುವವರ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ',
+      punjabi: 'ਪੂਜਾ ਮਾਰਗਦਰਸ਼ਨ ਸੇਵਾਵਾਂ ਲਈ ਕਿਸੇ ਵੀ ਪ੍ਰਦਾਤਾ \'ਤੇ ਕਲਿਕ ਕਰੋ',
+      tamil: 'பூஜை வழிகாட்டுதல் சேவைகளுக்கு எந்தவொரு வழங்குநர் மீதும் கிளிக் செய்யுங்கள்',
+      telugu: 'పూజ మార్గదర్శన సేవల కోసం ఏదైనా అందించేవారిపై క్లిక్ చేయండి'
+    },
+    bookAppointment: { 
+      en: 'Book Appointment', 
+      hi: 'अपॉइंटमेंट बुक करें',
+      bangla: 'অ্যাপয়েন্টমেন্ট বুক করুন',
+      kannada: 'ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ',
+      punjabi: 'ਅਪੌਇੰਟਮੈਂਟ ਬੁਕ ਕਰੋ',
+      tamil: 'அப்பாயின்ட்மென்ட் புக்கிங்',
+      telugu: 'అపాయింట్మెంట్ బుక్ చేయండి'
+    },
+    bookingFormTitle: { 
+      en: 'Book Appointment', 
+      hi: 'अपॉइंटमेंट बुक करें',
+      bangla: 'অ্যাপয়েন্টমেন্ট বুক করুন',
+      kannada: 'ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ',
+      punjabi: 'ਅਪੌਇੰਟਮੈਂਟ ਬੁਕ ਕਰੋ',
+      tamil: 'அப்பாயின்ட்மென்ட் புக்கிங்',
+      telugu: 'అపాయింట్మెంట్ బుక్ చేయండి'
+    },
+    thankYouText: { 
+      en: 'Thank you for your interest in our Puja Guidance Services, please fill in the following details for us to contact you for booking', 
+      hi: 'हमारी पूजा मार्गदर्शन सेवाओं में आपकी रुचि के लिए धन्यवाद, कृपया बुकिंग के लिए हमसे संपर्क करने के लिए निम्नलिखित विवरण भरें',
+      bangla: 'আমাদের পুজো নির্দেশনা সেবায় আগ্রহের জন্য ধন্যবাদ, অনুগ্রহ করে বুকিংয়ের জন্য আমাদের সাথে যোগাযোগের জন্য নিম্নলিখিত বিবরণ পূরণ করুন',
+      kannada: 'ನಮ್ಮ ಪೂಜಾ ಮಾರ್ಗದರ್ಶನ ಸೇವೆಗಳಲ್ಲಿ ನಿಮ್ಮ ಆಸಕ್ತಿಗೆ ಧನ್ಯವಾದಗಳು, ಬುಕಿಂಗ್ ಗಾಗಿ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಲು ದಯವಿಟ್ಟು ಈ ಕೆಳಗಿನ ವಿವರಗಳನ್ನು ಭರ್ತಿ ಮಾಡಿ',
+      punjabi: 'ਸਾਡੀਆਂ ਪੂਜਾ ਮਾਰਗਦਰਸ਼ਨ ਸੇਵਾਵਾਂ ਵਿੱਚ ਤੁਹਾਡੀ ਦਿਲਚਸਪੀ ਲਈ ਧੰਨਵਾਦ, ਕਿਰਪਾ ਕਰਕੇ ਬੁਕਿੰਗ ਲਈ ਤੁਹਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰਨ ਲਈ ਹੇਠਾਂ ਦਿੱਤੇ ਵੇਰਵੇ ਭਰੋ',
+      tamil: 'எங்கள் பூஜை வழிகாட்டுதல் சேவைகளில் உங்கள் ஆர்வத்திற்கு நன்றி, புக்கிங் செய்ய நாங்கள் உங்களைத் தொடர்புகொள்வதற்கு தயவுசெய்து பின்வரும் விவரங்களை நிரப்பவும்',
+      telugu: 'మా పూజ మార్గదర్శన సేవలలో మీ ఆసక్తికి ధన్యవాదాలు, బుకింగ్ కోసం మేము మీతో సంప్రదించడానికి దయచేసి క్రింది వివరాలను నింపండి'
+    },
+    nameField: { 
+      en: 'Name', 
+      hi: 'नाम',
+      bangla: 'নাম',
+      kannada: 'ಹೆಸರು',
+      punjabi: 'ਨਾਮ',
+      tamil: 'பெயர்',
+      telugu: 'పేరు'
+    },
+    enterFullName: { 
+      en: 'Enter your full name', 
+      hi: 'अपना पूरा नाम दर्ज करें',
+      bangla: 'আপনার পুরো নাম লিখুন',
+      kannada: 'ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
+      punjabi: 'ਆਪਣਾ ਪੂਰਾ ਨਾਮ ਦਰਜ ਕਰੋ',
+      tamil: 'உங்கள் முழு பெயரை உள்ளிடவும்',
+      telugu: 'మీ పూర్తి పేరును నమోదు చేయండి'
+    },
+    pujaGuidanceServices: { 
+      en: 'Puja Guidance Services', 
+      hi: 'पूजा मार्गदर्शन सेवाएं',
+      bangla: 'পুজো নির্দেশনা সেবা',
+      kannada: 'ಪೂಜಾ ಮಾರ್ಗದರ್ಶನ ಸೇವೆಗಳು',
+      punjabi: 'ਪੂਜਾ ਮਾਰਗਦਰਸ਼ਨ ਸੇਵਾਵਾਂ',
+      tamil: 'பூஜை வழிகாட்டுதல் சேவைகள்',
+      telugu: 'పూజ మార్గదర్శన సేవలు'
+    },
+    aboutPujaGuidance: { 
+      en: 'About Puja Guidance', 
+      hi: 'पूजा मार्गदर्शन के बारे में',
+      bangla: 'পুজো নির্দেশনা সম্পর্কে',
+      kannada: 'ಪೂಜಾ ಮಾರ್ಗದರ್ಶನದ ಬಗ್ಗೆ',
+      punjabi: 'ਪੂਜਾ ਮਾਰਗਦਰਸ਼ਨ ਬਾਰੇ',
+      tamil: 'பூஜை வழிகாட்டுதல் பற்றி',
+      telugu: 'పూజ మార్గదర్శన గురించి'
+    },
+    pujaGuidanceInfo: { 
+      en: 'If you need guidance with any Puja you want to do at home, please book an appointment and our expert Pandit Ji will provide you detailed guidance including Samagri, Puja setup and how to do Puja yourself.', 
+      hi: 'यदि आपको घर पर करने वाली किसी भी पूजा के लिए मार्गदर्शन की आवश्यकता है, तो कृपया एक अपॉइंटमेंट बुক करें और हमारे विशेषज्ञ पंडित जी आपको सामग्री, पूजा सेटअप और पूजा कैसे करें सहित विस্তृत मार्गदर्शन प्रदान करेंगे।',
+      bangla: 'আপনি যদি বাড়িতে যে কোন পুজো করার জন্য নির্দেশনার প্রয়োজন হয়, অনুগ্রহ করে একটি অ্যাপয়েন্টমেন্ট বুক করুন এবং আমাদের বিশেষজ্ঞ পন্ডিত জি আপনাকে সামগ্রী, পুজো সেটআপ এবং কীভাবে নিজে পুজো করতে হবে তার বিস্তারিত নির্দেশনা প্রদান করবেন।',
+      kannada: 'ನೀವು ಮನೆಯಲ್ಲಿ ಮಾಡಲು ಬಯಸುವ ಯಾವುದೇ ಪೂಜೆಗೆ ಮಾರ್ಗದರ್ಶನದ ಅಗತ್ಯವಿದ್ದರೆ, ದಯವಿಟ್ಟು ಒಂದು ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ ಮತ್ತು ನಮ್ಮ ತಜ್ಞ ಪಂಡಿತ ಜಿ ನಿಮಗೆ ಸಾಮಗ್ರಿ, ಪೂಜಾ ಸೆಟಪ್ ಮತ್ತು ಪೂಜೆಯನ್ನು ಹೇಗೆ ಮಾಡಬೇಕು ಎಂಬುದರ ಸಹಿತ ವಿವರವಾದ ಮಾರ್ಗದರ್ಶನವನ್ನು ಒದಗಿಸುತ್ತಾರೆ।',
+      punjabi: 'ਜੇਕਰ ਤੁਹਾਨੂੰ ਘਰ ਵਿੱਚ ਕਰਨ ਵਾਲੀ ਕਿਸੇ ਵੀ ਪੂਜਾ ਲਈ ਮਾਰਗਦਰਸ਼ਨ ਦੀ ਲੋੜ ਹੈ, ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਅਪੌਇੰਟਮੈਂਟ ਬੁਕ ਕਰੋ ਅਤੇ ਸਾਡੇ ਮਾਹਿਰ ਪੰਡਿਤ ਜੀ ਤੁਹਾਨੂੰ ਸਾਮਗਰੀ, ਪੂਜਾ ਸੈੱਟਅੱਪ ਅਤੇ ਪੂਜਾ ਕਿਵੇਂ ਕਰਨੀ ਹੈ ਸਹਿਤ ਵਿਸਤ੍ਰਿਤ ਮਾਰਗਦਰਸ਼ਨ ਪ੍ਰਦਾਨ ਕਰਨਗੇ।',
+      tamil: 'நீங்கள் வீட்டில் செய்ய விரும்பும் எந்த பூஜைக்கும் வழிகாட்டுதல் தேவைப்பட்டால், தயவுசெய்து ஒரு அப்பாயின்ட்மென்ட் புக்கிங் செய்யுங்கள் மற்றும் எங்கள் நிபுணர் பண்டித ஜி உங்களுக்கு சாமகிரி, பூஜை அமைப்பு மற்றும் பூஜையை எப்படி செய்வது என்பதை உட்பட விரிவான வழிகாட்டுதலை வழங்குவார்।',
+      telugu: 'మీరు ఇంట్లో చేయాలనుకునే ఏదైనా పూజకు మార్గదర్శన అవసరమైతే, దయచేసి ఒక అపాయింట్మెంట్ బుక్ చేయండి మరియు మా నిపుణుడు పండిత జి మీకు సామగ్రి, పూజ సెటప్ మరియు పూజను ఎలా చేయాలో సహా వివరణాత్మక మార్గదర్శనను అందిస్తారు।'
+    }
   };
 
   // Fetch providers from API
@@ -198,27 +441,27 @@ const PujaGuidanceScreen: React.FC = () => {
     
     // Validation
     if (bookingName.trim().length < 3) {
-      Alert.alert(isHindi ? 'अमान्य नाम' : 'Invalid Name', isHindi ? 'नाम कम से कम 3 अक्षर का होना चाहिए।' : 'Name must be at least 3 characters long.');
+      Alert.alert(getTranslation({en: 'Invalid Name', hi: 'अमान्य नाम', bangla: 'অবৈধ নাম', kannada: 'ಅಮಾನ್ಯ ಹೆಸರು', punjabi: 'ਗਲਤ ਨਾਮ', tamil: 'தவறான பெயர்', telugu: 'చెల్లని పేరు'}), getTranslation({en: 'Name must be at least 3 characters long.', hi: 'नाम कम से कम 3 अक्षर का होना चाहिए।', bangla: 'নাম কমপক্ষে 3 অক্ষরের হতে হবে।', kannada: 'ಹೆಸರು ಕನಿಷ್ಠ 3 ಅಕ್ಷರಗಳು ಇರಬೇಕು।', punjabi: 'ਨਾਮ ਘੱਟੋ-ਘੱਟ 3 ਅੱਖਰਾਂ ਦਾ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ।', tamil: 'பெயர் குறைந்தது 3 எழுத்துகள் இருக்க வேண்டும்।', telugu: 'పేరు కనీసం 3 అక్షరాలు ఉండాలి।'}));
       return;
     }
     
     if (!bookingPhone || bookingPhone.length < 10) {
-      Alert.alert(isHindi ? 'अमान्य फोन' : 'Invalid Phone', isHindi ? 'कृपया एक वैध फोन नंबर दर्ज करें।' : 'Please enter a valid phone number.');
+      Alert.alert(getTranslation({en: 'Invalid Phone', hi: 'अमान्य फोन', bangla: 'অবৈধ ফোন', kannada: 'ಅಮಾನ್ಯ ಫೋನ್', punjabi: 'ਗਲਤ ਫੋਨ', tamil: 'தவறான தொலைபேசி', telugu: 'చెల్లని ఫోన్'}), getTranslation({en: 'Please enter a valid phone number.', hi: 'कृपया एक वैध फोन नंबर दर्ज करें।', bangla: 'অনুগ্রহ করে একটি বৈধ ফোন নম্বর লিখুন।', kannada: 'ದಯವಿಟ್ಟು ಮಾನ್ಯ ಫೋನ್ ನಂಬರ್ ನಮೂದಿಸಿ।', punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਫੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ।', tamil: 'தயவுசெய்து சரியான தொலைபேசி எண்ணை உள்ளிடவும்।', telugu: 'దయచేసి చెల్లుబాటు అయ్యే ఫోన్ నంబర్ నమోదు చేయండి।'}));
       return;
     }
     
     if (!bookingDate) {
-      Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया एक पसंदीदा तारीख चुनें।' : 'Please select a preferred date.');
+      Alert.alert(getTranslation({en: 'Invalid Date', hi: 'अमान्य तारीख', bangla: 'অবৈধ তারিখ', kannada: 'ಅಮಾನ್ಯ ದಿನಾಂಕ', punjabi: 'ਗਲਤ ਤਾਰੀਖ', tamil: 'தவறான தேதி', telugu: 'చెల్లని తేదీ'}), getTranslation({en: 'Please select a preferred date.', hi: 'कृपया एक पसंदीदा तारीख चुनें।', bangla: 'অনুগ্রহ করে একটি পছন্দের তারিখ নির্বাচন করুন।', kannada: 'ದಯವಿಟ್ಟು ಒಂದು ಅಭಿಮತ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ।', punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਪਸੰਦੀਦਾ ਤਾਰੀਖ ਚੁਣੋ।', tamil: 'தயவுசெய்து ஒரு விருப்பமான தேதியைத் தேர்ந்தெடுக்கவும்।', telugu: 'దయచేసి ఒక అభిమత తేదీని ఎంచుకోండి।'}));
       return;
     }
     
     if (!isValidFutureDate(bookingDate)) {
-      Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया भविष्य में कम से कम 18 घंटे की तारीख चुनें।' : 'Please select a date at least 18 hours in the future.');
+      Alert.alert(getTranslation({en: 'Invalid Date', hi: 'अमान्य तारीख', bangla: 'অবৈধ তারিখ', kannada: 'ಅಮಾನ್ಯ ದಿನಾಂಕ', punjabi: 'ਗਲਤ ਤਾਰੀਖ', tamil: 'தவறான தேதி', telugu: 'చెల్లని తేదీ'}), getTranslation({en: 'Please select a date at least 18 hours in the future.', hi: 'कृपया भविष्य में कम से कम 18 घंटे की तारीख चुनें।', bangla: 'অনুগ্রহ করে ভবিষ্যতে কমপক্ষে 18 ঘন্টা আগের তারিখ নির্বাচন করুন।', kannada: 'ದಯವಿಟ್ಟು ಭವಿಷ್ಯದಲ್ಲಿ ಕನಿಷ್ಠ 18 ಗಂಟೆಗಳ ನಂತರದ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ।', punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਭਵਿੱਖ ਵਿੱਚ ਘੱਟੋ-ਘੱਟ 18 ਘੰਟਿਆਂ ਬਾਅਦ ਦੀ ਤਾਰੀਖ ਚੁਣੋ।', tamil: 'தயவுசெய்து எதிர்காலத்தில் குறைந்தது 18 மணிநேரம் முன்னதாக தேதியைத் தேர்ந்தெடுக்கவும்।', telugu: 'దయచేసి భవిష్యత్తులో కనీసం 18 గంటల తర్వాత తేదీని ఎంచుకోండి।'}));
       return;
     }
     
     if (!bookingTimeSlot) {
-      Alert.alert(isHindi ? 'अमान्य समय' : 'Invalid Time', isHindi ? 'कृपया एक पसंदीदा समय स्लॉट चुनें।' : 'Please select a preferred time slot.');
+      Alert.alert(getTranslation({en: 'Invalid Time', hi: 'अमान्य समय', bangla: 'অবৈধ সময়', kannada: 'ಅಮಾನ್ಯ ಸಮಯ', punjabi: 'ਗਲਤ ਸਮਾਂ', tamil: 'தவறான நேரம்', telugu: 'చెల్లని సమయం'}), getTranslation({en: 'Please select a preferred time slot.', hi: 'कृपया एक पसंदीदा समय स्लॉट चुनें।', bangla: 'অনুগ্রহ করে একটি পছন্দের সময় স্লট নির্বাচন করুন।', kannada: 'ದಯವಿಟ್ಟು ಒಂದು ಅಭಿಮತ ಸಮಯ ಸ್ಲಾಟ್ ಆಯ್ಕೆ ಮಾಡಿ।', punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਪਸੰਦੀਦਾ ਸਮਾਂ ਸਲਾਟ ਚੁਣੋ।', tamil: 'தயவுசெய்து ஒரு விருப்பமான நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்।', telugu: 'దయచేసి ఒక అభిమత సమయ స్లాట్ ఎంచుకోండి।'}));
       return;
     }
     
@@ -277,7 +520,7 @@ const PujaGuidanceScreen: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
     } catch (error) {
-      Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? translations.error.hi : translations.error.en);
+      Alert.alert(getTranslation({en: 'Error', hi: 'त्रुटि', bangla: 'ত্রুটি', kannada: 'ದೋಷ', punjabi: 'ਗਲਤੀ', tamil: 'பிழை', telugu: 'లోపం'}), getTranslation(translations.error));
     } finally {
       setIsSubmitting(false);
     }
@@ -306,7 +549,7 @@ const PujaGuidanceScreen: React.FC = () => {
         >
           <View style={styles.providersSection}>
                          <View style={styles.titleContainer}>
-               <Text style={styles.sectionTitle}>{isHindi ? translations.pujaGuidanceServices.hi : translations.pujaGuidanceServices.en}</Text>
+               <Text style={styles.sectionTitle}>{getTranslation(translations.pujaGuidanceServices)}</Text>
                <TouchableOpacity 
                  style={styles.infoIcon}
                  onPress={() => setShowInfoModal(true)}
@@ -314,16 +557,16 @@ const PujaGuidanceScreen: React.FC = () => {
                  <Text style={styles.infoIconText}>ℹ️</Text>
                </TouchableOpacity>
              </View>
-            <Text style={styles.instructionText}>{isHindi ? translations.instructionText.hi : translations.instructionText.en}</Text>
+            <Text style={styles.instructionText}>{getTranslation(translations.instructionText)}</Text>
         
         {loadingProviders ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FFA040" />
-            <Text style={styles.loadingText}>{isHindi ? translations.loading.hi : translations.loading.en}</Text>
+            <Text style={styles.loadingText}>{getTranslation(translations.loading)}</Text>
           </View>
         ) : providers.length === 0 ? (
           <View style={styles.noProvidersContainer}>
-            <Text style={styles.noProvidersText}>{isHindi ? translations.noDataFound.hi : translations.noDataFound.en}</Text>
+            <Text style={styles.noProvidersText}>{getTranslation(translations.noDataFound)}</Text>
             <Text style={styles.debugText}>Debug: Loading state: {loadingProviders.toString()}</Text>
             <Text style={styles.debugText}>Debug: Providers count: {providers.length}</Text>
             <Text style={styles.debugText}>Debug: API URL: {getEndpointUrl('PROVIDERS') + '/vastu'}</Text>
@@ -403,7 +646,7 @@ const PujaGuidanceScreen: React.FC = () => {
                       style={styles.bookButton}
                       onPress={() => openBookingModal(provider)}
                     >
-                      <Text style={styles.bookButtonText}>{isHindi ? translations.bookAppointment.hi : translations.bookAppointment.en}</Text>
+                      <Text style={styles.bookButtonText}>{getTranslation(translations.bookAppointment)}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -510,7 +753,7 @@ const PujaGuidanceScreen: React.FC = () => {
             {selectedProvider && (
               <>
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>{isHindi ? translations.bookingFormTitle.hi : translations.bookingFormTitle.en}</Text>
+                  <Text style={styles.modalTitle}>{getTranslation(translations.bookingFormTitle)}</Text>
                   <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => setShowBookingModal(false)}
@@ -521,7 +764,7 @@ const PujaGuidanceScreen: React.FC = () => {
                 
                 <ScrollView style={styles.bookingContent} contentContainerStyle={styles.bookingContentContainer} showsVerticalScrollIndicator={false}>
                   <Text style={styles.bookingWelcomeText}>
-                    {isHindi ? translations.thankYouText.hi : translations.thankYouText.en}
+                    {getTranslation(translations.thankYouText)}
                   </Text>
                   
                   <Text style={styles.bookingProviderName}>
@@ -529,36 +772,36 @@ const PujaGuidanceScreen: React.FC = () => {
                   </Text>
                   
                   <View style={styles.bookingForm}>
-                    <Text style={styles.formLabel}>{isHindi ? translations.nameField.hi : translations.nameField.en} *</Text>
+                    <Text style={styles.formLabel}>{getTranslation(translations.nameField)} *</Text>
                     <TextInput
                       style={styles.formInput}
                       value={bookingName}
                       onChangeText={setBookingName}
-                      placeholder={isHindi ? translations.enterFullName.hi : translations.enterFullName.en}
+                      placeholder={getTranslation(translations.enterFullName)}
                       placeholderTextColor="#999"
                     />
                     
-                    <Text style={styles.formLabel}>{isHindi ? translations.bookingForm.phone.hi : translations.bookingForm.phone.en} *</Text>
+                    <Text style={styles.formLabel}>{getTranslation(translations.bookingForm.phone)} *</Text>
                     <TextInput
                       style={styles.formInput}
                       value={bookingPhone}
                       onChangeText={setBookingPhone}
-                      placeholder={isHindi ? "अपना फोन नंबर दर्ज करें" : "Enter your phone number"}
+                      placeholder={getTranslation({en: "Enter your phone number", hi: "अपना फोन नंबर दर्ज करें", bangla: "আপনার ফোন নম্বর লিখুন", kannada: "ನಿಮ್ಮ ಫೋನ್ ನಂಬರ್ ನಮೂದಿಸಿ", punjabi: "ਆਪਣਾ ਫੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ", tamil: "உங்கள் தொலைபேசி எண்ணை உள்ளிடவும்", telugu: "మీ ఫోన్ నంబర్ నమోదు చేయండి"})}
                       placeholderTextColor="#999"
                       keyboardType="phone-pad"
                     />
                     
-                    <Text style={styles.formLabel}>{isHindi ? translations.bookingForm.date.hi : translations.bookingForm.date.en} *</Text>
+                    <Text style={styles.formLabel}>{getTranslation(translations.bookingForm.date)} *</Text>
                     <TouchableOpacity
                       style={styles.datePickerButton}
                       onPress={showDatePickerModal}
                     >
                       <Text style={styles.datePickerButtonText}>
-                        {bookingDate ? bookingDate : (isHindi ? 'तारीख चुनें' : 'Select Date')}
+                        {bookingDate ? bookingDate : getTranslation({en: 'Select Date', hi: 'तारीख चुनें', bangla: 'তারিখ নির্বাচন করুন', kannada: 'ದಿನಾಂಕ ಆಯ್ಕೆ ಮಾಡಿ', punjabi: 'ਤਾਰੀਖ ਚੁਣੋ', tamil: 'தேதியைத் தேர்ந்தெடுக்கவும்', telugu: 'తేదీని ఎంచుకోండి'})}
                       </Text>
                     </TouchableOpacity>
                     
-                    <Text style={styles.formLabel}>{isHindi ? translations.bookingForm.timeSlot.hi : translations.bookingForm.timeSlot.en} *</Text>
+                    <Text style={styles.formLabel}>{getTranslation(translations.bookingForm.timeSlot)} *</Text>
                     <View style={styles.timeSlotContainer}>
                       {timeSlots.map((slot) => (
                         <TouchableOpacity
@@ -585,7 +828,7 @@ const PujaGuidanceScreen: React.FC = () => {
                       disabled={isSubmitting}
                     >
                       <Text style={styles.submitButtonText}>
-                        {isSubmitting ? (isHindi ? 'बुकिंग...' : 'Booking...') : (isHindi ? translations.bookingForm.submit.hi : translations.bookingForm.submit.en)}
+                        {isSubmitting ? getTranslation({en: 'Booking...', hi: 'बुकिंग...', bangla: 'বুকিং হচ্ছে...', kannada: 'ಬುಕಿಂಗ್ ಆಗುತ್ತಿದೆ...', punjabi: 'ਬੁਕਿੰਗ ਹੋ ਰਿਹਾ ਹੈ...', tamil: 'புக்கிங் செய்யப்படுகிறது...', telugu: 'బుకింగ్ అవుతోంది...'}) : getTranslation(translations.bookingForm.submit)}
                       </Text>
                     </TouchableOpacity>
                     
@@ -628,7 +871,7 @@ const PujaGuidanceScreen: React.FC = () => {
               onPress={(e) => e.stopPropagation()}
             >
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{isHindi ? translations.aboutPujaGuidance.hi : translations.aboutPujaGuidance.en}</Text>
+                <Text style={styles.modalTitle}>{getTranslation(translations.aboutPujaGuidance)}</Text>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => setShowInfoModal(false)}
@@ -639,7 +882,7 @@ const PujaGuidanceScreen: React.FC = () => {
               
               <View style={styles.infoContent}>
                 <Text style={styles.infoText}>
-                  {isHindi ? translations.pujaGuidanceInfo.hi : translations.pujaGuidanceInfo.en}
+                  {getTranslation(translations.pujaGuidanceInfo)}
                 </Text>
               </View>
             </TouchableOpacity>

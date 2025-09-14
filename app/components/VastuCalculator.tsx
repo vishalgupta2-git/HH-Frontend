@@ -10,6 +10,7 @@ import {
   Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useLanguage } from '@/contexts/LanguageContext';
 // import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -37,6 +38,292 @@ interface DirectionAnalysis {
 }
 
 const VastuCalculator: React.FC = () => {
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
+  
+  // Helper function to get translations
+  const getTranslation = (translations: any) => {
+    return currentLanguage === 'hindi' ? translations.hi :
+           currentLanguage === 'bangla' ? translations.bangla :
+           currentLanguage === 'kannada' ? translations.kannada :
+           currentLanguage === 'punjabi' ? translations.punjabi :
+           currentLanguage === 'tamil' ? translations.tamil :
+           currentLanguage === 'telugu' ? translations.telugu :
+           translations.en;
+  };
+
+  const translations = {
+    calculator: {
+      en: 'Calculator',
+      hi: 'कैलकुलेटर',
+      bangla: 'ক্যালকুলেটর',
+      kannada: 'ಕ್ಯಾಲ್ಕುಲೇಟರ್',
+      punjabi: 'ਕੈਲਕੁਲੇਟਰ',
+      tamil: 'கால்குலேட்டர்',
+      telugu: 'కాలిక్యులేటర్'
+    },
+    directions: {
+      en: 'Directions',
+      hi: 'दिशाएं',
+      bangla: 'দিকনির্দেশনা',
+      kannada: 'ದಿಕ್ಕುಗಳು',
+      punjabi: 'ਦਿਸ਼ਾਵਾਂ',
+      tamil: 'திசைகள்',
+      telugu: 'దిశలు'
+    },
+    remedies: {
+      en: 'Remedies',
+      hi: 'उपाय',
+      bangla: 'প্রতিকার',
+      kannada: 'ಪರಿಹಾರಗಳು',
+      punjabi: 'ਉਪਾਅ',
+      tamil: 'பரிகாரங்கள்',
+      telugu: 'పరిహారాలు'
+    },
+    houseInfo: {
+      en: 'Your House Information',
+      hi: 'आपकी घर की जानकारी',
+      bangla: 'আপনার বাড়ির তথ্য',
+      kannada: 'ನಿಮ್ಮ ಮನೆಯ ಮಾಹಿತಿ',
+      punjabi: 'ਤੁਹਾਡੇ ਘਰ ਦੀ ਜਾਣਕਾਰੀ',
+      tamil: 'உங்கள் வீட்டு தகவல்',
+      telugu: 'మీ ఇంటి సమాచారం'
+    },
+    houseFacing: {
+      en: 'House Facing',
+      hi: 'घर का मुख',
+      bangla: 'বাড়ির মুখ',
+      kannada: 'ಮನೆಯ ಮುಖ',
+      punjabi: 'ਘਰ ਦਾ ਮੂੰਹ',
+      tamil: 'வீட்டின் முகம்',
+      telugu: 'ఇంటి ముఖం'
+    },
+    mainEntrance: {
+      en: 'Main Entrance',
+      hi: 'मुख्य प्रवेश द्वार',
+      bangla: 'প্রধান প্রবেশদ্বার',
+      kannada: 'ಮುಖ್ಯ ಪ್ರವೇಶ',
+      punjabi: 'ਮੁੱਖ ਪ੍ਰਵੇਸ਼',
+      tamil: 'முதன்மை நுழைவு',
+      telugu: 'ప్రధాన ప్రవేశం'
+    },
+    bedroom: {
+      en: 'Bedroom',
+      hi: 'शयनकक्ष',
+      bangla: 'বেডরুম',
+      kannada: 'ಹಾಸಿಗೆ ಕೋಣೆ',
+      punjabi: 'ਬੈੱਡਰੂਮ',
+      tamil: 'படுக்கை அறை',
+      telugu: 'బెడ్ రూమ్'
+    },
+    kitchen: {
+      en: 'Kitchen',
+      hi: 'रसोई',
+      bangla: 'রান্নাঘর',
+      kannada: 'ಅಡುಗೆ ಮನೆ',
+      punjabi: 'ਰਸੋਈ',
+      tamil: 'சமையலறை',
+      telugu: 'వంటగది'
+    },
+    livingRoom: {
+      en: 'Living Room',
+      hi: 'ड्रॉइंग रूम',
+      bangla: 'বসার ঘর',
+      kannada: 'ಅತಿಥಿ ಕೋಣೆ',
+      punjabi: 'ਡਰਾਇੰਗ ਰੂਮ',
+      tamil: 'வாழ்க்கை அறை',
+      telugu: 'లివింగ్ రూమ్'
+    },
+    bathroom: {
+      en: 'Bathroom',
+      hi: 'स्नानघर',
+      bangla: 'স্নানাগার',
+      kannada: 'ಸ್ನಾನಗೃಹ',
+      punjabi: 'ਬਾਥਰੂਮ',
+      tamil: 'குளியலறை',
+      telugu: 'బాత్ రూమ్'
+    },
+    studyRoom: {
+      en: 'Study Room',
+      hi: 'अध्ययन कक्ष',
+      bangla: 'পড়ার ঘর',
+      kannada: 'ಅಧ್ಯಯನ ಕೋಣೆ',
+      punjabi: 'ਪੜ੍ਹਾਈ ਕਮਰਾ',
+      tamil: 'படிப்பறை',
+      telugu: 'స్టడీ రూమ్'
+    },
+    poojaRoom: {
+      en: 'Puja Room',
+      hi: 'पूजा कक्ष',
+      bangla: 'পূজার ঘর',
+      kannada: 'ಪೂಜೆ ಕೋಣೆ',
+      punjabi: 'ਪੂਜਾ ਕਮਰਾ',
+      tamil: 'பூஜை அறை',
+      telugu: 'పూజ గది'
+    },
+    notSelected: {
+      en: 'Not selected',
+      hi: 'चयनित नहीं',
+      bangla: 'নির্বাচিত নয়',
+      kannada: 'ಆಯ್ಕೆ ಮಾಡಲಾಗಿಲ್ಲ',
+      punjabi: 'ਚੁਣਿਆ ਨਹੀਂ',
+      tamil: 'தேர்ந்தெடுக்கப்படவில்லை',
+      telugu: 'ఎంచుకోలేదు'
+    },
+    calculateVastu: {
+      en: 'Calculate Vastu',
+      hi: 'वास्तु की गणना करें',
+      bangla: 'ভাস্টু গণনা করুন',
+      kannada: 'ವಾಸ್ತು ಲೆಕ್ಕಾಚಾರ',
+      punjabi: 'ਵਾਸਤੂ ਗਣਨਾ',
+      tamil: 'வாஸ்து கணக்கிடு',
+      telugu: 'వాస్తు లెక్కించు'
+    },
+    overallScore: {
+      en: 'Overall Vastu Score',
+      hi: 'समग्र वास्तु स्कोर',
+      bangla: 'মোট ভাস্টু স্কোর',
+      kannada: 'ಒಟ್ಟಾರೆ ವಾಸ್ತು ಸ್ಕೋರ್',
+      punjabi: 'ਕੁੱਲ ਵਾਸਤੂ ਸਕੋਰ',
+      tamil: 'மொத்த வாஸ்து மதிப்பெண்',
+      telugu: 'మొత్తం వాస్తు స్కోర్'
+    },
+    recommendations: {
+      en: 'Recommendations',
+      hi: 'सुझाव',
+      bangla: 'সুপারিশ',
+      kannada: 'ಶಿಫಾರಸುಗಳು',
+      punjabi: 'ਸਿਫਾਰਸ਼ਾਂ',
+      tamil: 'பரிந்துரைகள்',
+      telugu: 'సిఫారసులు'
+    },
+    excellentVastu: {
+      en: 'Excellent Vastu - Your home has very good energy flow',
+      hi: 'उत्कृष्ट वास्तु - आपके घर में बहुत अच्छा ऊर्जा प्रवाह है',
+      bangla: 'চমৎকার ভাস্টু - আপনার বাড়িতে খুব ভালো শক্তি প্রবাহ আছে',
+      kannada: 'ಅತ್ಯುತ್ತಮ ವಾಸ್ತು - ನಿಮ್ಮ ಮನೆಯಲ್ಲಿ ಅತ್ಯುತ್ತಮ ಶಕ್ತಿ ಹರಿವು',
+      punjabi: 'ਸ਼ਾਨਦਾਰ ਵਾਸਤੂ - ਤੁਹਾਡੇ ਘਰ ਵਿੱਚ ਬਹੁਤ ਵਧੀਆ ਊਰਜਾ ਪ੍ਰਵਾਹ ਹੈ',
+      tamil: 'சிறந்த வாஸ்து - உங்கள் வீட்டில் மிகவும் நல்ல ஆற்றல் ஓட்டம் உள்ளது',
+      telugu: 'అద్భుతమైన వాస్తు - మీ ఇంటిలో చాలా మంచి శక్తి ప్రవాహం ఉంది'
+    },
+    goodVastu: {
+      en: 'Good Vastu - Your home has good energy flow with minor issues',
+      hi: 'अच्छा वास्तु - आपके घर में अच्छा ऊर्जा प्रवाह है लेकिन कुछ छोटी समस्याएं हैं',
+      bangla: 'ভালো ভাস্টু - আপনার বাড়িতে ভালো শক্তি প্রবাহ আছে কিন্তু কিছু ছোট সমস্যা আছে',
+      kannada: 'ಒಳ್ಳೆಯ ವಾಸ್ತು - ನಿಮ್ಮ ಮನೆಯಲ್ಲಿ ಒಳ್ಳೆಯ ಶಕ್ತಿ ಹರಿವು ಆದರೆ ಸ್ವಲ್ಪ ಸಮಸ್ಯೆಗಳು',
+      punjabi: 'ਵਧੀਆ ਵਾਸਤੂ - ਤੁਹਾਡੇ ਘਰ ਵਿੱਚ ਵਧੀਆ ਊਰਜਾ ਪ੍ਰਵਾਹ ਹੈ ਪਰ ਕੁਝ ਛੋਟੀਆਂ ਸਮੱਸਿਆਵਾਂ',
+      tamil: 'நல்ல வாஸ்து - உங்கள் வீட்டில் நல்ல ஆற்றல் ஓட்டம் உள்ளது ஆனால் சில சிறிய பிரச்சினைகள்',
+      telugu: 'మంచి వాస్తు - మీ ఇంటిలో మంచి శక్తి ప్రవాహం ఉంది కానీ కొన్ని చిన్న సమస్యలు'
+    },
+    moderateVastu: {
+      en: 'Moderate Vastu - Your home has some energy imbalances',
+      hi: 'मध्यम वास्तु - आपके घर में कुछ ऊर्जा असंतुलन हैं',
+      bangla: 'মাঝারি ভাস্টু - আপনার বাড়িতে কিছু শক্তি ভারসাম্যহীনতা আছে',
+      kannada: 'ಮಧ್ಯಮ ವಾಸ್ತು - ನಿಮ್ಮ ಮನೆಯಲ್ಲಿ ಕೆಲವು ಶಕ್ತಿ ಅಸಮತೋಲನಗಳು',
+      punjabi: 'ਦਰਮਿਆਨਾ ਵਾਸਤੂ - ਤੁਹਾਡੇ ਘਰ ਵਿੱਚ ਕੁਝ ਊਰਜਾ ਅਸੰਤੁਲਨ ਹਨ',
+      tamil: 'மிதமான வாஸ்து - உங்கள் வீட்டில் சில ஆற்றல் சமநிலையின்மை உள்ளது',
+      telugu: 'మధ్యస్థ వాస్తు - మీ ఇంటిలో కొన్ని శక్తి అసమతుల్యతలు ఉన్నాయి'
+    },
+    poorVastu: {
+      en: 'Poor Vastu - Your home needs significant energy corrections',
+      hi: 'खराब वास्तु - आपके घर को महत्वपूर्ण ऊर्जा सुधार की आवश्यकता है',
+      bangla: 'খারাপ ভাস্টু - আপনার বাড়িতে উল্লেখযোগ্য শক্তি সংশোধন প্রয়োজন',
+      kannada: 'ಕಳಪೆ ವಾಸ್ತು - ನಿಮ್ಮ ಮನೆಗೆ ಗಮನಾರ್ಹ ಶಕ್ತಿ ತಿದ್ದುಪಡಿಗಳು ಬೇಕು',
+      punjabi: 'ਮਾੜਾ ਵਾਸਤੂ - ਤੁਹਾਡੇ ਘਰ ਨੂੰ ਮਹੱਤਵਪੂਰਨ ਊਰਜਾ ਸੁਧਾਰ ਦੀ ਲੋੜ ਹੈ',
+      tamil: 'மோசமான வாஸ்து - உங்கள் வீட்டிற்கு குறிப்பிடத்தக்க ஆற்றல் திருத்தங்கள் தேவை',
+      telugu: 'చెడ్డ వాస్తు - మీ ఇంటికి గణనీయమైన శక్తి సరిదిద్దుబాట్లు అవసరం'
+    },
+    errorTitle: {
+      en: 'Error',
+      hi: 'त्रुटि',
+      bangla: 'ত্রুটি',
+      kannada: 'ದೋಷ',
+      punjabi: 'ਗਲਤੀ',
+      tamil: 'பிழை',
+      telugu: 'లోపం'
+    },
+    errorMessage: {
+      en: 'Please enter house facing direction and main entrance location',
+      hi: 'कृपया घर का मुख दिशा और मुख्य प्रवेश द्वार स्थान दर्ज करें',
+      bangla: 'অনুগ্রহ করে বাড়ির মুখের দিক এবং প্রধান প্রবেশদ্বারের অবস্থান লিখুন',
+      kannada: 'ದಯವಿಟ್ಟು ಮನೆಯ ಮುಖದ ದಿಕ್ಕು ಮತ್ತು ಮುಖ್ಯ ಪ್ರವೇಶದ ಸ್ಥಳವನ್ನು ನಮೂದಿಸಿ',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਘਰ ਦਾ ਮੂੰਹ ਦਿਸ਼ਾ ਅਤੇ ਮੁੱਖ ਪ੍ਰਵੇਸ਼ ਸਥਾਨ ਦਰਜ ਕਰੋ',
+      tamil: 'தயவுசெய்து வீட்டின் முகம் திசை மற்றும் முதன்மை நுழைவு இடம் உள்ளிடவும்',
+      telugu: 'దయచేసి ఇంటి ముఖం దిశ మరియు ప్రధాన ప్రవేశ స్థానాన్ని నమోదు చేయండి'
+    },
+    directionAnalysis: {
+      en: 'Direction Analysis',
+      hi: 'दिशा विश्लेषण',
+      bangla: 'দিকনির্দেশনা বিশ্লেষণ',
+      kannada: 'ದಿಕ್ಕು ವಿಶ್ಲೇಷಣೆ',
+      punjabi: 'ਦਿਸ਼ਾ ਵਿਸ਼ਲੇਸ਼ਣ',
+      tamil: 'திசை பகுப்பாய்வு',
+      telugu: 'దిశ విశ్లేషణ'
+    },
+    directionAnalysisSubtitle: {
+      en: 'Click any direction to learn about its properties and suitable uses',
+      hi: 'इसके गुणों और उपयुक्त उपयोगों के बारे में जानने के लिए किसी भी दिशा पर क्लिक करें',
+      bangla: 'এর বৈশিষ্ট্য এবং উপযুক্ত ব্যবহার সম্পর্কে জানতে যে কোন দিকে ক্লিক করুন',
+      kannada: 'ಅದರ ಗುಣಲಕ್ಷಣಗಳು ಮತ್ತು ಸೂಕ್ತ ಬಳಕೆಯ ಬಗ್ಗೆ ತಿಳಿಯಲು ಯಾವುದೇ ದಿಕ್ಕನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ',
+      punjabi: 'ਇਸ ਦੇ ਗੁਣਾਂ ਅਤੇ ਢੁਕਵੇਂ ਵਰਤੋਂ ਬਾਰੇ ਜਾਣਨ ਲਈ ਕੋਈ ਵੀ ਦਿਸ਼ਾ \'ਤੇ ਕਲਿਕ ਕਰੋ',
+      tamil: 'அதன் பண்புகள் மற்றும் பொருத்தமான பயன்பாடுகளைப் பற்றி அறிய எந்த திசையையும் கிளிக் செய்யவும்',
+      telugu: 'దాని లక్షణాలు మరియు సరైన వినియోగాల గురించి తెలుసుకోవడానికి ఏ దిశను క్లిక్ చేయండి'
+    },
+    vastuRemedies: {
+      en: 'Vastu Remedies',
+      hi: 'वास्तु उपाय',
+      bangla: 'ভাস্টু প্রতিকার',
+      kannada: 'ವಾಸ್ತು ಪರಿಹಾರಗಳು',
+      punjabi: 'ਵਾਸਤੂ ਉਪਾਅ',
+      tamil: 'வாஸ்து பரிகாரங்கள்',
+      telugu: 'వాస్తు పరిహారాలు'
+    },
+    generalRemedies: {
+      en: 'General Remedies',
+      hi: 'सामान्य उपाय',
+      bangla: 'সাধারণ প্রতিকার',
+      kannada: 'ಸಾಮಾನ್ಯ ಪರಿಹಾರಗಳು',
+      punjabi: 'ਆਮ ਉਪਾਅ',
+      tamil: 'பொதுவான பரிகாரங்கள்',
+      telugu: 'సాధారణ పరిహారాలు'
+    },
+    colorRemedies: {
+      en: 'Color Remedies',
+      hi: 'रंग उपाय',
+      bangla: 'রঙের প্রতিকার',
+      kannada: 'ಬಣ್ಣದ ಪರಿಹಾರಗಳು',
+      punjabi: 'ਰੰਗ ਦੇ ਉਪਾਅ',
+      tamil: 'நிற பரிகாரங்கள்',
+      telugu: 'రంగు పరిహారాలు'
+    },
+    aboutVastuShastra: {
+      en: 'About Vastu Shastra',
+      hi: 'वास्तु शास्त्र के बारे में',
+      bangla: 'ভাস্টু শাস্ত্র সম্পর্কে',
+      kannada: 'ವಾಸ್ತು ಶಾಸ್ತ್ರದ ಬಗ್ಗೆ',
+      punjabi: 'ਵਾਸਤੂ ਸ਼ਾਸਤਰ ਬਾਰੇ',
+      tamil: 'வாஸ்து சாஸ்திரம் பற்றி',
+      telugu: 'వాస్తు శాస్త్రం గురించి'
+    },
+    vastuDescription1: {
+      en: 'Vastu Shastra is an ancient Indian science of architecture and design that aims to create harmony between nature and human dwellings. It is based on the principle that everything in the universe has energy, and the proper placement of rooms and objects can enhance positive energy flow.',
+      hi: 'वास्तु शास्त्र वास्तुकला और डिजाइन का एक प्राचीन भारतीय विज्ञान है जिसका उद्देश्य प्रकृति और मानव निवास के बीच सामंजस्य बनाना है। यह इस सिद्धांत पर आधारित है कि ब्रह्मांड में सब कुछ में ऊर्जा है, और कमरों और वस्तुओं का उचित स्थान सकारात्मक ऊर्जा प्रवाह को बढ़ा सकता है।',
+      bangla: 'ভাস্টু শাস্ত্র হল স্থাপত্য ও নকশার একটি প্রাচীন ভারতীয় বিজ্ঞান যা প্রকৃতি ও মানব বাসস্থানের মধ্যে সম্প্রীতি সৃষ্টির লক্ষ্যে। এটি এই নীতির উপর ভিত্তি করে যে মহাবিশ্বের সব কিছুতেই শক্তি রয়েছে, এবং কক্ষ ও বস্তুর সঠিক স্থাপনা ইতিবাচক শক্তি প্রবাহকে বাড়াতে পারে।',
+      kannada: 'ವಾಸ್ತು ಶಾಸ್ತ್ರವು ಸಾಮರಸ್ಯವನ್ನು ಸೃಷ್ಟಿಸುವ ಗುರಿಯನ್ನು ಹೊಂದಿರುವ ವಾಸ್ತುಶಿಲ್ಪ ಮತ್ತು ವಿನ್ಯಾಸದ ಪ್ರಾಚೀನ ಭಾರತೀಯ ವಿಜ್ಞಾನವಾಗಿದೆ। ಇದು ಬ್ರಹ್ಮಾಂಡದಲ್ಲಿರುವ ಎಲ್ಲದಕ್ಕೂ ಶಕ್ತಿ ಇದೆ ಎಂಬ ತತ್ವದ ಮೇಲೆ ಆಧಾರಿತವಾಗಿದೆ, ಮತ್ತು ಕೋಣೆಗಳು ಮತ್ತು ವಸ್ತುಗಳ ಸರಿಯಾದ ಹುದ್ದೆ ಸಕಾರಾತ್ಮಕ ಶಕ್ತಿ ಹರಿವನ್ನು ಹೆಚ್ಚಿಸಬಹುದು.',
+      punjabi: 'ਵਾਸਤੂ ਸ਼ਾਸਤਰ ਇੱਕ ਪ੍ਰਾਚੀਨ ਭਾਰਤੀ ਆਰਕੀਟੈਕਚਰ ਅਤੇ ਡਿਜ਼ਾਈਨ ਦਾ ਵਿਗਿਆਨ ਹੈ ਜਿਸਦਾ ਟੀਚਾ ਕੁਦਰਤ ਅਤੇ ਮਨੁੱਖੀ ਰਿਹਾਇਸ਼ਾਂ ਦੇ ਵਿਚਕਾਰ ਤਾਲਮੇਲ ਬਣਾਉਣਾ ਹੈ। ਇਹ ਇਸ ਸਿਧਾਂਤ \'ਤੇ ਆਧਾਰਿਤ ਹੈ ਕਿ ਬ੍ਰਹਿਮੰਡ ਵਿੱਚ ਹਰ ਚੀਜ਼ ਵਿੱਚ ਊਰਜਾ ਹੈ, ਅਤੇ ਕਮਰਿਆਂ ਅਤੇ ਵਸਤੂਆਂ ਦੀ ਸਹੀ ਜਗ੍ਹਾ ਸਕਾਰਾਤਮਕ ਊਰਜਾ ਪ੍ਰਵਾਹ ਨੂੰ ਵਧਾ ਸਕਦੀ ਹੈ।',
+      tamil: 'வாஸ்து சாஸ்திரம் என்பது இயற்கை மற்றும் மனித குடியிருப்புகளுக்கு இடையே ஒத்திசைவை உருவாக்குவதை நோக்கமாகக் கொண்ட கட்டிடக்கலை மற்றும் வடிவமைப்பின் பண்டைய இந்திய அறிவியல் ஆகும். பிரபஞ்சத்தில் உள்ள அனைத்திற்கும் ஆற்றல் உள்ளது என்ற கொள்கையின் அடிப்படையில் இது அமைந்துள்ளது, மேலும் அறைகள் மற்றும் பொருட்களின் சரியான இடம் நேர்மறை ஆற்றல் ஓட்டத்தை மேம்படுத்தலாம்.',
+      telugu: 'వాస్తు శాస్త్రం అనేది ప్రకృతి మరియు మానవ నివాసాల మధ్య సామరస్యాన్ని సృష్టించడాన్ని లక్ష్యంగా చేసుకున్న వాస్తుశిల్పం మరియు డిజైన్ యొక్క ప్రాచీన భారతీయ శాస్త్రం. విశ్వంలోని ప్రతిదానికీ శక్తి ఉంది అనే సూత్రంపై ఇది ఆధారపడి ఉంది, మరియు గదులు మరియు వస్తువుల సరైన ఉంచడం సానుకూల శక్తి ప్రవాహాన్ని పెంచగలదు.'
+    },
+    vastuDescription2: {
+      en: 'The eight directions (Ashtadik) play a crucial role in Vastu, each having specific elements, colors, and deities associated with them. Proper room placement according to Vastu principles can bring health, wealth, and happiness to the residents.',
+      hi: 'आठ दिशाएं (अष्टदिक) वास्तु में महत्वपूर्ण भूमिका निभाती हैं, प्रत्येक के साथ विशिष्ट तत्व, रंग और देवता जुड़े हुए हैं। वास्तु सिद्धांतों के अनुसार उचित कमरे का स्थान निवासियों के लिए स्वास्थ्य, धन और खुशी ला सकता है।',
+      bangla: 'আটটি দিক (অষ্টদিক) ভাস্টুতে গুরুত্বপূর্ণ ভূমিকা পালন করে, প্রতিটির সাথে নির্দিষ্ট উপাদান, রং এবং দেবতা যুক্ত। ভাস্টু নীতির অনুযায়ী সঠিক ঘরের অবস্থান বাসিন্দাদের জন্য স্বাস্থ্য, সম্পদ এবং সুখ আনতে পারে।',
+      kannada: 'ಎಂಟು ದಿಕ್ಕುಗಳು (ಅಷ್ಟದಿಕ್) ವಾಸ್ತುವಿನಲ್ಲಿ ಪ್ರಮುಖ ಪಾತ್ರವನ್ನು ವಹಿಸುತ್ತವೆ, ಪ್ರತಿಯೊಂದಕ್ಕೂ ನಿರ್ದಿಷ್ಟ ಅಂಶಗಳು, ಬಣ್ಣಗಳು ಮತ್ತು ದೇವತೆಗಳು ಸಂಬಂಧಿಸಿವೆ. ವಾಸ್ತು ತತ್ವಗಳ ಪ್ರಕಾರ ಸರಿಯಾದ ಕೋಣೆಯ ಹುದ್ದೆ ನಿವಾಸಿಗಳಿಗೆ ಆರೋಗ್ಯ, ಸಂಪತ್ತು ಮತ್ತು ಸಂತೋಷ ತರಬಹುದು.',
+      punjabi: 'ਅੱਠ ਦਿਸ਼ਾਵਾਂ (ਅਸ਼ਟਦਿਕ) ਵਾਸਤੂ ਵਿੱਚ ਮਹੱਤਵਪੂਰਨ ਭੂਮਿਕਾ ਨਿਭਾਉਂਦੀਆਂ ਹਨ, ਹਰ ਇੱਕ ਨਾਲ ਖਾਸ ਤੱਤ, ਰੰਗ ਅਤੇ ਦੇਵਤੇ ਜੁੜੇ ਹੋਏ ਹਨ। ਵਾਸਤੂ ਸਿਧਾਂਤਾਂ ਦੇ ਅਨੁਸਾਰ ਸਹੀ ਕਮਰੇ ਦੀ ਜਗ੍ਹਾ ਨਿਵਾਸੀਆਂ ਲਈ ਸਿਹਤ, ਦੌਲਤ ਅਤੇ ਖੁਸ਼ੀ ਲਿਆ ਸਕਦੀ ਹੈ।',
+      tamil: 'எட்டு திசைகள் (அஷ்டதிக்) வாஸ்துவில் முக்கிய பங்கு வகிக்கின்றன, ஒவ்வொன்றும் குறிப்பிட்ட கூறுகள், நிறங்கள் மற்றும் தெய்வங்கள் தொடர்புடையவை. வாஸ்து கொள்கைகளின்படி சரியான அறை வைப்பு குடியிருப்பாளர்களுக்கு ஆரோக்கியம், செல்வம் மற்றும் மகிழ்ச்சியைக் கொண்டு வரலாம்.',
+      telugu: 'ఎనిమిది దిశలు (అష్టదిక్) వాస్తువులో కీలక పాత్ర పోషిస్తాయి, ప్రతి దానికి నిర్దిష్ట అంశాలు, రంగులు మరియు దేవతలు సంబంధం కలిగి ఉంటాయి. వాస్తు సూత్రాల ప్రకారం సరైన గది ఉంచడం నివాసులకు ఆరోగ్యం, సంపద మరియు ఆనందాన్ని తీసుకురాగలదు.'
+    }
+  };
+
   const [houseFacing, setHouseFacing] = useState('');
   const [mainEntrance, setMainEntrance] = useState('');
   const [bedroomLocation, setBedroomLocation] = useState('');
@@ -216,7 +503,7 @@ const VastuCalculator: React.FC = () => {
   // Calculate Vastu score and recommendations
   const calculateVastu = () => {
     if (!houseFacing.trim() || !mainEntrance.trim()) {
-      Alert.alert('Error', 'Please enter house facing direction and main entrance location');
+      Alert.alert(getTranslation(translations.errorTitle), getTranslation(translations.errorMessage));
       return;
     }
 
@@ -356,7 +643,7 @@ const VastuCalculator: React.FC = () => {
     <>
       {/* Input Section */}
       <View style={styles.inputSection}>
-        <Text style={styles.sectionTitle}>Your House Information</Text>
+        <Text style={styles.sectionTitle}>{getTranslation(translations.houseInfo)}</Text>
         
         {/* House Facing - Required */}
         <View style={styles.expandableSection}>
@@ -366,10 +653,10 @@ const VastuCalculator: React.FC = () => {
           >
             <View style={styles.sectionHeaderContent}>
               <Text style={styles.sectionLabel}>
-                                 House Facing <Text style={styles.required}>*</Text>
+                                 {getTranslation(translations.houseFacing)} <Text style={styles.required}>*</Text>
               </Text>
               <Text style={styles.selectedValue}>
-                {houseFacing || 'Not selected'}
+                {houseFacing || getTranslation(translations.notSelected)}
               </Text>
             </View>
             <Text style={[
@@ -460,12 +747,12 @@ const VastuCalculator: React.FC = () => {
 
         {/* Optional Rooms */}
         {[
-          { key: 'bedroom', label: 'Bedroom', state: bedroomLocation, setter: setBedroomLocation },
-          { key: 'kitchen', label: 'Kitchen', state: kitchenLocation, setter: setKitchenLocation },
-          { key: 'livingRoom', label: 'Living Room', state: livingRoomLocation, setter: setLivingRoomLocation },
-          { key: 'bathroom', label: 'Bathroom', state: bathroomLocation, setter: setBathroomLocation },
-          { key: 'studyRoom', label: 'Study Room', state: studyRoomLocation, setter: setStudyRoomLocation },
-                     { key: 'poojaRoom', label: 'Puja Room', state: poojaRoomLocation, setter: setPoojaRoomLocation }
+          { key: 'bedroom', label: getTranslation(translations.bedroom), state: bedroomLocation, setter: setBedroomLocation },
+          { key: 'kitchen', label: getTranslation(translations.kitchen), state: kitchenLocation, setter: setKitchenLocation },
+          { key: 'livingRoom', label: getTranslation(translations.livingRoom), state: livingRoomLocation, setter: setLivingRoomLocation },
+          { key: 'bathroom', label: getTranslation(translations.bathroom), state: bathroomLocation, setter: setBathroomLocation },
+          { key: 'studyRoom', label: getTranslation(translations.studyRoom), state: studyRoomLocation, setter: setStudyRoomLocation },
+                     { key: 'poojaRoom', label: getTranslation(translations.poojaRoom), state: poojaRoomLocation, setter: setPoojaRoomLocation }
         ].map((room) => (
           <View key={room.key} style={styles.expandableSection}>
             <TouchableOpacity 
@@ -474,9 +761,9 @@ const VastuCalculator: React.FC = () => {
             >
               <View style={styles.sectionHeaderContent}>
                 <Text style={styles.sectionLabel}>{room.label}</Text>
-                <Text style={styles.selectedValue}>
-                  {room.state || 'Not selected'}
-                </Text>
+                  <Text style={styles.selectedValue}>
+                    {room.state || getTranslation(translations.notSelected)}
+                  </Text>
               </View>
               <Text style={[
                 styles.expandArrow,
@@ -521,7 +808,7 @@ const VastuCalculator: React.FC = () => {
           onPress={calculateVastu}
         >
           <View style={styles.calculateButtonGradient}>
-            <Text style={styles.calculateButtonText}>Calculate Vastu</Text>
+            <Text style={styles.calculateButtonText}>{getTranslation(translations.calculateVastu)}</Text>
           </View>
         </TouchableOpacity>
 
@@ -541,15 +828,15 @@ const VastuCalculator: React.FC = () => {
           
           {/* Overall Score */}
           <View style={styles.scoreCard}>
-            <Text style={styles.scoreLabel}>Overall Vastu Score</Text>
+            <Text style={styles.scoreLabel}>{getTranslation(translations.overallScore)}</Text>
             <View style={styles.scoreCircle}>
               <Text style={styles.scoreText}>{results.overallScore}%</Text>
             </View>
             <Text style={styles.scoreDescription}>
-              {results.overallScore >= 80 ? 'Excellent Vastu - Your home has very good energy flow' :
-               results.overallScore >= 60 ? 'Good Vastu - Your home has good energy flow with minor issues' :
-               results.overallScore >= 40 ? 'Moderate Vastu - Your home has some energy imbalances' :
-               'Poor Vastu - Your home needs significant Vastu corrections'}
+              {results.overallScore >= 80 ? getTranslation(translations.excellentVastu) :
+               results.overallScore >= 60 ? getTranslation(translations.goodVastu) :
+               results.overallScore >= 40 ? getTranslation(translations.moderateVastu) :
+               getTranslation(translations.poorVastu)}
             </Text>
           </View>
 
@@ -583,7 +870,7 @@ const VastuCalculator: React.FC = () => {
           {/* Recommendations */}
           {results.recommendations.length > 0 && (
             <View style={styles.recommendationsCard}>
-              <Text style={styles.analysisTitle}>Recommendations</Text>
+              <Text style={styles.analysisTitle}>{getTranslation(translations.recommendations)}</Text>
               {results.recommendations.map((recommendation, index) => (
                 <View key={index} style={styles.recommendationItem}>
                   <Text style={styles.recommendationText}>• {recommendation}</Text>
@@ -599,8 +886,8 @@ const VastuCalculator: React.FC = () => {
   const renderDirectionsTab = () => (
     <>
       <View style={styles.inputSection}>
-        <Text style={styles.sectionTitle}>Direction Analysis</Text>
-        <Text style={styles.sectionSubtitle}>Click any direction to learn about its properties and suitable uses</Text>
+        <Text style={styles.sectionTitle}>{getTranslation(translations.directionAnalysis)}</Text>
+        <Text style={styles.sectionSubtitle}>{getTranslation(translations.directionAnalysisSubtitle)}</Text>
         
         {Object.entries(directionAnalysis).map(([direction, info]) => (
           <TouchableOpacity
@@ -634,10 +921,10 @@ const VastuCalculator: React.FC = () => {
   const renderRemediesTab = () => (
     <>
       <View style={styles.inputSection}>
-        <Text style={styles.sectionTitle}>Vastu Remedies</Text>
+        <Text style={styles.sectionTitle}>{getTranslation(translations.vastuRemedies)}</Text>
         
         <View style={styles.remedyCard}>
-          <Text style={styles.remedyTitle}>General Remedies</Text>
+          <Text style={styles.remedyTitle}>{getTranslation(translations.generalRemedies)}</Text>
           <Text style={styles.remedyText}>
             • Keep your home clean and clutter-free{'\n'}
             • Ensure proper ventilation in all rooms{'\n'}
@@ -687,7 +974,7 @@ const VastuCalculator: React.FC = () => {
           onPress={() => setActiveTab('calculator')}
         >
           <Text style={[styles.tabText, activeTab === 'calculator' && styles.activeTabText]}>
-            Calculator
+            {getTranslation(translations.calculator)}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -695,7 +982,7 @@ const VastuCalculator: React.FC = () => {
           onPress={() => setActiveTab('directions')}
         >
           <Text style={[styles.tabText, activeTab === 'directions' && styles.activeTabText]}>
-            Directions
+            {getTranslation(translations.directions)}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -703,7 +990,7 @@ const VastuCalculator: React.FC = () => {
           onPress={() => setActiveTab('remedies')}
         >
           <Text style={[styles.tabText, activeTab === 'remedies' && styles.activeTabText]}>
-            Remedies
+            {getTranslation(translations.remedies)}
           </Text>
         </TouchableOpacity>
       </View>

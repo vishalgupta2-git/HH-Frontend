@@ -45,29 +45,247 @@ interface UpcomingPuja {
 }
 
 export default function PujaScreen() {
-  const { isHindi } = useLanguage();
+  const { isHindi, currentLanguage } = useLanguage();
+
+  // Helper function to get translation
+  const getTranslation = (key: any) => {
+    const lang = currentLanguage === 'hindi' ? 'hi' : 
+                 currentLanguage === 'bangla' ? 'bangla' : 
+                 currentLanguage === 'kannada' ? 'kannada' :
+                 currentLanguage === 'punjabi' ? 'punjabi' :
+                 currentLanguage === 'tamil' ? 'tamil' :
+                 currentLanguage === 'telugu' ? 'telugu' : 'en';
+    return key[lang] || key.en;
+  };
   
   const translations = {
-    searchPlaceholder: { en: 'Search upcoming pujas...', hi: 'आगामी पूजाओं की खोज करें...' },
-    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
-    noDataFound: { en: 'No upcoming pujas found.', hi: 'कोई आगामी पूजा नहीं मिली।' },
-    errorLoading: { en: 'Error loading data. Please try again.', hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।' },
-    pullToRefresh: { en: 'Pull to refresh', hi: 'रिफ्रेश करने के लिए खींचें' },
-    pujaDetails: {
-      title: { en: 'Puja Details', hi: 'पूजा विवरण' },
-      temple: { en: 'Temple', hi: 'मंदिर' },
-      date: { en: 'Date', hi: 'तारीख' },
-      time: { en: 'Time', hi: 'समय' },
-      description: { en: 'Description', hi: 'विवरण' },
-      close: { en: 'Close', hi: 'बंद करें' }
+    searchPlaceholder: { 
+      en: 'Search upcoming pujas...', 
+      hi: 'आगामी पूजाओं की खोज करें...',
+      bangla: 'আসন্ন পূজা অনুসন্ধান করুন...',
+      kannada: 'ಮುಂಬರುವ ಪೂಜೆಗಳನ್ನು ಹುಡುಕಿ...',
+      punjabi: 'ਆਉਣ ਵਾਲੀਆਂ ਪੂਜਾਵਾਂ ਖੋਜੋ...',
+      tamil: 'வரவிருக்கும் பூஜைகளைத் தேடுங்கள்...',
+      telugu: 'రాబోయే పూజలను వెతకండి...'
     },
-    loadingMore: { en: 'Loading more...', hi: 'और लोड हो रहा है...' },
-    loadingPujas: { en: 'Loading upcoming pujas...', hi: 'आगामी पूजाएं लोड हो रही हैं...' },
-    noItemsToDisplay: { en: 'No items to display', hi: 'दिखाने के लिए कोई आइटम नहीं' },
-    error: { en: 'Error:', hi: 'त्रुटि:' },
-    noMatches: { en: 'No pujas match your current filters. Try adjusting your search or filters.', hi: 'आपके वर्तमान फिल्टर से कोई पूजा मेल नहीं खाती। अपनी खोज या फिल्टर को समायोजित करने का प्रयास करें।' },
-    showingPujas: { en: 'Showing {count} pujas', hi: '{count} पूजाएं दिखाई जा रही हैं' },
-    showingPujasOfTotal: { en: 'Showing {count} of {total} total pujas', hi: 'कुल {total} में से {count} पूजाएं दिखाई जा रही हैं' }
+    loading: { 
+      en: 'Loading...', 
+      hi: 'लोड हो रहा है...',
+      bangla: 'লোড হচ্ছে...',
+      kannada: 'ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+      punjabi: 'ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...',
+      tamil: 'ஏற்றப்படுகிறது...',
+      telugu: 'లోడ్ అవుతోంది...'
+    },
+    noDataFound: { 
+      en: 'No upcoming pujas found.', 
+      hi: 'कोई आगामी पूजा नहीं मिली।',
+      bangla: 'কোনো আসন্ন পূজা পাওয়া যায়নি।',
+      kannada: 'ಮುಂಬರುವ ಪೂಜೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ।',
+      punjabi: 'ਕੋਈ ਆਉਣ ਵਾਲੀਆਂ ਪੂਜਾਵਾਂ ਨਹੀਂ ਮਿਲੀਆਂ।',
+      tamil: 'வரவிருக்கும் பூஜைகள் எதுவும் கிடைக்கவில்லை।',
+      telugu: 'రాబోయే పూజలు దొరకలేదు।'
+    },
+    errorLoading: { 
+      en: 'Error loading data. Please try again.', 
+      hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।',
+      bangla: 'ডেটা লোড করতে ত্রুটি। দয়া করে আবার চেষ্টা করুন।',
+      kannada: 'ಡೇಟಾ ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ದೋಷ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।',
+      punjabi: 'ਡੇਟਾ ਲੋਡ ਕਰਨ ਵਿੱਚ ਗਲਤੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      tamil: 'தரவை ஏற்றுவதில் பிழை। தயவுசெய்து மீண்டும் முயற்சிக்கவும்।',
+      telugu: 'డేటా లోడ్ చేయడంలో లోపం। దయచేసి మళ్లీ ప్రయత్నించండి।'
+    },
+    pullToRefresh: { 
+      en: 'Pull to refresh', 
+      hi: 'रिफ्रेश करने के लिए खींचें',
+      bangla: 'রিফ্রেশ করতে টানুন',
+      kannada: 'ರಿಫ್ರೆಶ್ ಮಾಡಲು ಎಳೆಯಿರಿ',
+      punjabi: 'ਰਿਫਰੈਸ਼ ਕਰਨ ਲਈ ਖਿੱਚੋ',
+      tamil: 'புதுப்பிக்க இழுக்கவும்',
+      telugu: 'రిఫ్రెష్ చేయడానికి లాగండి'
+    },
+    pujaDetails: {
+      title: { 
+        en: 'Puja Details', 
+        hi: 'पूजा विवरण',
+        bangla: 'পূজার বিবরণ',
+        kannada: 'ಪೂಜೆ ವಿವರಗಳು',
+        punjabi: 'ਪੂਜਾ ਵਿਵਰਣ',
+        tamil: 'பூஜை விவரங்கள்',
+        telugu: 'పూజ వివరాలు'
+      },
+      temple: { 
+        en: 'Temple', 
+        hi: 'मंदिर',
+        bangla: 'মন্দির',
+        kannada: 'ದೇವಸ್ಥಾನ',
+        punjabi: 'ਮੰਦਰ',
+        tamil: 'கோவில்',
+        telugu: 'దేవాలయం'
+      },
+      date: { 
+        en: 'Date', 
+        hi: 'तारीख',
+        bangla: 'তারিখ',
+        kannada: 'ದಿನಾಂಕ',
+        punjabi: 'ਤਾਰੀਖ',
+        tamil: 'தேதி',
+        telugu: 'తేదీ'
+      },
+      time: { 
+        en: 'Time', 
+        hi: 'समय',
+        bangla: 'সময়',
+        kannada: 'ಸಮಯ',
+        punjabi: 'ਸਮਾਂ',
+        tamil: 'நேரம்',
+        telugu: 'సమయం'
+      },
+      description: { 
+        en: 'Description', 
+        hi: 'विवरण',
+        bangla: 'বিবরণ',
+        kannada: 'ವಿವರಣೆ',
+        punjabi: 'ਵਿਵਰਣ',
+        tamil: 'விளக்கம்',
+        telugu: 'వివరణ'
+      },
+      close: { 
+        en: 'Close', 
+        hi: 'बंद करें',
+        bangla: 'বন্ধ করুন',
+        kannada: 'ಮುಚ್ಚಿ',
+        punjabi: 'ਬੰਦ ਕਰੋ',
+        tamil: 'மூடு',
+        telugu: 'మూసివేయండి'
+      }
+    },
+    loadingMore: { 
+      en: 'Loading more...', 
+      hi: 'और लोड हो रहा है...',
+      bangla: 'আরো লোড হচ্ছে...',
+      kannada: 'ಇನ್ನಷ್ಟು ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+      punjabi: 'ਹੋਰ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...',
+      tamil: 'மேலும் ஏற்றப்படுகிறது...',
+      telugu: 'మరిన్ని లోడ్ అవుతోంది...'
+    },
+    loadingPujas: { 
+      en: 'Loading upcoming pujas...', 
+      hi: 'आगामी पूजाएं लोड हो रही हैं...',
+      bangla: 'আসন্ন পূজা লোড হচ্ছে...',
+      kannada: 'ಮುಂಬರುವ ಪೂಜೆಗಳು ಲೋಡ್ ಆಗುತ್ತಿವೆ...',
+      punjabi: 'ਆਉਣ ਵਾਲੀਆਂ ਪੂਜਾਵਾਂ ਲੋਡ ਹੋ ਰਹੀਆਂ ਹਨ...',
+      tamil: 'வரவிருக்கும் பூஜைகள் ஏற்றப்படுகின்றன...',
+      telugu: 'రాబోయే పూజలు లోడ్ అవుతున్నాయి...'
+    },
+    noItemsToDisplay: { 
+      en: 'No items to display', 
+      hi: 'दिखाने के लिए कोई आइटम नहीं',
+      bangla: 'প্রদর্শনের জন্য কোনো আইটেম নেই',
+      kannada: 'ಪ್ರದರ್ಶಿಸಲು ಯಾವುದೇ ವಸ್ತುಗಳಿಲ್ಲ',
+      punjabi: 'ਦਿਖਾਉਣ ਲਈ ਕੋਈ ਆਈਟਮ ਨਹੀਂ',
+      tamil: 'காட்ட எந்த உருப்படியும் இல்லை',
+      telugu: 'ప్రదర్శించడానికి ఏ వస్తువులు లేవు'
+    },
+    error: { 
+      en: 'Error:', 
+      hi: 'त्रुटि:',
+      bangla: 'ত্রুটি:',
+      kannada: 'ದೋಷ:',
+      punjabi: 'ਗਲਤੀ:',
+      tamil: 'பிழை:',
+      telugu: 'లోపం:'
+    },
+    noMatches: { 
+      en: 'No pujas match your current filters. Try adjusting your search or filters.', 
+      hi: 'आपके वर्तमान फिल्टर से कोई पूजा मेल नहीं खाती। अपनी खोज या फिल्टर को समायोजित करने का प्रयास करें।',
+      bangla: 'আপনার বর্তমান ফিল্টারের সাথে কোনো পূজা মিলছে না। আপনার অনুসন্ধান বা ফিল্টার সামঞ্জস্য করার চেষ্টা করুন।',
+      kannada: 'ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಫಿಲ್ಟರ್‌ಗಳಿಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವ ಪೂಜೆಗಳಿಲ್ಲ। ನಿಮ್ಮ ಹುಡುಕಾಟ ಅಥವಾ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಹೊಂದಿಸಲು ಪ್ರಯತ್ನಿಸಿ।',
+      punjabi: 'ਤੁਹਾਡੇ ਮੌਜੂਦਾ ਫਿਲਟਰਾਂ ਨਾਲ ਕੋਈ ਪੂਜਾ ਮੈਚ ਨਹੀਂ ਹੁੰਦੀ। ਆਪਣੀ ਖੋਜ ਜਾਂ ਫਿਲਟਰਾਂ ਨੂੰ ਅਨੁਕੂਲ ਬਣਾਉਣ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      tamil: 'உங்கள் தற்போதைய வடிகட்டிகளுடன் எந்த பூஜையும் பொருந்தவில்லை। உங்கள் தேடல் அல்லது வடிகட்டிகளை சரிசெய்ய முயற்சிக்கவும்।',
+      telugu: 'మీ ప్రస్తుత ఫిల్టర్‌లతో ఏ పూజలు సరిపోవు। మీ శోధన లేదా ఫిల్టర్‌లను సర్దుబాటు చేయడానికి ప్రయత్నించండి।'
+    },
+    showingPujas: { 
+      en: 'Showing {count} pujas', 
+      hi: '{count} पूजाएं दिखाई जा रही हैं',
+      bangla: '{count} পূজা দেখানো হচ্ছে',
+      kannada: '{count} ಪೂಜೆಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ',
+      punjabi: '{count} ਪੂਜਾਵਾਂ ਦਿਖਾਈਆਂ ਜਾ ਰਹੀਆਂ ਹਨ',
+      tamil: '{count} பூஜைகள் காட்டப்படுகின்றன',
+      telugu: '{count} పూజలు చూపించబడుతున్నాయి'
+    },
+    showingPujasOfTotal: { 
+      en: 'Showing {count} of {total} total pujas', 
+      hi: 'कुल {total} में से {count} पूजाएं दिखाई जा रही हैं',
+      bangla: 'মোট {total} এর মধ্যে {count} পূজা দেখানো হচ্ছে',
+      kannada: 'ಒಟ್ಟು {total} ಪೂಜೆಗಳಲ್ಲಿ {count} ಪೂಜೆಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ',
+      punjabi: 'ਕੁੱਲ {total} ਵਿੱਚੋਂ {count} ਪੂਜਾਵਾਂ ਦਿਖਾਈਆਂ ਜਾ ਰਹੀਆਂ ਹਨ',
+      tamil: 'மொத்த {total} பூஜைகளில் {count} பூஜைகள் காட்டப்படுகின்றன',
+      telugu: 'మొత్తం {total} పూజలలో {count} పూజలు చూపించబడుతున్నాయి'
+    },
+    details: { 
+      en: 'Details', 
+      hi: 'विवरण',
+      bangla: 'বিবরণ',
+      kannada: 'ವಿವರಗಳು',
+      punjabi: 'ਵਿਵਰਣ',
+      tamil: 'விவரங்கள்',
+      telugu: 'వివరాలు'
+    },
+    pujaOptions: { 
+      en: 'Puja Options', 
+      hi: 'पूजा विकल्प',
+      bangla: 'পূজার বিকল্প',
+      kannada: 'ಪೂಜೆ ಆಯ್ಕೆಗಳು',
+      punjabi: 'ਪੂਜਾ ਵਿਕਲਪ',
+      tamil: 'பூஜை விருப்பங்கள்',
+      telugu: 'పూజ ఎంపికలు'
+    },
+    time: { 
+      en: 'Time', 
+      hi: 'समय',
+      bangla: 'সময়',
+      kannada: 'ಸಮಯ',
+      punjabi: 'ਸਮਾਂ',
+      tamil: 'நேரம்',
+      telugu: 'సమయం'
+    },
+    offerings: { 
+      en: 'Offerings:', 
+      hi: 'भेंट:',
+      bangla: 'উপহার:',
+      kannada: 'ಅರ್ಪಣೆಗಳು:',
+      punjabi: 'ਭੇਟ:',
+      tamil: 'படையல்கள்:',
+      telugu: 'అర్పణలు:'
+    },
+    bookNow: { 
+      en: 'Book Now', 
+      hi: 'अभी बुक करें',
+      bangla: 'এখনই বুক করুন',
+      kannada: 'ಈಗ ಬುಕ್ ಮಾಡಿ',
+      punjabi: 'ਹੁਣ ਬੁਕ ਕਰੋ',
+      tamil: 'இப்போது பதிவு செய்யுங்கள்',
+      telugu: 'ఇప్పుడు బుక్ చేయండి'
+    },
+    noOptionsAvailable: { 
+      en: 'No puja options available', 
+      hi: 'कोई पूजा विकल्प उपलब्ध नहीं',
+      bangla: 'কোনো পূজার বিকল্প নেই',
+      kannada: 'ಪೂಜೆ ಆಯ್ಕೆಗಳು ಲಭ್ಯವಿಲ್ಲ',
+      punjabi: 'ਕੋਈ ਪੂਜਾ ਵਿਕਲਪ ਉਪਲਬਧ ਨਹੀਂ',
+      tamil: 'பூஜை விருப்பங்கள் இல்லை',
+      telugu: 'పూజ ఎంపికలు లేవు'
+    },
+    scrollDownToLoadMore: { 
+      en: 'Scroll down to load more', 
+      hi: 'और लोड करने के लिए नीचे स्क्रॉल करें',
+      bangla: 'আরো লোড করতে নিচে স্ক্রল করুন',
+      kannada: 'ಇನ್ನಷ್ಟು ಲೋಡ್ ಮಾಡಲು ಕೆಳಗೆ ಸ್ಕ್ರಾಲ್ ಮಾಡಿ',
+      punjabi: 'ਹੋਰ ਲੋਡ ਕਰਨ ਲਈ ਹੇਠਾਂ ਸਕ੍ਰੋਲ ਕਰੋ',
+      tamil: 'மேலும் ஏற்ற நீங்கள் கீழே உருட்டவும்',
+      telugu: 'మరిన్ని లోడ్ చేయడానికి క్రింద స్క్రోల్ చేయండి'
+    }
   };
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -261,7 +479,7 @@ export default function PujaScreen() {
             style={styles.expandButton}
             onPress={() => toggleTileExpansion(item.id)}
           >
-            <Text style={styles.expandText}>Details</Text>
+            <Text style={styles.expandText}>{getTranslation(translations.details)}</Text>
             <Text style={[styles.expandIcon, isExpanded && styles.expandIconRotated]}>
               ›
             </Text>
@@ -271,19 +489,19 @@ export default function PujaScreen() {
         {/* Expanded Details Section */}
         {isExpanded && (
           <View style={styles.expandedDetails}>
-            <Text style={styles.expandedTitle}>Puja Options</Text>
+            <Text style={styles.expandedTitle}>{getTranslation(translations.pujaOptions)}</Text>
             {item.pujaOptions && item.pujaOptions.PujaOptions ? (
               Object.entries(item.pujaOptions.PujaOptions).map(([pujaType, pujaData]: [string, any]) => (
                 <View key={pujaType} style={styles.pujaOptionSection}>
                   <Text style={styles.pujaTypeTitle}>{pujaType}</Text>
                   <Text style={styles.pujaTypeDetails}>{pujaData.details}</Text>
                   {pujaData.time && (
-                    <Text style={styles.pujaTypeTime}>Time: {formatTime(pujaData.time)}</Text>
+                    <Text style={styles.pujaTypeTime}>{getTranslation(translations.time)}: {formatTime(pujaData.time)}</Text>
                   )}
                   
                   {pujaData.offerings && (
                     <View style={styles.offeringsSection}>
-                      <Text style={styles.offeringsTitle}>Offerings:</Text>
+                      <Text style={styles.offeringsTitle}>{getTranslation(translations.offerings)}</Text>
                       {Object.entries(pujaData.offerings).map(([offeringName, offeringData]: [string, any]) => (
                         <View key={offeringName} style={styles.offeringItem}>
                           <Text style={styles.offeringName}>{offeringName}</Text>
@@ -310,7 +528,7 @@ export default function PujaScreen() {
                                     }}
                                   >
                                     <Text style={styles.pricingButtonText}>
-                                      Book Now ₹{price}
+                                      {getTranslation(translations.bookNow)} ₹{price}
                                     </Text>
                                   </TouchableOpacity>
                                 </View>
@@ -324,7 +542,7 @@ export default function PujaScreen() {
                 </View>
               ))
             ) : (
-              <Text style={styles.noOptionsText}>No puja options available</Text>
+              <Text style={styles.noOptionsText}>{getTranslation(translations.noOptionsAvailable)}</Text>
             )}
           </View>
         )}
@@ -336,7 +554,7 @@ export default function PujaScreen() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FF6B35" />
-        <Text style={styles.loadingText}>{isHindi ? translations.loadingPujas.hi : translations.loadingPujas.en}</Text>
+        <Text style={styles.loadingText}>{getTranslation(translations.loadingPujas)}</Text>
       </View>
     );
   }
@@ -355,7 +573,7 @@ export default function PujaScreen() {
   return (
     <View style={styles.container}>
       <HomeHeader 
-        searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en}
+        searchPlaceholder={getTranslation(translations.searchPlaceholder)}
         onSearchChange={setSearchQuery}
         showSearchBar={true}
         showDailyPujaButton={false}
@@ -388,28 +606,22 @@ export default function PujaScreen() {
         <View style={styles.statsContainer}>
           <Text style={styles.statsText}>
             {pagination.total > 0 
-              ? (isHindi 
-                  ? translations.showingPujasOfTotal.hi.replace('{count}', filteredData.length.toString()).replace('{total}', pagination.total.toString())
-                  : translations.showingPujasOfTotal.en.replace('{count}', filteredData.length.toString()).replace('{total}', pagination.total.toString())
-                )
+              ? getTranslation(translations.showingPujasOfTotal).replace('{count}', filteredData.length.toString()).replace('{total}', pagination.total.toString())
               : filteredData.length > 0 
-                ? (isHindi 
-                    ? translations.showingPujas.hi.replace('{count}', filteredData.length.toString())
-                    : translations.showingPujas.en.replace('{count}', filteredData.length.toString())
-                  )
-                : (isHindi ? 'कोई पूजा नहीं मिली' : 'No pujas found')
+                ? getTranslation(translations.showingPujas).replace('{count}', filteredData.length.toString())
+                : getTranslation(translations.noDataFound)
             }
           </Text>
           {pagination.hasMore && (
-            <Text style={styles.loadMoreText}>Scroll down to load more</Text>
+            <Text style={styles.loadMoreText}>{getTranslation(translations.scrollDownToLoadMore)}</Text>
           )}
         </View>
 
         {filteredData.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{isHindi ? translations.noDataFound.hi : translations.noDataFound.en}</Text>
+            <Text style={styles.emptyText}>{getTranslation(translations.noDataFound)}</Text>
             <Text style={styles.emptySubtext}>
-              {isHindi ? translations.noMatches.hi : translations.noMatches.en}
+              {getTranslation(translations.noMatches)}
             </Text>
           </View>
         ) : (
@@ -421,7 +633,7 @@ export default function PujaScreen() {
         {pagination.hasMore && (
           <View style={styles.loadingMoreContainer}>
             <ActivityIndicator size="small" color="#FF6B35" />
-            <Text style={styles.loadingMoreText}>{isHindi ? translations.loadingMore.hi : translations.loadingMore.en}</Text>
+            <Text style={styles.loadingMoreText}>{getTranslation(translations.loadingMore)}</Text>
           </View>
         )}
       </ScrollView>
@@ -445,7 +657,7 @@ export default function PujaScreen() {
             >
               <View style={styles.textModalBody}>
                 <View style={styles.textModalHeader}>
-                  <Text style={styles.textModalTitle}>{isHindi ? translations.pujaDetails.title.hi : translations.pujaDetails.title.en}</Text>
+                  <Text style={styles.textModalTitle}>{getTranslation(translations.pujaDetails.title)}</Text>
                   <TouchableOpacity
                     style={styles.closeButton}
                     onPress={() => setShowTextModal(false)}

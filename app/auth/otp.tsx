@@ -13,7 +13,7 @@ const { width } = Dimensions.get('window');
 export const options = { headerShown: false };
 
 export default function OTPScreen() {
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
   const { email, name, from } = useLocalSearchParams();
   const [otp, setOtp] = useState(['', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,28 +25,199 @@ export default function OTPScreen() {
   const inputRefs = useRef<TextInput[]>([]);
   const router = useRouter();
 
+  // Helper function to get translation
+  const getTranslation = (key: any) => {
+    const lang = currentLanguage === 'hindi' ? 'hi' : 
+                 currentLanguage === 'bangla' ? 'bangla' : 
+                 currentLanguage === 'kannada' ? 'kannada' :
+                 currentLanguage === 'punjabi' ? 'punjabi' :
+                 currentLanguage === 'tamil' ? 'tamil' :
+                 currentLanguage === 'telugu' ? 'telugu' : 'en';
+    return key[lang] || key.en;
+  };
+
   const translations = {
-    headerTitle: { en: 'Hindu Heritage', hi: 'द हिंदू हेरिटेज' },
-    verifyEmail: { en: 'Verify Your Email', hi: 'अपना ईमेल सत्यापित करें' },
-    sentCode: { en: 'We\'ve sent a 4-digit code to', hi: 'हमने 4 अंकों का कोड भेजा है' },
-    clear: { en: 'Clear', hi: 'साफ करें' },
-    verifying: { en: 'Verifying...', hi: 'सत्यापित किया जा रहा है...' },
-    verifyOtp: { en: 'Verify OTP', hi: 'OTP सत्यापित करें' },
-    didntReceive: { en: 'Didn\'t receive the code? You can resend in', hi: 'कोड नहीं मिला? आप इसे फिर से भेज सकते हैं' },
-    seconds: { en: 'seconds', hi: 'सेकंड में' },
-    didntReceiveSimple: { en: 'Didn\'t receive the code?', hi: 'कोड नहीं मिला?' },
-    resend: { en: 'Resend', hi: 'फिर से भेजें' },
-    backToSignup: { en: 'Back to Sign-Up', hi: 'साइन-अप पर वापस जाएं' },
-    backToLogin: { en: 'Back to Login', hi: 'लॉगिन पर वापस जाएं' },
+    headerTitle: { 
+      en: 'Hindu Heritage', 
+      hi: 'द हिंदू हेरिटेज',
+      bangla: 'হিন্দু হেরিটেজ',
+      kannada: 'ಹಿಂದೂ ಹೆರಿಟೇಜ್',
+      punjabi: 'ਹਿੰਦੂ ਹੈਰੀਟੇਜ',
+      tamil: 'ஹிந்து ஹெரிடேஜ்',
+      telugu: 'హిందూ హెరిటేజ్'
+    },
+    verifyEmail: { 
+      en: 'Verify Your Email', 
+      hi: 'अपना ईमेल सत्यापित करें',
+      bangla: 'আপনার ইমেইল যাচাই করুন',
+      kannada: 'ನಿಮ್ಮ ಇಮೇಲ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿ',
+      punjabi: 'ਆਪਣਾ ਈਮੇਲ ਤਸਦੀਕ ਕਰੋ',
+      tamil: 'உங்கள் மின்னஞ்சலை சரிபார்க்கவும்',
+      telugu: 'మీ ఇమెయిల్‌ను ధృవీకరించండి'
+    },
+    sentCode: { 
+      en: 'We\'ve sent a 4-digit code to', 
+      hi: 'हमने 4 अंकों का कोड भेजा है',
+      bangla: 'আমরা 4 অঙ্কের কোড পাঠিয়েছি',
+      kannada: 'ನಾವು 4 ಅಂಕಿಯ ಕೋಡ್ ಕಳುಹಿಸಿದ್ದೇವೆ',
+      punjabi: 'ਅਸੀਂ 4 ਅੰਕਾਂ ਦਾ ਕੋਡ ਭੇਜਿਆ ਹੈ',
+      tamil: 'நாங்கள் 4 இலக்க குறியீட்டை அனுப்பியுள்ளோம்',
+      telugu: 'మేము 4 అంకెల కోడ్‌ను పంపాము'
+    },
+    clear: { 
+      en: 'Clear', 
+      hi: 'साफ करें',
+      bangla: 'সাফ করুন',
+      kannada: 'ಸ್ಪಷ್ಟಗೊಳಿಸಿ',
+      punjabi: 'ਸਾਫ ਕਰੋ',
+      tamil: 'அழிக்கவும்',
+      telugu: 'తొలగించండి'
+    },
+    verifying: { 
+      en: 'Verifying...', 
+      hi: 'सत्यापित किया जा रहा है...',
+      bangla: 'যাচাই করা হচ্ছে...',
+      kannada: 'ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ...',
+      punjabi: 'ਤਸਦੀਕ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...',
+      tamil: 'சரிபார்க்கப்படுகிறது...',
+      telugu: 'ధృవీకరించబడుతోంది...'
+    },
+    verifyOtp: { 
+      en: 'Verify OTP', 
+      hi: 'OTP सत्यापित करें',
+      bangla: 'OTP যাচাই করুন',
+      kannada: 'OTP ಪರಿಶೀಲಿಸಿ',
+      punjabi: 'OTP ਤਸਦੀਕ ਕਰੋ',
+      tamil: 'OTP சரிபார்க்கவும்',
+      telugu: 'OTP ధృవీకరించండి'
+    },
+    didntReceive: { 
+      en: 'Didn\'t receive the code? You can resend in', 
+      hi: 'कोड नहीं मिला? आप इसे फिर से भेज सकते हैं',
+      bangla: 'কোড পেলেন না? আপনি পুনরায় পাঠাতে পারেন',
+      kannada: 'ಕೋಡ್ ಸಿಕ್ಕಿಲ್ಲ? ನೀವು ಮರುಕಳಿಸಬಹುದು',
+      punjabi: 'ਕੋਡ ਨਹੀਂ ਮਿਲਿਆ? ਤੁਸੀਂ ਮੁੜ ਭੇਜ ਸਕਦੇ ਹੋ',
+      tamil: 'குறியீடு கிடைக்கவில்லையா? நீங்கள் மீண்டும் அனுப்பலாம்',
+      telugu: 'కోడ్ రాలేదా? మీరు మళ్లీ పంపవచ్చు'
+    },
+    seconds: { 
+      en: 'seconds', 
+      hi: 'सेकंड में',
+      bangla: 'সেকেন্ডে',
+      kannada: 'ಸೆಕೆಂಡುಗಳಲ್ಲಿ',
+      punjabi: 'ਸਕਿੰਟਾਂ ਵਿੱਚ',
+      tamil: 'வினாடிகளில்',
+      telugu: 'సెకన్లలో'
+    },
+    didntReceiveSimple: { 
+      en: 'Didn\'t receive the code?', 
+      hi: 'कोड नहीं मिला?',
+      bangla: 'কোড পেলেন না?',
+      kannada: 'ಕೋಡ್ ಸಿಕ್ಕಿಲ್ಲ?',
+      punjabi: 'ਕੋਡ ਨਹੀਂ ਮਿਲਿਆ?',
+      tamil: 'குறியீடு கிடைக்கவில்லையா?',
+      telugu: 'కోడ్ రాలేదా?'
+    },
+    resend: { 
+      en: 'Resend', 
+      hi: 'फिर से भेजें',
+      bangla: 'পুনরায় পাঠান',
+      kannada: 'ಮರುಕಳಿಸಿ',
+      punjabi: 'ਮੁੜ ਭੇਜੋ',
+      tamil: 'மீண்டும் அனுப்பவும்',
+      telugu: 'మళ్లీ పంపండి'
+    },
+    backToSignup: { 
+      en: 'Back to Sign-Up', 
+      hi: 'साइन-अप पर वापस जाएं',
+      bangla: 'সাইন আপে ফিরে যান',
+      kannada: 'ಸೈನ್ ಅಪ್‌ಗೆ ಹಿಂತಿರುಗಿ',
+      punjabi: 'ਸਾਈਨ ਅੱਪ \'ਤੇ ਵਾਪਸ ਜਾਓ',
+      tamil: 'பதிவுக்கு திரும்பவும்',
+      telugu: 'సైన్ అప్‌కు తిరిగి వెళ్లండి'
+    },
+    backToLogin: { 
+      en: 'Back to Login', 
+      hi: 'लॉगिन पर वापस जाएं',
+      bangla: 'লগইনে ফিরে যান',
+      kannada: 'ಲಾಗಿನ್‌ಗೆ ಹಿಂತಿರುಗಿ',
+      punjabi: 'ਲੌਗਿਨ \'ਤੇ ਵਾਪਸ ਜਾਓ',
+      tamil: 'உள்நுழைவுக்கு திரும்பவும்',
+      telugu: 'లాగిన్‌కు తిరిగి వెళ్లండి'
+    },
     validation: {
-      validOtp: { en: 'Please enter a valid 4-digit OTP', hi: 'कृपया एक वैध 4 अंकों का OTP दर्ज करें' },
-      accountLocked: { en: 'Account is temporarily locked. Please wait before trying again.', hi: 'खाता अस्थायी रूप से लॉक है। कृपया पुनः प्रयास करने से पहले प्रतीक्षा करें।' },
-      loginSuccessful: { en: 'Login successful! Redirecting...', hi: 'लॉगिन सफल! पुनर्निर्देशित किया जा रहा है...' },
-      invalidOtp: { en: 'Invalid OTP', hi: 'अमान्य OTP' },
-      tooManyAttempts: { en: 'Too many failed attempts. Please try again in 30 minutes.', hi: 'बहुत सारे असफल प्रयास। कृपया 30 मिनट बाद पुनः प्रयास करें।' },
-      failedToVerify: { en: 'Failed to verify OTP', hi: 'OTP सत्यापित करने में विफल' },
-      otpResent: { en: 'OTP has been resent to your email', hi: 'OTP आपके ईमेल पर फिर से भेजा गया है' },
-      failedToResend: { en: 'Failed to resend OTP', hi: 'OTP फिर से भेजने में विफल' }
+      validOtp: { 
+        en: 'Please enter a valid 4-digit OTP', 
+        hi: 'कृपया एक वैध 4 अंकों का OTP दर्ज करें',
+        bangla: 'অনুগ্রহ করে একটি বৈধ 4 অঙ্কের OTP লিখুন',
+        kannada: 'ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ 4 ಅಂಕಿಯ OTP ನಮೂದಿಸಿ',
+        punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ 4 ਅੰਕਾਂ ਦਾ OTP ਦਰਜ ਕਰੋ',
+        tamil: 'தயவுசெய்து சரியான 4 இலக்க OTP ஐ உள்ளிடவும்',
+        telugu: 'దయచేసి చెల్లుబాటు అయ్యే 4 అంకెల OTP నమోదు చేయండి'
+      },
+      accountLocked: { 
+        en: 'Account is temporarily locked. Please wait before trying again.', 
+        hi: 'खाता अस्थायी रूप से लॉक है। कृपया पुनः प्रयास करने से पहले प्रतीक्षा करें।',
+        bangla: 'অ্যাকাউন্ট সাময়িকভাবে লক করা হয়েছে। আবার চেষ্টা করার আগে অনুগ্রহ করে অপেক্ষা করুন।',
+        kannada: 'ಖಾತೆಯು ತಾತ್ಕಾಲಿಕವಾಗಿ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ಕಾಯಿರಿ.',
+        punjabi: 'ਖਾਤਾ ਅਸਥਾਈ ਤੌਰ \'ਤੇ ਲੌਕ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਇੰਤਜ਼ਾਰ ਕਰੋ।',
+        tamil: 'கணக்கு தற்காலிகமாக பூட்டப்பட்டுள்ளது. மீண்டும் முயற்சிக்கும் முன் தயவுசெய்து காத்திருக்கவும்.',
+        telugu: 'ఖాతా తాత్కాలికంగా లాక్ చేయబడింది. మళ్లీ ప్రయత్నించే ముందు దయచేసి వేచి ఉండండి.'
+      },
+      loginSuccessful: { 
+        en: 'Login successful! Redirecting...', 
+        hi: 'लॉगिन सफल! पुनर्निर्देशित किया जा रहा है...',
+        bangla: 'লগইন সফল! পুনর্নির্দেশিত করা হচ্ছে...',
+        kannada: 'ಲಾಗಿನ್ ಯಶಸ್ವಿ! ಮರುನಿರ್ದೇಶಿಸಲಾಗುತ್ತಿದೆ...',
+        punjabi: 'ਲੌਗਿਨ ਸਫਲ! ਮੁੜ-ਨਿਰਦੇਸ਼ਿਤ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...',
+        tamil: 'உள்நுழைவு வெற்றிகரமானது! மறுநிர்ணயிக்கப்படுகிறது...',
+        telugu: 'లాగిన్ విజయవంతమైంది! మళ్లీ నిర్దేశించబడుతోంది...'
+      },
+      invalidOtp: { 
+        en: 'Invalid OTP', 
+        hi: 'अमान्य OTP',
+        bangla: 'অবৈধ OTP',
+        kannada: 'ಅಮಾನ್ಯ OTP',
+        punjabi: 'ਗਲਤ OTP',
+        tamil: 'தவறான OTP',
+        telugu: 'చెల్లని OTP'
+      },
+      tooManyAttempts: { 
+        en: 'Too many failed attempts. Please try again in 30 minutes.', 
+        hi: 'बहुत सारे असफल प्रयास। कृपया 30 मिनट बाद पुनः प्रयास करें।',
+        bangla: 'অনেক ব্যর্থ প্রচেষ্টা। অনুগ্রহ করে 30 মিনিট পর আবার চেষ্টা করুন।',
+        kannada: 'ಹಲವಾರು ವಿಫಲ ಪ್ರಯತ್ನಗಳು. ದಯವಿಟ್ಟು 30 ನಿಮಿಷಗಳ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+        punjabi: 'ਬਹੁਤ ਸਾਰੇ ਅਸਫਲ ਯਤਨ। ਕਿਰਪਾ ਕਰਕੇ 30 ਮਿੰਟ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+        tamil: 'பல தோல்வியுற்ற முயற்சிகள். 30 நிமிடங்களுக்குப் பிறகு மீண்டும் முயற்சிக்கவும்.',
+        telugu: 'చాలా విఫల ప్రయత్నాలు. 30 నిమిషాల తర్వాత మళ్లీ ప్రయత్నించండి.'
+      },
+      failedToVerify: { 
+        en: 'Failed to verify OTP', 
+        hi: 'OTP सत्यापित करने में विफल',
+        bangla: 'OTP যাচাই করতে ব্যর্থ',
+        kannada: 'OTP ಪರಿಶೀಲಿಸಲು ವಿಫಲವಾಗಿದೆ',
+        punjabi: 'OTP ਤਸਦੀਕ ਕਰਨ ਵਿੱਚ ਅਸਫਲ',
+        tamil: 'OTP சரிபார்க்க முடியவில்லை',
+        telugu: 'OTP ధృవీకరించడంలో విఫలమయ్యింది'
+      },
+      otpResent: { 
+        en: 'OTP has been resent to your email', 
+        hi: 'OTP आपके ईमेल पर फिर से भेजा गया है',
+        bangla: 'OTP আপনার ইমেইলে পুনরায় পাঠানো হয়েছে',
+        kannada: 'OTP ನಿಮ್ಮ ಇಮೇಲ್‌ಗೆ ಮರುಕಳಿಸಲಾಗಿದೆ',
+        punjabi: 'OTP ਤੁਹਾਡੇ ਈਮੇਲ \'ਤੇ ਮੁੜ ਭੇਜਿਆ ਗਿਆ ਹੈ',
+        tamil: 'OTP உங்கள் மின்னஞ்சலுக்கு மீண்டும் அனுப்பப்பட்டது',
+        telugu: 'OTP మీ ఇమెయిల్‌కు మళ్లీ పంపబడింది'
+      },
+      failedToResend: { 
+        en: 'Failed to resend OTP', 
+        hi: 'OTP फिर से भेजने में विफल',
+        bangla: 'OTP পুনরায় পাঠাতে ব্যর্থ',
+        kannada: 'OTP ಮರುಕಳಿಸಲು ವಿಫಲವಾಗಿದೆ',
+        punjabi: 'OTP ਮੁੜ ਭੇਜਣ ਵਿੱਚ ਅਸਫਲ',
+        tamil: 'OTP மீண்டும் அனுப்ப முடியவில்லை',
+        telugu: 'OTP మళ్లీ పంపడంలో విఫలమయ్యింది'
+      }
     }
   };
 
@@ -105,13 +276,13 @@ export default function OTPScreen() {
   const handleVerifyOTP = async () => {
     const otpString = otp.join('');
     if (otpString.length !== 4) {
-      setMessage(isHindi ? translations.validation.validOtp.hi : translations.validation.validOtp.en);
+      setMessage(getTranslation(translations.validation.validOtp));
       setMessageType('error');
       return;
     }
 
     if (isLockedOut) {
-      setMessage(isHindi ? translations.validation.accountLocked.hi : translations.validation.accountLocked.en);
+      setMessage(getTranslation(translations.validation.accountLocked));
       setMessageType('error');
       return;
     }
@@ -148,7 +319,7 @@ export default function OTPScreen() {
         await AsyncStorage.setItem('userData', JSON.stringify(testUserData));
         await AsyncStorage.setItem('isLoggedIn', 'true');
         
-        setMessage(isHindi ? translations.validation.loginSuccessful.hi : translations.validation.loginSuccessful.en);
+        setMessage(getTranslation(translations.validation.loginSuccessful));
         setMessageType('success');
         
         setTimeout(() => {
@@ -200,7 +371,7 @@ export default function OTPScreen() {
         // Note: Referral processing is now handled in the signup endpoint
         // No need to process referrals here since mudras are awarded immediately after user creation
         
-        setMessage(isHindi ? translations.validation.loginSuccessful.hi : translations.validation.loginSuccessful.en);
+        setMessage(getTranslation(translations.validation.loginSuccessful));
         setMessageType('success');
         
         // Navigate after a short delay
@@ -208,13 +379,13 @@ export default function OTPScreen() {
           router.replace('/(tabs)');
         }, 1500);
       } else {
-        setMessage(response.data.message || (isHindi ? translations.validation.invalidOtp.hi : translations.validation.invalidOtp.en));
+        setMessage(response.data.message || getTranslation(translations.validation.invalidOtp));
         setMessageType('error');
       }
     } catch (error: any) {
       if (error.response?.status === 429) {
         // Lockout error
-        const lockoutMessage = error.response?.data?.error || (isHindi ? translations.validation.tooManyAttempts.hi : translations.validation.tooManyAttempts.en);
+        const lockoutMessage = error.response?.data?.error || getTranslation(translations.validation.tooManyAttempts);
         setMessage(lockoutMessage);
         setMessageType('error');
         
@@ -232,7 +403,7 @@ export default function OTPScreen() {
         // Set timer to 30 minutes
         setResendTimer(1800);
       } else {
-        setMessage(error.response?.data?.message || (isHindi ? translations.validation.failedToVerify.hi : translations.validation.failedToVerify.en));
+        setMessage(error.response?.data?.message || getTranslation(translations.validation.failedToVerify));
         setMessageType('error');
       }
     } finally {
@@ -246,7 +417,7 @@ export default function OTPScreen() {
     // Test user bypass - no backend request needed
     if (email === 'playstoreuser@hinduheritage.in') {
       setResendTimer(10);
-      setMessage(isHindi ? translations.validation.otpResent.hi : translations.validation.otpResent.en);
+      setMessage(getTranslation(translations.validation.otpResent));
       setMessageType('success');
       return;
     }
@@ -256,10 +427,10 @@ export default function OTPScreen() {
         headers: getAuthHeaders()
       });
       setResendTimer(10);
-      setMessage(isHindi ? translations.validation.otpResent.hi : translations.validation.otpResent.en);
+      setMessage(getTranslation(translations.validation.otpResent));
       setMessageType('success');
     } catch (error: any) {
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || (isHindi ? translations.validation.failedToResend.hi : translations.validation.failedToResend.en);
+      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || getTranslation(translations.validation.failedToResend);
       setMessage(errorMessage);
       setMessageType('error');
     }
@@ -274,7 +445,7 @@ export default function OTPScreen() {
         end={{ x: 1, y: 0 }}
       >
         <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>{isHindi ? translations.headerTitle.hi : translations.headerTitle.en}</Text>
+        <Text style={styles.headerTitle}>{getTranslation(translations.headerTitle)}</Text>
         <Image
           source={require('@/assets/images/temple illustration.png')}
           style={styles.temple}
@@ -282,9 +453,9 @@ export default function OTPScreen() {
       </LinearGradient>
       
       <View style={styles.card}>
-        <Text style={styles.title}>{isHindi ? translations.verifyEmail.hi : translations.verifyEmail.en}</Text>
+        <Text style={styles.title}>{getTranslation(translations.verifyEmail)}</Text>
         <Text style={styles.subtitle}>
-          {isHindi ? translations.sentCode.hi : translations.sentCode.en} {email}
+          {getTranslation(translations.sentCode)} {email}
         </Text>
         
         <View style={styles.otpContainer}>
@@ -321,7 +492,7 @@ export default function OTPScreen() {
           style={styles.clearButton} 
           onPress={handleClearOTP}
         >
-          <Text style={styles.clearButtonText}>{isHindi ? translations.clear.hi : translations.clear.en}</Text>
+          <Text style={styles.clearButtonText}>{getTranslation(translations.clear)}</Text>
         </TouchableOpacity>
 
         {/* Verify button - always show but disabled until OTP is complete or during lockout */}
@@ -337,7 +508,7 @@ export default function OTPScreen() {
             styles.buttonText,
             (!isOtpComplete || isLoading || isLockedOut) && styles.buttonTextDisabled
           ]}>
-            {isLoading ? (isHindi ? translations.verifying.hi : translations.verifying.en) : (isHindi ? translations.verifyOtp.hi : translations.verifyOtp.en)}
+            {isLoading ? getTranslation(translations.verifying) : getTranslation(translations.verifyOtp)}
           </Text>
         </TouchableOpacity>
 
@@ -345,13 +516,13 @@ export default function OTPScreen() {
         <View style={styles.resendContainer}>
           <Text style={styles.resendText}>
             {resendTimer > 0 
-              ? `${isHindi ? translations.didntReceive.hi : translations.didntReceive.en} ${resendTimer} ${isHindi ? translations.seconds.hi : translations.seconds.en}` 
-              : `${isHindi ? translations.didntReceiveSimple.hi : translations.didntReceiveSimple.en} `
+              ? `${getTranslation(translations.didntReceive)} ${resendTimer} ${getTranslation(translations.seconds)}` 
+              : `${getTranslation(translations.didntReceiveSimple)} `
             }
           </Text>
           {resendTimer === 0 && (
             <TouchableOpacity onPress={handleResendOTP}>
-              <Text style={styles.resendLink}>{isHindi ? translations.resend.hi : translations.resend.en}</Text>
+              <Text style={styles.resendLink}>{getTranslation(translations.resend)}</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -361,7 +532,7 @@ export default function OTPScreen() {
           onPress={() => router.back()}
         >
           <Text style={styles.backButtonText}>
-            {from === 'signup' ? (isHindi ? translations.backToSignup.hi : translations.backToSignup.en) : (isHindi ? translations.backToLogin.hi : translations.backToLogin.en)}
+            {from === 'signup' ? getTranslation(translations.backToSignup) : getTranslation(translations.backToLogin)}
           </Text>
         </TouchableOpacity>
       </View>

@@ -114,7 +114,7 @@ function GlobalBottomNavigation() {
 function BottomNavigationWithLanguage() {
   const router = useRouter();
   const pathname = usePathname();
-  const { isHindi } = useLanguage();
+  const { isHindi, currentLanguage } = useLanguage();
   const { showAudioVideoModal } = useAudioVideoModal();
 
   // Hide bottom navigation on 3D Ganesha screen and Daily Puja Custom Temple screen
@@ -162,7 +162,13 @@ function BottomNavigationWithLanguage() {
         >
           <IconSymbol size={20} name="house.fill" color={isActive('home') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('home') && styles.activeTabText]}>
-            {isHindi ? 'होम' : 'Home'}
+            {currentLanguage === 'hindi' ? 'होम' : 
+             currentLanguage === 'bangla' ? 'হোম' :
+             currentLanguage === 'kannada' ? 'ಮುಖಪುಟ' :
+             currentLanguage === 'punjabi' ? 'ਹੋਮ' :
+             currentLanguage === 'tamil' ? 'முகப்பு' :
+             currentLanguage === 'telugu' ? 'హోమ్' :
+             'Home'}
           </Text>
         </TouchableOpacity>
 
@@ -176,7 +182,13 @@ function BottomNavigationWithLanguage() {
             resizeMode="contain" 
           />
           <Text style={[styles.tabText, isActive('puja') && styles.activeTabText]}>
-            {isHindi ? 'पूजा' : 'Puja'}
+            {currentLanguage === 'hindi' ? 'पूजा' : 
+             currentLanguage === 'bangla' ? 'পূজা' :
+             currentLanguage === 'kannada' ? 'ಪೂಜೆ' :
+             currentLanguage === 'punjabi' ? 'ਪੂਜਾ' :
+             currentLanguage === 'tamil' ? 'பூஜை' :
+             currentLanguage === 'telugu' ? 'పూజ' :
+             'Puja'}
           </Text>
         </TouchableOpacity>
 
@@ -186,7 +198,13 @@ function BottomNavigationWithLanguage() {
         >
           <MaterialIcons size={20} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('yatra') && styles.activeTabText]}>
-            {isHindi ? 'यात्रा' : 'Yatra'}
+            {currentLanguage === 'hindi' ? 'यात्रा' : 
+             currentLanguage === 'bangla' ? 'যাত্রা' :
+             currentLanguage === 'kannada' ? 'ಯಾತ್ರೆ' :
+             currentLanguage === 'punjabi' ? 'ਯਾਤਰਾ' :
+             currentLanguage === 'tamil' ? 'யாத்திரை' :
+             currentLanguage === 'telugu' ? 'యాత్ర' :
+             'Yatra'}
           </Text>
         </TouchableOpacity>
 
@@ -196,7 +214,13 @@ function BottomNavigationWithLanguage() {
         >
           <MaterialIcons size={20} name="music-note" color={isActive('audio-video') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('audio-video') && styles.activeTabText]}>
-            {isHindi ? 'भक्ति संगीत' : 'Divine Music'}
+            {currentLanguage === 'hindi' ? 'भक्ति संगीत' : 
+             currentLanguage === 'bangla' ? 'ভক্তিমূলক সংগীত' :
+             currentLanguage === 'kannada' ? 'ಭಕ್ತಿ ಸಂಗೀತ' :
+             currentLanguage === 'punjabi' ? 'ਭਗਤੀ ਸੰਗੀਤ' :
+             currentLanguage === 'tamil' ? 'பக்தி இசை' :
+             currentLanguage === 'telugu' ? 'భక్తి సంగీతం' :
+             'Divine Music'}
           </Text>
         </TouchableOpacity>
       </View>

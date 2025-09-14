@@ -45,7 +45,7 @@ function safeString(value: any): string {
 export const options = { headerShown: false };
 
 export default function SpecialPujaScreen() {
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
   const [modalVisible, setModalVisible] = useState(false);
   const [bookingModalVisible, setBookingModalVisible] = useState(false);
   const [currentPuja, setCurrentPuja] = useState<SpecialPujaData | null>(null);
@@ -62,21 +62,128 @@ export default function SpecialPujaScreen() {
   const [selectedFilter, setSelectedFilter] = useState<string>('puja-for');
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
+  // Helper function to get translations
+  const getTranslation = (translations: any) => {
+    return currentLanguage === 'hindi' ? (translations.hi || translations.en) :
+           currentLanguage === 'bangla' ? (translations.bangla || translations.en) :
+           currentLanguage === 'kannada' ? (translations.kannada || translations.en) :
+           currentLanguage === 'punjabi' ? (translations.punjabi || translations.en) :
+           currentLanguage === 'tamil' ? (translations.tamil || translations.en) :
+           currentLanguage === 'telugu' ? (translations.telugu || translations.en) :
+           translations.en;
+  };
+
   // Translations
   const translations = {
-    searchPlaceholder: { en: 'Search special day pujas...', hi: 'विशेष दिन की पूजाओं की खोज करें...' },
-    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
-    noDataFound: { en: 'No special day pujas found.', hi: 'कोई विशेष दिन की पूजा नहीं मिली।' },
-    errorLoading: { en: 'Error loading data. Please try again.', hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।' },
-    pullToRefresh: { en: 'Pull to refresh', hi: 'रिफ्रेश करने के लिए खींचें' },
+    searchPlaceholder: { 
+      en: 'Search special day pujas...', 
+      hi: 'विशेष दिन की पूजाओं की खोज करें...',
+      bangla: 'বিশেষ দিনের পুজো খুঁজুন...',
+      kannada: 'ವಿಶೇಷ ದಿನದ ಪೂಜೆಗಳನ್ನು ಹುಡುಕಿ...',
+      punjabi: 'ਖਾਸ ਦਿਨ ਦੀਆਂ ਪੂਜਾਵਾਂ ਖੋਜੋ...',
+      tamil: 'சிறப்பு நாள் பூஜைகளைத் தேடுங்கள்...',
+      telugu: 'ప్రత్యేక దిన పూజలను వెతకండి...'
+    },
+    loading: { 
+      en: 'Loading...', 
+      hi: 'लोड हो रहा है...',
+      bangla: 'লোড হচ্ছে...',
+      kannada: 'ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+      punjabi: 'ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...',
+      tamil: 'ஏற்றப்படுகிறது...',
+      telugu: 'లోడ్ అవుతోంది...'
+    },
+    noDataFound: { 
+      en: 'No special day pujas found.', 
+      hi: 'कोई विशेष दिन की पूजा नहीं मिली।',
+      bangla: 'কোনো বিশেষ দিনের পুজো পাওয়া যায়নি।',
+      kannada: 'ವಿಶೇಷ ದಿನದ ಪೂಜೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ।',
+      punjabi: 'ਕੋਈ ਖਾਸ ਦਿਨ ਦੀਆਂ ਪੂਜਾਵਾਂ ਨਹੀਂ ਮਿਲੀਆਂ।',
+      tamil: 'சிறப்பு நாள் பூஜைகள் கிடைக்கவில்லை।',
+      telugu: 'ప్రత్యేక దిన పూజలు కనుగొనబడలేదు।'
+    },
+    errorLoading: { 
+      en: 'Error loading data. Please try again.', 
+      hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।',
+      bangla: 'ডেটা লোড করার সময় ত্রুটি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      kannada: 'ಡೇಟಾ ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ದೋಷ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।',
+      punjabi: 'ਡੇਟਾ ਲੋਡ ਕਰਨ ਵਿੱਚ ਗਲਤੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      tamil: 'தரவை ஏற்றுவதில் பிழை। தயவுசெய்து மீண்டும் முயற்சிக்கவும்।',
+      telugu: 'డేటా లోడ్ చేయడంలో లోపం। దయచేసి మళ్లీ ప్రయత్నించండి।'
+    },
+    pullToRefresh: { 
+      en: 'Pull to refresh', 
+      hi: 'रिफ्रेश करने के लिए खींचें',
+      bangla: 'রিফ্রেশ করতে টানুন',
+      kannada: 'ರಿಫ್ರೆಶ್ ಮಾಡಲು ಎಳೆಯಿರಿ',
+      punjabi: 'ਰਿਫਰੈਸ਼ ਕਰਨ ਲਈ ਖਿੱਚੋ',
+      tamil: 'புதுப்பிக்க இழுக்கவும்',
+      telugu: 'రిఫ్రెష్ చేయడానికి లాగండి'
+    },
     bookingForm: {
-      title: { en: 'Book Special Puja', hi: 'विशेष पूजा बुक करें' },
-      name: { en: 'Your Name', hi: 'आपका नाम' },
-      phone: { en: 'Phone Number', hi: 'फोन नंबर' },
-      date: { en: 'Preferred Date', hi: 'पसंदीदा तारीख' },
-      timeSlot: { en: 'Time Slot', hi: 'समय स्लॉट' },
-      submit: { en: 'Book Puja', hi: 'पूजा बुक करें' },
-      cancel: { en: 'Cancel', hi: 'रद्द करें' }
+      title: { 
+        en: 'Book Special Puja', 
+        hi: 'विशेष पूजा बुक करें',
+        bangla: 'বিশেষ পুজো বুক করুন',
+        kannada: 'ವಿಶೇಷ ಪೂಜೆ ಬುಕ್ ಮಾಡಿ',
+        punjabi: 'ਖਾਸ ਪੂਜਾ ਬੁਕ ਕਰੋ',
+        tamil: 'சிறப்பு பூஜை புக்கிங்',
+        telugu: 'ప్రత్యేక పూజ బుక్ చేయండి'
+      },
+      name: { 
+        en: 'Your Name', 
+        hi: 'आपका नाम',
+        bangla: 'আপনার নাম',
+        kannada: 'ನಿಮ್ಮ ಹೆಸರು',
+        punjabi: 'ਤੁਹਾਡਾ ਨਾਮ',
+        tamil: 'உங்கள் பெயர்',
+        telugu: 'మీ పేరు'
+      },
+      phone: { 
+        en: 'Phone Number', 
+        hi: 'फोन नंबर',
+        bangla: 'ফোন নম্বর',
+        kannada: 'ಫೋನ್ ನಂಬರ್',
+        punjabi: 'ਫੋਨ ਨੰਬਰ',
+        tamil: 'தொலைபேசி எண்',
+        telugu: 'ఫోన్ నంబర్'
+      },
+      date: { 
+        en: 'Preferred Date', 
+        hi: 'पसंदीदा तारीख',
+        bangla: 'পছন্দের তারিখ',
+        kannada: 'ಅಭಿಮತ ದಿನಾಂಕ',
+        punjabi: 'ਪਸੰਦੀਦਾ ਤਾਰੀਖ',
+        tamil: 'விருப்பமான தேதி',
+        telugu: 'అభిమత తేదీ'
+      },
+      timeSlot: { 
+        en: 'Time Slot', 
+        hi: 'समय स्लॉट',
+        bangla: 'সময় স্লট',
+        kannada: 'ಸಮಯ ಸ್ಲಾಟ್',
+        punjabi: 'ਸਮਾਂ ਸਲਾਟ',
+        tamil: 'நேர இடைவெளி',
+        telugu: 'సమయ స్లాట్'
+      },
+      submit: { 
+        en: 'Book Puja', 
+        hi: 'पूजा बुक करें',
+        bangla: 'পুজো বুক করুন',
+        kannada: 'ಪೂಜೆ ಬುಕ್ ಮಾಡಿ',
+        punjabi: 'ਪੂਜਾ ਬੁਕ ਕਰੋ',
+        tamil: 'பூஜை புக்கிங்',
+        telugu: 'పూజ బుక్ చేయండి'
+      },
+      cancel: { 
+        en: 'Cancel', 
+        hi: 'रद्द करें',
+        bangla: 'বাতিল করুন',
+        kannada: 'ರದ್ದುಮಾಡಿ',
+        punjabi: 'ਰੱਦ ਕਰੋ',
+        tamil: 'ரத்துசெய்',
+        telugu: 'రద్దు చేయండి'
+      }
     },
     timeSlots: {
       slot1: { en: '8:00-10:00 AM', hi: 'सुबह 8:00-10:00' },
@@ -89,13 +196,69 @@ export default function SpecialPujaScreen() {
     },
     success: { en: 'Puja booking submitted successfully!', hi: 'पूजा बुकिंग सफलतापूर्वक जमा हो गई!' },
     error: { en: 'Error submitting booking. Please try again.', hi: 'बुकिंग जमा करने में त्रुटि। कृपया पुनः प्रयास करें।' },
-    heading: { en: 'Mark your milestones with Divine Blessings', hi: 'दिव्य आशीर्वाद के साथ अपने मील के पत्थर को चिह्नित करें' },
-    searchPlaceholder: { en: 'Search for pujas, details, or categories...', hi: 'पूजाओं, विवरण या श्रेणियों की खोज करें...' },
-    pujaFor: { en: 'Puja for', hi: 'पूजा के लिए' },
-    upcoming: { en: 'Upcoming', hi: 'आगामी' },
-    individual: { en: 'Individual', hi: 'व्यक्तिगत' },
-    couples: { en: 'Couples', hi: 'जोड़े' },
-    families: { en: 'Families', hi: 'परिवार' }
+    heading: { 
+      en: 'Mark your milestones with Divine Blessings', 
+      hi: 'दिव्य आशीर्वाद के साथ अपने मील के पत्थर को चिह्नित करें',
+      bangla: 'দিব্য আশীর্বাদ দিয়ে আপনার মাইলফলকগুলি চিহ্নিত করুন',
+      kannada: 'ದಿವ್ಯ ಆಶೀರ್ವಾದಗಳೊಂದಿಗೆ ನಿಮ್ಮ ಮೈಲಿಗಲ್ಲುಗಳನ್ನು ಗುರುತಿಸಿ',
+      punjabi: 'ਦਿਵਿਆ ਆਸ਼ੀਰਵਾਦਾਂ ਨਾਲ ਆਪਣੇ ਮੀਲ ਪੱਥਰ ਨੂੰ ਚਿੰਨ੍ਹਿਤ ਕਰੋ',
+      tamil: 'தெய்வீக ஆசீர்வாதங்களுடன் உங்கள் மைல்கற்களைக் குறிக்கவும்',
+      telugu: 'దివ్య ఆశీర్వాదాలతో మీ మైలురాళ్లను గుర్తించండి'
+    },
+    searchPlaceholder: { 
+      en: 'Search for pujas, details, or categories...', 
+      hi: 'पूजाओं, विवरण या श्रेणियों की खोज करें...',
+      bangla: 'পুজো, বিবরণ বা বিভাগ খুঁজুন...',
+      kannada: 'ಪೂಜೆಗಳು, ವಿವರಗಳು ಅಥವಾ ವರ್ಗಗಳನ್ನು ಹುಡುಕಿ...',
+      punjabi: 'ਪੂਜਾਵਾਂ, ਵੇਰਵੇ ਜਾਂ ਸ਼੍ਰੇਣੀਆਂ ਖੋਜੋ...',
+      tamil: 'பூஜைகள், விவரங்கள் அல்லது பிரிவுகளைத் தேடுங்கள்...',
+      telugu: 'పూజలు, వివరాలు లేదా వర్గాలను వెతకండి...'
+    },
+    pujaFor: { 
+      en: 'Puja for', 
+      hi: 'पूजा के लिए',
+      bangla: 'পুজো জন্য',
+      kannada: 'ಪೂಜೆಗಾಗಿ',
+      punjabi: 'ਪੂਜਾ ਲਈ',
+      tamil: 'பூஜைக்காக',
+      telugu: 'పూజ కోసం'
+    },
+    upcoming: { 
+      en: 'Upcoming', 
+      hi: 'आगामी',
+      bangla: 'আসন্ন',
+      kannada: 'ಮುಂಬರುವ',
+      punjabi: 'ਆਉਣ ਵਾਲੇ',
+      tamil: 'வரவிருக்கும்',
+      telugu: 'రాబోయే'
+    },
+    individual: { 
+      en: 'Individual', 
+      hi: 'व्यक्तिगत',
+      bangla: 'ব্যক্তিগত',
+      kannada: 'ವ್ಯಕ್ತಿಗತ',
+      punjabi: 'ਵਿਅਕਤੀਗਤ',
+      tamil: 'தனிப்பட்ட',
+      telugu: 'వ్యక్తిగత'
+    },
+    couples: { 
+      en: 'Couples', 
+      hi: 'जोड़े',
+      bangla: 'দম্পতি',
+      kannada: 'ಜೋಡಿಗಳು',
+      punjabi: 'ਜੋੜੇ',
+      tamil: 'தம்பதிகள்',
+      telugu: 'జంటలు'
+    },
+    families: { 
+      en: 'Families', 
+      hi: 'परिवार',
+      bangla: 'পরিবার',
+      kannada: 'ಕುಟುಂಬಗಳು',
+      punjabi: 'ਪਰਿਵਾਰ',
+      tamil: 'குடும்பங்கள்',
+      telugu: 'కుటుంబాలు'
+    }
   };
 
   useEffect(() => {
@@ -137,7 +300,10 @@ export default function SpecialPujaScreen() {
 
   const handleConfirmBooking = async () => {
     if (!name.trim() || phone.length < 7) {
-      Alert.alert('Please enter a valid name and phone number.');
+      Alert.alert(
+        getTranslation({en: 'Invalid Input', hi: 'अमान्य इनपुट', bangla: 'অবৈধ ইনপুট', kannada: 'ಅಮಾನ್ಯ ಇನ್ಪುಟ್', punjabi: 'ਗਲਤ ਇਨਪੁੱਟ', tamil: 'தவறான உள்ளீடு', telugu: 'చెల్లని ఇన్పుట్'}),
+        getTranslation({en: 'Please enter a valid name and phone number.', hi: 'कृपया एक वैध नाम और फोन नंबर दर्ज करें।', bangla: 'অনুগ্রহ করে একটি বৈধ নাম এবং ফোন নম্বর লিখুন।', kannada: 'ದಯವಿಟ್ಟು ಮಾನ್ಯ ಹೆಸರು ಮತ್ತು ಫೋನ್ ನಂಬರ್ ನಮೂದಿಸಿ।', punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਨਾਮ ਅਤੇ ਫੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ।', tamil: 'தயவுசெய்து சரியான பெயர் மற்றும் தொலைபேசி எண்ணை உள்ளிடவும்।', telugu: 'దయచేసి చెల్లుబాటు అయ్యే పేరు మరియు ఫోన్ నంబర్ నమోదు చేయండి।'})
+      );
       return;
     }
     
@@ -164,7 +330,7 @@ export default function SpecialPujaScreen() {
       setBookingModalVisible(false);
       setName('');
       setPhone('');
-      Alert.alert(isHindi ? 'सफलता' : 'Success', isHindi ? translations.success.hi : translations.success.en);
+      Alert.alert(getTranslation({en: 'Success', hi: 'सफलता', bangla: 'সফলতা', kannada: 'ಯಶಸ್ಸು', punjabi: 'ਸਫਲਤਾ', tamil: 'வெற்றி', telugu: 'విజయం'}), getTranslation(translations.success));
     } catch (err: any) {
       Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? `बुकिंग सेव करने में विफल: ${err.response?.data?.error || err.message}` : `Failed to save booking: ${err.response?.data?.error || err.message}`);
     }
@@ -211,7 +377,7 @@ export default function SpecialPujaScreen() {
   return (
     <View style={styles.container}>
       <HomeHeader 
-        searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en}
+        searchPlaceholder={getTranslation(translations.searchPlaceholder)}
         showDailyPujaButton={false}
         showSearchBar={false}
         showLanguageToggle={false}
@@ -334,14 +500,14 @@ export default function SpecialPujaScreen() {
           style={styles.content}
           contentContainerStyle={{ paddingBottom: 200 }}
         >
-        <Text style={styles.headline}>{isHindi ? translations.heading.hi : translations.heading.en}</Text>
+        <Text style={styles.headline}>{getTranslation(translations.heading)}</Text>
         {loading ? (
-          <Text style={styles.loadingText}>{isHindi ? translations.loading.hi : translations.loading.en}</Text>
+          <Text style={styles.loadingText}>{getTranslation(translations.loading)}</Text>
         ) : filteredPujas.length === 0 ? (
           <Text style={styles.noDataText}>
             {searchQuery.trim() || selectedFilter !== 'puja-for' 
-              ? (isHindi ? 'आपके वर्तमान फिल्टर से कोई विशेष पूजा मेल नहीं खाती। अपनी खोज या फिल्टर को समायोजित करने का प्रयास करें।' : 'No special pujas found matching your current filters. Try adjusting your search or filters.')
-              : (isHindi ? translations.noDataFound.hi : translations.noDataFound.en)
+              ? getTranslation({en: 'No special pujas found matching your current filters. Try adjusting your search or filters.', hi: 'आपके वर्तमान फिल्टर से कोई विशेष पूजा मेल नहीं खाती। अपनी खोज या फिल्टर को समायोजित करने का प्रयास करें।', bangla: 'আপনার বর্তমান ফিল্টারের সাথে মিলে যাওয়া কোনো বিশেষ পুজো পাওয়া যায়নি। আপনার অনুসন্ধান বা ফিল্টার সামঞ্জস্য করার চেষ্টা করুন।', kannada: 'ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಫಿಲ್ಟರ್ಗಳೊಂದಿಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವ ವಿಶೇಷ ಪೂಜೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ। ನಿಮ್ಮ ಹುಡುಕಾಟ ಅಥವಾ ಫಿಲ್ಟರ್ಗಳನ್ನು ಸರಿಹೊಂದಿಸಲು ಪ್ರಯತ್ನಿಸಿ।', punjabi: 'ਤੁਹਾਡੇ ਮੌਜੂਦਾ ਫਿਲਟਰਾਂ ਨਾਲ ਮੇਲ ਖਾਂਦੀਆਂ ਕੋਈ ਵੀ ਖਾਸ ਪੂਜਾਵਾਂ ਨਹੀਂ ਮਿਲੀਆਂ। ਆਪਣੀ ਖੋਜ ਜਾਂ ਫਿਲਟਰਾਂ ਨੂੰ ਅਨੁਕੂਲ ਬਣਾਉਣ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ।', tamil: 'உங்கள் தற்போதைய வடிகட்டிகளுடன் பொருந்தக்கூடிய சிறப்பு பூஜைகள் எதுவும் கிடைக்கவில்லை। உங்கள் தேடல் அல்லது வடிகட்டிகளை சரிசெய்ய முயற்சிக்கவும்।', telugu: 'మీ ప్రస్తుత ఫిల్టర్లతో సరిపోలే ప్రత్యేక పూజలు కనుగొనబడలేదు। మీ శోధన లేదా ఫిల్టర్లను సరిచేయడానికి ప్రయత్నించండి।'})
+              : getTranslation(translations.noDataFound)
             }
           </Text>
         ) : (
@@ -471,7 +637,7 @@ export default function SpecialPujaScreen() {
                 })()}
                 
                 <TouchableOpacity style={styles.bookPujaButton} onPress={handleBookPuja}>
-                  <Text style={styles.bookPujaButtonText}>{isHindi ? translations.bookingForm.submit.hi : translations.bookingForm.submit.en}</Text>
+                  <Text style={styles.bookPujaButtonText}>{getTranslation(translations.bookingForm.submit)}</Text>
                 </TouchableOpacity>
               </ScrollView>
             )}
@@ -508,7 +674,7 @@ export default function SpecialPujaScreen() {
               maxLength={10}
             />
             <TouchableOpacity onPress={() => setShowDate(true)} style={styles.datePickerBtn}>
-              <Text style={styles.datePickerText}>{isHindi ? translations.bookingForm.date.hi : translations.bookingForm.date.en}: {date.toLocaleDateString()}</Text>
+              <Text style={styles.datePickerText}>{getTranslation(translations.bookingForm.date)}: {date.toLocaleDateString()}</Text>
             </TouchableOpacity>
             {showDate && (
               <DateTimePicker
@@ -535,10 +701,10 @@ export default function SpecialPujaScreen() {
             </View>
             <View style={styles.buttonRow}>
               <TouchableOpacity style={[styles.modalConfirmBtn, {flex: 1, marginRight: 8}]} onPress={handleConfirmBooking}>
-                <Text style={styles.modalConfirmText}>{isHindi ? translations.bookingForm.submit.hi : translations.bookingForm.submit.en}</Text>
+                <Text style={styles.modalConfirmText}>{getTranslation(translations.bookingForm.submit)}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modalCancelBtn, {flex: 1, marginLeft: 8}]} onPress={() => setBookingModalVisible(false)}>
-                <Text style={styles.modalCancelText}>{isHindi ? translations.bookingForm.cancel.hi : translations.bookingForm.cancel.en}</Text>
+                <Text style={styles.modalCancelText}>{getTranslation(translations.bookingForm.cancel)}</Text>
               </TouchableOpacity>
             </View>
             

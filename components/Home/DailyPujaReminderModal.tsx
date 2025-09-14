@@ -16,15 +16,58 @@ export default function DailyPujaReminderModal({
   onClose, 
   firstName 
 }: DailyPujaReminderModalProps) {
-  const { isHindi } = useLanguage();
+  const { isHindi, currentLanguage } = useLanguage();
   const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(4);
 
   const translations = {
-    title: { en: 'ॐ Daily Puja ॐ', hi: 'ॐ दैनिक पूजा ॐ' },
-    message: { en: 'Do your daily puja and earn Divine Blessings', hi: 'अपनी दैनिक पूजा करें और दिव्य आशीर्वाद प्राप्त करें' },
-    autoCloses: { en: 'Auto-closes in', hi: 'स्वचालित रूप से बंद होगा' },
-    startDailyPuja: { en: 'Start Daily Puja', hi: 'दैनिक पूजा शुरू करें' }
+    title: { 
+      en: 'ॐ Daily Puja ॐ', 
+      hi: 'ॐ दैनिक पूजा ॐ',
+      bangla: 'ॐ দৈনিক পূজা ॐ',
+      kannada: 'ॐ ದೈನಂದಿನ ಪೂಜೆ ॐ',
+      punjabi: 'ॐ ਰੋਜ਼ਾਨਾ ਪੂਜਾ ॐ',
+      tamil: 'ॐ தினசரி பூஜை ॐ',
+      telugu: 'ॐ రోజుకు పూజ ॐ'
+    },
+    message: { 
+      en: 'Do your daily puja and earn Divine Blessings', 
+      hi: 'अपनी दैनिक पूजा करें और दिव्य आशीर्वाद प्राप्त करें',
+      bangla: 'আপনার দৈনিক পূজা করুন এবং দিব্য আশীর্বাদ অর্জন করুন',
+      kannada: 'ನಿಮ್ಮ ದೈನಂದಿನ ಪೂಜೆಯನ್ನು ಮಾಡಿ ಮತ್ತು ದಿವ್ಯ ಆಶೀರ್ವಾದಗಳನ್ನು ಗಳಿಸಿ',
+      punjabi: 'ਆਪਣੀ ਰੋਜ਼ਾਨਾ ਪੂਜਾ ਕਰੋ ਅਤੇ ਦਿਵਿਆ ਆਸ਼ੀਰਵਾਦ ਪ੍ਰਾਪਤ ਕਰੋ',
+      tamil: 'உங்கள் தினசரி பூஜையை செய்து தெய்வீக ஆசீர்வாதங்களைப் பெறுங்கள்',
+      telugu: 'మీ రోజుకు పూజ చేసి దివ్య ఆశీర్వాదాలను పొందండి'
+    },
+    autoCloses: { 
+      en: 'Auto-closes in', 
+      hi: 'स्वचालित रूप से बंद होगा',
+      bangla: 'স্বয়ংক্রিয়ভাবে বন্ধ হবে',
+      kannada: 'ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮುಚ್ಚುತ್ತದೆ',
+      punjabi: 'ਆਪਣੇ ਆਪ ਬੰਦ ਹੋ ਜਾਵੇਗਾ',
+      tamil: 'தானாக மூடப்படும்',
+      telugu: 'స్వయంచాలకంగా మూసివేయబడుతుంది'
+    },
+    startDailyPuja: { 
+      en: 'Start Daily Puja', 
+      hi: 'दैनिक पूजा शुरू करें',
+      bangla: 'দৈনিক পূজা শুরু করুন',
+      kannada: 'ದೈನಂದಿನ ಪೂಜೆ ಪ್ರಾರಂಭಿಸಿ',
+      punjabi: 'ਰੋਜ਼ਾਨਾ ਪੂਜਾ ਸ਼ੁਰੂ ਕਰੋ',
+      tamil: 'தினசரி பூஜையைத் தொடங்குங்கள்',
+      telugu: 'రోజుకు పూజను ప్రారంభించండి'
+    }
+  };
+
+  // Helper function to get translation
+  const getTranslation = (key: any) => {
+    const lang = currentLanguage === 'hindi' ? 'hi' : 
+                 currentLanguage === 'bangla' ? 'bangla' : 
+                 currentLanguage === 'kannada' ? 'kannada' :
+                 currentLanguage === 'punjabi' ? 'punjabi' :
+                 currentLanguage === 'tamil' ? 'tamil' :
+                 currentLanguage === 'telugu' ? 'telugu' : 'en';
+    return key[lang] || key.en;
   };
 
   // Auto-close timer
@@ -81,15 +124,15 @@ export default function DailyPujaReminderModal({
 
           {/* Content */}
           <View style={styles.content}>
-            <Text style={styles.title}>{isHindi ? translations.title.hi : translations.title.en}</Text>
+            <Text style={styles.title}>{getTranslation(translations.title)}</Text>
             
             <Text style={styles.message}>
-              {firstName ? `${firstName}, ` : ''}{isHindi ? translations.message.hi : translations.message.en}
+              {firstName ? `${firstName}, ` : ''}{getTranslation(translations.message)}
             </Text>
 
             {/* Timer indicator */}
             <View style={styles.timerContainer}>
-              <Text style={styles.timerText}>{isHindi ? translations.autoCloses.hi : translations.autoCloses.en} {timeLeft}s</Text>
+              <Text style={styles.timerText}>{getTranslation(translations.autoCloses)} {timeLeft}s</Text>
             </View>
 
             {/* Start button */}
@@ -100,7 +143,7 @@ export default function DailyPujaReminderModal({
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
               >
-                <Text style={styles.startButtonText}>{isHindi ? translations.startDailyPuja.hi : translations.startDailyPuja.en}</Text>
+                <Text style={styles.startButtonText}>{getTranslation(translations.startDailyPuja)}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>

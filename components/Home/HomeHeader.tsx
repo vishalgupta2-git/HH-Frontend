@@ -9,6 +9,7 @@ import SearchResults from './SearchResults';
 import SearchSuggestions from './SearchSuggestions';
 import { useSpiritualSearch } from '@/hooks/useSpiritualSearch';
 import { useLanguage } from '@/contexts/LanguageContext';
+import LanguageDropdown from '../ui/LanguageDropdown';
 
 const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
 const TOP_PADDING = (Platform.OS === 'android' ? statusBarHeight : 0) + 24;
@@ -47,7 +48,7 @@ export default function HomeHeader({
   showTopicDropdown?: boolean,
   showLanguageToggle?: boolean
 }) {
-  const { isHindi, toggleLanguage } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
   
   // Debug: Log when isHindi changes
   const [modalVisible, setModalVisible] = useState(false);
@@ -234,7 +235,13 @@ export default function HomeHeader({
           <Feather name="menu" size={32} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.centeredTitle}>
-          {isHindi ? 'द हिंदू हेरिटेज' : 'The Hindu Heritage'}
+          {currentLanguage === 'hindi' ? 'द हिंदू हेरिटेज' : 
+           currentLanguage === 'bangla' ? 'দ্য হিন্দু হেরিটেজ' : 
+           currentLanguage === 'kannada' ? 'ದ ಹಿಂದೂ ಹೆರಿಟೇಜ್' :
+           currentLanguage === 'punjabi' ? 'ਦ ਹਿੰਦੂ ਹੈਰੀਟੇਜ' :
+           currentLanguage === 'tamil' ? 'தி ஹிந்து ஹெரிடேஜ்' :
+           currentLanguage === 'telugu' ? 'ది హిందూ హెరిటేజ్' :
+           'The Hindu Heritage'}
         </Text>
         <View style={styles.mudraDisplay}>
           <TouchableOpacity 
@@ -289,26 +296,26 @@ export default function HomeHeader({
         <View style={styles.dailyPujaButtonContainer}>
           <TouchableOpacity style={styles.dailyPujaButton} onPress={() => router.push('/screens/testtemple')}>
             <Text style={styles.dailyPujaButtonText}>
-              {isHindi ? 'अपनी दैनिक पूजा शुरू करें' : 'Start Your Daily Puja'}
+              {currentLanguage === 'hindi' ? 'अपनी दैनिक पूजा शुरू करें' : 
+               currentLanguage === 'bangla' ? 'আপনার দৈনিক পূজা শুরু করুন' : 
+               currentLanguage === 'kannada' ? 'ನಿಮ್ಮ ದೈನಂದಿನ ಪೂಜೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ' :
+               currentLanguage === 'punjabi' ? 'ਆਪਣੀ ਰੋਜ਼ਾਨਾ ਪੂਜਾ ਸ਼ੁਰੂ ਕਰੋ' :
+               currentLanguage === 'tamil' ? 'உங்கள் தினசரி பூஜையைத் தொடங்குங்கள்' :
+               currentLanguage === 'telugu' ? 'మీ రోజువారీ పూజను ప్రారంభించండి' :
+               'Start Your Daily Puja'}
             </Text>
           </TouchableOpacity>
         </View>
       )}
       
-      {/* Language Toggle - positioned separately to avoid white box overlap */}
+      {/* Language Dropdown - positioned separately to avoid white box overlap */}
       {showLanguageToggle && (
         <View style={styles.languageToggleContainer}>
-          <TouchableOpacity 
-            style={styles.languageToggleBelow} 
-            onPress={() => {
-              toggleLanguage();
-            }}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.languageToggleTextBelow}>
-              {isHindi ? 'English' : 'हिंदी'}
-            </Text>
-          </TouchableOpacity>
+          <LanguageDropdown 
+            style={styles.languageDropdown}
+            textStyle={styles.languageDropdownText}
+            showIcon={true}
+          />
         </View>
       )}
       
@@ -396,27 +403,75 @@ export default function HomeHeader({
               <>
                 <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FF6A00', marginBottom: 12 }}>{userName}</Text>
                 <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/profile'); }}>
-                  <Text style={styles.modalText}>{isHindi ? 'प्रोफाइल' : 'Profile'}</Text>
+                  <Text style={styles.modalText}>
+                    {currentLanguage === 'hindi' ? 'प्रोफाइल' : 
+                     currentLanguage === 'bangla' ? 'প্রোফাইল' :
+                     currentLanguage === 'kannada' ? 'ಪ್ರೊಫೈಲ್' :
+                     currentLanguage === 'punjabi' ? 'ਪ੍ਰੋਫਾਈਲ' :
+                     currentLanguage === 'tamil' ? 'சுயவிவரம்' :
+                     currentLanguage === 'telugu' ? 'ప్రొఫైల్' :
+                     'Profile'}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/mudras'); }}>
-                  <Text style={styles.modalText}>{isHindi ? 'मुद्रा' : 'Mudras'}</Text>
+                  <Text style={styles.modalText}>
+                    {currentLanguage === 'hindi' ? 'मुद्रा' : 
+                     currentLanguage === 'bangla' ? 'মুদ্রা' :
+                     currentLanguage === 'kannada' ? 'ಮುದ್ರೆ' :
+                     currentLanguage === 'punjabi' ? 'ਮੁਦਰਾ' :
+                     currentLanguage === 'tamil' ? 'முத்திரை' :
+                     currentLanguage === 'telugu' ? 'ముద్ర' :
+                     'Mudras'}
+                  </Text>
                 </TouchableOpacity>
                 {userEmail === 'vishalgupta2@gmail.com' && (
                   <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/screens/my-bookings'); }}>
-                    <Text style={styles.modalText}>{isHindi ? 'मेरी बुकिंग' : 'My Bookings'}</Text>
+                    <Text style={styles.modalText}>
+                      {currentLanguage === 'hindi' ? 'मेरी बुकिंग' : 
+                       currentLanguage === 'bangla' ? 'আমার বুকিং' :
+                       currentLanguage === 'kannada' ? 'ನನ್ನ ಬುಕಿಂಗ್' :
+                       currentLanguage === 'punjabi' ? 'ਮੇਰੀ ਬੁਕਿੰਗ' :
+                       currentLanguage === 'tamil' ? 'எனது பதிவுகள்' :
+                       currentLanguage === 'telugu' ? 'నా బుకింగ్' :
+                       'My Bookings'}
+                    </Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity style={styles.modalOption} onPress={handleLogout}>
-                  <Text style={styles.modalText}>{isHindi ? 'लॉग आउट' : 'Logout'}</Text>
+                  <Text style={styles.modalText}>
+                    {currentLanguage === 'hindi' ? 'लॉग आउट' : 
+                     currentLanguage === 'bangla' ? 'লগ আউট' :
+                     currentLanguage === 'kannada' ? 'ಲಾಗ್ ಔಟ್' :
+                     currentLanguage === 'punjabi' ? 'ਲੌਗ ਆਉਟ' :
+                     currentLanguage === 'tamil' ? 'வெளியேறு' :
+                     currentLanguage === 'telugu' ? 'లాగ్ అవుట్' :
+                     'Logout'}
+                  </Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
                 <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/login'); }}>
-                  <Text style={styles.modalText}>{isHindi ? 'लॉग इन' : 'Login'}</Text>
+                  <Text style={styles.modalText}>
+                    {currentLanguage === 'hindi' ? 'लॉग इन' : 
+                     currentLanguage === 'bangla' ? 'লগ ইন' :
+                     currentLanguage === 'kannada' ? 'ಲಾಗ್ ಇನ್' :
+                     currentLanguage === 'punjabi' ? 'ਲੌਗ ਇਨ' :
+                     currentLanguage === 'tamil' ? 'உள்நுழை' :
+                     currentLanguage === 'telugu' ? 'లాగ్ ఇన్' :
+                     'Login'}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalOption} onPress={() => { setModalVisible(false); router.push('/auth/signup'); }}>
-                  <Text style={styles.modalText}>{isHindi ? 'साइन अप' : 'Sign-Up'}</Text>
+                  <Text style={styles.modalText}>
+                    {currentLanguage === 'hindi' ? 'साइन अप' : 
+                     currentLanguage === 'bangla' ? 'সাইন আপ' :
+                     currentLanguage === 'kannada' ? 'ಸೈನ್ ಅಪ್' :
+                     currentLanguage === 'punjabi' ? 'ਸਾਈਨ ਅਪ' :
+                     currentLanguage === 'tamil' ? 'பதிவு செய்' :
+                     currentLanguage === 'telugu' ? 'సైన్ అప్' :
+                     'Sign-Up'}
+                  </Text>
                 </TouchableOpacity>
               </>
             )}
@@ -581,6 +636,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  languageDropdown: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    minWidth: 100,
+  },
+  languageDropdownText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,

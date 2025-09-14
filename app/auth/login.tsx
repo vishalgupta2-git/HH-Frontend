@@ -10,7 +10,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -21,34 +21,208 @@ export default function LoginScreen() {
 
   // Translations
   const translations = {
-    title: { en: 'Welcome Back', hi: 'वापस स्वागत है' },
-    subtitle: { en: 'Sign in to your account', hi: 'अपने खाते में साइन इन करें' },
-    email: { en: 'Email', hi: 'ईमेल' },
-    emailPlaceholder: { en: 'Enter your email', hi: 'अपना ईमेल दर्ज करें' },
-    loginButton: { en: 'Sign In', hi: 'साइन इन करें' },
-    sendOtp: { en: 'Send OTP', hi: 'OTP भेजें' },
-    sendingOtp: { en: 'Sending OTP...', hi: 'OTP भेजा जा रहा है...' },
-    signupText: { en: 'Don\'t have an account? Sign Up', hi: 'खाता नहीं है? साइन अप करें' },
-    validation: {
-      emailRequired: { en: 'Email is required', hi: 'ईमेल आवश्यक है' },
-      emailInvalid: { en: 'Enter a valid email address', hi: 'एक वैध ईमेल पता दर्ज करें' },
-      otpFailed: { en: 'Failed to send OTP. Please try again.', hi: 'OTP भेजने में विफल। कृपया पुनः प्रयास करें।' },
-      tooManyAttempts: { en: 'Too many failed attempts. Please try again in 30 minutes.', hi: 'बहुत सारे असफल प्रयास। कृपया 30 मिनट बाद पुनः प्रयास करें।' },
-      userNotExists: { en: 'User doesn\'t exist', hi: 'उपयोगकर्ता मौजूद नहीं है' }
+    title: { 
+      en: 'Welcome Back', 
+      hi: 'वापस स्वागत है',
+      bangla: 'আবার স্বাগতম',
+      kannada: 'ಮತ್ತೆ ಸ್ವಾಗತ',
+      punjabi: 'ਵਾਪਸ ਸਵਾਗਤ',
+      tamil: 'மீண்டும் வரவேற்கிறோம்',
+      telugu: 'మళ్లీ స్వాగతం'
     },
-    terms: { en: 'Terms and Conditions', hi: 'नियम और शर्तें' },
-    privacy: { en: 'Privacy Policy', hi: 'गोपनीयता नीति' },
-    acceptTerms: { en: 'By signing in, you agree to our', hi: 'साइन इन करके, आप हमारी' },
-    and: { en: 'and', hi: 'और' }
+    subtitle: { 
+      en: 'Sign in to your account', 
+      hi: 'अपने खाते में साइन इन करें',
+      bangla: 'আপনার অ্যাকাউন্টে সাইন ইন করুন',
+      kannada: 'ನಿಮ್ಮ ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ',
+      punjabi: 'ਆਪਣੇ ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ',
+      tamil: 'உங்கள் கணக்கில் உள்நுழையுங்கள்',
+      telugu: 'మీ ఖాతాలోకి సైన్ ఇన్ చేయండి'
+    },
+    email: { 
+      en: 'Email', 
+      hi: 'ईमेल',
+      bangla: 'ইমেইল',
+      kannada: 'ಇಮೇಲ್',
+      punjabi: 'ਈਮੇਲ',
+      tamil: 'மின்னஞ்சல்',
+      telugu: 'ఇమెయిల్'
+    },
+    emailPlaceholder: { 
+      en: 'Enter your email', 
+      hi: 'अपना ईमेल दर्ज करें',
+      bangla: 'আপনার ইমেইল লিখুন',
+      kannada: 'ನಿಮ್ಮ ಇಮೇಲ್ ನಮೂದಿಸಿ',
+      punjabi: 'ਆਪਣਾ ਈਮੇਲ ਦਰਜ ਕਰੋ',
+      tamil: 'உங்கள் மின்னஞ்சலை உள்ளிடவும்',
+      telugu: 'మీ ఇమెయిల్‌ను నమోదు చేయండి'
+    },
+    loginButton: { 
+      en: 'Sign In', 
+      hi: 'साइन इन करें',
+      bangla: 'সাইন ইন করুন',
+      kannada: 'ಸೈನ್ ಇನ್ ಮಾಡಿ',
+      punjabi: 'ਸਾਈਨ ਇਨ ਕਰੋ',
+      tamil: 'உள்நுழையுங்கள்',
+      telugu: 'సైన్ ఇన్ చేయండి'
+    },
+    sendOtp: { 
+      en: 'Send OTP', 
+      hi: 'OTP भेजें',
+      bangla: 'OTP পাঠান',
+      kannada: 'OTP ಕಳುಹಿಸಿ',
+      punjabi: 'OTP ਭੇਜੋ',
+      tamil: 'OTP அனுப்பவும்',
+      telugu: 'OTP పంపండి'
+    },
+    sendingOtp: { 
+      en: 'Sending OTP...', 
+      hi: 'OTP भेजा जा रहा है...',
+      bangla: 'OTP পাঠানো হচ্ছে...',
+      kannada: 'OTP ಕಳುಹಿಸಲಾಗುತ್ತಿದೆ...',
+      punjabi: 'OTP ਭੇਜਿਆ ਜਾ ਰਿਹਾ ਹੈ...',
+      tamil: 'OTP அனுப்பப்படுகிறது...',
+      telugu: 'OTP పంపబడుతోంది...'
+    },
+    signupText: { 
+      en: 'Don\'t have an account? Sign Up', 
+      hi: 'खाता नहीं है? साइन अप करें',
+      bangla: 'অ্যাকাউন্ট নেই? সাইন আপ করুন',
+      kannada: 'ಖಾತೆ ಇಲ್ಲ? ಸೈನ್ ಅಪ್ ಮಾಡಿ',
+      punjabi: 'ਖਾਤਾ ਨਹੀਂ ਹੈ? ਸਾਈਨ ਅੱਪ ਕਰੋ',
+      tamil: 'கணக்கு இல்லையா? பதிவு செய்யுங்கள்',
+      telugu: 'ఖాతా లేదా? సైన్ అప్ చేయండి'
+    },
+    validation: {
+      emailRequired: { 
+        en: 'Email is required', 
+        hi: 'ईमेल आवश्यक है',
+        bangla: 'ইমেইল প্রয়োজন',
+        kannada: 'ಇಮೇಲ್ ಅಗತ್ಯವಿದೆ',
+        punjabi: 'ਈਮੇਲ ਲੋੜੀਂਦਾ ਹੈ',
+        tamil: 'மின்னஞ்சல் தேவை',
+        telugu: 'ఇమెయిల్ అవసరం'
+      },
+      emailInvalid: { 
+        en: 'Enter a valid email address', 
+        hi: 'एक वैध ईमेल पता दर्ज करें',
+        bangla: 'একটি বৈধ ইমেইল ঠিকানা লিখুন',
+        kannada: 'ಮಾನ್ಯವಾದ ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ',
+        punjabi: 'ਇੱਕ ਵੈਧ ਈਮੇਲ ਪਤਾ ਦਰਜ ਕਰੋ',
+        tamil: 'சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்',
+        telugu: 'చెల్లుబాటు అయ్యే ఇమెయిల్ చిరునామాను నమోదు చేయండి'
+      },
+      otpFailed: { 
+        en: 'Failed to send OTP. Please try again.', 
+        hi: 'OTP भेजने में विफल। कृपया पुनः प्रयास करें।',
+        bangla: 'OTP পাঠাতে ব্যর্থ। অনুগ্রহ করে আবার চেষ্টা করুন।',
+        kannada: 'OTP ಕಳುಹಿಸಲು ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+        punjabi: 'OTP ਭੇਜਣ ਵਿੱਚ ਅਸਫਲ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+        tamil: 'OTP அனுப்ப முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+        telugu: 'OTP పంపడంలో విఫలమయ్యింది. దయచేసి మళ్లీ ప్రయత్నించండి.'
+      },
+      tooManyAttempts: { 
+        en: 'Too many failed attempts. Please try again in 30 minutes.', 
+        hi: 'बहुत सारे असफल प्रयास। कृपया 30 मिनट बाद पुनः प्रयास करें।',
+        bangla: 'অনেক ব্যর্থ প্রচেষ্টা। অনুগ্রহ করে 30 মিনিট পর আবার চেষ্টা করুন।',
+        kannada: 'ಹಲವಾರು ವಿಫಲ ಪ್ರಯತ್ನಗಳು. ದಯವಿಟ್ಟು 30 ನಿಮಿಷಗಳ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+        punjabi: 'ਬਹੁਤ ਸਾਰੇ ਅਸਫਲ ਯਤਨ। ਕਿਰਪਾ ਕਰਕੇ 30 ਮਿੰਟ ਬਾਅਦ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+        tamil: 'பல தோல்வியுற்ற முயற்சிகள். 30 நிமிடங்களுக்குப் பிறகு மீண்டும் முயற்சிக்கவும்.',
+        telugu: 'చాలా విఫల ప్రయత్నాలు. 30 నిమిషాల తర్వాత మళ్లీ ప్రయత్నించండి.'
+      },
+      userNotExists: { 
+        en: 'User doesn\'t exist', 
+        hi: 'उपयोगकर्ता मौजूद नहीं है',
+        bangla: 'ব্যবহারকারী বিদ্যমান নেই',
+        kannada: 'ಬಳಕೆದಾರ ಅಸ್ತಿತ್ವದಲ್ಲಿಲ್ಲ',
+        punjabi: 'ਵਰਤੋਂਕਾਰ ਮੌਜੂਦ ਨਹੀਂ ਹੈ',
+        tamil: 'பயனர் இல்லை',
+        telugu: 'వినియోగదారు లేడు'
+      }
+    },
+    terms: { 
+      en: 'Terms and Conditions', 
+      hi: 'नियम और शर्तें',
+      bangla: 'শর্তাবলী',
+      kannada: 'ನಿಯಮಗಳು ಮತ್ತು ಷರತ್ತುಗಳು',
+      punjabi: 'ਨਿਯਮ ਅਤੇ ਸ਼ਰਤਾਂ',
+      tamil: 'விதிமுறைகள் மற்றும் நிபந்தனைகள்',
+      telugu: 'నిబంధనలు మరియు షరతులు'
+    },
+    privacy: { 
+      en: 'Privacy Policy', 
+      hi: 'गोपनीयता नीति',
+      bangla: 'গোপনীয়তা নীতি',
+      kannada: 'ಗೌಪ್ಯತೆ ನೀತಿ',
+      punjabi: 'ਗੁਪਤਤਾ ਨੀਤੀ',
+      tamil: 'தனியுரிமைக் கொள்கை',
+      telugu: 'గోప్యతా విధానం'
+    },
+    acceptTerms: { 
+      en: 'By signing in, you agree to our', 
+      hi: 'साइन इन करके, आप हमारी',
+      bangla: 'সাইন ইন করে, আপনি আমাদের',
+      kannada: 'ಸೈನ್ ಇನ್ ಮಾಡುವ ಮೂಲಕ, ನೀವು ನಮ್ಮ',
+      punjabi: 'ਸਾਈਨ ਇਨ ਕਰਕੇ, ਤੁਸੀਂ ਸਾਡੇ',
+      tamil: 'உள்நுழைவதன் மூலம், நீங்கள் எங்கள்',
+      telugu: 'సైన్ ఇన్ చేయడం ద్వారా, మీరు మా'
+    },
+    and: { 
+      en: 'and', 
+      hi: 'और',
+      bangla: 'এবং',
+      kannada: 'ಮತ್ತು',
+      punjabi: 'ਅਤੇ',
+      tamil: 'மற்றும்',
+      telugu: 'మరియు'
+    },
+    signUp: { 
+      en: 'Sign-Up', 
+      hi: 'साइन अप',
+      bangla: 'সাইন আপ',
+      kannada: 'ಸೈನ್ ಅಪ್',
+      punjabi: 'ਸਾਈਨ ਅੱਪ',
+      tamil: 'பதிவு செய்',
+      telugu: 'సైన్ అప్'
+    },
+    pleaseSignUp: { 
+      en: 'Please sign up to continue', 
+      hi: 'कृपया साइन अप करें',
+      bangla: 'অনুগ্রহ করে সাইন আপ করুন',
+      kannada: 'ದಯವಿಟ್ಟು ಸೈನ್ ಅಪ್ ಮಾಡಿ',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਸਾਈਨ ਅੱਪ ਕਰੋ',
+      tamil: 'தயவுசெய்து பதிவு செய்யுங்கள்',
+      telugu: 'దయచేసి సైన్ అప్ చేయండి'
+    },
+    ofTheHinduHeritage: { 
+      en: 'of The Hindu Heritage', 
+      hi: 'हिंदू हेरिटेज का',
+      bangla: 'হিন্দু হেরিটেজের',
+      kannada: 'ಹಿಂದೂ ಹೆರಿಟೇಜ್ ನ',
+      punjabi: 'ਹਿੰਦੂ ਹੈਰੀਟੇਜ ਦਾ',
+      tamil: 'ஹிந்து ஹெரிடேஜின்',
+      telugu: 'హిందూ హెరిటేజ్ యొక్క'
+    }
   };
 
   const validateEmail = (email: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@(([^<>()[\]\\.,;:\s@"]+\.)+[^<>()[\]\\.,;:\s@"]{2,})$/.test(email);
 
+  // Helper function to get translation
+  const getTranslation = (key: any) => {
+    const lang = currentLanguage === 'hindi' ? 'hi' : 
+                 currentLanguage === 'bangla' ? 'bangla' : 
+                 currentLanguage === 'kannada' ? 'kannada' :
+                 currentLanguage === 'punjabi' ? 'punjabi' :
+                 currentLanguage === 'tamil' ? 'tamil' :
+                 currentLanguage === 'telugu' ? 'telugu' : 'en';
+    return key[lang] || key.en;
+  };
+
   const handleEmailChange = (text: string) => {
     setEmail(text);
     if (text.length > 0 && !validateEmail(text)) {
-      setEmailError(isHindi ? translations.validation.emailInvalid.hi : translations.validation.emailInvalid.en);
+      setEmailError(getTranslation(translations.validation.emailInvalid));
     } else {
       setEmailError('');
     }
@@ -57,7 +231,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     let valid = true;
     if (!validateEmail(email)) {
-      setEmailError(isHindi ? translations.validation.emailInvalid.hi : translations.validation.emailInvalid.en);
+      setEmailError(getTranslation(translations.validation.emailInvalid));
       valid = false;
     }
     if (!valid) return;
@@ -101,9 +275,9 @@ export default function LoginScreen() {
         }, 2000);
       } else if (err.response?.status === 429) {
         // Lockout error
-        setEmailError(err.response?.data?.error || (isHindi ? translations.validation.tooManyAttempts.hi : translations.validation.tooManyAttempts.en));
+        setEmailError(err.response?.data?.error || getTranslation(translations.validation.tooManyAttempts));
       } else {
-        setEmailError(isHindi ? translations.validation.otpFailed.hi : translations.validation.otpFailed.en);
+        setEmailError(getTranslation(translations.validation.otpFailed));
       }
     } finally {
       setIsLoading(false);
@@ -131,12 +305,12 @@ export default function LoginScreen() {
             <Ionicons name="arrow-undo" size={24} color="#666" />
           </TouchableOpacity>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>{isHindi ? translations.subtitle.hi : translations.subtitle.en}</Text>
+            <Text style={styles.title}>{getTranslation(translations.title)}</Text>
           </View>
         </View>
         <TextInput
           style={styles.input}
-          placeholder={isHindi ? translations.emailPlaceholder.hi : translations.emailPlaceholder.en}
+          placeholder={getTranslation(translations.emailPlaceholder)}
           placeholderTextColor="#888"
           value={email}
           onChangeText={handleEmailChange}
@@ -150,28 +324,28 @@ export default function LoginScreen() {
           disabled={isLoading}
         >
           <Text style={[styles.buttonText, isLoading && styles.buttonTextDisabled]}>
-            {isLoading ? (isHindi ? translations.sendingOtp.hi : translations.sendingOtp.en) : (isHindi ? translations.sendOtp.hi : translations.sendOtp.en)}
+            {isLoading ? getTranslation(translations.sendingOtp) : getTranslation(translations.sendOtp)}
           </Text>
         </TouchableOpacity>
         
         {/* Terms and Privacy Policy Text */}
         <View style={styles.termsContainer}>
           <Text style={styles.termsText}>
-            {isHindi ? translations.acceptTerms.hi : translations.acceptTerms.en}{' '}
+            {getTranslation(translations.acceptTerms)}{' '}
             <Text style={styles.termsLink} onPress={() => setShowTermsModal(true)}>
-              {isHindi ? translations.terms.hi : translations.terms.en}
+              {getTranslation(translations.terms)}
             </Text>
-            {' '}{isHindi ? translations.and.hi : translations.and.en}{' '}
+            {' '}{getTranslation(translations.and)}{' '}
             <Text style={styles.termsLink} onPress={() => setShowPrivacyModal(true)}>
-              {isHindi ? translations.privacy.hi : translations.privacy.en}
+              {getTranslation(translations.privacy)}
             </Text>
-            {' '}of The Hindu Heritage
+            {' '}{getTranslation(translations.ofTheHinduHeritage)}
           </Text>
         </View>
         
         <Text style={styles.loginText}>
-          {isHindi ? translations.signupText.hi : translations.signupText.en}
-          <Text style={styles.loginLink} onPress={() => router.replace('/auth/signup')}>Sign-Up</Text>
+          {getTranslation(translations.signupText)}
+          <Text style={styles.loginLink} onPress={() => router.replace('/auth/signup')}>{getTranslation(translations.signUp)}</Text>
         </Text>
       </View>
       
@@ -185,7 +359,7 @@ export default function LoginScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Terms & Conditions</Text>
+              <Text style={styles.modalTitle}>{getTranslation(translations.terms)}</Text>
               <TouchableOpacity 
                 style={styles.modalCloseButton}
                 onPress={() => setShowTermsModal(false)}
@@ -652,7 +826,7 @@ export default function LoginScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Privacy Policy</Text>
+              <Text style={styles.modalTitle}>{getTranslation(translations.privacy)}</Text>
               <TouchableOpacity 
                 style={styles.modalCloseButton}
                 onPress={() => setShowPrivacyModal(false)}
@@ -1118,10 +1292,10 @@ export default function LoginScreen() {
               <Text style={styles.userNotExistsIcon}>⚠️</Text>
             </View>
             <Text style={styles.userNotExistsTitle}>
-              {isHindi ? translations.validation.userNotExists.hi : translations.validation.userNotExists.en}
+              {getTranslation(translations.validation.userNotExists)}
             </Text>
             <Text style={styles.userNotExistsMessage}>
-              {isHindi ? 'कृपया साइन अप करें' : 'Please sign up to continue'}
+              {getTranslation(translations.pleaseSignUp)}
             </Text>
           </View>
         </View>

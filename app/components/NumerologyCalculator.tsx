@@ -37,37 +37,272 @@ interface CompatibilityResult {
 }
 
 const NumerologyCalculator: React.FC = () => {
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
+  
+  // Helper function to get translations
+  const getTranslation = (translations: any) => {
+    return currentLanguage === 'hindi' ? translations.hi :
+           currentLanguage === 'bangla' ? translations.bangla :
+           currentLanguage === 'kannada' ? translations.kannada :
+           currentLanguage === 'punjabi' ? translations.punjabi :
+           currentLanguage === 'tamil' ? translations.tamil :
+           currentLanguage === 'telugu' ? translations.telugu :
+           translations.en;
+  };
   
   const translations = {
-    title: { en: 'Numerology Calculator', hi: 'अंक ज्योतिष कैलकुलेटर' },
-    fullName: { en: 'Full Name', hi: 'पूरा नाम' },
-    enterFullName: { en: 'Enter your full name', hi: 'अपना पूरा नाम दर्ज करें' },
-    birthDate: { en: 'Birth Date', hi: 'जन्म तिथि' },
-    selectBirthDate: { en: 'Select Birth Date', hi: 'जन्म तिथि चुनें' },
-    calculate: { en: 'Calculate', hi: 'गणना करें' },
-    calculating: { en: 'Calculating...', hi: 'गणना की जा रही है...' },
-    lifePathNumber: { en: 'Life Path Number', hi: 'जीवन पथ संख्या' },
-    destinyNumber: { en: 'Destiny Number', hi: 'भाग्य संख्या' },
-    soulNumber: { en: 'Soul Number', hi: 'आत्मा संख्या' },
-    personalityNumber: { en: 'Personality Number', hi: 'व्यक्तित्व संख्या' },
-    birthDayNumber: { en: 'Birth Day Number', hi: 'जन्म दिन संख्या' },
-    compatibility: { en: 'Compatibility', hi: 'अनुकूलता' },
-    partnerName: { en: 'Partner Name', hi: 'साथी का नाम' },
-    enterPartnerName: { en: 'Enter partner\'s full name', hi: 'साथी का पूरा नाम दर्ज करें' },
-    partnerBirthDate: { en: 'Partner Birth Date', hi: 'साथी की जन्म तिथि' },
-    selectPartnerBirthDate: { en: 'Select Partner Birth Date', hi: 'साथी की जन्म तिथि चुनें' },
-    calculateCompatibility: { en: 'Calculate Compatibility', hi: 'अनुकूलता की गणना करें' },
-    dailyNumber: { en: 'Daily Number', hi: 'दैनिक संख्या' },
-    todayDate: { en: 'Today\'s Date', hi: 'आज की तारीख' },
-    calculateDaily: { en: 'Calculate Daily Number', hi: 'दैनिक संख्या की गणना करें' },
-    aboutNumerology: { en: 'About Numerology', hi: 'अंक ज्योतिष के बारे में' },
-    aboutNumerologyText: { en: 'Numerology is the mystical study of numbers and their influence on human life. Discover your life path, destiny, and personality through the power of numbers.', hi: 'अंक ज्योतिष संख्याओं का रहस्यमय अध्ययन है और मानव जीवन पर उनके प्रभाव का। संख्याओं की शक्ति के माध्यम से अपने जीवन पथ, भाग्य और व्यक्तित्व की खोज करें।' },
-    close: { en: 'Close', hi: 'बंद करें' },
-    nameRequired: { en: 'Name is required', hi: 'नाम आवश्यक है' },
-    birthDateRequired: { en: 'Birth date is required', hi: 'जन्म तिथि आवश्यक है' },
-    partnerNameRequired: { en: 'Partner name is required', hi: 'साथी का नाम आवश्यक है' },
-    partnerBirthDateRequired: { en: 'Partner birth date is required', hi: 'साथी की जन्म तिथि आवश्यक है' }
+    title: { 
+      en: 'Numerology Calculator', 
+      hi: 'अंक ज्योतिष कैलकुलेटर',
+      bangla: 'সংখ্যা জ্যোতিষ ক্যালকুলেটর',
+      kannada: 'ಸಂಖ್ಯಾಶಾಸ್ತ್ರ ಕ್ಯಾಲ್ಕುಲೇಟರ್',
+      punjabi: 'ਨਿਊਮਰੋਲੋਜੀ ਕੈਲਕੁਲੇਟਰ',
+      tamil: 'எண் கணித கால்குலேட்டர்',
+      telugu: 'సంఖ్యాశాస్త్ర కాలిక్యులేటర్'
+    },
+    fullName: { 
+      en: 'Full Name', 
+      hi: 'पूरा नाम',
+      bangla: 'পুরো নাম',
+      kannada: 'ಪೂರ್ಣ ಹೆಸರು',
+      punjabi: 'ਪੂਰਾ ਨਾਮ',
+      tamil: 'முழு பெயர்',
+      telugu: 'పూర్తి పేరు'
+    },
+    enterFullName: { 
+      en: 'Enter your full name', 
+      hi: 'अपना पूरा नाम दर्ज करें',
+      bangla: 'আপনার পুরো নাম লিখুন',
+      kannada: 'ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
+      punjabi: 'ਆਪਣਾ ਪੂਰਾ ਨਾਮ ਦਰਜ ਕਰੋ',
+      tamil: 'உங்கள் முழு பெயரை உள்ளிடவும்',
+      telugu: 'మీ పూర్తి పేరును నమోదు చేయండి'
+    },
+    birthDate: { 
+      en: 'Birth Date', 
+      hi: 'जन्म तिथि',
+      bangla: 'জন্ম তারিখ',
+      kannada: 'ಜನ್ಮ ದಿನಾಂಕ',
+      punjabi: 'ਜਨਮ ਮਿਤੀ',
+      tamil: 'பிறந்த தேதி',
+      telugu: 'పుట్టిన తేదీ'
+    },
+    selectBirthDate: { 
+      en: 'Select Birth Date', 
+      hi: 'जन्म तिथि चुनें',
+      bangla: 'জন্ম তারিখ নির্বাচন করুন',
+      kannada: 'ಜನ್ಮ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+      punjabi: 'ਜਨਮ ਮਿਤੀ ਚੁਣੋ',
+      tamil: 'பிறந்த தேதியைத் தேர்ந்தெடுக்கவும்',
+      telugu: 'పుట్టిన తేదీని ఎంచుకోండి'
+    },
+    calculate: { 
+      en: 'Calculate', 
+      hi: 'गणना करें',
+      bangla: 'গণনা করুন',
+      kannada: 'ಲೆಕ್ಕಾಚಾರ ಮಾಡಿ',
+      punjabi: 'ਗਣਨਾ ਕਰੋ',
+      tamil: 'கணக்கிடு',
+      telugu: 'లెక్కించండి'
+    },
+    calculating: { 
+      en: 'Calculating...', 
+      hi: 'गणना की जा रही है...',
+      bangla: 'গণনা করা হচ্ছে...',
+      kannada: 'ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ...',
+      punjabi: 'ਗਣਨਾ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ...',
+      tamil: 'கணக்கிடப்படுகிறது...',
+      telugu: 'లెక్కించబడుతోంది...'
+    },
+    lifePathNumber: { 
+      en: 'Life Path Number', 
+      hi: 'जीवन पथ संख्या',
+      bangla: 'জীবন পথ সংখ্যা',
+      kannada: 'ಜೀವನ ಮಾರ್ಗ ಸಂಖ್ಯೆ',
+      punjabi: 'ਜੀਵਨ ਪੱਥ ਨੰਬਰ',
+      tamil: 'வாழ்க்கை பாதை எண்',
+      telugu: 'జీవిత మార్గ సంఖ్య'
+    },
+    destinyNumber: { 
+      en: 'Destiny Number', 
+      hi: 'भाग्य संख्या',
+      bangla: 'ভাগ্য সংখ্যা',
+      kannada: 'ಭಾಗ್ಯ ಸಂಖ್ಯೆ',
+      punjabi: 'ਭਾਗ ਨੰਬਰ',
+      tamil: 'விதி எண்',
+      telugu: 'భాగ్య సంఖ్య'
+    },
+    soulNumber: { 
+      en: 'Soul Number', 
+      hi: 'आत्मा संख्या',
+      bangla: 'আত্মা সংখ্যা',
+      kannada: 'ಆತ್ಮ ಸಂಖ್ಯೆ',
+      punjabi: 'ਆਤਮਾ ਨੰਬਰ',
+      tamil: 'ஆன்மா எண்',
+      telugu: 'ఆత్మ సంఖ్య'
+    },
+    personalityNumber: { 
+      en: 'Personality Number', 
+      hi: 'व्यक्तित्व संख्या',
+      bangla: 'ব্যক্তিত্ব সংখ্যা',
+      kannada: 'ವ್ಯಕ್ತಿತ್ವ ಸಂಖ್ಯೆ',
+      punjabi: 'ਵਿਅਕਤਿਤਵ ਨੰਬਰ',
+      tamil: 'ஆளுமை எண்',
+      telugu: 'వ్యక్తిత్వ సంఖ్య'
+    },
+    birthDayNumber: { 
+      en: 'Birth Day Number', 
+      hi: 'जन्म दिन संख्या',
+      bangla: 'জন্ম দিন সংখ্যা',
+      kannada: 'ಜನ್ಮ ದಿನ ಸಂಖ್ಯೆ',
+      punjabi: 'ਜਨਮ ਦਿਨ ਨੰਬਰ',
+      tamil: 'பிறந்த நாள் எண்',
+      telugu: 'పుట్టిన రోజు సంఖ్య'
+    },
+    compatibility: { 
+      en: 'Compatibility', 
+      hi: 'अनुकूलता',
+      bangla: 'সামঞ্জস্য',
+      kannada: 'ಹೊಂದಾಣಿಕೆ',
+      punjabi: 'ਅਨੁਕੂਲਤਾ',
+      tamil: 'பொருந்தக்கூடிய தன்மை',
+      telugu: 'అనుకూలత'
+    },
+    partnerName: { 
+      en: 'Partner Name', 
+      hi: 'साथी का नाम',
+      bangla: 'সঙ্গীর নাম',
+      kannada: 'ಭಾಗೀದಾರರ ಹೆಸರು',
+      punjabi: 'ਭਾਗੀਦਾਰ ਦਾ ਨਾਮ',
+      tamil: 'பங்காளி பெயர்',
+      telugu: 'భాగస్వామి పేరు'
+    },
+    enterPartnerName: { 
+      en: 'Enter partner\'s full name', 
+      hi: 'साथी का पूरा नाम दर्ज करें',
+      bangla: 'সঙ্গীর পুরো নাম লিখুন',
+      kannada: 'ಭಾಗೀದಾರರ ಪೂರ್ಣ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
+      punjabi: 'ਭਾਗੀਦਾਰ ਦਾ ਪੂਰਾ ਨਾਮ ਦਰਜ ਕਰੋ',
+      tamil: 'பங்காளியின் முழு பெயரை உள்ளிடவும்',
+      telugu: 'భాగస్వామి పూర్తి పేరును నమోదు చేయండి'
+    },
+    partnerBirthDate: { 
+      en: 'Partner Birth Date', 
+      hi: 'साथी की जन्म तिथि',
+      bangla: 'সঙ্গীর জন্ম তারিখ',
+      kannada: 'ಭಾಗೀದಾರರ ಜನ್ಮ ದಿನಾಂಕ',
+      punjabi: 'ਭਾਗੀਦਾਰ ਦੀ ਜਨਮ ਮਿਤੀ',
+      tamil: 'பங்காளியின் பிறந்த தேதி',
+      telugu: 'భాగస్వామి పుట్టిన తేదీ'
+    },
+    selectPartnerBirthDate: { 
+      en: 'Select Partner Birth Date', 
+      hi: 'साथी की जन्म तिथि चुनें',
+      bangla: 'সঙ্গীর জন্ম তারিখ নির্বাচন করুন',
+      kannada: 'ಭಾಗೀದಾರರ ಜನ್ಮ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+      punjabi: 'ਭਾਗੀਦਾਰ ਦੀ ਜਨਮ ਮਿਤੀ ਚੁਣੋ',
+      tamil: 'பங்காளியின் பிறந்த தேதியைத் தேர்ந்தெடுக்கவும்',
+      telugu: 'భాగస్వామి పుట్టిన తేదీని ఎంచుకోండి'
+    },
+    calculateCompatibility: { 
+      en: 'Calculate Compatibility', 
+      hi: 'अनुकूलता की गणना करें',
+      bangla: 'সামঞ্জস্য গণনা করুন',
+      kannada: 'ಹೊಂದಾಣಿಕೆಯನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಿ',
+      punjabi: 'ਅਨੁਕੂਲਤਾ ਦੀ ਗਣਨਾ ਕਰੋ',
+      tamil: 'பொருந்தக்கூடிய தன்மையைக் கணக்கிடு',
+      telugu: 'అనుకూలతను లెక్కించండి'
+    },
+    dailyNumber: { 
+      en: 'Daily Number', 
+      hi: 'दैनिक संख्या',
+      bangla: 'দৈনিক সংখ্যা',
+      kannada: 'ದೈನಂದಿನ ಸಂಖ್ಯೆ',
+      punjabi: 'ਰੋਜ਼ਾਨਾ ਨੰਬਰ',
+      tamil: 'தினசரி எண்',
+      telugu: 'రోజువారీ సంఖ్య'
+    },
+    todayDate: { 
+      en: 'Today\'s Date', 
+      hi: 'आज की तारीख',
+      bangla: 'আজকের তারিখ',
+      kannada: 'ಇಂದಿನ ದಿನಾಂಕ',
+      punjabi: 'ਅੱਜ ਦੀ ਮਿਤੀ',
+      tamil: 'இன்றைய தேதி',
+      telugu: 'ఈ రోజు తేదీ'
+    },
+    calculateDaily: { 
+      en: 'Calculate Daily Number', 
+      hi: 'दैनिक संख्या की गणना करें',
+      bangla: 'দৈনিক সংখ্যা গণনা করুন',
+      kannada: 'ದೈನಂದಿನ ಸಂಖ್ಯೆಯನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಿ',
+      punjabi: 'ਰੋਜ਼ਾਨਾ ਨੰਬਰ ਦੀ ਗਣਨਾ ਕਰੋ',
+      tamil: 'தினசரி எண்ணைக் கணக்கிடு',
+      telugu: 'రోజువారీ సంఖ్యను లెక్కించండి'
+    },
+    aboutNumerology: { 
+      en: 'About Numerology', 
+      hi: 'अंक ज्योतिष के बारे में',
+      bangla: 'সংখ্যা জ্যোতিষ সম্পর্কে',
+      kannada: 'ಸಂಖ್ಯಾಶಾಸ್ತ್ರದ ಬಗ್ಗೆ',
+      punjabi: 'ਨਿਊਮਰੋਲੋਜੀ ਬਾਰੇ',
+      tamil: 'எண் கணிதம் பற்றி',
+      telugu: 'సంఖ్యాశాస్త్రం గురించి'
+    },
+    aboutNumerologyText: { 
+      en: 'Numerology is the mystical study of numbers and their influence on human life. Discover your life path, destiny, and personality through the power of numbers.', 
+      hi: 'अंक ज्योतिष संख्याओं का रहस्यमय अध्ययन है और मानव जीवन पर उनके प्रभाव का। संख्याओं की शक्ति के माध्यम से अपने जीवन पथ, भाग्य और व्यक्तित्व की खोज करें।',
+      bangla: 'সংখ্যা জ্যোতিষ হল সংখ্যার রহস্যময় অধ্যয়ন এবং মানব জীবনে তাদের প্রভাব। সংখ্যার শক্তির মাধ্যমে আপনার জীবন পথ, ভাগ্য এবং ব্যক্তিত্ব আবিষ্কার করুন।',
+      kannada: 'ಸಂಖ್ಯಾಶಾಸ್ತ್ರವು ಸಂಖ್ಯೆಗಳ ರಹಸ್ಯ ಅಧ್ಯಯನ ಮತ್ತು ಮಾನವ ಜೀವನದ ಮೇಲೆ ಅವುಗಳ ಪ್ರಭಾವ. ಸಂಖ್ಯೆಗಳ ಶಕ್ತಿಯ ಮೂಲಕ ನಿಮ್ಮ ಜೀವನ ಮಾರ್ಗ, ಭಾಗ್ಯ ಮತ್ತು ವ್ಯಕ್ತಿತ್ವವನ್ನು ಅನ್ವೇಷಿಸಿ.',
+      punjabi: 'ਨਿਊਮਰੋਲੋਜੀ ਸੰਖਿਆਵਾਂ ਦਾ ਰਹੱਸਮਈ ਅਧਿਐਨ ਹੈ ਅਤੇ ਮਨੁੱਖੀ ਜੀਵਨ \'ਤੇ ਉਹਨਾਂ ਦੇ ਪ੍ਰਭਾਵ ਦਾ। ਸੰਖਿਆਵਾਂ ਦੀ ਸ਼ਕਤੀ ਰਾਹੀਂ ਆਪਣੇ ਜੀਵਨ ਪੱਥ, ਭਾਗ ਅਤੇ ਵਿਅਕਤਿਤਵ ਦੀ ਖੋਜ ਕਰੋ।',
+      tamil: 'எண் கணிதம் என்பது எண்களின் மர்ம ஆய்வு மற்றும் மனித வாழ்க்கையில் அவற்றின் தாக்கம். எண்களின் சக்தியின் மூலம் உங்கள் வாழ்க்கை பாதை, விதி மற்றும் ஆளுமையைக் கண்டறியவும்.',
+      telugu: 'సంఖ్యాశాస్త్రం అనేది సంఖ్యల మరియు మానవ జీవితంపై వాటి ప్రభావం యొక్క మర్మ అధ్యయనం. సంఖ్యల శక్తి ద్వారా మీ జీవిత మార్గం, భాగ్యం మరియు వ్యక్తిత్వాన్ని కనుగొనండి.'
+    },
+    close: { 
+      en: 'Close', 
+      hi: 'बंद करें',
+      bangla: 'বন্ধ করুন',
+      kannada: 'ಮುಚ್ಚಿ',
+      punjabi: 'ਬੰਦ ਕਰੋ',
+      tamil: 'மூடு',
+      telugu: 'మూసివేయి'
+    },
+    nameRequired: { 
+      en: 'Name is required', 
+      hi: 'नाम आवश्यक है',
+      bangla: 'নাম প্রয়োজন',
+      kannada: 'ಹೆಸರು ಅಗತ್ಯ',
+      punjabi: 'ਨਾਮ ਜ਼ਰੂਰੀ ਹੈ',
+      tamil: 'பெயர் தேவை',
+      telugu: 'పేరు అవసరం'
+    },
+    birthDateRequired: { 
+      en: 'Birth date is required', 
+      hi: 'जन्म तिथि आवश्यक है',
+      bangla: 'জন্ম তারিখ প্রয়োজন',
+      kannada: 'ಜನ್ಮ ದಿನಾಂಕ ಅಗತ್ಯ',
+      punjabi: 'ਜਨਮ ਮਿਤੀ ਜ਼ਰੂਰੀ ਹੈ',
+      tamil: 'பிறந்த தேதி தேவை',
+      telugu: 'పుట్టిన తేదీ అవసరం'
+    },
+    partnerNameRequired: { 
+      en: 'Partner name is required', 
+      hi: 'साथी का नाम आवश्यक है',
+      bangla: 'সঙ্গীর নাম প্রয়োজন',
+      kannada: 'ಭಾಗೀದಾರರ ಹೆಸರು ಅಗತ್ಯ',
+      punjabi: 'ਭਾਗੀਦਾਰ ਦਾ ਨਾਮ ਜ਼ਰੂਰੀ ਹੈ',
+      tamil: 'பங்காளி பெயர் தேவை',
+      telugu: 'భాగస్వామి పేరు అవసరం'
+    },
+    partnerBirthDateRequired: { 
+      en: 'Partner birth date is required', 
+      hi: 'साथी की जन्म तिथि आवश्यक है',
+      bangla: 'সঙ্গীর জন্ম তারিখ প্রয়োজন',
+      kannada: 'ಭಾಗೀदಾರರ ಜನ್ಮ ದಿನಾಂಕ ಅಗತ್ಯ',
+      punjabi: 'ਭਾਗੀਦਾਰ ਦੀ ਜਨਮ ਮਿਤੀ ਜ਼ਰੂਰੀ ਹੈ',
+      tamil: 'பங்காளியின் பிறந்த தேதி தேவை',
+      telugu: 'భాగస్వామి పుట్టిన తేదీ అవసరం'
+    }
   };
 
   const [fullName, setFullName] = useState('');
@@ -308,7 +543,10 @@ const NumerologyCalculator: React.FC = () => {
   // Calculate compatibility between two people
   const calculateCompatibility = () => {
     if (!fullName.trim() || !partnerName.trim()) {
-      Alert.alert('Error', 'Please enter both names');
+      Alert.alert(
+        getTranslation({ en: 'Error', hi: 'त्रुटि', bangla: 'ত্রুটি', kannada: 'ದೋಷ', punjabi: 'ਗਲਤੀ', tamil: 'பிழை', telugu: 'లోపం' }),
+        getTranslation({ en: 'Please enter both names', hi: 'कृपया दोनों नाम दर्ज करें', bangla: 'দয়া করে উভয় নাম লিখুন', kannada: 'ದಯವಿಟ್ಟು ಎರಡೂ ಹೆಸರುಗಳನ್ನು ನಮೂದಿಸಿ', punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਦੋਵੇਂ ਨਾਮ ਦਰਜ ਕਰੋ', tamil: 'தயவுசெய்து இரண்டு பெயர்களையும் உள்ளிடவும்', telugu: 'దయచేసి రెండు పేర్లను నమోదు చేయండి' })
+      );
       return;
     }
 
@@ -369,7 +607,10 @@ const NumerologyCalculator: React.FC = () => {
   // Main calculation function
   const calculateNumerology = () => {
     if (!fullName.trim()) {
-      Alert.alert('Error', 'Please enter your full name');
+      Alert.alert(
+        getTranslation({ en: 'Error', hi: 'त्रुटि', bangla: 'ত্রুটি', kannada: 'ದೋಷ', punjabi: 'ਗਲਤੀ', tamil: 'பிழை', telugu: 'లోపం' }),
+        getTranslation({ en: 'Please enter your full name', hi: 'कृपया अपना पूरा नाम दर्ज करें', bangla: 'দয়া করে আপনার পুরো নাম লিখুন', kannada: 'ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರನ್ನು ನಮೂದಿಸಿ', punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਪੂਰਾ ਨਾਮ ਦਰਜ ਕਰੋ', tamil: 'தயவுசெய்து உங்கள் முழு பெயரை உள்ளிடவும்', telugu: 'దయచేసి మీ పూర్తి పేరును నమోదు చేయండి' })
+      );
       return;
     }
 
@@ -402,7 +643,10 @@ const NumerologyCalculator: React.FC = () => {
         scrollViewRef.current?.scrollTo({ y: 400, animated: true });
       }, 100);
     } catch (error) {
-      Alert.alert('Error', 'An error occurred while calculating. Please try again.');
+      Alert.alert(
+        getTranslation({ en: 'Error', hi: 'त्रुटि', bangla: 'ত্রুটি', kannada: 'ದೋಷ', punjabi: 'ਗਲਤੀ', tamil: 'பிழை', telugu: 'లోపం' }),
+        getTranslation({ en: 'An error occurred while calculating. Please try again.', hi: 'गणना के दौरान त्रुटि हुई। कृपया पुनः प्रयास करें।', bangla: 'গণনার সময় একটি ত্রুটি ঘটেছে। অনুগ্রহ করে আবার চেষ্টা করুন।', kannada: 'ಲೆಕ್ಕಾಚಾರ ಮಾಡುವಾಗ ದೋಷ ಸಂಭವಿಸಿದೆ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।', punjabi: 'ਗਣਨਾ ਦੌਰਾਨ ਇੱਕ ਗਲਤੀ ਹੋਈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।', tamil: 'கணக்கிடும் போது பிழை ஏற்பட்டது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.', telugu: 'లెక్కించేటప్పుడు లోపం సంభవించింది. దయచేసి మళ్లీ ప్రయత్నించండి.' })
+      );
     } finally {
       setIsCalculating(false);
     }
@@ -437,23 +681,23 @@ const NumerologyCalculator: React.FC = () => {
     <>
       {/* Input Section */}
       <View style={styles.inputSection}>
-        <Text style={styles.sectionTitle}>{isHindi ? 'आपकी जानकारी' : 'Your Information'}</Text>
+        <Text style={styles.sectionTitle}>{getTranslation({ en: 'Your Information', hi: 'आपकी जानकारी', bangla: 'আপনার তথ্য', kannada: 'ನಿಮ್ಮ ಮಾಹಿತಿ', punjabi: 'ਤੁਹਾਡੀ ਜਾਣਕਾਰੀ', tamil: 'உங்கள் தகவல்', telugu: 'మీ సమాచారం' })}</Text>
         
         {/* Name Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{isHindi ? translations.fullName.hi : translations.fullName.en}</Text>
+          <Text style={styles.inputLabel}>{getTranslation(translations.fullName)}</Text>
           <TextInput
             style={styles.textInput}
             value={fullName}
             onChangeText={setFullName}
-            placeholder={isHindi ? translations.enterFullName.hi : translations.enterFullName.en}
+            placeholder={getTranslation(translations.enterFullName)}
             placeholderTextColor="#999"
           />
         </View>
 
         {/* Birth Date Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{isHindi ? translations.birthDate.hi : translations.birthDate.en}</Text>
+          <Text style={styles.inputLabel}>{getTranslation(translations.birthDate)}</Text>
           <TouchableOpacity
             style={styles.dateButton}
             onPress={() => setShowDatePicker(true)}
@@ -474,12 +718,12 @@ const NumerologyCalculator: React.FC = () => {
             style={styles.calculateButtonGradient}
           >
             <Text style={styles.calculateButtonText}>
-              {isCalculating ? (isHindi ? translations.calculating.hi : translations.calculating.en) : (isHindi ? 'अंक ज्योतिष की गणना करें' : 'Calculate Numerology')}
+              {isCalculating ? getTranslation(translations.calculating) : getTranslation({ en: 'Calculate Numerology', hi: 'अंक ज्योतिष की गणना करें', bangla: 'সংখ্যা জ্যোতিষ গণনা করুন', kannada: 'ಸಂಖ್ಯಾಶಾಸ್ತ್ರವನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಿ', punjabi: 'ਨਿਊਮਰੋਲੋਜੀ ਦੀ ਗਣਨਾ ਕਰੋ', tamil: 'எண் கணிதத்தைக் கணக்கிடு', telugu: 'సంఖ్యాశాస్త్రాన్ని లెక్కించండి' })}
             </Text>
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* {isHindi ? 'साफ करें' : 'Clear'} Button */}
+        {/* {getTranslation({ en: 'Clear', hi: 'साफ करें', bangla: 'পরিষ্কার করুন', kannada: 'ಸ್ಪಷ್ಟವಾಗಿ', punjabi: 'ਸਾਫ਼ ਕਰੋ', tamil: 'அழிக்க', telugu: 'క్లియర్' })} Button */}
         <TouchableOpacity
           style={styles.clearButton}
           onPress={() => {
@@ -490,20 +734,20 @@ const NumerologyCalculator: React.FC = () => {
             scrollViewRef.current?.scrollTo({ y: 0, animated: true });
           }}
         >
-          <Text style={styles.clearButtonText}>{isHindi ? 'साफ करें' : 'Clear'}</Text>
+          <Text style={styles.clearButtonText}>{getTranslation({ en: 'Clear', hi: 'साफ करें', bangla: 'পরিষ্কার করুন', kannada: 'ಸ್ಪಷ್ಟವಾಗಿ', punjabi: 'ਸਾਫ਼ ਕਰੋ', tamil: 'அழிக்க', telugu: 'క్లియర్' })}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Results Section */}
       {results && (
         <View style={styles.resultsSection}>
-          <Text style={styles.sectionTitle}>{isHindi ? 'आपकी अंक ज्योतिष संख्याएं' : 'Your Numerology Numbers'}</Text>
-          <Text style={styles.clickInstruction}>{isHindi ? 'अधिक जानने के लिए किसी भी टाइल पर क्लिक करें' : 'Click any tile to know more'}</Text>
+          <Text style={styles.sectionTitle}>{getTranslation({ en: 'Your Numerology Numbers', hi: 'आपकी अंक ज्योतिष संख्याएं', bangla: 'আপনার সংখ্যা জ্যোতিষ সংখ্যা', kannada: 'ನಿಮ್ಮ ಸಂಖ್ಯಾಶಾಸ್ತ್ರ ಸಂಖ್ಯೆಗಳು', punjabi: 'ਤੁਹਾਡੇ ਨਿਊਮਰੋਲੋਜੀ ਨੰਬਰ', tamil: 'உங்கள் எண் கணித எண்கள்', telugu: 'మీ సంఖ్యాశాస్త్ర సంఖ్యలు' })}</Text>
+          <Text style={styles.clickInstruction}>{getTranslation({ en: 'Click any tile to know more', hi: 'अधिक जानने के लिए किसी भी टाइल पर क्लिक करें', bangla: 'আরও জানতে যেকোনো টাইল ক্লিক করুন', kannada: 'ಇನ್ನಷ್ಟು ತಿಳಿಯಲು ಯಾವುದೇ ಟೈಲ್ ಕ್ಲಿಕ್ ಮಾಡಿ', punjabi: 'ਹੋਰ ਜਾਣਨ ਲਈ ਕੋਈ ਵੀ ਟਾਈਲ ਕਲਿੱਕ ਕਰੋ', tamil: 'மேலும் அறிய எந்த டைலைக் கிளிக் செய்யவும்', telugu: 'మరింత తెలుసుకోవడానికి ఏదైనా టైల్ క్లిక్ చేయండి' })}</Text>
           
           {/* Life Path Number */}
           <TouchableOpacity onPress={() => showInfo('lifePath')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>{isHindi ? translations.lifePathNumber.hi : translations.lifePathNumber.en}</Text>
+              <Text style={styles.numberTitle}>{getTranslation(translations.lifePathNumber)}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.lifePathNumber}</Text>
               </View>
@@ -514,7 +758,7 @@ const NumerologyCalculator: React.FC = () => {
           {/* Destiny Number */}
           <TouchableOpacity onPress={() => showInfo('destiny')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>{isHindi ? translations.destinyNumber.hi : translations.destinyNumber.en}</Text>
+              <Text style={styles.numberTitle}>{getTranslation(translations.destinyNumber)}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.destinyNumber}</Text>
               </View>
@@ -525,7 +769,7 @@ const NumerologyCalculator: React.FC = () => {
           {/* Soul Number */}
           <TouchableOpacity onPress={() => showInfo('soul')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>{isHindi ? translations.soulNumber.hi : translations.soulNumber.en}</Text>
+              <Text style={styles.numberTitle}>{getTranslation(translations.soulNumber)}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.soulNumber}</Text>
               </View>
@@ -536,7 +780,7 @@ const NumerologyCalculator: React.FC = () => {
           {/* Personality Number */}
           <TouchableOpacity onPress={() => showInfo('personality')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>{isHindi ? translations.personalityNumber.hi : translations.personalityNumber.en}</Text>
+              <Text style={styles.numberTitle}>{getTranslation(translations.personalityNumber)}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.personalityNumber}</Text>
               </View>
@@ -547,7 +791,7 @@ const NumerologyCalculator: React.FC = () => {
           {/* Birth Day Number */}
           <TouchableOpacity onPress={() => showInfo('birthDay')} style={styles.numberCard}>
             <View style={styles.numberHeader}>
-              <Text style={styles.numberTitle}>{isHindi ? translations.birthDayNumber.hi : translations.birthDayNumber.en}</Text>
+              <Text style={styles.numberTitle}>{getTranslation(translations.birthDayNumber)}</Text>
               <View style={styles.numberCircle}>
                 <Text style={styles.numberText}>{results.birthDayNumber}</Text>
               </View>
@@ -562,22 +806,22 @@ const NumerologyCalculator: React.FC = () => {
   const renderCompatibilityTab = () => (
     <>
       <View style={styles.inputSection}>
-          <Text style={styles.sectionTitle}>{isHindi ? 'अनुकूलता कैलकुलेटर' : 'Compatibility Calculator'}</Text>
+          <Text style={styles.sectionTitle}>{getTranslation({ en: 'Compatibility Calculator', hi: 'अनुकूलता कैलकुलेटर', bangla: 'সামঞ্জস্য ক্যালকুলেটর', kannada: 'ಹೊಂದಾಣಿಕೆ ಕ್ಯಾಲ್ಕುಲೇಟರ್', punjabi: 'ਅਨੁਕੂਲਤਾ ਕੈਲਕੁਲੇਟਰ', tamil: 'பொருந்தக்கூடிய தன்மை கால்குலேட்டர்', telugu: 'అనుకూలత కాలిక్యులేటర్' })}</Text>
         
         {/* Person 1 */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{isHindi ? 'आपका नाम' : 'Your Name'}</Text>
+          <Text style={styles.inputLabel}>{getTranslation({ en: 'Your Name', hi: 'आपका नाम', bangla: 'আপনার নাম', kannada: 'ನಿಮ್ಮ ಹೆಸರು', punjabi: 'ਤੁਹਾਡਾ ਨਾਮ', tamil: 'உங்கள் பெயர்', telugu: 'మీ పేరు' })}</Text>
           <TextInput
             style={styles.textInput}
             value={fullName}
             onChangeText={setFullName}
-            placeholder={isHindi ? 'अपना पूरा नाम दर्ज करें' : 'Enter your full name'}
+            placeholder={getTranslation(translations.enterFullName)}
             placeholderTextColor="#999"
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{isHindi ? 'आपकी जन्म तिथि' : 'Your Birth Date'}</Text>
+          <Text style={styles.inputLabel}>{getTranslation({ en: 'Your Birth Date', hi: 'आपकी जन्म तिथि', bangla: 'আপনার জন্ম তারিখ', kannada: 'ನಿಮ್ಮ ಜನ್ಮ ದಿನಾಂಕ', punjabi: 'ਤੁਹਾਡੀ ਜਨਮ ਮਿਤੀ', tamil: 'உங்கள் பிறந்த தேதி', telugu: 'మీ పుట్టిన తేదీ' })}</Text>
           <TouchableOpacity
             style={styles.dateButton}
             onPress={() => setShowDatePicker(true)}
@@ -589,18 +833,18 @@ const NumerologyCalculator: React.FC = () => {
 
         {/* Person 2 */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{isHindi ? translations.partnerName.hi : translations.partnerName.en}</Text>
+          <Text style={styles.inputLabel}>{getTranslation(translations.partnerName)}</Text>
           <TextInput
             style={styles.textInput}
             value={partnerName}
             onChangeText={setPartnerName}
-            placeholder={isHindi ? translations.enterPartnerName.hi : translations.enterPartnerName.en}
+            placeholder={getTranslation(translations.enterPartnerName)}
             placeholderTextColor="#999"
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>{isHindi ? translations.partnerBirthDate.hi : translations.partnerBirthDate.en}</Text>
+          <Text style={styles.inputLabel}>{getTranslation(translations.partnerBirthDate)}</Text>
           <TouchableOpacity
             style={styles.dateButton}
             onPress={() => setShowPartnerDatePicker(true)}
@@ -618,11 +862,11 @@ const NumerologyCalculator: React.FC = () => {
             colors={['#FFA040', '#FF6A00']}
             style={styles.calculateButtonGradient}
           >
-            <Text style={styles.calculateButtonText}>{isHindi ? translations.calculateCompatibility.hi : translations.calculateCompatibility.en}</Text>
+            <Text style={styles.calculateButtonText}>{getTranslation(translations.calculateCompatibility)}</Text>
           </LinearGradient>
         </TouchableOpacity>
 
-        {/* {isHindi ? 'साफ करें' : 'Clear'} Button */}
+        {/* {getTranslation({ en: 'Clear', hi: 'साफ करें', bangla: 'পরিষ্কার করুন', kannada: 'ಸ್ಪಷ್ಟವಾಗಿ', punjabi: 'ਸਾਫ਼ ਕਰੋ', tamil: 'அழிக்க', telugu: 'క్లియర్' })} Button */}
         <TouchableOpacity
           style={styles.clearButton}
           onPress={() => {
@@ -635,18 +879,18 @@ const NumerologyCalculator: React.FC = () => {
             scrollViewRef.current?.scrollTo({ y: 0, animated: true });
           }}
         >
-          <Text style={styles.clearButtonText}>{isHindi ? 'साफ करें' : 'Clear'}</Text>
+          <Text style={styles.clearButtonText}>{getTranslation({ en: 'Clear', hi: 'साफ करें', bangla: 'পরিষ্কার করুন', kannada: 'ಸ್ಪಷ್ಟವಾಗಿ', punjabi: 'ਸਾਫ਼ ਕਰੋ', tamil: 'அழிக்க', telugu: 'క్లియర్' })}</Text>
         </TouchableOpacity>
       </View>
 
       {compatibilityResult && (
         <View style={styles.resultsSection}>
-          <Text style={styles.sectionTitle}>{isHindi ? 'अनुकूलता परिणाम' : 'Compatibility Results'}</Text>
+          <Text style={styles.sectionTitle}>{getTranslation({ en: 'Compatibility Results', hi: 'अनुकूलता परिणाम', bangla: 'সামঞ্জস্য ফলাফল', kannada: 'ಹೊಂದಾಣಿಕೆ ಫಲಿತಾಂಶಗಳು', punjabi: 'ਅਨੁਕੂਲਤਾ ਨਤੀਜੇ', tamil: 'பொருந்தக்கூடிய தன்மை முடிவுகள்', telugu: 'అనుకూలత ఫలితాలు' })}</Text>
           
           <View style={styles.compatibilityCard}>
             <View style={styles.compatibilityHeader}>
               <Text style={styles.compatibilityScore}>{compatibilityResult.compatibility}%</Text>
-              <Text style={styles.compatibilityLabel}>{isHindi ? translations.compatibility.hi : translations.compatibility.en}</Text>
+              <Text style={styles.compatibilityLabel}>{getTranslation(translations.compatibility)}</Text>
             </View>
             <Text style={styles.compatibilityMeaning}>{compatibilityResult.meaning}</Text>
             <Text style={styles.compatibilityAdvice}>{compatibilityResult.advice}</Text>
@@ -659,10 +903,10 @@ const NumerologyCalculator: React.FC = () => {
   const renderDailyTab = () => (
     <>
       <View style={styles.inputSection}>
-        <Text style={styles.sectionTitle}>{isHindi ? 'दैनिक अंक ज्योतिष' : 'Daily Numerology'}</Text>
+        <Text style={styles.sectionTitle}>{getTranslation({ en: 'Daily Numerology', hi: 'दैनिक अंक ज्योतिष', bangla: 'দৈনিক সংখ্যা জ্যোতিষ', kannada: 'ದೈನಂದಿನ ಸಂಖ್ಯಾಶಾಸ್ತ್ರ', punjabi: 'ਰੋਜ਼ਾਨਾ ਨਿਊਮਰੋਲੋਜੀ', tamil: 'தினசரி எண் கணிதம்', telugu: 'రోజువారీ సంఖ్యాశాస్త్రం' })}</Text>
         
         <View style={styles.dailyCard}>
-          <Text style={styles.dailyTitle}>{isHindi ? 'आज के भाग्यशाली नंबर' : 'Today\'s Lucky Numbers'}</Text>
+          <Text style={styles.dailyTitle}>{getTranslation({ en: 'Today\'s Lucky Numbers', hi: 'आज के भाग्यशाली नंबर', bangla: 'আজকের ভাগ্যবান সংখ্যা', kannada: 'ಇಂದಿನ ಅದೃಷ್ಟ ಸಂಖ್ಯೆಗಳು', punjabi: 'ਅੱਜ ਦੇ ਖੁਸ਼ਕਿਸਮਤ ਨੰਬਰ', tamil: 'இன்றைய அதிர்ஷ்ட எண்கள்', telugu: 'ఈ రోజు అదృష్ట సంఖ్యలు' })}</Text>
           <View style={styles.luckyNumbersContainer}>
             {getDailyLuckyNumbers().map((number, index) => (
               <View key={index} style={styles.luckyNumberCircle}>
@@ -671,14 +915,14 @@ const NumerologyCalculator: React.FC = () => {
             ))}
           </View>
           <Text style={styles.dailyInfo}>
-            {isHindi ? 'ये नंबर आज की तारीख के आधार पर गणना किए गए हैं और पूरे दिन आपके लिए सौभाग्य ला सकते हैं।' : 'These numbers are calculated based on today\'s date and may bring you good fortune throughout the day.'}
+            {getTranslation({ en: 'These numbers are calculated based on today\'s date and may bring you good fortune throughout the day.', hi: 'ये नंबर आज की तारीख के आधार पर गणना किए गए हैं और पूरे दिन आपके लिए सौभाग्य ला सकते हैं।', bangla: 'এই সংখ্যাগুলি আজকের তারিখের ভিত্তিতে গণনা করা হয়েছে এবং সারাদিন আপনার জন্য সৌভাগ্য আনতে পারে।', kannada: 'ಈ ಸಂಖ್ಯೆಗಳು ಇಂದಿನ ದಿನಾಂಕದ ಆಧಾರದ ಮೇಲೆ ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗಿದೆ ಮತ್ತು ಸಂಪೂರ್ಣ ದಿನ ನಿಮಗೆ ಅದೃಷ್ಟ ತರಬಹುದು.', punjabi: 'ਇਹ ਨੰਬਰ ਅੱਜ ਦੀ ਮਿਤੀ ਦੇ ਆਧਾਰ \'ਤੇ ਗਣਨਾ ਕੀਤੇ ਗਏ ਹਨ ਅਤੇ ਪੂਰੇ ਦਿਨ ਤੁਹਾਡੇ ਲਈ ਖੁਸ਼ਕਿਸਮਤੀ ਲਿਆ ਸਕਦੇ ਹਨ।', tamil: 'இந்த எண்கள் இன்றைய தேதியின் அடிப்படையில் கணக்கிடப்படுகின்றன மற்றும் முழு நாளும் உங்களுக்கு அதிர்ஷ்டத்தைக் கொண்டு வரலாம்.', telugu: 'ఈ సంఖ్యలు ఈ రోజు తేదీ ఆధారంగా లెక్కించబడ్డాయి మరియు మొత్తం రోజు మీకు అదృష్టాన్ని తీసుకురావచ్చు.' })}
           </Text>
         </View>
 
         <View style={styles.dailyCard}>
-          <Text style={styles.dailyTitle}>{isHindi ? 'दैनिक पुष्टि' : 'Daily Affirmation'}</Text>
+          <Text style={styles.dailyTitle}>{getTranslation({ en: 'Daily Affirmation', hi: 'दैनिक पुष्टि', bangla: 'দৈনিক নিশ্চিতকরণ', kannada: 'ದೈನಂದಿನ ದೃಢೀಕರಣ', punjabi: 'ਰੋਜ਼ਾਨਾ ਪੁਸ਼ਟੀ', tamil: 'தினசரி உறுதிப்படுத்தல்', telugu: 'రోజువారీ ధృడీకరణ' })}</Text>
           <Text style={styles.dailyAffirmation}>
-            {isHindi ? '"आज मैं ब्रह्मांड की सकारात्मक कंपन के साथ संरेखित होता हूं और अपने रास्ते में आने वाले अवसरों को अपनाता हूं।"' : '"Today I align with the positive vibrations of the universe and embrace the opportunities that come my way."'}
+            {getTranslation({ en: '"Today I align with the positive vibrations of the universe and embrace the opportunities that come my way."', hi: '"आज मैं ब्रह्मांड की सकारात्मक कंपन के साथ संरेखित होता हूं और अपने रास्ते में आने वाले अवसरों को अपनाता हूं।"', bangla: '"আজ আমি মহাবিশ্বের ইতিবাচক কম্পনের সাথে সারিবদ্ধ হই এবং আমার পথে আসা সুযোগগুলি গ্রহণ করি।"', kannada: '"ಇಂದು ನಾನು ಬ್ರಹ್ಮಾಂಡದ ಧನಾತ್ಮಕ ಕಂಪನಗಳೊಂದಿಗೆ ಸಮಂಜಸವಾಗುತ್ತೇನೆ ಮತ್ತು ನನ್ನ ದಾರಿಯಲ್ಲಿ ಬರುವ ಅವಕಾಶಗಳನ್ನು ಸ್ವೀಕರಿಸುತ್ತೇನೆ."', punjabi: '"ਅੱਜ ਮੈਂ ਬ੍ਰਹਿਮੰਡ ਦੀਆਂ ਸਕਾਰਾਤਮਕ ਕੰਪਨਾਂ ਨਾਲ ਸੰਬੰਧਿਤ ਹੁੰਦਾ ਹਾਂ ਅਤੇ ਆਪਣੇ ਰਸਤੇ ਵਿੱਚ ਆਉਣ ਵਾਲੇ ਮੌਕਿਆਂ ਨੂੰ ਅਪਣਾਉਂਦਾ ਹਾਂ।"', tamil: '"இன்று நான் பிரபஞ்சத்தின் நேர்மறையான அதிர்வுகளுடன் சீரமைக்கிறேன் மற்றும் என்னுடைய வழியில் வரும் வாய்ப்புகளை ஏற்றுக்கொள்கிறேன்."', telugu: '"ఈరోజు నేను విశ్వం యొక్క సానుకూల కంపనాలతో సమన్వయం చేసుకుంటాను మరియు నా మార్గంలో వచ్చే అవకాశాలను అంగీకరిస్తాను."' })}
           </Text>
         </View>
       </View>
@@ -699,7 +943,7 @@ const NumerologyCalculator: React.FC = () => {
           onPress={() => setActiveTab('calculator')}
         >
           <Text style={[styles.tabText, activeTab === 'calculator' && styles.activeTabText]}>
-            {isHindi ? 'कैलकुलेटर' : 'Calculator'}
+            {getTranslation({ en: 'Calculator', hi: 'कैलकुलेटर', bangla: 'ক্যালকুলেটর', kannada: 'ಕ್ಯಾಲ್ಕುಲೇಟರ್', punjabi: 'ਕੈਲਕੁਲੇਟਰ', tamil: 'கால்குலேட்டர்', telugu: 'కాలిక్యులేటర్' })}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -707,7 +951,7 @@ const NumerologyCalculator: React.FC = () => {
           onPress={() => setActiveTab('compatibility')}
         >
           <Text style={[styles.tabText, activeTab === 'compatibility' && styles.activeTabText]}>
-            {isHindi ? translations.compatibility.hi : translations.compatibility.en}
+            {getTranslation(translations.compatibility)}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -715,7 +959,7 @@ const NumerologyCalculator: React.FC = () => {
           onPress={() => setActiveTab('daily')}
         >
           <Text style={[styles.tabText, activeTab === 'daily' && styles.activeTabText]}>
-            {isHindi ? 'दैनिक' : 'Daily'}
+            {getTranslation({ en: 'Daily', hi: 'दैनिक', bangla: 'দৈনিক', kannada: 'ದೈನಂದಿನ', punjabi: 'ਰੋਜ਼ਾਨਾ', tamil: 'தினசரி', telugu: 'రోజువారీ' })}
           </Text>
         </TouchableOpacity>
       </View>
@@ -727,12 +971,12 @@ const NumerologyCalculator: React.FC = () => {
 
         {/* Information Section */}
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>{isHindi ? translations.aboutNumerology.hi : translations.aboutNumerology.en}</Text>
+          <Text style={styles.sectionTitle}>{getTranslation(translations.aboutNumerology)}</Text>
           <Text style={styles.infoText}>
-            {isHindi ? translations.aboutNumerologyText.hi : translations.aboutNumerologyText.en}
+            {getTranslation(translations.aboutNumerologyText)}
           </Text>
           <Text style={styles.infoText}>
-            {isHindi ? 'आपकी जीवन पथ संख्या अंक ज्योतिष में सबसे महत्वपूर्ण संख्या है, जो आपकी जन्म तिथि से गणना की जाती है। यह आपके जीवन के उद्देश्य और आपके अनुसरण करने वाले मार्ग को प्रकट करती है।' : 'Your Life Path Number is the most important number in numerology, calculated from your birth date. It reveals your life\'s purpose and the path you\'re meant to follow.'}
+            {getTranslation({ en: 'Your Life Path Number is the most important number in numerology, calculated from your birth date. It reveals your life\'s purpose and the path you\'re meant to follow.', hi: 'आपकी जीवन पथ संख्या अंक ज्योतिष में सबसे महत्वपूर्ण संख्या है, जो आपकी जन्म तिथि से गणना की जाती है। यह आपके जीवन के उद्देश्य और आपके अनुसरण करने वाले मार्ग को प्रकट करती है।', bangla: 'আপনার জীবন পথ সংখ্যা সংখ্যা জ্যোতিষে সবচেয়ে গুরুত্বপূর্ণ সংখ্যা, যা আপনার জন্ম তারিখ থেকে গণনা করা হয়। এটি আপনার জীবনের উদ্দেশ্য এবং আপনি যে পথ অনুসরণ করবেন তা প্রকাশ করে।', kannada: 'ನಿಮ್ಮ ಜೀವನ ಮಾರ್ಗ ಸಂಖ್ಯೆಯು ಸಂಖ್ಯಾಶಾಸ್ತ್ರದಲ್ಲಿ ಅತ್ಯಂತ ಪ್ರಮುಖ ಸಂಖ್ಯೆಯಾಗಿದೆ, ಇದು ನಿಮ್ಮ ಜನ್ಮ ದಿನಾಂಕದಿಂದ ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತದೆ. ಇದು ನಿಮ್ಮ ಜೀವನದ ಉದ್ದೇಶ ಮತ್ತು ನೀವು ಅನುಸರಿಸಬೇಕಾದ ಮಾರ್ಗವನ್ನು ಬಹಿರಂಗಪಡಿಸುತ್ತದೆ.', punjabi: 'ਤੁਹਾਡਾ ਜੀਵਨ ਪੱਥ ਨੰਬਰ ਨਿਊਮਰੋਲੋਜੀ ਵਿੱਚ ਸਭ ਤੋਂ ਮਹੱਤਵਪੂਰਨ ਨੰਬਰ ਹੈ, ਜੋ ਤੁਹਾਡੀ ਜਨਮ ਮਿਤੀ ਤੋਂ ਗਣਨਾ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਇਹ ਤੁਹਾਡੇ ਜੀਵਨ ਦੇ ਮਕਸਦ ਅਤੇ ਤੁਹਾਨੂੰ ਅਨੁਸਰਣ ਕਰਨ ਵਾਲੇ ਮਾਰਗ ਨੂੰ ਪ੍ਰਕਟ ਕਰਦਾ ਹੈ।', tamil: 'உங்கள் வாழ்க்கை பாதை எண் எண் கணிதத்தில் மிக முக்கியமான எண்ணாகும், இது உங்கள் பிறந்த தேதியிலிருந்து கணக்கிடப்படுகிறது. இது உங்கள் வாழ்க்கையின் நோக்கம் மற்றும் நீங்கள் பின்பற்ற வேண்டிய பாதையை வெளிப்படுத்துகிறது.', telugu: 'మీ జీవిత మార్గ సంఖ్య సంఖ్యాశాస్త్రంలో అత్యంత ముఖ్యమైన సంఖ్య, ఇది మీ పుట్టిన తేదీ నుండి లెక్కించబడుతుంది. ఇది మీ జీవితం యొక్క ప్రయోజనం మరియు మీరు అనుసరించాల్సిన మార్గాన్ని బహిర్గతం చేస్తుంది.' })}
           </Text>
         </View>
       </View>
@@ -796,7 +1040,7 @@ const NumerologyCalculator: React.FC = () => {
                 colors={['#FFA040', '#FF6A00']}
                 style={styles.modalCloseButtonGradient}
               >
-                <Text style={styles.modalCloseButtonText}>Got it!</Text>
+                <Text style={styles.modalCloseButtonText}>{getTranslation({ en: 'Got it!', hi: 'समझ गया!', bangla: 'বুঝেছি!', kannada: 'ತಿಳಿದುಬಂದಿದೆ!', punjabi: 'ਸਮਝ ਗਿਆ!', tamil: 'புரிந்தது!', telugu: 'తెలుసుకున్నాను!' })}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </TouchableOpacity>

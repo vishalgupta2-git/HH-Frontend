@@ -4,16 +4,150 @@ import React, { useState, useEffect } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View, Linking, ScrollView } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { useLanguage } from '@/contexts/LanguageContext';
 
-export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: boolean }) {
+export default function ReferralConnectBlock() {
   const [referralCode, setReferralCode] = useState<string>('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   const router = useRouter();
+  const { currentLanguage } = useLanguage();
   
-  // Debug: Log when isHindi changes
+  // Translations
+  const translations = {
+    title: {
+      en: 'Refer friends & family',
+      hi: 'दोस्तों और परिवार को रेफर करें',
+      bangla: 'বন্ধু ও পরিবারকে রেফার করুন',
+      kannada: 'ಸ್ನೇಹಿತರು ಮತ್ತು ಕುಟುಂಬವನ್ನು ರೆಫರ್ ಮಾಡಿ',
+      punjabi: 'ਦੋਸਤਾਂ ਅਤੇ ਪਰਿਵਾਰ ਨੂੰ ਰੈਫਰ ਕਰੋ',
+      tamil: 'நண்பர்கள் மற்றும் குடும்பத்தை பரிந்துரைக்கவும்',
+      telugu: 'స్నేహితులు మరియు కుటుంబాన్ని రిఫర్ చేయండి'
+    },
+    subtitle: {
+      en: 'Sign-Up or login to help your friends and family on their spiritual journey.',
+      hi: 'अपने दोस्तों और परिवार को उनकी आध्यात्मिक यात्रा में मदद करने के लिए साइन-अप या लॉगिन करें।',
+      bangla: 'আপনার বন্ধু ও পরিবারকে তাদের আধ্যাত্মিক যাত্রায় সাহায্য করতে সাইন-আপ বা লগইন করুন।',
+      kannada: 'ನಿಮ್ಮ ಸ್ನೇಹಿತರು ಮತ್ತು ಕುಟುಂಬಕ್ಕೆ ಅವರ ಆಧ್ಯಾತ್ಮಿಕ ಪ್ರಯಾಣದಲ್ಲಿ ಸಹಾಯ ಮಾಡಲು ಸೈನ್-ಅಪ್ ಅಥವಾ ಲಾಗಿನ್ ಮಾಡಿ।',
+      punjabi: 'ਆਪਣੇ ਦੋਸਤਾਂ ਅਤੇ ਪਰਿਵਾਰ ਨੂੰ ਉਨ੍ਹਾਂ ਦੀ ਆਧਿਆਤਮਿਕ ਯਾਤਰਾ ਵਿੱਚ ਮਦਦ ਕਰਨ ਲਈ ਸਾਈਨ-ਅੱਪ ਜਾਂ ਲੌਗਿਨ ਕਰੋ।',
+      tamil: 'உங்கள் நண்பர்கள் மற்றும் குடும்பத்திற்கு அவர்களின் ஆன்மீக பயணத்தில் உதவ சைன்-அப் அல்லது லாகின் செய்யுங்கள்।',
+      telugu: 'మీ స్నేహితులు మరియు కుటుంబానికి వారి ఆధ్యాత్మిక ప్రయాణంలో సహాయపడటానికి సైన్-అప్ లేదా లాగిన్ చేయండి।'
+    },
+    login: {
+      en: 'Login',
+      hi: 'लॉग इन',
+      bangla: 'লগইন',
+      kannada: 'ಲಾಗಿನ್',
+      punjabi: 'ਲੌਗਿਨ',
+      tamil: 'உள்நுழைய',
+      telugu: 'లాగిన్'
+    },
+    signup: {
+      en: 'Sign Up',
+      hi: 'साइन अप',
+      bangla: 'সাইন আপ',
+      kannada: 'ಸೈನ್ ಅಪ್',
+      punjabi: 'ਸਾਈਨ ਅੱਪ',
+      tamil: 'பதிவு செய்',
+      telugu: 'సైన్ అప్'
+    },
+    referralCode: {
+      en: 'Referral Code: ',
+      hi: 'रेफरल कोड: ',
+      bangla: 'রেফারেল কোড: ',
+      kannada: 'ರೆಫರಲ್ ಕೋಡ್: ',
+      punjabi: 'ਰੈਫਰਲ ਕੋਡ: ',
+      tamil: 'பரிந்துரை குறியீடு: ',
+      telugu: 'రిఫరల్ కోడ్: '
+    },
+    inviteEarn: {
+      en: 'Invite and Earn 1000 Mudras',
+      hi: 'आमंत्रित करें और 1000 मुद्रा कमाएं',
+      bangla: 'আমন্ত্রণ করুন এবং ১০০০ মুদ্রা অর্জন করুন',
+      kannada: 'ಆಮಂತ್ರಿಸಿ ಮತ್ತು 1000 ಮುದ್ರೆಗಳನ್ನು ಗಳಿಸಿ',
+      punjabi: 'ਸੱਦਾ ਦਿਓ ਅਤੇ 1000 ਮੁਦਰਾ ਕਮਾਓ',
+      tamil: 'அழைத்து 1000 முத்திரைகளைப் பெறுங்கள்',
+      telugu: 'ఆమంత్రించి 1000 ముద్రలను సంపాదించండి'
+    },
+    codeCopied: {
+      en: 'Referral code copied!',
+      hi: 'रेफरल कोड कॉपी किया गया!',
+      bangla: 'রেফারেল কোড কপি করা হয়েছে!',
+      kannada: 'ರೆಫರಲ್ ಕೋಡ್ ನಕಲಿಸಲಾಗಿದೆ!',
+      punjabi: 'ਰੈਫਰਲ ਕੋਡ ਕਾਪੀ ਕੀਤਾ ਗਿਆ!',
+      tamil: 'பரிந்துரை குறியீடு நகலெடுக்கப்பட்டது!',
+      telugu: 'రిఫరల్ కోడ్ కాపీ చేయబడింది!'
+    },
+    referEarn: {
+      en: 'Refer and Earn Mudras',
+      hi: 'रेफर करें और मुद्रा कमाएं',
+      bangla: 'রেফার করুন এবং মুদ্রা অর্জন করুন',
+      kannada: 'ರೆಫರ್ ಮಾಡಿ ಮತ್ತು ಮುದ್ರೆಗಳನ್ನು ಗಳಿಸಿ',
+      punjabi: 'ਰੈਫਰ ਕਰੋ ਅਤੇ ਮੁਦਰਾ ਕਮਾਓ',
+      tamil: 'பரிந்துரைத்து முத்திரைகளைப் பெறுங்கள்',
+      telugu: 'రిఫర్ చేసి ముద్రలను సంపాదించండి'
+    },
+    referDescription: {
+      en: 'When you refer someone, you not only help them progress on their spiritual journey, both you and them earn Mudras',
+      hi: 'जब आप किसी को रेफर करते हैं, तो आप न केवल उन्हें उनकी आध्यात्मिक यात्रा में प्रगति करने में मदद करते हैं, बल्कि आप दोनों मुद्रा कमाते हैं',
+      bangla: 'আপনি যখন কাউকে রেফার করেন, তখন আপনি কেবল তাদের আধ্যাত্মিক যাত্রায় অগ্রগতিতে সাহায্য করেন না, বরং আপনারা দুজনেই মুদ্রা অর্জন করেন',
+      kannada: 'ನೀವು ಯಾರನ್ನಾದರೂ ರೆಫರ್ ಮಾಡಿದಾಗ, ನೀವು ಅವರನ್ನು ಅವರ ಆಧ್ಯಾತ್ಮಿಕ ಪ್ರಯಾಣದಲ್ಲಿ ಮುಂದುವರಿಯಲು ಸಹಾಯ ಮಾಡುವುದಲ್ಲದೆ, ನೀವು ಮತ್ತು ಅವರು ಇಬ್ಬರೂ ಮುದ್ರೆಗಳನ್ನು ಗಳಿಸುತ್ತೀರಿ',
+      punjabi: 'ਜਦੋਂ ਤੁਸੀਂ ਕਿਸੇ ਨੂੰ ਰੈਫਰ ਕਰਦੇ ਹੋ, ਤਾਂ ਤੁਸੀਂ ਨਾ ਸਿਰਫ ਉਨ੍ਹਾਂ ਨੂੰ ਉਨ੍ਹਾਂ ਦੀ ਆਧਿਆਤਮਿਕ ਯਾਤਰਾ ਵਿੱਚ ਤਰੱਕੀ ਕਰਨ ਵਿੱਚ ਮਦਦ ਕਰਦੇ ਹੋ, ਬਲਕਿ ਤੁਸੀਂ ਦੋਵੇਂ ਮੁਦਰਾ ਕਮਾਉਂਦੇ ਹੋ',
+      tamil: 'நீங்கள் யாரையாவது பரிந்துரைக்கும்போது, நீங்கள் அவர்களின் ஆன்மீக பயணத்தில் முன்னேறுவதற்கு உதவுவது மட்டுமல்லாமல், நீங்கள் இருவரும் முத்திரைகளைப் பெறுகிறீர்கள்',
+      telugu: 'మీరు ఎవరినైనా రిఫర్ చేసినప్పుడు, మీరు వారి ఆధ్యాత్మిక ప్రయాణంలో ముందుకు సాగడానికి సహాయపడటమే కాకుండా, మీరు మరియు వారు ఇద్దరూ ముద్రలను సంపాదిస్తారు'
+    },
+    copyInstructions: {
+      en: 'Please copy the Referral code and share with the person you want to refer.',
+      hi: 'कृपया रेफरल कोड कॉपी करें और जिस व्यक्ति को आप रेफर करना चाहते हैं उसके साथ साझा करें।',
+      bangla: 'অনুগ্রহ করে রেফারেল কোড কপি করুন এবং যাকে আপনি রেফার করতে চান তার সাথে শেয়ার করুন।',
+      kannada: 'ದಯವಿಟ್ಟು ರೆಫರಲ್ ಕೋಡ್ ಅನ್ನು ನಕಲಿಸಿ ಮತ್ತು ನೀವು ರೆಫರ್ ಮಾಡಲು ಬಯಸುವ ವ್ಯಕ್ತಿಯೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಿ।',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਰੈਫਰਲ ਕੋਡ ਕਾਪੀ ਕਰੋ ਅਤੇ ਜਿਸ ਵਿਅਕਤੀ ਨੂੰ ਤੁਸੀਂ ਰੈਫਰ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ ਉਸ ਨਾਲ ਸਾਂਝਾ ਕਰੋ।',
+      tamil: 'தயவுசெய்து பரிந்துரை குறியீட்டை நகலெடுத்து, நீங்கள் பரிந்துரைக்க விரும்பும் நபருடன் பகிர்ந்து கொள்ளுங்கள்।',
+      telugu: 'దయచేసి రిఫరల్ కోడ్‌ను కాపీ చేసి, మీరు రిఫర్ చేయాలనుకునే వ్యక్తితో పంచుకోండి।'
+    },
+    downloadInstructions: {
+      en: 'Request them to download the app and use the referral code during Sign Up',
+      hi: 'उनसे अनुरोध करें कि वे ऐप डाउनलोड करें और साइन अप के दौरान रेफरल कोड का उपयोग करें',
+      bangla: 'তাদের অ্যাপ ডাউনলোড করতে এবং সাইন আপের সময় রেফারেল কোড ব্যবহার করতে অনুরোধ করুন',
+      kannada: 'ಅವರನ್ನು ಅಪ್ಲಿಕೇಶನ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಮತ್ತು ಸೈನ್ ಅಪ್ ಸಮಯದಲ್ಲಿ ರೆಫರಲ್ ಕೋಡ್ ಬಳಸಲು ವಿನಂತಿಸಿ',
+      punjabi: 'ਉਨ੍ਹਾਂ ਨੂੰ ਐਪ ਡਾਉਨਲੋਡ ਕਰਨ ਅਤੇ ਸਾਈਨ ਅੱਪ ਦੌਰਾਨ ਰੈਫਰਲ ਕੋਡ ਵਰਤਣ ਲਈ ਕਹੋ',
+      tamil: 'அவர்களை ஆப்‌பை டவுன்லோட் செய்யவும், பதிவு செய்யும்போது பரிந்துரை குறியீட்டைப் பயன்படுத்துமாறு கேளுங்கள்',
+      telugu: 'వారిని అప్‌లోడ్ చేయమని మరియు సైన్ అప్ సమయంలో రిఫరల్ కోడ్‌ను ఉపయోగించమని అడగండి'
+    },
+    bonusNote: {
+      en: 'Please note that the bonus Mudras will be awarded within 3 days of Sign Up',
+      hi: 'कृपया ध्यान दें कि बोनस मुद्रा साइन अप के 3 दिनों के भीतर प्रदान की जाएंगी',
+      bangla: 'দয়া করে মনে রাখবেন যে বোনাস মুদ্রা সাইন আপের ৩ দিনের মধ্যে প্রদান করা হবে',
+      kannada: 'ದಯವಿಟ್ಟು ಗಮನಿಸಿ, ಬೋನಸ್ ಮುದ್ರೆಗಳನ್ನು ಸೈನ್ ಅಪ್‌ನ 3 ದಿನಗಳೊಳಗೆ ನೀಡಲಾಗುತ್ತದೆ',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਧਿਆਨ ਦਿਓ ਕਿ ਬੋਨਸ ਮੁਦਰਾ ਸਾਈਨ ਅੱਪ ਦੇ 3 ਦਿਨਾਂ ਦੇ ਅੰਦਰ ਦਿੱਤੀ ਜਾਵੇਗੀ',
+      tamil: 'தயவுசெய்து கவனிக்கவும், போனஸ் முத்திரைகள் பதிவு செய்த 3 நாட்களுக்குள் வழங்கப்படும்',
+      telugu: 'దయచేసి గమనించండి, బోనస్ ముద్రలు సైన్ అప్‌కు 3 రోజులలోపు ఇవ్వబడతాయి'
+    },
+    copyCode: {
+      en: 'Copy referral code!',
+      hi: 'रेफरल कोड कॉपी करें!',
+      bangla: 'রেফারেল কোড কপি করুন!',
+      kannada: 'ರೆಫರಲ್ ಕೋಡ್ ನಕಲಿಸಿ!',
+      punjabi: 'ਰੈਫਰਲ ਕੋਡ ਕਾਪੀ ਕਰੋ!',
+      tamil: 'பரிந்துரை குறியீட்டை நகலெடுக்கவும்!',
+      telugu: 'రిఫరల్ కోడ్‌ను కాపీ చేయండి!'
+    }
+  };
+
+  // Helper function to get translation
+  const getTranslation = (key: any) => {
+    const lang = currentLanguage === 'hindi' ? 'hi' : 
+                 currentLanguage === 'bangla' ? 'bangla' : 
+                 currentLanguage === 'kannada' ? 'kannada' :
+                 currentLanguage === 'punjabi' ? 'punjabi' :
+                 currentLanguage === 'tamil' ? 'tamil' :
+                 currentLanguage === 'telugu' ? 'telugu' : 'en';
+    return key[lang] || key.en;
+  };
+  
+  // Debug: Log when currentLanguage changes
 
   useEffect(() => {
     checkUserAuthentication();
@@ -79,25 +213,22 @@ export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: bo
     return (
       <View style={styles.card}>
         <Text style={styles.title}>
-          {isHindi ? 'दोस्तों और परिवार को रेफर करें' : 'Refer friends & family'}
+          {getTranslation(translations.title)}
         </Text>
         <Text style={styles.subtitle}>
-          {isHindi 
-            ? 'अपने दोस्तों और परिवार को उनकी आध्यात्मिक यात्रा में मदद करने के लिए साइन-अप या लॉगिन करें।'
-            : 'Sign-Up or login to help your friends and family on their spiritual journey.'
-          }
+          {getTranslation(translations.subtitle)}
         </Text>
         
         <View style={styles.buttonRow}>
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
             <Text style={styles.loginButtonText}>
-              {isHindi ? 'लॉग इन' : 'Login'}
+              {getTranslation(translations.login)}
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
             <Text style={styles.signupButtonText}>
-              {isHindi ? 'साइन अप' : 'Sign Up'}
+              {getTranslation(translations.signup)}
             </Text>
           </TouchableOpacity>
         </View>
@@ -110,17 +241,14 @@ export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: bo
   return (
     <View style={styles.card}>
       <Text style={styles.title}>
-        {isHindi ? 'दोस्तों और परिवार को रेफर करें' : 'Refer friends & family'}
+        {getTranslation(translations.title)}
       </Text>
       <Text style={styles.subtitle}>
-        {isHindi 
-          ? 'अपने दोस्तों और परिवार को उनकी आध्यात्मिक यात्रा में सुधार के लिए आमंत्रित करें। वे आपके रेफरल कोड से साइन अप करने पर 1000 मुद्रा भी कमाएंगे'
-          : 'Invite your friends and family enhance their spiritual journey. They will also earn 1000 Mudras when they sign up with your referralCode'
-        }
+        {getTranslation(translations.subtitle)}
       </Text>
       <View style={styles.referralRow}>
         <Text style={styles.referralLabel}>
-          {isHindi ? 'रेफरल कोड: ' : 'Referral Code: '}
+          {getTranslation(translations.referralCode)}
         </Text>
         <Text style={styles.referralCode}>{displayCode}</Text>
         <TouchableOpacity
@@ -138,7 +266,7 @@ export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: bo
       </View>
       <TouchableOpacity style={styles.inviteButton} onPress={handleInviteButton}>
         <Text style={styles.inviteButtonText}>
-          {isHindi ? 'आमंत्रित करें और 1000 मुद्रा कमाएं' : 'Invite and Earn 1000 Mudras'}
+          {getTranslation(translations.inviteEarn)}
         </Text>
       </TouchableOpacity>
       
@@ -146,7 +274,7 @@ export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: bo
       {showToast && (
         <View style={styles.toast}>
           <Text style={styles.toastText}>
-            {isHindi ? 'रेफरल कोड कॉपी किया गया!' : 'Referral code copied!'}
+            {getTranslation(translations.codeCopied)}
           </Text>
         </View>
       )}
@@ -157,7 +285,7 @@ export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: bo
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {isHindi ? 'रेफर करें और मुद्रा कमाएं' : 'Refer and Earn Mudras'}
+                {getTranslation(translations.referEarn)}
               </Text>
               <TouchableOpacity 
                 style={styles.closeButton}
@@ -169,31 +297,19 @@ export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: bo
             
             <View style={styles.modalBody}>
               <Text style={styles.modalText}>
-                {isHindi 
-                  ? 'जब आप किसी को रेफर करते हैं, तो आप न केवल उन्हें उनकी आध्यात्मिक यात्रा में प्रगति करने में मदद करते हैं, बल्कि आप दोनों मुद्रा कमाते हैं'
-                  : 'When you refer someone, you not only help them progress on their spiritual journey, both you and them earn Mudras'
-                }
+                {getTranslation(translations.referDescription)}
               </Text>
               
               <Text style={styles.modalText}>
-                {isHindi 
-                  ? 'कृपया रेफरल कोड कॉपी करें और जिस व्यक्ति को आप रेफर करना चाहते हैं उसके साथ साझा करें।'
-                  : 'Please copy the Referral code and share with the person you want to refer.'
-                }
+                {getTranslation(translations.copyInstructions)}
               </Text>
               
               <Text style={styles.modalText}>
-                {isHindi 
-                  ? 'उनसे अनुरोध करें कि वे ऐप डाउनलोड करें और साइन अप के दौरान रेफरल कोड का उपयोग करें'
-                  : 'Request them to download the app and use the referral code during Sign Up'
-                }
+                {getTranslation(translations.downloadInstructions)}
               </Text>
               
               <Text style={styles.modalNote}>
-                {isHindi 
-                  ? 'कृपया ध्यान दें कि बोनस मुद्रा साइन अप के 3 दिनों के भीतर प्रदान की जाएंगी'
-                  : 'Please note that the bonus Mudras will be awarded within 3 days of Sign Up'
-                }
+                {getTranslation(translations.bonusNote)}
               </Text>
             </View>
             
@@ -202,7 +318,7 @@ export default function ReferralConnectBlock({ isHindi = false }: { isHindi?: bo
               onPress={handleCopyReferralCode}
             >
               <Text style={styles.modalButtonText}>
-                {isHindi ? 'रेफरल कोड कॉपी करें!' : 'Copy referral code!'}
+                {getTranslation(translations.copyCode)}
               </Text>
             </TouchableOpacity>
           </View>

@@ -1,9 +1,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export type Language = 'english' | 'hindi' | 'bangla' | 'kannada' | 'punjabi' | 'tamil' | 'telugu';
+
 interface LanguageContextType {
+  currentLanguage: Language;
   isHindi: boolean;
-  toggleLanguage: () => void;
+  isBangla: boolean;
+  isKannada: boolean;
+  isPunjabi: boolean;
+  isTamil: boolean;
+  isTelugu: boolean;
+  setLanguage: (language: Language) => void;
+  toggleLanguage: () => void; // Keep for backward compatibility
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -11,16 +20,24 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const LANGUAGE_STORAGE_KEY = 'app_language_preference';
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [isHindi, setIsHindi] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('english');
   const [isLoaded, setIsLoaded] = useState(false);
+  
+  // Computed properties for backward compatibility
+  const isHindi = currentLanguage === 'hindi';
+  const isBangla = currentLanguage === 'bangla';
+  const isKannada = currentLanguage === 'kannada';
+  const isPunjabi = currentLanguage === 'punjabi';
+  const isTamil = currentLanguage === 'tamil';
+  const isTelugu = currentLanguage === 'telugu';
   
   // Load language preference from AsyncStorage on app start
   useEffect(() => {
     const loadLanguagePreference = async () => {
       try {
         const savedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-        if (savedLanguage !== null) {
-          setIsHindi(savedLanguage === 'hindi');
+        if (savedLanguage !== null && ['english', 'hindi', 'bangla', 'kannada', 'punjabi', 'tamil', 'telugu'].includes(savedLanguage)) {
+          setCurrentLanguage(savedLanguage as Language);
         }
       } catch (error) {
         console.error('Error loading language preference:', error);
@@ -32,16 +49,27 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     loadLanguagePreference();
   }, []);
   
-  const toggleLanguage = async () => {
-    const newLanguage = !isHindi;
-    setIsHindi(newLanguage);
+  const setLanguage = async (language: Language) => {
+    setCurrentLanguage(language);
     
     // Save language preference to AsyncStorage
     try {
-      await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, newLanguage ? 'hindi' : 'english');
+      await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
     } catch (error) {
       console.error('Error saving language preference:', error);
     }
+  };
+  
+  // Keep toggleLanguage for backward compatibility (cycles through languages)
+  const toggleLanguage = async () => {
+    const nextLanguage: Language = 
+      currentLanguage === 'english' ? 'hindi' : 
+      currentLanguage === 'hindi' ? 'bangla' : 
+      currentLanguage === 'bangla' ? 'kannada' :
+      currentLanguage === 'kannada' ? 'punjabi' :
+      currentLanguage === 'punjabi' ? 'tamil' :
+      currentLanguage === 'tamil' ? 'telugu' : 'english';
+    setLanguage(nextLanguage);
   };
 
   // Don't render children until language preference is loaded
@@ -50,7 +78,17 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <LanguageContext.Provider value={{ isHindi, toggleLanguage }}>
+    <LanguageContext.Provider value={{ 
+      currentLanguage, 
+      isHindi, 
+      isBangla, 
+      isKannada, 
+      isPunjabi,
+      isTamil,
+      isTelugu,
+      setLanguage, 
+      toggleLanguage 
+    }}>
       {children}
     </LanguageContext.Provider>
   );

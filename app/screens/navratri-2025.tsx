@@ -6,6 +6,26 @@ import * as Speech from 'expo-speech';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+interface TocItem {
+  title: string;
+  type: 'h1t' | 'h1t0' | 'h1t1';
+  id: string;
+}
+
+interface Section {
+  title: string;
+  content: string;
+  formattedContent: any[];
+  id: string;
+  tocType: string;
+}
+
+interface FormattedLine {
+  type: string;
+  content: any;
+  indent: number;
+}
+
 const { width } = Dimensions.get('window');
 const CARD_TOP = 250;
 const CARD_MARGIN_TOP = -40;
@@ -16,14 +36,14 @@ const mantras = [
 
 export default function Navratri2025Screen() {
   const router = useRouter();
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
   const [selectedMantra, setSelectedMantra] = useState<any>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [shuffledMantras, setShuffledMantras] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tocItems, setTocItems] = useState<string[]>([]);
-  const [sections, setSections] = useState<any[]>([]);
+  const [tocItems, setTocItems] = useState<TocItem[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [imageDimensions, setImageDimensions] = useState<{ [key: string]: { width: number; height: number } }>({});
@@ -83,6 +103,14 @@ export default function Navratri2025Screen() {
           type: 'images',
           content: [imageUrl],
           indent: 0
+        });
+      } else if (line.trim().startsWith('----')) {
+        // Level 3 bullet point (----)
+        const content = line.replace(/^----\s*/, '').trim();
+        formattedLines.push({
+          type: 'bullet-level-3',
+          content: parseBoldText(content),
+          indent: 3
         });
       } else if (line.trim().startsWith('---')) {
         // Sub bullet point (---)
@@ -166,47 +194,59 @@ export default function Navratri2025Screen() {
     return parts;
   };
 
-  // Extract content based on language
-  const extractLanguageContent = (text: string, isHindi: boolean) => {
-    const languageTag = isHindi ? 'hindi' : 'english';
-    const languageRegex = new RegExp(`<${languageTag}>(.*?)<\/${languageTag}>`, 's');
-    const match = text.match(languageRegex);
+  // Extract content based on language with fallback to English
+  const extractLanguageContent = (text: string, currentLanguage: string) => {
+    // Define language priority order
+    const languageOrder = [currentLanguage, 'english'];
     
-    if (match) {
-      return match[1].trim();
-    }
-    
-    // Fallback to English if Hindi content not found
-    if (isHindi) {
-      const englishMatch = text.match(/<english>(.*?)<\/english>/s);
-      if (englishMatch) {
-        return englishMatch[1].trim();
+    for (const lang of languageOrder) {
+      const languageRegex = new RegExp(`<${lang}>(.*?)<\/${lang}>`, 's');
+      const match = text.match(languageRegex);
+      
+      if (match) {
+        return match[1].trim();
       }
     }
     
-    return text; // Return original text if no language tags found
+    // If no language tags found, return original text
+    return text;
   };
 
   // Parse the custom HTML-like text content
-  const parseTextContent = (text: string) => {
-    const sections = [];
-    const tocItems = [];
+  const parseTextContent = (text: string): { tocItems: TocItem[]; sections: Section[] } => {
+    const sections: Section[] = [];
+    const tocItems: TocItem[] = [];
     
     // Extract language-specific content
-    const languageContent = extractLanguageContent(text, isHindi);
+    const languageContent = extractLanguageContent(text, currentLanguage);
     
-    // Extract ToC items (h1t tags)
-    const tocMatches = languageContent.match(/<h1t>(.*?)<\/h1t>/g);
+    // Extract ToC items (h1t, h1t0, h1t1 tags)
+    const tocMatches = languageContent.match(/<h1t[01]?>(.*?)<\/h1t[01]?>/g);
     if (tocMatches) {
       tocMatches.forEach(match => {
-        const title = match.replace(/<\/?h1t>/g, '').trim();
-        tocItems.push(title);
+        let title = match.replace(/<\/?h1t[01]?>/g, '').trim();
+        let tocType: 'h1t' | 'h1t0' | 'h1t1' = 'h1t'; // default
+        
+        // Determine the type of TOC item
+        if (match.includes('<h1t0>')) {
+          tocType = 'h1t0' as const;
+        } else if (match.includes('<h1t1>')) {
+          tocType = 'h1t1' as const;
+        } else {
+          tocType = 'h1t' as const;
+        }
+        
+        tocItems.push({
+          title: title,
+          type: tocType,
+          id: title.toLowerCase().replace(/\s+/g, '-')
+        });
       });
     }
     
     // Extract content sections
     tocItems.forEach(tocItem => {
-      const sectionRegex = new RegExp(`<${tocItem}>(.*?)<\/${tocItem}>`, 's');
+      const sectionRegex = new RegExp(`<${tocItem.title}>(.*?)<\/${tocItem.title}>`, 's');
       const sectionMatch = languageContent.match(sectionRegex);
       
       if (sectionMatch) {
@@ -214,10 +254,11 @@ export default function Navratri2025Screen() {
         const formattedContent = parseTextWithFormatting(content);
         
         sections.push({
-          title: tocItem,
+          title: tocItem.title,
           content: content,
           formattedContent: formattedContent,
-          id: tocItem.toLowerCase().replace(/\s+/g, '-')
+          id: tocItem.id,
+          tocType: tocItem.type
         });
       }
     });
@@ -258,7 +299,7 @@ export default function Navratri2025Screen() {
   // Refresh content when language changes
   useEffect(() => {
     fetchNavratriContent();
-  }, [isHindi]);
+  }, [currentLanguage]);
 
   const openMantraModal = (mantra: any) => {
     setSelectedMantra(mantra);
@@ -294,6 +335,10 @@ export default function Navratri2025Screen() {
     }
   };
 
+  const scrollToTop = () => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchNavratriContent();
@@ -320,7 +365,7 @@ export default function Navratri2025Screen() {
   };
 
   // Component to render formatted text with bullets and images
-  const FormattedText = ({ formattedContent }: { formattedContent: any[] }) => {
+  const FormattedText = ({ formattedContent }: { formattedContent: FormattedLine[] }) => {
     return (
       <View>
         {formattedContent.map((line, lineIndex) => {
@@ -331,7 +376,7 @@ export default function Navratri2025Screen() {
           if (line.type === 'images') {
             return (
               <View key={lineIndex} style={styles.imageContainer}>
-                {line.content.map((imageUrl, imageIndex) => {
+                {line.content.map((imageUrl: string, imageIndex: number) => {
                   // Use 35% width for side-by-side images, 45% for single images
                   const targetWidth = line.content.length > 1 ? width * 0.35 : width * 0.45;
                   const calculatedHeight = getImageHeight(imageUrl, targetWidth);
@@ -368,8 +413,11 @@ export default function Navratri2025Screen() {
               {line.type === 'sub-bullet' && (
                 <Text style={styles.subBulletPoint}>  ◦ </Text>
               )}
+              {line.type === 'bullet-level-3' && (
+                <Text style={styles.bulletLevel3}>    ▪ </Text>
+              )}
               <Text style={styles.sectionContent}>
-                {line.content.map((part, partIndex) => (
+                {line.content.map((part: { text: string; bold: boolean }, partIndex: number) => (
                   <Text key={partIndex} style={part.bold ? styles.boldText : styles.normalText}>
                     {part.text}
                   </Text>
@@ -408,12 +456,28 @@ export default function Navratri2025Screen() {
               <Ionicons name="arrow-undo" size={24} color="#666" />
             </TouchableOpacity>
             <View style={styles.titleContainer}>
-              <Text style={styles.screenTitle}>{isHindi ? 'नवरात्रि 2025' : 'Navratri 2025'}</Text>
+              <Text style={styles.screenTitle}>
+                {currentLanguage === 'hindi' ? 'नवरात्रि 2025' : 
+                 currentLanguage === 'bangla' ? 'নবরাত্রি ২০২৫' :
+                 currentLanguage === 'kannada' ? 'ನವರಾತ್ರಿ 2025' :
+                 currentLanguage === 'punjabi' ? 'ਨਵਰਾਤਰੀ 2025' :
+                 currentLanguage === 'tamil' ? 'நவராத்திரி 2025' :
+                 currentLanguage === 'telugu' ? 'నవరాత్రి 2025' :
+                 'Navratri 2025'}
+              </Text>
             </View>
           </View>
 
           <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>{isHindi ? 'नवरात्रि 2025 सामग्री लोड हो रही है...' : 'Loading Navratri 2025 content...'}</Text>
+            <Text style={styles.loadingText}>
+              {currentLanguage === 'hindi' ? 'नवरात्रि 2025 सामग्री लोड हो रही है...' : 
+               currentLanguage === 'bangla' ? 'নবরাত্রি ২০২৫ বিষয়বস্তু লোড হচ্ছে...' :
+               currentLanguage === 'kannada' ? 'ನವರಾತ್ರಿ 2025 ವಿಷಯವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...' :
+               currentLanguage === 'punjabi' ? 'ਨਵਰਾਤਰੀ 2025 ਸਮੱਗਰੀ ਲੋਡ ਹੋ ਰਹੀ ਹੈ...' :
+               currentLanguage === 'tamil' ? 'நவராத்திரி 2025 உள்ளடக்கம் ஏற்றப்படுகிறது...' :
+               currentLanguage === 'telugu' ? 'నవరాత్రి 2025 కంటెంట్ లోడ్ అవుతోంది...' :
+               'Loading Navratri 2025 content...'}
+            </Text>
           </View>
         </View>
       </View>
@@ -446,7 +510,15 @@ export default function Navratri2025Screen() {
               <Ionicons name="arrow-undo" size={24} color="#666" />
             </TouchableOpacity>
             <View style={styles.titleContainer}>
-              <Text style={styles.screenTitle}>{isHindi ? 'नवरात्रि 2025' : 'Navratri 2025'}</Text>
+              <Text style={styles.screenTitle}>
+                {currentLanguage === 'hindi' ? 'नवरात्रि 2025' : 
+                 currentLanguage === 'bangla' ? 'নবরাত্রি ২০২৫' :
+                 currentLanguage === 'kannada' ? 'ನವರಾತ್ರಿ 2025' :
+                 currentLanguage === 'punjabi' ? 'ਨਵਰਾਤਰੀ 2025' :
+                 currentLanguage === 'tamil' ? 'நவராத்திரி 2025' :
+                 currentLanguage === 'telugu' ? 'నవరాత్రి 2025' :
+                 'Navratri 2025'}
+              </Text>
             </View>
           </View>
 
@@ -510,24 +582,61 @@ export default function Navratri2025Screen() {
           {/* Table of Contents */}
           {tocItems.length > 0 && (
             <View style={styles.tocContainer}>
-              <Text style={styles.tocTitle}>{isHindi ? 'विषय सूची' : 'Table of Contents'}</Text>
+              <Text style={styles.tocTitle}>
+                {currentLanguage === 'hindi' ? 'विषय सूची' : 
+                 currentLanguage === 'bangla' ? 'বিষয়বস্তুর সূচী' :
+                 currentLanguage === 'kannada' ? 'ವಿಷಯ ಸೂಚಿ' :
+                 currentLanguage === 'punjabi' ? 'ਵਿਸ਼ਾ ਸੂਚੀ' :
+                 currentLanguage === 'tamil' ? 'பொருளடக்கம்' :
+                 currentLanguage === 'telugu' ? 'విషయ సూచి' :
+                 'Table of Contents'}
+              </Text>
               {tocItems.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.tocItem,
-                    selectedSection === item.toLowerCase().replace(/\s+/g, '-') && styles.tocItemSelected
-                  ]}
-                  onPress={() => scrollToSection(item.toLowerCase().replace(/\s+/g, '-'))}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[
-                    styles.tocItemText,
-                    selectedSection === item.toLowerCase().replace(/\s+/g, '-') && styles.tocItemTextSelected
-                  ]}>
-                    {item}
-                  </Text>
-                </TouchableOpacity>
+                <View key={index}>
+                  {item.type === 'h1t0' ? (
+                    // h1t0: Show in TOC without links, no indentation
+                    <View style={[styles.tocItem, styles.tocItemNoLink]}>
+                      <Text style={styles.tocItemText}>
+                        {item.title}
+                      </Text>
+                    </View>
+                  ) : item.type === 'h1t1' ? (
+                    // h1t1: Show in TOC with links, slightly indented
+                    <TouchableOpacity
+                      style={[
+                        styles.tocItem,
+                        styles.tocItemIndented,
+                        selectedSection === item.id && styles.tocItemSelected
+                      ]}
+                      onPress={() => scrollToSection(item.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.tocItemText,
+                        selectedSection === item.id && styles.tocItemTextSelected
+                      ]}>
+                        {item.title}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    // h1t: Regular TOC item with links
+                    <TouchableOpacity
+                      style={[
+                        styles.tocItem,
+                        selectedSection === item.id && styles.tocItemSelected
+                      ]}
+                      onPress={() => scrollToSection(item.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.tocItemText,
+                        selectedSection === item.id && styles.tocItemTextSelected
+                      ]}>
+                        {item.title}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               ))}
             </View>
           )}
@@ -535,19 +644,40 @@ export default function Navratri2025Screen() {
           {/* Content Sections */}
           <View style={styles.sectionsContainer}>
             {sections.map((section, index) => (
-              <View
-                key={index}
-                ref={(ref) => {
-                  sectionRefs.current[section.id] = ref;
-                }}
-                style={styles.section}
-              >
-                <Text style={styles.sectionTitle}>{section.title}</Text>
-                {section.formattedContent ? (
-                  <FormattedText formattedContent={section.formattedContent} />
-                ) : (
-                  <Text style={styles.sectionContent}>{section.content}</Text>
+              <View key={index}>
+                {/* Go to Top Button */}
+                {index > 0 && (
+                  <TouchableOpacity
+                    style={styles.goToTopButton}
+                    onPress={scrollToTop}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="arrow-up" size={16} color="#FF6A00" />
+                    <Text style={styles.goToTopText}>
+                      {currentLanguage === 'hindi' ? 'शीर्ष पर जाएं' : 
+                       currentLanguage === 'bangla' ? 'শীর্ষে যান' :
+                       currentLanguage === 'kannada' ? 'ಮೇಲಕ್ಕೆ ಹೋಗಿ' :
+                       currentLanguage === 'punjabi' ? 'ਸਿਖਰ \'ਤੇ ਜਾਓ' :
+                       currentLanguage === 'tamil' ? 'மேலே செல்லவும்' :
+                       currentLanguage === 'telugu' ? 'పైకి వెళ్ళండి' :
+                       'Go to Top'}
+                    </Text>
+                  </TouchableOpacity>
                 )}
+                
+                <View
+                  ref={(ref) => {
+                    sectionRefs.current[section.id] = ref;
+                  }}
+                  style={styles.section}
+                >
+                  <Text style={styles.sectionTitle}>{section.title}</Text>
+                  {section.formattedContent ? (
+                    <FormattedText formattedContent={section.formattedContent} />
+                  ) : (
+                    <Text style={styles.sectionContent}>{section.content}</Text>
+                  )}
+                </View>
               </View>
             ))}
           </View>
@@ -673,17 +803,6 @@ const styles = StyleSheet.create({
     color: '#FF6A00',
     textAlign: 'center',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: '#666',
-    fontStyle: 'italic',
-  },
   contentContainer: {
     flex: 1,
     paddingHorizontal: 20,
@@ -803,11 +922,13 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: 40,
     backgroundColor: '#fff',
   },
   loadingText: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#666',
+    fontStyle: 'italic',
   },
   emptyContainer: {
     flex: 1,
@@ -865,6 +986,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  tocItemNoLink: {
+    backgroundColor: '#F8F9FA',
+    borderColor: '#DEE2E6',
+  },
+  tocItemIndented: {
+    marginLeft: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FF6A00',
+  },
   sectionsContainer: {
     paddingBottom: 20,
   },
@@ -913,6 +1043,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginRight: 4,
   },
+  bulletLevel3: {
+    fontSize: 12,
+    color: '#FF6A00',
+    fontWeight: 'bold',
+    marginRight: 4,
+  },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -952,5 +1088,29 @@ const styles = StyleSheet.create({
   },
   sideBySideImage: {
     marginRight: 5, // 5px spacing between side-by-side images
+  },
+  goToTopButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    marginHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  goToTopText: {
+    fontSize: 14,
+    color: '#FF6A00',
+    fontWeight: '500',
+    marginLeft: 6,
   },
 });

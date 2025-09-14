@@ -6,6 +6,26 @@ import * as Speech from 'expo-speech';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+interface TocItem {
+  title: string;
+  type: 'h1t' | 'h1t0' | 'h1t1';
+  id: string;
+}
+
+interface Section {
+  title: string;
+  content: string;
+  formattedContent: any[];
+  id: string;
+  tocType: string;
+}
+
+interface FormattedLine {
+  type: string;
+  content: any;
+  indent: number;
+}
+
 const { width } = Dimensions.get('window');
 const CARD_TOP = 250;
 const CARD_MARGIN_TOP = -40;
@@ -22,8 +42,8 @@ export default function Dhanteras2025Screen() {
   const [shuffledMantras, setShuffledMantras] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tocItems, setTocItems] = useState<string[]>([]);
-  const [sections, setSections] = useState<any[]>([]);
+  const [tocItems, setTocItems] = useState<TocItem[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [imageDimensions, setImageDimensions] = useState<{ [key: string]: { width: number; height: number } }>({});
@@ -83,6 +103,14 @@ export default function Dhanteras2025Screen() {
           type: 'images',
           content: [imageUrl],
           indent: 0
+        });
+      } else if (line.trim().startsWith('----')) {
+        // Level 3 bullet point (----)
+        const content = line.replace(/^----\s*/, '').trim();
+        formattedLines.push({
+          type: 'bullet-level-3',
+          content: parseBoldText(content),
+          indent: 3
         });
       } else if (line.trim().startsWith('---')) {
         // Sub bullet point (---)
@@ -189,19 +217,34 @@ export default function Dhanteras2025Screen() {
   };
 
   // Parse the custom HTML-like text content
-  const parseTextContent = (text: string) => {
-    const sections = [];
-    const tocItems = [];
+  const parseTextContent = (text: string): { tocItems: TocItem[]; sections: Section[] } => {
+    const sections: Section[] = [];
+    const tocItems: TocItem[] = [];
     
     // Extract language-specific content
     const languageContent = extractLanguageContent(text, isHindi);
     
-    // Extract ToC items (h1t tags or date format like <01 Oct Dashmi>)
-    const tocMatches = languageContent.match(/<h1t>(.*?)<\/h1t>/g);
+    // Extract ToC items (h1t, h1t0, h1t1 tags or date format like <01 Oct Dashmi>)
+    const tocMatches = languageContent.match(/<h1t[01]?>(.*?)<\/h1t[01]?>/g);
     if (tocMatches) {
       tocMatches.forEach(match => {
-        const title = match.replace(/<\/?h1t>/g, '').trim();
-        tocItems.push(title);
+        let title = match.replace(/<\/?h1t[01]?>/g, '').trim();
+        let tocType: 'h1t' | 'h1t0' | 'h1t1' = 'h1t'; // default
+        
+        // Determine the type of TOC item
+        if (match.includes('<h1t0>')) {
+          tocType = 'h1t0' as const;
+        } else if (match.includes('<h1t1>')) {
+          tocType = 'h1t1' as const;
+        } else {
+          tocType = 'h1t' as const;
+        }
+        
+        tocItems.push({
+          title: title,
+          type: tocType,
+          id: title.toLowerCase().replace(/\s+/g, '-')
+        });
       });
     } else {
       // Fallback: extract section titles from content tags (like <01 Oct Dashmi>)
@@ -229,7 +272,7 @@ export default function Dhanteras2025Screen() {
     } else {
       // Extract content sections
       tocItems.forEach(tocItem => {
-        const sectionRegex = new RegExp(`<${tocItem}>(.*?)<\/${tocItem}>`, 's');
+        const sectionRegex = new RegExp(`<${tocItem.title}>(.*?)<\/${tocItem.title}>`, 's');
         const sectionMatch = languageContent.match(sectionRegex);
         
         if (sectionMatch) {
@@ -237,10 +280,11 @@ export default function Dhanteras2025Screen() {
           const formattedContent = parseTextWithFormatting(content);
           
           sections.push({
-            title: tocItem,
+            title: tocItem.title,
             content: content,
             formattedContent: formattedContent,
-            id: tocItem.toLowerCase().replace(/\s+/g, '-')
+            id: tocItem.id,
+            tocType: tocItem.type
           });
         }
       });
@@ -318,6 +362,10 @@ export default function Dhanteras2025Screen() {
     }
   };
 
+  const scrollToTop = () => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchDhanterasContent();
@@ -344,7 +392,7 @@ export default function Dhanteras2025Screen() {
   };
 
   // Component to render formatted text with bullets and images
-  const FormattedText = ({ formattedContent }: { formattedContent: any[] }) => {
+  const FormattedText = ({ formattedContent }: { formattedContent: FormattedLine[] }) => {
     return (
       <View>
         {formattedContent.map((line, lineIndex) => {
@@ -355,7 +403,7 @@ export default function Dhanteras2025Screen() {
           if (line.type === 'images') {
             return (
               <View key={lineIndex} style={styles.imageContainer}>
-                {line.content.map((imageUrl, imageIndex) => {
+                {line.content.map((imageUrl: string, imageIndex: number) => {
                   // Use 35% width for side-by-side images, 45% for single images
                   const targetWidth = line.content.length > 1 ? width * 0.35 : width * 0.45;
                   const calculatedHeight = getImageHeight(imageUrl, targetWidth);
@@ -392,8 +440,11 @@ export default function Dhanteras2025Screen() {
               {line.type === 'sub-bullet' && (
                 <Text style={styles.subBulletPoint}>  ◦ </Text>
               )}
+              {line.type === 'bullet-level-3' && (
+                <Text style={styles.bulletLevel3}>    ▪ </Text>
+              )}
               <Text style={styles.sectionContent}>
-                {line.content.map((part, partIndex) => (
+                {line.content.map((part: { text: string; bold: boolean }, partIndex: number) => (
                   <Text key={partIndex} style={part.bold ? styles.boldText : styles.normalText}>
                     {part.text}
                   </Text>
@@ -536,22 +587,51 @@ export default function Dhanteras2025Screen() {
             <View style={styles.tocContainer}>
               <Text style={styles.tocTitle}>{isHindi ? 'विषय सूची' : 'Table of Contents'}</Text>
               {tocItems.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.tocItem,
-                    selectedSection === item.toLowerCase().replace(/\s+/g, '-') && styles.tocItemSelected
-                  ]}
-                  onPress={() => scrollToSection(item.toLowerCase().replace(/\s+/g, '-'))}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[
-                    styles.tocItemText,
-                    selectedSection === item.toLowerCase().replace(/\s+/g, '-') && styles.tocItemTextSelected
-                  ]}>
-                    {item}
-                  </Text>
-                </TouchableOpacity>
+                <View key={index}>
+                  {item.type === 'h1t0' ? (
+                    // h1t0: Show in TOC without links, no indentation
+                    <View style={[styles.tocItem, styles.tocItemNoLink]}>
+                      <Text style={styles.tocItemText}>
+                        {item.title}
+                      </Text>
+                    </View>
+                  ) : item.type === 'h1t1' ? (
+                    // h1t1: Show in TOC with links, slightly indented
+                    <TouchableOpacity
+                      style={[
+                        styles.tocItem,
+                        styles.tocItemIndented,
+                        selectedSection === item.id && styles.tocItemSelected
+                      ]}
+                      onPress={() => scrollToSection(item.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.tocItemText,
+                        selectedSection === item.id && styles.tocItemTextSelected
+                      ]}>
+                        {item.title}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : (
+                    // h1t: Regular TOC item with links
+                    <TouchableOpacity
+                      style={[
+                        styles.tocItem,
+                        selectedSection === item.id && styles.tocItemSelected
+                      ]}
+                      onPress={() => scrollToSection(item.id)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={[
+                        styles.tocItemText,
+                        selectedSection === item.id && styles.tocItemTextSelected
+                      ]}>
+                        {item.title}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               ))}
             </View>
           )}
@@ -559,19 +639,34 @@ export default function Dhanteras2025Screen() {
           {/* Content Sections */}
           <View style={styles.sectionsContainer}>
             {sections.map((section, index) => (
-              <View
-                key={index}
-                ref={(ref) => {
-                  sectionRefs.current[section.id] = ref;
-                }}
-                style={styles.section}
-              >
-                <Text style={styles.sectionTitle}>{section.title}</Text>
-                {section.formattedContent ? (
-                  <FormattedText formattedContent={section.formattedContent} />
-                ) : (
-                  <Text style={styles.sectionContent}>{section.content}</Text>
+              <View key={index}>
+                {/* Go to Top Button */}
+                {index > 0 && (
+                  <TouchableOpacity
+                    style={styles.goToTopButton}
+                    onPress={scrollToTop}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="arrow-up" size={16} color="#FF6A00" />
+                    <Text style={styles.goToTopText}>
+                      {isHindi ? 'शीर्ष पर जाएं' : 'Go to Top'}
+                    </Text>
+                  </TouchableOpacity>
                 )}
+                
+                <View
+                  ref={(ref) => {
+                    sectionRefs.current[section.id] = ref;
+                  }}
+                  style={styles.section}
+                >
+                  <Text style={styles.sectionTitle}>{section.title}</Text>
+                  {section.formattedContent ? (
+                    <FormattedText formattedContent={section.formattedContent} />
+                  ) : (
+                    <Text style={styles.sectionContent}>{section.content}</Text>
+                  )}
+                </View>
               </View>
             ))}
           </View>
@@ -889,6 +984,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  tocItemNoLink: {
+    backgroundColor: '#F8F9FA',
+    borderColor: '#DEE2E6',
+  },
+  tocItemIndented: {
+    marginLeft: 16,
+    borderLeftWidth: 3,
+    borderLeftColor: '#FF6A00',
+  },
+  bulletLevel3: {
+    fontSize: 12,
+    color: '#FF6A00',
+    fontWeight: 'bold',
+    marginRight: 4,
+  },
   sectionsContainer: {
     paddingBottom: 20,
   },
@@ -976,5 +1086,29 @@ const styles = StyleSheet.create({
   },
   sideBySideImage: {
     marginRight: 5, // 5px spacing between side-by-side images
+  },
+  goToTopButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8F9FA',
+    borderWidth: 1,
+    borderColor: '#E9ECEF',
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    marginHorizontal: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  goToTopText: {
+    fontSize: 14,
+    color: '#FF6A00',
+    fontWeight: '500',
+    marginLeft: 6,
   },
 });

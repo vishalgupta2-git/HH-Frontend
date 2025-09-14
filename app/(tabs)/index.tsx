@@ -18,7 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { isHindi, toggleLanguage } = useLanguage();
+  const { isHindi, toggleLanguage, currentLanguage } = useLanguage();
   const [showSpecialDaysModal, setShowSpecialDaysModal] = useState(false);
   const [showReferralSuccessModal, setShowReferralSuccessModal] = useState(false);
   const [showFestivalsModal, setShowFestivalsModal] = useState(false);
@@ -31,7 +31,13 @@ export default function HomeScreen() {
   const glowAnim = useRef(new Animated.Value(0)).current;
 
   // Text animation for Narka Chaturdashi
-  const narkaTexts = isHindi ? ['नरक चतुर्दशी', 'छोटी दीवाली'] : ['Narka Chaturdashi', 'Chhoti Diwali'];
+  const narkaTexts = currentLanguage === 'hindi' ? ['नरक चतुर्दशी', 'छोटी दीवाली'] : 
+                     currentLanguage === 'bangla' ? ['নরক চতুর্দশী', 'ছোট দীপাবলি'] :
+                     currentLanguage === 'kannada' ? ['ನರಕ ಚತುರ್ದಶಿ', 'ಚಿಕ್ಕ ದೀಪಾವಳಿ'] :
+                     currentLanguage === 'punjabi' ? ['ਨਰਕ ਚਤੁਰਦਸ਼ੀ', 'ਛੋਟੀ ਦੀਵਾਲੀ'] :
+                     currentLanguage === 'tamil' ? ['நரக சதுர்தசி', 'சின்ன தீபாவளி'] :
+                     currentLanguage === 'telugu' ? ['నరక చతుర్దశి', 'చిన్న దీపావళి'] :
+                     ['Narka Chaturdashi', 'Chhoti Diwali'];
   
   useEffect(() => {
     if (showFestivalsModal) {
@@ -182,7 +188,7 @@ export default function HomeScreen() {
         
          {/* Icon Grid Section */}
          <View style={styles.section}>
-           <HomeIconGrid key={`home-icon-grid-${isHindi}`} isHindi={isHindi} />
+           <HomeIconGrid key={`home-icon-grid-${currentLanguage}`} />
          </View>
 
          {/* Upcoming Festivals Button */}
@@ -197,7 +203,13 @@ export default function HomeScreen() {
                <View style={styles.festivalsButtonContent}>
                  <IconSymbol name="calendar" size={24} color="#FF6A00" />
                  <Text style={styles.festivalsButtonText}>
-                   {isHindi ? 'त्योहारे दिन 2025' : 'Hindu Festival Season 2025'}
+                   {currentLanguage === 'hindi' ? 'त्योहारे दिन 2025' : 
+                    currentLanguage === 'bangla' ? 'উৎসবের দিন ২০২৫' :
+                    currentLanguage === 'kannada' ? 'ಹಬ್ಬದ ದಿನಗಳು 2025' :
+                    currentLanguage === 'punjabi' ? 'ਤਿਉਹਾਰ ਦੇ ਦਿਨ 2025' :
+                    currentLanguage === 'tamil' ? 'திருவிழா நாட்கள் 2025' :
+                    currentLanguage === 'telugu' ? 'పండుగ రోజులు 2025' :
+                    'Hindu Festival Season 2025'}
                  </Text>
                  <IconSymbol name="chevron.right" size={20} color="#FF6A00" />
                </View>
@@ -213,7 +225,13 @@ export default function HomeScreen() {
              activeOpacity={0.8}
            >
              <Text style={styles.testTempleButtonText}>
-               {isHindi ? 'टेस्ट मंदिर' : 'Test Temple'}
+               {currentLanguage === 'hindi' ? 'टेस्ट मंदिर' : 
+                currentLanguage === 'bangla' ? 'টেস্ট মন্দির' :
+                currentLanguage === 'kannada' ? 'ಪರೀಕ್ಷೆ ದೇವಾಲಯ' :
+                currentLanguage === 'punjabi' ? 'ਟੈਸਟ ਮੰਦਰ' :
+                currentLanguage === 'tamil' ? 'சோதனை கோவில்' :
+                currentLanguage === 'telugu' ? 'పరీక్ష దేవాలయం' :
+                'Test Temple'}
              </Text>
            </TouchableOpacity>
          </View> */}
@@ -226,7 +244,13 @@ export default function HomeScreen() {
              activeOpacity={0.8}
            >
              <Text style={styles.testTempleButtonText}>
-               {isHindi ? '3D गणेश मंदिर' : '3D Ganesha Temple'}
+               {currentLanguage === 'hindi' ? '3D गणेश मंदिर' : 
+                currentLanguage === 'bangla' ? '3D গণেশ মন্দির' :
+                currentLanguage === 'kannada' ? '3D ಗಣೇಶ ದೇವಾಲಯ' :
+                currentLanguage === 'punjabi' ? '3D ਗਣੇਸ਼ ਮੰਦਰ' :
+                currentLanguage === 'tamil' ? '3D கணேஷ் கோவில்' :
+                currentLanguage === 'telugu' ? '3D గణేశ దేవాలయం' :
+                '3D Ganesha Temple'}
              </Text>
            </TouchableOpacity>
          </View> */}
@@ -235,12 +259,12 @@ export default function HomeScreen() {
         
          {/* Spiritual & Astrology Block Section */}
          <View style={styles.section}>
-           <SpiritualAstrologyBlock key={`spiritual-astrology-${isHindi}`} isHindi={isHindi} />
+           <SpiritualAstrologyBlock key={`spiritual-astrology-${currentLanguage}`} />
          </View>
         
          {/* Referral & Social Section */}
          <View style={styles.referralSection}>
-           <ReferralConnectBlock key={`referral-connect-${isHindi}`} isHindi={isHindi} />
+           <ReferralConnectBlock key={`referral-connect-${currentLanguage}`} />
            <SocialRow />
          </View>
         
@@ -276,7 +300,13 @@ export default function HomeScreen() {
               <View style={styles.modalContent}>
                 <View style={styles.modalHeader}>
                    <Text style={styles.modalTitle}>
-                     {isHindi ? 'त्योहारे दिन 2025' : 'Hindu Festival Season 2025'}
+                     {currentLanguage === 'hindi' ? 'त्योहारे दिन 2025' : 
+                      currentLanguage === 'bangla' ? 'উৎসবের দিন ২০২৫' :
+                      currentLanguage === 'kannada' ? 'ಹಬ್ಬದ ದಿನಗಳು 2025' :
+                      currentLanguage === 'punjabi' ? 'ਤਿਉਹਾਰ ਦੇ ਦਿਨ 2025' :
+                      currentLanguage === 'tamil' ? 'திருவிழா நாட்கள் 2025' :
+                      currentLanguage === 'telugu' ? 'పండుగ రోజులు 2025' :
+                      'Hindu Festival Season 2025'}
                    </Text>
                   <TouchableOpacity 
                     style={styles.closeButton}
@@ -289,27 +319,57 @@ export default function HomeScreen() {
                 <View style={styles.festivalsGrid}>
                   {[
                     { 
-                      name: isHindi ? 'नवरात्रि' : 'Navratri', 
+                      name: currentLanguage === 'hindi' ? 'नवरात्रि' : 
+                            currentLanguage === 'bangla' ? 'নবরাত্রি' :
+                            currentLanguage === 'kannada' ? 'ನವರಾತ್ರಿ' :
+                            currentLanguage === 'punjabi' ? 'ਨਵਰਾਤਰੀ' :
+                            currentLanguage === 'tamil' ? 'நவராத்திரி' :
+                            currentLanguage === 'telugu' ? 'నవరాత్రి' :
+                            'Navratri', 
                       image: require('@/assets/images/icons/home page icons/Navratri.png'),
                       route: '/screens/navratri-2025'
                     },
                     { 
-                      name: isHindi ? 'दशहरा' : 'Dusshera', 
+                      name: currentLanguage === 'hindi' ? 'दशहरा' : 
+                            currentLanguage === 'bangla' ? 'দশেরা' :
+                            currentLanguage === 'kannada' ? 'ದಸರಾ' :
+                            currentLanguage === 'punjabi' ? 'ਦਸੇਹਰਾ' :
+                            currentLanguage === 'tamil' ? 'தசரா' :
+                            currentLanguage === 'telugu' ? 'దసరా' :
+                            'Dusshera', 
                       image: require('@/assets/images/icons/otherIcons/DussheraIcon.png'),
                       route: '/screens/dusshera-2025'
                     },
                     { 
-                      name: isHindi ? 'अहोई अष्टमी' : 'Ahoi Ashtami', 
+                      name: currentLanguage === 'hindi' ? 'अहोई अष्टमी' : 
+                            currentLanguage === 'bangla' ? 'অহোই অষ্টমী' :
+                            currentLanguage === 'kannada' ? 'ಅಹೋಯಿ ಅಷ್ಟಮಿ' :
+                            currentLanguage === 'punjabi' ? 'ਅਹੋਈ ਅਸ਼ਟਮੀ' :
+                            currentLanguage === 'tamil' ? 'அஹோயி அஷ்டமி' :
+                            currentLanguage === 'telugu' ? 'అహోయి అష్టమి' :
+                            'Ahoi Ashtami', 
                       image: require('@/assets/images/icons/otherIcons/Ahoi Ashtami.png'),
                       route: '/screens/ahoi-ashtami-2025'
                     },
                     { 
-                      name: isHindi ? 'करवा चौथ' : 'Karva Chauth', 
+                      name: currentLanguage === 'hindi' ? 'करवा चौथ' : 
+                            currentLanguage === 'bangla' ? 'করব চতুর্থ' :
+                            currentLanguage === 'kannada' ? 'ಕರ್ವಾ ಚೌತ್' :
+                            currentLanguage === 'punjabi' ? 'ਕਰਵਾ ਚੌਥ' :
+                            currentLanguage === 'tamil' ? 'கர்வா சௌத்' :
+                            currentLanguage === 'telugu' ? 'కర్వా చౌత్' :
+                            'Karva Chauth', 
                       image: require('@/assets/images/icons/otherIcons/KarwaChauthIcon.png'),
                       route: '/screens/karva-chauth-2025'
                     },
                     { 
-                      name: isHindi ? 'धनतेरस' : 'Dhanteras', 
+                      name: currentLanguage === 'hindi' ? 'धनतेरस' : 
+                            currentLanguage === 'bangla' ? 'ধনতেরাস' :
+                            currentLanguage === 'kannada' ? 'ಧನತೇರಸ್' :
+                            currentLanguage === 'punjabi' ? 'ਧਨਤੇਰਸ' :
+                            currentLanguage === 'tamil' ? 'தனதேரஸ்' :
+                            currentLanguage === 'telugu' ? 'ధనతేరస్' :
+                            'Dhanteras', 
                       image: require('@/assets/images/icons/otherIcons/DhanterasIcon.png'),
                       route: '/screens/dhanteras-2025'
                     },
@@ -319,17 +379,35 @@ export default function HomeScreen() {
                       route: '/screens/chhoti-diwali-2025'
                     },
                     { 
-                      name: isHindi ? 'दीवाली' : 'Diwali', 
+                      name: currentLanguage === 'hindi' ? 'दीवाली' : 
+                            currentLanguage === 'bangla' ? 'দীপাবলি' :
+                            currentLanguage === 'kannada' ? 'ದೀಪಾವಳಿ' :
+                            currentLanguage === 'punjabi' ? 'ਦੀਵਾਲੀ' :
+                            currentLanguage === 'tamil' ? 'தீபாவளி' :
+                            currentLanguage === 'telugu' ? 'దీపావళి' :
+                            'Diwali', 
                       image: require('@/assets/images/icons/otherIcons/diwaliIcon.jpg'),
                       route: '/screens/diwali-2025'
                     },
                     { 
-                      name: isHindi ? 'गोवर्धन पूजा' : 'Govardhan Puja', 
+                      name: currentLanguage === 'hindi' ? 'गोवर्धन पूजा' : 
+                            currentLanguage === 'bangla' ? 'গোবর্ধন পূজা' :
+                            currentLanguage === 'kannada' ? 'ಗೋವರ್ಧನ ಪೂಜೆ' :
+                            currentLanguage === 'punjabi' ? 'ਗੋਵਰਧਨ ਪੂਜਾ' :
+                            currentLanguage === 'tamil' ? 'கோவர்தன் பூஜை' :
+                            currentLanguage === 'telugu' ? 'గోవర్ధన పూజ' :
+                            'Govardhan Puja', 
                       image: require('@/assets/images/icons/otherIcons/govardhanPujaIcon.jpg'),
                       route: '/screens/govardhan-puja-2025'
                     },
                     { 
-                      name: isHindi ? 'भाई दूज' : 'Bhai Dooj', 
+                      name: currentLanguage === 'hindi' ? 'भाई दूज' : 
+                            currentLanguage === 'bangla' ? 'ভাই দুজ' :
+                            currentLanguage === 'kannada' ? 'ಭಾಯಿ ದೂಜ್' :
+                            currentLanguage === 'punjabi' ? 'ਭਾਈ ਦੂਜ' :
+                            currentLanguage === 'tamil' ? 'பாய் தூஜ்' :
+                            currentLanguage === 'telugu' ? 'భాయి దూజ్' :
+                            'Bhai Dooj', 
                       image: require('@/assets/images/icons/otherIcons/bhaiDoojIcon.jpg'),
                       route: '/screens/bhai-dooj-2025'
                     },

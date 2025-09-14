@@ -6,6 +6,20 @@ import { Calendar, DateData } from 'react-native-calendars';
 import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+const getTranslation = (translations: any) => {
+  const { currentLanguage } = useLanguage();
+  return translations[currentLanguage] || translations.en;
+};
+
+const getFestivalTranslation = (festivalName: string, festivalTranslations: any) => {
+  const { currentLanguage } = useLanguage();
+  const translation = festivalTranslations[festivalName];
+  if (translation) {
+    return translation[currentLanguage] || translation.en;
+  }
+  return festivalName; // Return original name if no translation found
+};
+
 const { width: screenWidth } = Dimensions.get('window');
 const CARD_TOP = 250;
 const CARD_MARGIN_TOP = -40;
@@ -140,15 +154,355 @@ const HinduCalendarScreen: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedFestival, setSelectedFestival] = useState<{ name: string; date: string; description?: string; image?: any } | null>(null);
 
+  const monthTranslations = {
+    Bhadrapada: {
+      en: 'Bhadrapada',
+      hi: 'भाद्रपद',
+      bangla: 'ভাদ্রপদ',
+      kannada: 'ಭಾದ್ರಪದ',
+      punjabi: 'ਭਾਦਰਪਦ',
+      tamil: 'புரட்டாசி',
+      telugu: 'భాద్రపద'
+    },
+    Ashvina: {
+      en: 'Ashvina',
+      hi: 'आश्विन',
+      bangla: 'আশ্বিন',
+      kannada: 'ಆಶ್ವಿನ',
+      punjabi: 'ਆਸ਼ਵਿਨ',
+      tamil: 'ஐப்பசி',
+      telugu: 'ఆశ్విన'
+    },
+    Kartika: {
+      en: 'Kartika',
+      hi: 'कार्तिक',
+      bangla: 'কার্তিক',
+      kannada: 'ಕಾರ್ತಿಕ',
+      punjabi: 'ਕਾਰਤਿਕ',
+      tamil: 'கார்த்திகை',
+      telugu: 'కార్తిక'
+    },
+    Margashirsha: {
+      en: 'Margashirsha',
+      hi: 'मार्गशीर्ष',
+      bangla: 'মার্গশীর্ষ',
+      kannada: 'ಮಾರ್ಗಶೀರ್ಷ',
+      punjabi: 'ਮਾਰਗਸ਼ੀਰਸ਼',
+      tamil: 'மார்கழி',
+      telugu: 'మార్గశీర్ష'
+    },
+    Pausha: {
+      en: 'Pausha',
+      hi: 'पौष',
+      bangla: 'পৌষ',
+      kannada: 'ಪೌಷ',
+      punjabi: 'ਪੌਸ਼',
+      tamil: 'தை',
+      telugu: 'పౌష'
+    },
+    Magha: {
+      en: 'Magha',
+      hi: 'माघ',
+      bangla: 'মাঘ',
+      kannada: 'ಮಾಘ',
+      punjabi: 'ਮਾਘ',
+      tamil: 'மாசி',
+      telugu: 'మాఘ'
+    },
+    Phalguna: {
+      en: 'Phalguna',
+      hi: 'फाल्गुन',
+      bangla: 'ফাল্গুন',
+      kannada: 'ಫಾಲ್ಗುಣ',
+      punjabi: 'ਫਾਲਗੁਣ',
+      tamil: 'பங்குனி',
+      telugu: 'ఫాల్గుణ'
+    },
+    Shravana: {
+      en: 'Shravana',
+      hi: 'श्रावण',
+      bangla: 'শ্রাবণ',
+      kannada: 'ಶ್ರಾವಣ',
+      punjabi: 'ਸ਼੍ਰਾਵਣ',
+      tamil: 'ஆடி',
+      telugu: 'శ్రావణ'
+    }
+  };
+
+  const festivalTranslations = {
+    'Krishna Janmashtami': {
+      en: 'Krishna Janmashtami',
+      hi: 'कृष्ण जन्माष्टमी',
+      bangla: 'কৃষ্ণ জন্মাষ্টমী',
+      kannada: 'ಕೃಷ್ಣ ಜನ್ಮಾಷ್ಟಮಿ',
+      punjabi: 'ਕ੍ਰਿਸ਼ਨ ਜਨਮਾਸ਼ਟਮੀ',
+      tamil: 'கிருஷ்ண ஜன்மாஷ்டமி',
+      telugu: 'కృష్ణ జన్మాష్టమి'
+    },
+    'Ganesh Chaturthi': {
+      en: 'Ganesh Chaturthi',
+      hi: 'गणेश चतुर्थी',
+      bangla: 'গণেশ চতুর্থী',
+      kannada: 'ಗಣೇಶ ಚತುರ್ಥಿ',
+      punjabi: 'ਗਣੇਸ਼ ਚਤੁਰਥੀ',
+      tamil: 'விநாயகர் சதுர்த்தி',
+      telugu: 'గణేశ చతుర్థి'
+    },
+    'Raksha Bandhan': {
+      en: 'Raksha Bandhan',
+      hi: 'रक्षा बंधन',
+      bangla: 'রক্ষা বন্ধন',
+      kannada: 'ರಕ್ಷಾ ಬಂಧನ',
+      punjabi: 'ਰੱਖੜਾ ਬੰਨ੍ਹਣ',
+      tamil: 'ரக்ஷா பந்தன்',
+      telugu: 'రక్షా బంధన్'
+    },
+    'Sharad Navratri': {
+      en: 'Sharad Navratri',
+      hi: 'शरद नवरात्रि',
+      bangla: 'শরৎ নবরাত্রি',
+      kannada: 'ಶರದ್ ನವರಾತ್ರಿ',
+      punjabi: 'ਸ਼ਰਦ ਨਵਰਾਤਰੀ',
+      tamil: 'சரத் நவராத்திரி',
+      telugu: 'శరద్ నవరాత్రి'
+    },
+    'Vijayadashami (Dussehra)': {
+      en: 'Vijayadashami (Dussehra)',
+      hi: 'विजयदशमी (दशहरा)',
+      bangla: 'বিজয়দশমী (দশহরা)',
+      kannada: 'ವಿಜಯದಶಮಿ (ದಸರಾ)',
+      punjabi: 'ਵਿਜਯਦਸ਼ਮੀ (ਦਸੇਹਰਾ)',
+      tamil: 'விஜயதசமி (தசரா)',
+      telugu: 'విజయదశమి (దసరా)'
+    },
+    'Diwali': {
+      en: 'Diwali',
+      hi: 'दिवाली',
+      bangla: 'দীপাবলি',
+      kannada: 'ದೀಪಾವಳಿ',
+      punjabi: 'ਦੀਵਾਲੀ',
+      tamil: 'தீபாவளி',
+      telugu: 'దీపావళి'
+    },
+    'Holi (Rangotsav)': {
+      en: 'Holi (Rangotsav)',
+      hi: 'होली (रंगोत्सव)',
+      bangla: 'হোলি (রঙোৎসব)',
+      kannada: 'ಹೋಳಿ (ರಂಗೋತ್ಸವ)',
+      punjabi: 'ਹੋਲੀ (ਰੰਗੋਤਸਵ)',
+      tamil: 'ஹோலி (ரங்கோத்ஸவ்)',
+      telugu: 'హోళీ (రంగోత్సవం)'
+    },
+    'Maha Shivaratri': {
+      en: 'Maha Shivaratri',
+      hi: 'महा शिवरात्रि',
+      bangla: 'মহা শিবরাত্রি',
+      kannada: 'ಮಹಾ ಶಿವರಾತ್ರಿ',
+      punjabi: 'ਮਹਾ ਸ਼ਿਵਰਾਤਰੀ',
+      tamil: 'மகா சிவராத்திரி',
+      telugu: 'మహా శివరాత్రి'
+    },
+    'Makar Sankranti': {
+      en: 'Makar Sankranti',
+      hi: 'मकर संक्रांति',
+      bangla: 'মকর সংক্রান্তি',
+      kannada: 'ಮಕರ ಸಂಕ್ರಾಂತಿ',
+      punjabi: 'ਮਕਰ ਸੰਕ੍ਰਾਂਤੀ',
+      tamil: 'மகர் சங்கராந்தி',
+      telugu: 'మకర సంక్రాంతి'
+    },
+    'Vasant Panchami': {
+      en: 'Vasant Panchami',
+      hi: 'वसंत पंचमी',
+      bangla: 'বসন্ত পঞ্চমী',
+      kannada: 'ವಸಂತ ಪಂಚಮಿ',
+      punjabi: 'ਵਸੰਤ ਪੰਚਮੀ',
+      tamil: 'வசந்த பஞ்சமி',
+      telugu: 'వసంత పంచమి'
+    },
+    'Rishi Panchami': {
+      en: 'Rishi Panchami',
+      hi: 'ऋषि पंचमी',
+      bangla: 'ঋষি পঞ্চমী',
+      kannada: 'ಋಷಿ ಪಂಚಮಿ',
+      punjabi: 'ਰਿਸ਼ੀ ਪੰਚਮੀ',
+      tamil: 'ரிஷி பஞ்சமி',
+      telugu: 'ఋషి పంచమి'
+    },
+    'Anant Chaturdashi (Visarjan)': {
+      en: 'Anant Chaturdashi (Visarjan)',
+      hi: 'अनंत चतुर्दशी (विसर्जन)',
+      bangla: 'অনন্ত চতুর্দশী (বিসর্জন)',
+      kannada: 'ಅನಂತ ಚತುರ್ದಶಿ (ವಿಸರ್ಜನ)',
+      punjabi: 'ਅਨੰਤ ਚਤੁਰਦਸ਼ੀ (ਵਿਸਰਜਨ)',
+      tamil: 'அனந்த சதுர்த்தி (விசர்ஜன்)',
+      telugu: 'అనంత చతుర్దశి (విసర్జన)'
+    },
+    'Karva Chauth': {
+      en: 'Karva Chauth',
+      hi: 'करवा चौथ',
+      bangla: 'করবা চৌথ',
+      kannada: 'ಕರ್ವಾ ಚೌತ್',
+      punjabi: 'ਕਰਵਾ ਚੌਥ',
+      tamil: 'கர்வா சௌத்',
+      telugu: 'కర్వా చౌత్'
+    },
+    'Ahoi Ashtami': {
+      en: 'Ahoi Ashtami',
+      hi: 'अहोई अष्टमी',
+      bangla: 'অহোই অষ্টমী',
+      kannada: 'ಅಹೋಯಿ ಅಷ್ಟಮಿ',
+      punjabi: 'ਅਹੋਈ ਅਸ਼ਟਮੀ',
+      tamil: 'அஹோயி அஷ்டமி',
+      telugu: 'అహోయి అష్టమి'
+    },
+    'Naraka Chaturdashi (Chhoti Diwali)': {
+      en: 'Naraka Chaturdashi (Chhoti Diwali)',
+      hi: 'नरक चतुर्दशी (छोटी दिवाली)',
+      bangla: 'নরক চতুর্দশী (ছোট দীপাবলি)',
+      kannada: 'ನರಕ ಚತುರ್ದಶಿ (ಚೋಟಿ ದೀಪಾವಳಿ)',
+      punjabi: 'ਨਰਕ ਚਤੁਰਦਸ਼ੀ (ਛੋਟੀ ਦੀਵਾਲੀ)',
+      tamil: 'நரக சதுர்த்தி (சின்ன தீபாவளி)',
+      telugu: 'నరక చతుర్దశి (చిన్న దీపావళి)'
+    },
+    'Govardhan Puja': {
+      en: 'Govardhan Puja',
+      hi: 'गोवर्धन पूजा',
+      bangla: 'গোবর্ধন পূজা',
+      kannada: 'ಗೋವರ್ಧನ ಪೂಜೆ',
+      punjabi: 'ਗੋਵਰਧਨ ਪੂਜਾ',
+      tamil: 'கோவர்தன் பூஜை',
+      telugu: 'గోవర్ధన పూజ'
+    },
+    'Bhai Dooj': {
+      en: 'Bhai Dooj',
+      hi: 'भाई दूज',
+      bangla: 'ভাই দুজ',
+      kannada: 'ಭಾಯಿ ದೂಜ್',
+      punjabi: 'ਭਾਈ ਦੂਜ',
+      tamil: 'பை தூஜ்',
+      telugu: 'భాయి దూజ్'
+    },
+    'Holika Dahan': {
+      en: 'Holika Dahan',
+      hi: 'होलिका दहन',
+      bangla: 'হোলিকা দহন',
+      kannada: 'ಹೋಲಿಕಾ ದಹನ',
+      punjabi: 'ਹੋਲਿਕਾ ਦਹਨ',
+      tamil: 'ஹோலிகா தஹன்',
+      telugu: 'హోలికా దహన్'
+    },
+    'Shravan Somvar (last)': {
+      en: 'Shravan Somvar (last)',
+      hi: 'श्रावण सोमवार (अंतिम)',
+      bangla: 'শ্রাবণ সোমবার (শেষ)',
+      kannada: 'ಶ್ರಾವಣ ಸೋಮವಾರ (ಕೊನೆಯ)',
+      punjabi: 'ਸ਼੍ਰਾਵਣ ਸੋਮਵਾਰ (ਆਖਰੀ)',
+      tamil: 'ஸ்ராவண சோமவாரம் (கடைசி)',
+      telugu: 'శ్రావణ సోమవారం (చివరి)'
+    },
+    'Putrada Ekadashi': {
+      en: 'Putrada Ekadashi',
+      hi: 'पुत्रदा एकादशी',
+      bangla: 'পুত্রদা একাদশী',
+      kannada: 'ಪುತ್ರದಾ ಏಕಾದಶಿ',
+      punjabi: 'ਪੁਤਰਦਾ ਏਕਾਦਸ਼ੀ',
+      tamil: 'புத்திரதா ஏகாதசி',
+      telugu: 'పుత్రదా ఏకాదశి'
+    },
+    'Pausha Putrada Ekadashi': {
+      en: 'Pausha Putrada Ekadashi',
+      hi: 'पौष पुत्रदा एकादशी',
+      bangla: 'পৌষ পুত্রদা একাদশী',
+      kannada: 'ಪೌಷ ಪುತ್ರದಾ ಏಕಾದಶಿ',
+      punjabi: 'ਪੌਸ਼ ਪੁਤਰਦਾ ਏਕਾਦਸ਼ੀ',
+      tamil: 'தை புத்திரதா ஏகாதசி',
+      telugu: 'పౌష పుత్రదా ఏకాదశి'
+    },
+    'Gita Jayanti (Mokshada Ekadashi)': {
+      en: 'Gita Jayanti (Mokshada Ekadashi)',
+      hi: 'गीता जयंती (मोक्षदा एकादशी)',
+      bangla: 'গীতা জয়ন্তী (মোক্ষদা একাদশী)',
+      kannada: 'ಗೀತಾ ಜಯಂತಿ (ಮೋಕ್ಷದಾ ಏಕಾದಶಿ)',
+      punjabi: 'ਗੀਤਾ ਜਯੰਤੀ (ਮੋਕਸ਼ਦਾ ਏਕਾਦਸ਼ੀ)',
+      tamil: 'கீதா ஜயந்தி (மோக்ஷதா ஏகாதசி)',
+      telugu: 'గీతా జయంతి (మోక్షదా ఏకాదశి)'
+    }
+  };
+
   const translations = {
-    updatedUpTo: { en: 'Updated up to March 2026', hi: 'मार्च 2026 तक अपडेट किया गया' },
-    festivalsThisMonth: { en: 'Festivals this Month:', hi: 'इस महीने के त्योहार:' },
-    calendar: { en: 'Calendar', hi: 'कैलेंडर' },
-    summary: { en: 'Summary', hi: 'सारांश' },
-    hinduCalendar: { en: 'Hindu Calendar 2025-2026', hi: 'हिंदू कैलेंडर 2025-2026' },
-    keyFestivals: { en: 'Key Festivals / Vrats:', hi: 'मुख्य त्योहार / व्रत:' },
-    noMajorFestivals: { en: '(No major pan-Indian festivals listed in this period)', hi: '(इस अवधि में कोई प्रमुख पैन-भारतीय त्योहार सूचीबद्ध नहीं)' },
-    tellMeMore: { en: 'Tell me more', hi: 'और बताएं' }
+    updatedUpTo: { 
+      en: 'Updated up to March 2026', 
+      hi: 'मार्च 2026 तक अपडेट किया गया',
+      bangla: 'মার্চ ২০২৬ পর্যন্ত আপডেট করা হয়েছে',
+      kannada: 'ಮಾರ್ಚ್ 2026 ರವರೆಗೆ ನವೀಕರಿಸಲಾಗಿದೆ',
+      punjabi: 'ਮਾਰਚ 2026 ਤੱਕ ਅਪਡੇਟ ਕੀਤਾ ਗਿਆ',
+      tamil: 'மார்ச் 2026 வரை புதுப்பிக்கப்பட்டது',
+      telugu: 'మార్చి 2026 వరకు నవీకరించబడింది'
+    },
+    festivalsThisMonth: { 
+      en: 'Festivals this Month:', 
+      hi: 'इस महीने के त्योहार:',
+      bangla: 'এই মাসের উৎসব:',
+      kannada: 'ಈ ತಿಂಗಳ ಹಬ್ಬಗಳು:',
+      punjabi: 'ਇਸ ਮਹੀਨੇ ਦੇ ਤਿਉਹਾਰ:',
+      tamil: 'இந்த மாத திருவிழாக்கள்:',
+      telugu: 'ఈ నెల పండగలు:'
+    },
+    calendar: { 
+      en: 'Calendar', 
+      hi: 'कैलेंडर',
+      bangla: 'ক্যালেন্ডার',
+      kannada: 'ಕ್ಯಾಲೆಂಡರ್',
+      punjabi: 'ਕੈਲੰਡਰ',
+      tamil: 'காலண்டர்',
+      telugu: 'క్యాలెండర్'
+    },
+    summary: { 
+      en: 'Summary', 
+      hi: 'सारांश',
+      bangla: 'সারসংক্ষেপ',
+      kannada: 'ಸಾರಾಂಶ',
+      punjabi: 'ਸਾਰ',
+      tamil: 'சுருக்கம்',
+      telugu: 'సారాంశం'
+    },
+    hinduCalendar: { 
+      en: 'Hindu Calendar 2025-2026', 
+      hi: 'हिंदू कैलेंडर 2025-2026',
+      bangla: 'হিন্দু ক্যালেন্ডার ২০২৫-২০২৬',
+      kannada: 'ಹಿಂದೂ ಕ್ಯಾಲೆಂಡರ್ 2025-2026',
+      punjabi: 'ਹਿੰਦੂ ਕੈਲੰਡਰ 2025-2026',
+      tamil: 'இந்து காலண்டர் 2025-2026',
+      telugu: 'హిందూ క్యాలెండర్ 2025-2026'
+    },
+    keyFestivals: { 
+      en: 'Key Festivals / Vrats:', 
+      hi: 'मुख्य त्योहार / व्रत:',
+      bangla: 'প্রধান উৎসব / ব্রত:',
+      kannada: 'ಪ್ರಮುಖ ಹಬ್ಬಗಳು / ವ್ರತಗಳು:',
+      punjabi: 'ਮੁੱਖ ਤਿਉਹਾਰ / ਵਰਤ:',
+      tamil: 'முக்கிய திருவிழாக்கள் / விரதங்கள்:',
+      telugu: 'ప్రధాన పండగలు / వ్రతాలు:'
+    },
+    noMajorFestivals: { 
+      en: '(No major pan-Indian festivals listed in this period)', 
+      hi: '(इस अवधि में कोई प्रमुख पैन-भारतीय त्योहार सूचीबद्ध नहीं)',
+      bangla: '(এই সময়কালে কোন প্রধান প্যান-ভারতীয় উৎসব তালিকাভুক্ত নেই)',
+      kannada: '(ಈ ಅವಧಿಯಲ್ಲಿ ಯಾವುದೇ ಪ್ರಮುಖ ಪ್ಯಾನ್-ಭಾರತೀಯ ಹಬ್ಬಗಳು ಪಟ್ಟಿಮಾಡಲಾಗಿಲ್ಲ)',
+      punjabi: '(ਇਸ ਸਮੇਂ ਦੌਰਾਨ ਕੋਈ ਪ੍ਰਮੁੱਖ ਪੈਨ-ਭਾਰਤੀ ਤਿਉਹਾਰ ਸੂਚੀਬੱਧ ਨਹੀਂ)',
+      tamil: '(இந்த காலகட்டத்தில் முக்கியமான பான்-இந்திய திருவிழாக்கள் பட்டியலிடப்படவில்லை)',
+      telugu: '(ఈ కాలంలో ప్రధాన పాన్-భారతీయ పండగలు జాబితా చేయబడలేదు)'
+    },
+    tellMeMore: { 
+      en: 'Tell me more', 
+      hi: 'और बताएं',
+      bangla: 'আরও বলুন',
+      kannada: 'ಇನ್ನಷ್ಟು ಹೇಳಿ',
+      punjabi: 'ਹੋਰ ਦੱਸੋ',
+      tamil: 'மேலும் சொல்லுங்கள்',
+      telugu: 'మరింత చెప్పండి'
+    }
   };
 
   // Function to get festival image based on festival name
@@ -408,7 +762,7 @@ const HinduCalendarScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
              {/* Update notice */}
-       <Text style={styles.updateNotice}>{isHindi ? translations.updatedUpTo.hi : translations.updatedUpTo.en}</Text>
+       <Text style={styles.updateNotice}>{getTranslation(translations.updatedUpTo)}</Text>
        
        {/* Month Title */}
        <Text style={styles.monthTitle}>{getHinduMonthTitle(currentDate)}</Text>
@@ -466,10 +820,10 @@ const HinduCalendarScreen: React.FC = () => {
       {/* Month Festivals List */}
       {monthFestivals.length > 0 && (
         <View style={styles.monthFestivalsList}>
-          <Text style={styles.monthFestivalsTitle}>{isHindi ? translations.festivalsThisMonth.hi : translations.festivalsThisMonth.en}</Text>
+          <Text style={styles.monthFestivalsTitle}>{getTranslation(translations.festivalsThisMonth)}</Text>
           {monthFestivals.map((festival, index) => (
             <View key={index} style={styles.monthFestivalItem}>
-              <Text style={styles.monthFestivalName}>{festival.name}</Text>
+              <Text style={styles.monthFestivalName}>{getFestivalTranslation(festival.name, festivalTranslations)}</Text>
               <Text style={styles.monthFestivalDate}>{festival.date}</Text>
               {festival.description && (
                 <Text style={styles.monthFestivalDescription}>
@@ -492,10 +846,10 @@ const HinduCalendarScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
         >
        {/* Update notice */}
-       <Text style={styles.updateNotice}>{isHindi ? translations.updatedUpTo.hi : translations.updatedUpTo.en}</Text>
+       <Text style={styles.updateNotice}>{getTranslation(translations.updatedUpTo)}</Text>
        
        {/* Hindu Months Overview */}
-       <Text style={styles.sectionTitle}>{isHindi ? translations.hinduCalendar.hi : translations.hinduCalendar.en}</Text>
+       <Text style={styles.sectionTitle}>{getTranslation(translations.hinduCalendar)}</Text>
       
       {hinduMonths.map((month, index) => (
         <TouchableOpacity
@@ -504,22 +858,22 @@ const HinduCalendarScreen: React.FC = () => {
           onPress={() => openMonthDetails(month)}
         >
           <View style={styles.monthHeader}>
-            <Text style={styles.monthName}>{month.name}</Text>
+            <Text style={styles.monthName}>{getTranslation(monthTranslations[month.name as keyof typeof monthTranslations] || { en: month.name, hi: month.name, bangla: month.name, kannada: month.name, punjabi: month.name, tamil: month.name, telugu: month.name })}</Text>
             <Text style={styles.gregorianSpan}>({month.gregorianSpan})</Text>
           </View>
           
           {month.festivals.length > 0 ? (
             <View style={styles.festivalsContainer}>
-              <Text style={styles.festivalsTitle}>{isHindi ? translations.keyFestivals.hi : translations.keyFestivals.en}</Text>
+              <Text style={styles.festivalsTitle}>{getTranslation(translations.keyFestivals)}</Text>
               {month.festivals.map((festival, fIndex) => (
                 <Text key={fIndex} style={styles.festivalText}>
-                  {festival.name} – {festival.date}
+                  {getFestivalTranslation(festival.name, festivalTranslations)} – {festival.date}
                 </Text>
               ))}
             </View>
           ) : (
             <Text style={styles.noFestivals}>
-              (No major pan-Indian festivals listed in this period)
+              {getTranslation(translations.noMajorFestivals)}
             </Text>
           )}
         </TouchableOpacity>
@@ -554,7 +908,7 @@ const HinduCalendarScreen: React.FC = () => {
             onPress={() => setActiveTab('calendar')}
           >
             <Text style={[styles.tabText, activeTab === 'calendar' && styles.activeTabText]}>
-              {isHindi ? translations.calendar.hi : translations.calendar.en}
+              {getTranslation(translations.calendar)}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -562,7 +916,7 @@ const HinduCalendarScreen: React.FC = () => {
             onPress={() => setActiveTab('summary')}
           >
             <Text style={[styles.tabText, activeTab === 'summary' && styles.activeTabText]}>
-              {isHindi ? translations.summary.hi : translations.summary.en}
+              {getTranslation(translations.summary)}
             </Text>
           </TouchableOpacity>
         </View>
@@ -588,7 +942,7 @@ const HinduCalendarScreen: React.FC = () => {
               {selectedFestival && (
                 <View style={styles.modalBody}>
                   <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>{selectedFestival.name}</Text>
+                    <Text style={styles.modalTitle}>{getFestivalTranslation(selectedFestival.name, festivalTranslations)}</Text>
                     <Text style={styles.modalSubtitle}>{selectedFestival.date}</Text>
                   </View>
                   
@@ -621,9 +975,24 @@ const HinduCalendarScreen: React.FC = () => {
                        selectedFestival.name.toLowerCase().includes('chhoti diwali')) && (
                        <TouchableOpacity style={styles.tellMeMoreButton} onPress={() => {
                          closeModal();
-                         router.push('/screens/diwali');
+                         // Route to specific festival pages based on the festival name
+                         if (selectedFestival.name.toLowerCase().includes('dhanteras')) {
+                           router.push('/screens/dhanteras-2025');
+                         } else if (selectedFestival.name.toLowerCase().includes('naraka chaturdashi') || 
+                                   selectedFestival.name.toLowerCase().includes('chhoti diwali')) {
+                           router.push('/screens/chhoti-diwali-2025');
+                         } else if (selectedFestival.name.toLowerCase().includes('diwali')) {
+                           router.push('/screens/diwali-2025');
+                         } else if (selectedFestival.name.toLowerCase().includes('govardhan puja')) {
+                           router.push('/screens/govardhan-puja-2025');
+                         } else if (selectedFestival.name.toLowerCase().includes('bhai dooj')) {
+                           router.push('/screens/bhai-dooj-2025');
+                         } else {
+                           // Fallback to generic diwali page
+                           router.push('/screens/diwali');
+                         }
                        }}>
-                         <Text style={styles.tellMeMoreButtonText}>Tell me more</Text>
+                         <Text style={styles.tellMeMoreButtonText}>{getTranslation(translations.tellMeMore)}</Text>
                        </TouchableOpacity>
                      )}
                 </View>

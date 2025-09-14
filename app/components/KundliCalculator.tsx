@@ -52,7 +52,18 @@ import { useLanguage } from '@/contexts/LanguageContext';
 }
 
 const KundliCalculator: React.FC = () => {
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
+  
+  // Helper function to get translation
+  const getTranslation = (translations: any) => {
+    return currentLanguage === 'hindi' ? translations.hi :
+           currentLanguage === 'bangla' ? translations.bangla :
+           currentLanguage === 'kannada' ? translations.kannada :
+           currentLanguage === 'punjabi' ? translations.punjabi :
+           currentLanguage === 'tamil' ? translations.tamil :
+           currentLanguage === 'telugu' ? translations.telugu :
+           translations.en;
+  };
   
   // Provider states
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -75,28 +86,196 @@ const KundliCalculator: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const translations = {
-    title: { en: 'Kundli Calculator', hi: 'कुंडली कैलकुलेटर' },
-    loading: { en: 'Loading providers...', hi: 'प्रदाता लोड हो रहे हैं...' },
-    noProviders: { en: 'No providers available', hi: 'कोई प्रदाता उपलब्ध नहीं' },
-    bookAppointment: { en: 'Book Appointment', hi: 'अपॉइंटमेंट बुक करें' },
-    about: { en: 'About', hi: 'के बारे में' },
-    close: { en: 'Close', hi: 'बंद करें' },
-    bookingForm: { en: 'Booking Form', hi: 'बुकिंग फॉर्म' },
-    name: { en: 'Name', hi: 'नाम' },
-    phone: { en: 'Phone', hi: 'फोन' },
-    date: { en: 'Date', hi: 'तारीख' },
-    timeSlot: { en: 'Time Slot', hi: 'समय स्लॉट' },
-    submit: { en: 'Submit', hi: 'जमा करें' },
-    submitting: { en: 'Submitting...', hi: 'जमा किया जा रहा है...' },
-    success: { en: 'Success', hi: 'सफलता' },
-    error: { en: 'Error', hi: 'त्रुटि' },
-    bookingSuccess: { en: 'Booking submitted successfully!', hi: 'बुकिंग सफलतापूर्वक जमा हो गई!' },
-    bookingError: { en: 'Failed to submit booking', hi: 'बुकिंग जमा करने में विफल' },
+    title: { 
+      en: 'Kundli Calculator', 
+      hi: 'कुंडली कैलकुलेटर',
+      bangla: 'কুন্ডলী ক্যালকুলেটর',
+      kannada: 'ಕುಂಡಲಿ ಕ್ಯಾಲ್ಕುಲೇಟರ್',
+      punjabi: 'ਕੁੰਡਲੀ ਕੈਲਕੁਲੇਟਰ',
+      tamil: 'குண்டலி கால்குலேட்டர்',
+      telugu: 'కుండలి కాలిక్యులేటర్'
+    },
+    loading: { 
+      en: 'Loading providers...', 
+      hi: 'प्रदाता लोड हो रहे हैं...',
+      bangla: 'প্রদানকারী লোড হচ্ছে...',
+      kannada: 'ಪ್ರದಾತರನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...',
+      punjabi: 'ਪ੍ਰਦਾਤਾ ਲੋਡ ਹੋ ਰਹੇ ਹਨ...',
+      tamil: 'வழங்குநர்கள் ஏற்றப்படுகின்றனர்...',
+      telugu: 'ప్రదాతలు లోడ్ అవుతున్నారు...'
+    },
+    noProviders: { 
+      en: 'No providers available', 
+      hi: 'कोई प्रदाता उपलब्ध नहीं',
+      bangla: 'কোন প্রদানকারী উপলব্ধ নয়',
+      kannada: 'ಯಾವುದೇ ಪ್ರದಾತರು ಲಭ್ಯವಿಲ್ಲ',
+      punjabi: 'ਕੋਈ ਪ੍ਰਦਾਤਾ ਉਪਲਬਧ ਨਹੀਂ',
+      tamil: 'வழங்குநர்கள் எதுவும் இல்லை',
+      telugu: 'ప్రదాతలు లభించలేదు'
+    },
+    bookAppointment: { 
+      en: 'Book Appointment', 
+      hi: 'अपॉइंटमेंट बुक करें',
+      bangla: 'অ্যাপয়েন্টমেন্ট বুক করুন',
+      kannada: 'ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ',
+      punjabi: 'ਅਪਾਇੰਟਮੈਂਟ ਬੁੱਕ ਕਰੋ',
+      tamil: 'எப்பாயின்ட்மென்ட் புக் செய்யவும்',
+      telugu: 'అపాయింట్మెంట్ బుక్ చేయండి'
+    },
+    about: { 
+      en: 'About', 
+      hi: 'के बारे में',
+      bangla: 'সম্পর্কে',
+      kannada: 'ಬಗ್ಗೆ',
+      punjabi: 'ਬਾਰੇ',
+      tamil: 'பற்றி',
+      telugu: 'గురించి'
+    },
+    close: { 
+      en: 'Close', 
+      hi: 'बंद करें',
+      bangla: 'বন্ধ করুন',
+      kannada: 'ಮುಚ್ಚಿ',
+      punjabi: 'ਬੰਦ ਕਰੋ',
+      tamil: 'மூடு',
+      telugu: 'మూసివేయండి'
+    },
+    bookingForm: { 
+      en: 'Booking Form', 
+      hi: 'बुकिंग फॉर्म',
+      bangla: 'বুকিং ফর্ম',
+      kannada: 'ಬುಕಿಂಗ್ ಫಾರ್ಮ್',
+      punjabi: 'ਬੁੱਕਿੰਗ ਫਾਰਮ',
+      tamil: 'புகிங் படிவம்',
+      telugu: 'బుకింగ్ ఫారమ్'
+    },
+    name: { 
+      en: 'Name', 
+      hi: 'नाम',
+      bangla: 'নাম',
+      kannada: 'ಹೆಸರು',
+      punjabi: 'ਨਾਮ',
+      tamil: 'பெயர்',
+      telugu: 'పేరు'
+    },
+    phone: { 
+      en: 'Phone', 
+      hi: 'फोन',
+      bangla: 'ফোন',
+      kannada: 'ಫೋನ್',
+      punjabi: 'ਫੋਨ',
+      tamil: 'தொலைபேசி',
+      telugu: 'ఫోన్'
+    },
+    date: { 
+      en: 'Date', 
+      hi: 'तारीख',
+      bangla: 'তারিখ',
+      kannada: 'ದಿನಾಂಕ',
+      punjabi: 'ਤਾਰੀਖ',
+      tamil: 'தேதி',
+      telugu: 'తేదీ'
+    },
+    timeSlot: { 
+      en: 'Time Slot', 
+      hi: 'समय स्लॉट',
+      bangla: 'সময় স্লট',
+      kannada: 'ಸಮಯ ಸ್ಲಾಟ್',
+      punjabi: 'ਸਮਾਂ ਸਲਾਟ',
+      tamil: 'நேர இடைவெளி',
+      telugu: 'సమయ స్లాట్'
+    },
+    submit: { 
+      en: 'Submit', 
+      hi: 'जमा करें',
+      bangla: 'জমা দিন',
+      kannada: 'ಸಲ್ಲಿಸಿ',
+      punjabi: 'ਜਮ੍ਹਾ ਕਰੋ',
+      tamil: 'சமர்ப்பிக்கவும்',
+      telugu: 'సమర్పించండి'
+    },
+    submitting: { 
+      en: 'Submitting...', 
+      hi: 'जमा किया जा रहा है...',
+      bangla: 'জমা দেওয়া হচ্ছে...',
+      kannada: 'ಸಲ್ಲಿಸಲಾಗುತ್ತಿದೆ...',
+      punjabi: 'ਜਮ੍ਹਾ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ...',
+      tamil: 'சமர்ப்பிக்கப்படுகிறது...',
+      telugu: 'సమర్పించబడుతోంది...'
+    },
+    success: { 
+      en: 'Success', 
+      hi: 'सफलता',
+      bangla: 'সফলতা',
+      kannada: 'ಯಶಸ್ಸು',
+      punjabi: 'ਸਫਲਤਾ',
+      tamil: 'வெற்றி',
+      telugu: 'విజయం'
+    },
+    error: { 
+      en: 'Error', 
+      hi: 'त्रुटि',
+      bangla: 'ত্রুটি',
+      kannada: 'ದೋಷ',
+      punjabi: 'ਗਲਤੀ',
+      tamil: 'பிழை',
+      telugu: 'లోపం'
+    },
+    bookingSuccess: { 
+      en: 'Booking submitted successfully!', 
+      hi: 'बुकिंग सफलतापूर्वक जमा हो गई!',
+      bangla: 'বুকিং সফলভাবে জমা হয়েছে!',
+      kannada: 'ಬುಕಿಂಗ್ ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!',
+      punjabi: 'ਬੁੱਕਿੰਗ ਸਫਲਤਾਪੂਰਵਕ ਜਮ੍ਹਾ ਹੋ ਗਈ!',
+      tamil: 'புகிங் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!',
+      telugu: 'బుకింగ్ విజయవంతంగా సమర్పించబడింది!'
+    },
+    bookingError: { 
+      en: 'Failed to submit booking', 
+      hi: 'बुकिंग जमा करने में विफल',
+      bangla: 'বুকিং জমা দিতে ব্যর্থ',
+      kannada: 'ಬುಕಿಂಗ್ ಸಲ್ಲಿಸಲು ವಿಫಲವಾಗಿದೆ',
+      punjabi: 'ਬੁੱਕਿੰਗ ਜਮ੍ਹਾ ਕਰਨ ਵਿੱਚ ਅਸਫਲ',
+      tamil: 'புகிங் சமர்ப்பிக்க முடியவில்லை',
+      telugu: 'బుకింగ్ సమర్పించడంలో విఫలమైంది'
+    },
     validation: {
-      nameRequired: { en: 'Name is required', hi: 'नाम आवश्यक है' },
-      phoneRequired: { en: 'Phone is required', hi: 'फोन आवश्यक है' },
-      dateRequired: { en: 'Date is required', hi: 'तारीख आवश्यक है' },
-      timeSlotRequired: { en: 'Time slot is required', hi: 'समय स्लॉट आवश्यक है' }
+      nameRequired: { 
+        en: 'Name is required', 
+        hi: 'नाम आवश्यक है',
+        bangla: 'নাম প্রয়োজন',
+        kannada: 'ಹೆಸರು ಅಗತ್ಯ',
+        punjabi: 'ਨਾਮ ਲੋੜੀਂਦਾ ਹੈ',
+        tamil: 'பெயர் தேவை',
+        telugu: 'పేరు అవసరం'
+      },
+      phoneRequired: { 
+        en: 'Phone is required', 
+        hi: 'फोन आवश्यक है',
+        bangla: 'ফোন প্রয়োজন',
+        kannada: 'ಫೋನ್ ಅಗತ್ಯ',
+        punjabi: 'ਫੋਨ ਲੋੜੀਂਦਾ ਹੈ',
+        tamil: 'தொலைபேசி தேவை',
+        telugu: 'ఫోన్ అవసరం'
+      },
+      dateRequired: { 
+        en: 'Date is required', 
+        hi: 'तारीख आवश्यक है',
+        bangla: 'তারিখ প্রয়োজন',
+        kannada: 'ದಿನಾಂಕ ಅಗತ್ಯ',
+        punjabi: 'ਤਾਰੀਖ ਲੋੜੀਂਦੀ ਹੈ',
+        tamil: 'தேதி தேவை',
+        telugu: 'తేదీ అవసరం'
+      },
+      timeSlotRequired: { 
+        en: 'Time slot is required', 
+        hi: 'समय स्लॉट आवश्यक है',
+        bangla: 'সময় স্লট প্রয়োজন',
+        kannada: 'ಸಮಯ ಸ್ಲಾಟ್ ಅಗತ್ಯ',
+        punjabi: 'ਸਮਾਂ ਸਲਾਟ ਲੋੜੀਂਦਾ ਹੈ',
+        tamil: 'நேர இடைவெளி தேவை',
+        telugu: 'సమయ స్లాట్ అవసరం'
+      }
     }
   };
 
@@ -186,27 +365,107 @@ const KundliCalculator: React.FC = () => {
     
     // Validation
     if (bookingName.trim().length < 3) {
-      Alert.alert(isHindi ? 'अमान्य नाम' : 'Invalid Name', isHindi ? 'नाम कम से कम 3 अक्षर का होना चाहिए।' : 'Name must be at least 3 characters long.');
+      Alert.alert(getTranslation({
+        en: 'Invalid Name',
+        hi: 'अमान्य नाम',
+        bangla: 'অবৈধ নাম',
+        kannada: 'ಅಮಾನ್ಯ ಹೆಸರು',
+        punjabi: 'ਗਲਤ ਨਾਮ',
+        tamil: 'தவறான பெயர்',
+        telugu: 'చెల్లని పేరు'
+      }), getTranslation({
+        en: 'Name must be at least 3 characters long.',
+        hi: 'नाम कम से कम 3 अक्षर का होना चाहिए।',
+        bangla: 'নাম কমপক্ষে ৩ অক্ষরের হতে হবে।',
+        kannada: 'ಹೆಸರು ಕನಿಷ್ಠ 3 ಅಕ್ಷರಗಳನ್ನು ಹೊಂದಿರಬೇಕು।',
+        punjabi: 'ਨਾਮ ਘੱਟੋ-ਘੱਟ 3 ਅੱਖਰਾਂ ਦਾ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ।',
+        tamil: 'பெயர் குறைந்தது 3 எழுத்துகள் இருக்க வேண்டும்।',
+        telugu: 'పేరు కనీసం 3 అక్షరాలుగా ఉండాలి।'
+      }));
       return;
     }
     
     if (!bookingPhone || bookingPhone.length < 10) {
-      Alert.alert(isHindi ? 'अमान्य फोन' : 'Invalid Phone', isHindi ? 'कृपया एक वैध फोन नंबर दर्ज करें।' : 'Please enter a valid phone number.');
+      Alert.alert(getTranslation({
+        en: 'Invalid Phone',
+        hi: 'अमान्य फोन',
+        bangla: 'অবৈধ ফোন',
+        kannada: 'ಅಮಾನ್ಯ ಫೋನ್',
+        punjabi: 'ਗਲਤ ਫੋਨ',
+        tamil: 'தவறான தொலைபேசி',
+        telugu: 'చెల్లని ఫోన్'
+      }), getTranslation({
+        en: 'Please enter a valid phone number.',
+        hi: 'कृपया एक वैध फोन नंबर दर्ज करें।',
+        bangla: 'অনুগ্রহ করে একটি বৈধ ফোন নম্বর লিখুন।',
+        kannada: 'ದಯವಿಟ್ಟು ಮಾನ್ಯ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ।',
+        punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਫੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ।',
+        tamil: 'தயவுசெய்து சரியான தொலைபேசி எண்ணை உள்ளிடவும்।',
+        telugu: 'దయచేసి చెల్లుబాటు అయ్యే ఫోన్ నంబర్‌ను నమోదు చేయండి।'
+      }));
       return;
     }
     
     if (!bookingDate) {
-      Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया एक पसंदीदा तारीख चुनें।' : 'Please select a preferred date.');
+      Alert.alert(getTranslation({
+        en: 'Invalid Date',
+        hi: 'अमान्य तारीख',
+        bangla: 'অবৈধ তারিখ',
+        kannada: 'ಅಮಾನ್ಯ ದಿನಾಂಕ',
+        punjabi: 'ਗਲਤ ਤਾਰੀਖ',
+        tamil: 'தவறான தேதி',
+        telugu: 'చెల్లని తేదీ'
+      }), getTranslation({
+        en: 'Please select a preferred date.',
+        hi: 'कृपया एक पसंदीदा तारीख चुनें।',
+        bangla: 'অনুগ্রহ করে একটি পছন্দের তারিখ নির্বাচন করুন।',
+        kannada: 'ದಯವಿಟ್ಟು ಅಪೇಕ್ಷಿತ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ।',
+        punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਪਸੰਦੀਦਾ ਤਾਰੀਖ ਚੁਣੋ।',
+        tamil: 'தயவுசெய்து விருப்பமான தேதியைத் தேர்ந்தெடுக்கவும்।',
+        telugu: 'దయచేసి ఇష్టమైన తేదీని ఎంచుకోండి।'
+      }));
       return;
     }
     
     if (!isValidFutureDate(bookingDate)) {
-      Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया भविष्य में कम से कम 18 घंटे की तारीख चुनें।' : 'Please select a date at least 18 hours in the future.');
+      Alert.alert(getTranslation({
+        en: 'Invalid Date',
+        hi: 'अमान्य तारीख',
+        bangla: 'অবৈধ তারিখ',
+        kannada: 'ಅಮಾನ್ಯ ದಿನಾಂಕ',
+        punjabi: 'ਗਲਤ ਤਾਰੀਖ',
+        tamil: 'தவறான தேதி',
+        telugu: 'చెల్లని తేదీ'
+      }), getTranslation({
+        en: 'Please select a date at least 18 hours in the future.',
+        hi: 'कृपया भविष्य में कम से कम 18 घंटे की तारीख चुनें।',
+        bangla: 'অনুগ্রহ করে ভবিষ্যতে কমপক্ষে ১৮ ঘন্টা পরের তারিখ নির্বাচন করুন।',
+        kannada: 'ದಯವಿಟ್ಟು ಭವಿಷ್ಯದಲ್ಲಿ ಕನಿಷ್ಠ 18 ಗಂಟೆಗಳ ನಂತರದ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ।',
+        punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਭਵਿੱਖ ਵਿੱਚ ਘੱਟੋ-ਘੱਟ 18 ਘੰਟਿਆਂ ਦੀ ਤਾਰੀਖ ਚੁਣੋ।',
+        tamil: 'தயவுசெய்து எதிர்காலத்தில் குறைந்தது 18 மணி நேரம் பிறகு தேதியைத் தேர்ந்தெடுக்கவும்।',
+        telugu: 'దయచేసి భవిష్యత్తులో కనీసం 18 గంటల తర్వాత తేదీని ఎంచుకోండి।'
+      }));
       return;
     }
     
     if (!bookingTimeSlot) {
-      Alert.alert(isHindi ? 'अमान्य समय' : 'Invalid Time', isHindi ? 'कृपया एक पसंदीदा समय स्लॉट चुनें।' : 'Please select a preferred time slot.');
+      Alert.alert(getTranslation({
+        en: 'Invalid Time',
+        hi: 'अमान्य समय',
+        bangla: 'অবৈধ সময়',
+        kannada: 'ಅಮಾನ್ಯ ಸಮಯ',
+        punjabi: 'ਗਲਤ ਸਮਾਂ',
+        tamil: 'தவறான நேரம்',
+        telugu: 'చెల్లని సమయం'
+      }), getTranslation({
+        en: 'Please select a preferred time slot.',
+        hi: 'कृपया एक पसंदीदा समय स्लॉट चुनें।',
+        bangla: 'অনুগ্রহ করে একটি পছন্দের সময় স্লট নির্বাচন করুন।',
+        kannada: 'ದಯವಿಟ್ಟು ಅಪೇಕ್ಷಿತ ಸಮಯ ಸ್ಲಾಟ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ।',
+        punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਪਸੰਦੀਦਾ ਸਮਾਂ ਸਲਾਟ ਚੁਣੋ।',
+        tamil: 'தயவுசெய்து விருப்பமான நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்।',
+        telugu: 'దయచేసి ఇష్టమైన సమయ స్లాట్‌ను ఎంచుకోండి।'
+      }));
       return;
     }
     
@@ -245,11 +504,35 @@ const KundliCalculator: React.FC = () => {
         
         
         Alert.alert(
-          isHindi ? 'बुकिंग सफल!' : 'Booking Successful!',
-          isHindi ? 'आपका अपॉइंटमेंट बुक हो गया है। हम जल्द ही आपसे संपर्क करेंगे।' : 'Your appointment has been booked. We will contact you soon.',
+          getTranslation({
+            en: 'Booking Successful!',
+            hi: 'बुकिंग सफल!',
+            bangla: 'বুকিং সফল!',
+            kannada: 'ಬುಕಿಂಗ್ ಯಶಸ್ವಿ!',
+            punjabi: 'ਬੁੱਕਿੰਗ ਸਫਲ!',
+            tamil: 'புகிங் வெற்றிகரம்!',
+            telugu: 'బుకింగ్ విజయవంతం!'
+          }),
+          getTranslation({
+            en: 'Your appointment has been booked. We will contact you soon.',
+            hi: 'आपका अपॉइंटमेंट बुक हो गया है। हम जल्द ही आपसे संपर्क करेंगे।',
+            bangla: 'আপনার অ্যাপয়েন্টমেন্ট বুক হয়েছে। আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।',
+            kannada: 'ನಿಮ್ಮ ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಬುಕ್ ಆಗಿದೆ। ನಾವು ಶೀಘ್ರದಲ್ಲೇ ನಿಮ್ಮೊಂದಿಗೆ ಸಂಪರ್ಕಿಸುತ್ತೇವೆ।',
+            punjabi: 'ਤੁਹਾਡਾ ਅਪਾਇੰਟਮੈਂਟ ਬੁੱਕ ਹੋ ਗਿਆ ਹੈ। ਅਸੀਂ ਜਲਦੀ ਹੀ ਤੁਹਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰਾਂਗੇ।',
+            tamil: 'உங்கள் எப்பாயின்ட்மென்ட் புக் ஆகிவிட்டது। நாங்கள் விரைவில் உங்களுடன் தொடர்பு கொள்வோம்।',
+            telugu: 'మీ అపాయింట్మెంట్ బుక్ అయింది। మేము త్వరలో మీతో సంప్రదిస్తాము।'
+          }),
           [
             {
-              text: isHindi ? 'ठीक है' : 'OK',
+              text: getTranslation({
+                en: 'OK',
+                hi: 'ठीक है',
+                bangla: 'ঠিক আছে',
+                kannada: 'ಸರಿ',
+                punjabi: 'ਠੀਕ ਹੈ',
+                tamil: 'சரி',
+                telugu: 'సరే'
+              }),
                              onPress: () => {
                  setShowBookingModal(false);
                  setBookingName('');
@@ -265,7 +548,23 @@ const KundliCalculator: React.FC = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
      } catch (error) {
-       Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'अपॉइंटमेंट बुक करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to book appointment. Please try again.');
+       Alert.alert(getTranslation({
+         en: 'Error',
+         hi: 'त्रुटि',
+         bangla: 'ত্রুটি',
+         kannada: 'ದೋಷ',
+         punjabi: 'ਗਲਤੀ',
+         tamil: 'பிழை',
+         telugu: 'లోపం'
+       }), getTranslation({
+         en: 'Failed to book appointment. Please try again.',
+         hi: 'अपॉइंटमेंट बुक करने में विफल। कृपया पुनः प्रयास करें।',
+         bangla: 'অ্যাপয়েন্টমেন্ট বুক করতে ব্যর্থ। অনুগ্রহ করে আবার চেষ্টা করুন।',
+         kannada: 'ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಬುಕ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।',
+         punjabi: 'ਅਪਾਇੰਟਮੈਂਟ ਬੁੱਕ ਕਰਨ ਵਿੱਚ ਅਸਫਲ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+         tamil: 'எப்பாயின்ட்மென்ட் புக் செய்ய முடியவில்லை। தயவுசெய்து மீண்டும் முயற்சிக்கவும்।',
+         telugu: 'అపాయింట్మెంట్ బుక్ చేయడంలో విఫలమైంది। దయచేసి మళ్లీ ప్రయత్నించండి।'
+       }));
      } finally {
        setIsSubmitting(false);
      }
@@ -275,7 +574,15 @@ const KundliCalculator: React.FC = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
              <View style={styles.providersSection}>
          <View style={styles.titleContainer}>
-           <Text style={styles.sectionTitle}>{isHindi ? 'कुंडली सेवा प्रदाता' : 'Kundli Service Providers'}</Text>
+           <Text style={styles.sectionTitle}>{getTranslation({
+             en: 'Kundli Service Providers',
+             hi: 'कुंडली सेवा प्रदाता',
+             bangla: 'কুন্ডলী সেবা প্রদানকারী',
+             kannada: 'ಕುಂಡಲಿ ಸೇವಾ ಪ್ರದಾತರು',
+             punjabi: 'ਕੁੰਡਲੀ ਸੇਵਾ ਪ੍ਰਦਾਤਾ',
+             tamil: 'குண்டலி சேவை வழங்குநர்கள்',
+             telugu: 'కుండలి సేవా ప్రదాతలు'
+           })}</Text>
            <TouchableOpacity 
              style={styles.infoIcon}
              onPress={() => setShowInfoModal(true)}
@@ -283,16 +590,24 @@ const KundliCalculator: React.FC = () => {
              <Text style={styles.infoIconText}>ℹ️</Text>
            </TouchableOpacity>
          </View>
-         <Text style={styles.instructionText}>{isHindi ? 'कुंडली सेवाओं को बुक करने के लिए किसी भी प्रदाता पर क्लिक करें' : 'Click on any provider to book kundli services'}</Text>
+         <Text style={styles.instructionText}>{getTranslation({
+           en: 'Click on any provider to book kundli services',
+           hi: 'कुंडली सेवाओं को बुक करने के लिए किसी भी प्रदाता पर क्लिक करें',
+           bangla: 'কুন্ডলী সেবা বুক করতে যেকোনো প্রদানকারীর উপর ক্লিক করুন',
+           kannada: 'ಕುಂಡಲಿ ಸೇವೆಗಳನ್ನು ಬುಕ್ ಮಾಡಲು ಯಾವುದೇ ಪ್ರದಾತರ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ',
+           punjabi: 'ਕੁੰਡਲੀ ਸੇਵਾਵਾਂ ਬੁੱਕ ਕਰਨ ਲਈ ਕੋਈ ਵੀ ਪ੍ਰਦਾਤਾ \'ਤੇ ਕਲਿੱਕ ਕਰੋ',
+           tamil: 'குண்டலி சேவைகளை புக் செய்ய எந்த வழங்குநரையும் கிளிக் செய்யவும்',
+           telugu: 'కుండలి సేవలను బుక్ చేయడానికి ఏదైనా ప్రదాతపై క్లిక్ చేయండి'
+         })}</Text>
          
          {loadingProviders ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FFA040" />
-            <Text style={styles.loadingText}>{isHindi ? translations.loading.hi : translations.loading.en}</Text>
+            <Text style={styles.loadingText}>{getTranslation(translations.loading)}</Text>
           </View>
         ) : providers.length === 0 ? (
           <View style={styles.noProvidersContainer}>
-            <Text style={styles.noProvidersText}>{isHindi ? translations.noProviders.hi : translations.noProviders.en}</Text>
+            <Text style={styles.noProvidersText}>{getTranslation(translations.noProviders)}</Text>
           </View>
         ) : (
                      <View style={styles.providersGrid}>
@@ -369,7 +684,7 @@ const KundliCalculator: React.FC = () => {
                         style={styles.bookButton}
                         onPress={() => openBookingModal(provider)}
                       >
-                        <Text style={styles.bookButtonText}>{isHindi ? translations.bookAppointment.hi : translations.bookAppointment.en}</Text>
+                        <Text style={styles.bookButtonText}>{getTranslation(translations.bookAppointment)}</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -476,7 +791,7 @@ const KundliCalculator: React.FC = () => {
              {selectedProvider && (
                <>
                  <View style={styles.modalHeader}>
-                   <Text style={styles.modalTitle}>{isHindi ? translations.bookingForm.hi : translations.bookingForm.en}</Text>
+                   <Text style={styles.modalTitle}>{getTranslation(translations.bookingForm)}</Text>
                    <TouchableOpacity
                      style={styles.closeButton}
                      onPress={() => setShowBookingModal(false)}
@@ -495,36 +810,92 @@ const KundliCalculator: React.FC = () => {
                     </Text>
                     
                     <View style={styles.bookingForm}>
-                      <Text style={styles.formLabel}>{isHindi ? 'नाम *' : 'Name *'}</Text>
+                      <Text style={styles.formLabel}>{getTranslation({
+                        en: 'Name *',
+                        hi: 'नाम *',
+                        bangla: 'নাম *',
+                        kannada: 'ಹೆಸರು *',
+                        punjabi: 'ਨਾਮ *',
+                        tamil: 'பெயர் *',
+                        telugu: 'పేరు *'
+                      })}</Text>
                       <TextInput
                         style={styles.formInput}
                         value={bookingName}
                         onChangeText={setBookingName}
-                        placeholder={isHindi ? 'अपना पूरा नाम दर्ज करें' : 'Enter your full name'}
+                        placeholder={getTranslation({
+                          en: 'Enter your full name',
+                          hi: 'अपना पूरा नाम दर्ज करें',
+                          bangla: 'আপনার সম্পূর্ণ নাম লিখুন',
+                          kannada: 'ನಿಮ್ಮ ಪೂರ್ಣ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
+                          punjabi: 'ਆਪਣਾ ਪੂਰਾ ਨਾਮ ਦਰਜ ਕਰੋ',
+                          tamil: 'உங்கள் முழு பெயரை உள்ளிடவும்',
+                          telugu: 'మీ పూర్తి పేరును నమోదు చేయండి'
+                        })}
                         placeholderTextColor="#999"
                       />
                       
-                      <Text style={styles.formLabel}>{isHindi ? 'फोन नंबर *' : 'Phone Number *'}</Text>
+                      <Text style={styles.formLabel}>{getTranslation({
+                        en: 'Phone Number *',
+                        hi: 'फोन नंबर *',
+                        bangla: 'ফোন নম্বর *',
+                        kannada: 'ಫೋನ್ ನಂಬರ್ *',
+                        punjabi: 'ਫੋਨ ਨੰਬਰ *',
+                        tamil: 'தொலைபேசி எண் *',
+                        telugu: 'ఫోన్ నంబర్ *'
+                      })}</Text>
                       <TextInput
                         style={styles.formInput}
                         value={bookingPhone}
                         onChangeText={setBookingPhone}
-                        placeholder={isHindi ? 'अपना फोन नंबर दर्ज करें' : 'Enter your phone number'}
+                        placeholder={getTranslation({
+                          en: 'Enter your phone number',
+                          hi: 'अपना फोन नंबर दर्ज करें',
+                          bangla: 'আপনার ফোন নম্বর লিখুন',
+                          kannada: 'ನಿಮ್ಮ ಫೋನ್ ನಂಬರ್ ನಮೂದಿಸಿ',
+                          punjabi: 'ਆਪਣਾ ਫੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ',
+                          tamil: 'உங்கள் தொலைபேசி எண்ணை உள்ளிடவும்',
+                          telugu: 'మీ ఫోన్ నంబర్ నమోదు చేయండి'
+                        })}
                         placeholderTextColor="#999"
                         keyboardType="phone-pad"
                       />
                       
-                      <Text style={styles.formLabel}>{isHindi ? 'पसंदीदा तारीख *' : 'Preferred Date *'}</Text>
+                      <Text style={styles.formLabel}>{getTranslation({
+                        en: 'Preferred Date *',
+                        hi: 'पसंदीदा तारीख *',
+                        bangla: 'পছন্দের তারিখ *',
+                        kannada: 'ಅಪೇಕ್ಷಿತ ದಿನಾಂಕ *',
+                        punjabi: 'ਪਸੰਦੀਦਾ ਤਾਰੀਖ *',
+                        tamil: 'விருப்பமான தேதி *',
+                        telugu: 'ఇష్టమైన తేదీ *'
+                      })}</Text>
                       <TouchableOpacity
                         style={styles.datePickerButton}
                         onPress={showDatePickerModal}
                       >
                                             <Text style={styles.datePickerButtonText}>
-                      {bookingDate ? bookingDate : (isHindi ? 'तारीख चुनें' : 'Select Date')}
+                      {bookingDate ? bookingDate : getTranslation({
+                        en: 'Select Date',
+                        hi: 'तारीख चुनें',
+                        bangla: 'তারিখ নির্বাচন করুন',
+                        kannada: 'ದಿನಾಂಕ ಆಯ್ಕೆಮಾಡಿ',
+                        punjabi: 'ਤਾਰੀਖ ਚੁਣੋ',
+                        tamil: 'தேதியைத் தேர்ந்தெடுக்கவும்',
+                        telugu: 'తేదీని ఎంచుకోండి'
+                      })}
                     </Text>
                       </TouchableOpacity>
                       
-                      <Text style={styles.formLabel}>{isHindi ? 'पसंदीदा समय स्लॉट *' : 'Preferred Time Slot *'}</Text>
+                      <Text style={styles.formLabel}>{getTranslation({
+                        en: 'Preferred Time Slot *',
+                        hi: 'पसंदीदा समय स्लॉट *',
+                        bangla: 'পছন্দের সময় স্লট *',
+                        kannada: 'ಅಪೇಕ್ಷಿತ ಸಮಯ ಸ್ಲಾಟ್ *',
+                        punjabi: 'ਪਸੰਦੀਦਾ ਸਮਾਂ ਸਲਾਟ *',
+                        tamil: 'விருப்பமான நேர இடைவெளி *',
+                        telugu: 'ఇష్టమైన సమయ స్లాట్ *'
+                      })}</Text>
                       <View style={styles.timeSlotContainer}>
                         {timeSlots.map((slot) => (
                           <TouchableOpacity
@@ -551,7 +922,7 @@ const KundliCalculator: React.FC = () => {
                         disabled={isSubmitting}
                       >
                         <Text style={styles.submitButtonText}>
-                          {isSubmitting ? (isHindi ? translations.submitting.hi : translations.submitting.en) : (isHindi ? translations.bookAppointment.hi : translations.bookAppointment.en)}
+                          {isSubmitting ? getTranslation(translations.submitting) : getTranslation(translations.bookAppointment)}
                         </Text>
                       </TouchableOpacity>
                       
@@ -594,7 +965,15 @@ const KundliCalculator: React.FC = () => {
               onPress={(e) => e.stopPropagation()}
             >
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{isHindi ? 'कुंडली सेवाओं के बारे में' : 'About Kundli Services'}</Text>
+                <Text style={styles.modalTitle}>{getTranslation({
+                  en: 'About Kundli Services',
+                  hi: 'कुंडली सेवाओं के बारे में',
+                  bangla: 'কুন্ডলী সেবা সম্পর্কে',
+                  kannada: 'ಕುಂಡಲಿ ಸೇವೆಗಳ ಬಗ್ಗೆ',
+                  punjabi: 'ਕੁੰਡਲੀ ਸੇਵਾਵਾਂ ਬਾਰੇ',
+                  tamil: 'குண்டலி சேவைகள் பற்றி',
+                  telugu: 'కుండలి సేవల గురించి'
+                })}</Text>
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={() => setShowInfoModal(false)}
@@ -605,7 +984,15 @@ const KundliCalculator: React.FC = () => {
               
               <View style={styles.infoContent}>
                 <Text style={styles.infoText}>
-                  {isHindi ? 'सटीक जन्म चार्ट विश्लेषण और जीवन मार्गदर्शन के लिए पेशेवर कुंडली सेवाओं का लाभ उठाएं। विशेषज्ञ ज्योतिषियों के साथ करियर, स्वास्थ्य, रिश्तों और भविष्य के अवसरों पर अंतर्दृष्टि की खोज करें।' : 'Avail professional Kundli services for accurate birth chart analysis and life guidance. Discover insights on career, health, relationships, and future opportunities with expert astrologers.'}
+                  {getTranslation({
+                    en: 'Avail professional Kundli services for accurate birth chart analysis and life guidance. Discover insights on career, health, relationships, and future opportunities with expert astrologers.',
+                    hi: 'सटीक जन्म चार्ट विश्लेषण और जीवन मार्गदर्शन के लिए पेशेवर कुंडली सेवाओं का लाभ उठाएं। विशेषज्ञ ज्योतिषियों के साथ करियर, स्वास्थ्य, रिश्तों और भविष्य के अवसरों पर अंतर्दृष्टि की खोज करें।',
+                    bangla: 'নির্ভুল জন্ম চার্ট বিশ্লেষণ এবং জীবন নির্দেশনার জন্য পেশাদার কুন্ডলী সেবা গ্রহণ করুন। বিশেষজ্ঞ জ্যোতিষীদের সাথে কর্মজীবন, স্বাস্থ্য, সম্পর্ক এবং ভবিষ্যতের সুযোগ সম্পর্কে অন্তর্দৃষ্টি আবিষ্কার করুন।',
+                    kannada: 'ನಿಖರವಾದ ಜನನ ಚಾರ್ಟ್ ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಜೀವನ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ವೃತ್ತಿಪರ ಕುಂಡಲಿ ಸೇವೆಗಳನ್ನು ಪಡೆಯಿರಿ। ನಿಪುಣ ಜ್ಯೋತಿಷ್ಯರೊಂದಿಗೆ ವೃತ್ತಿಜೀವನ, ಆರೋಗ್ಯ, ಸಂಬಂಧಗಳು ಮತ್ತು ಭವಿಷ್ಯದ ಅವಕಾಶಗಳ ಬಗ್ಗೆ ಅಂತರ್ದೃಷ್ಟಿಯನ್ನು ಕಂಡುಕೊಳ್ಳಿರಿ।',
+                    punjabi: 'ਸਹੀ ਜਨਮ ਚਾਰਟ ਵਿਸ਼ਲੇਸ਼ਣ ਅਤੇ ਜੀਵਨ ਮਾਰਗਦਰਸ਼ਨ ਲਈ ਪੇਸ਼ੇਵਰ ਕੁੰਡਲੀ ਸੇਵਾਵਾਂ ਦਾ ਲਾਭ ਉਠਾਓ। ਮਾਹਿਰ ਜੋਤਿਸ਼ਾਂ ਦੇ ਨਾਲ ਕੈਰੀਅਰ, ਸਿਹਤ, ਰਿਸ਼ਤਿਆਂ ਅਤੇ ਭਵਿੱਖ ਦੇ ਮੌਕਿਆਂ ਬਾਰੇ ਸੂਝ ਦੀ ਖੋਜ ਕਰੋ।',
+                    tamil: 'துல்லியமான பிறப்பு விளக்கப்பட பகுப்பாய்வு மற்றும் வாழ்க்கை வழிகாட்டுதலுக்கு தொழில்முறை குண்டலி சேவைகளைப் பெறுங்கள்。 நிபுண ஜோதிடர்களுடன் தொழில், ஆரோக்கியம், உறவுகள் மற்றும் எதிர்கால வாய்ப்புகள் குறித்த நுண்ணறிவுகளைக் கண்டறியுங்கள்।',
+                    telugu: 'ఖచ్చితమైన పుట్టిన చార్ట్ విశ్లేషణ మరియు జీవిత మార్గదర్శకత్వం కోసం ప్రొఫెషనల్ కుండలి సేవలను పొందండి। నిపుణ జ్యోతిష్యులతో కెరీర్, ఆరోగ్యం, సంబంధాలు మరియు భవిష్యత్ అవకాశాలపై అంతర్దృష్టులను కనుగొనండి।'
+                  })}
                 </Text>
               </View>
             </TouchableOpacity>

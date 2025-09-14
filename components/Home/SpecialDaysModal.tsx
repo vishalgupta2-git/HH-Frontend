@@ -19,7 +19,7 @@ export default function SpecialDaysModal({
   onClose, 
   upcomingPujas 
 }: SpecialDaysModalProps) {
-  const { isHindi } = useLanguage();
+  const { isHindi, currentLanguage } = useLanguage();
   const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(10);
   const [bookingModalVisible, setBookingModalVisible] = useState(false);
@@ -31,26 +31,197 @@ export default function SpecialDaysModal({
   const [loading, setLoading] = useState(false);
 
   const translations = {
-    autoClosesIn: { en: 'Auto-closes in', hi: 'स्वचालित रूप से बंद होगा' },
-    pujaDetails: { en: 'Puja Details:', hi: 'पूजा विवरण:' },
-    specialPujaDetails: { en: 'Special puja details will be available soon.', hi: 'विशेष पूजा विवरण जल्द ही उपलब्ध होगा।' },
-    morePujas: { en: 'more special pujas coming up', hi: 'और विशेष पूजाएं आने वाली हैं' },
-    bookPuja: { en: 'Book Puja', hi: 'पूजा बुक करें' },
-    viewAllSpecialPujas: { en: 'View All Special Pujas', hi: 'सभी विशेष पूजाएं देखें' },
-    thanksForRequesting: { en: 'Thanks for requesting', hi: 'अनुरोध के लिए धन्यवाद' },
-    pleaseEnterFollowing: { en: 'please enter the following to let us contact you', hi: 'कृपया हमसे संपर्क करने के लिए निम्नलिखित दर्ज करें' },
-    fullName: { en: 'Full Name', hi: 'पूरा नाम' },
-    phoneNumber: { en: 'Phone Number', hi: 'फोन नंबर' },
-    date: { en: 'Date:', hi: 'तारीख:' },
-    submitting: { en: 'Submitting...', hi: 'जमा हो रहा है...' },
-    confirm: { en: 'Confirm', hi: 'पुष्टि करें' },
-    cancel: { en: 'Cancel', hi: 'रद्द करें' },
-    pleaseEnterValidName: { en: 'Please enter a valid name and phone number.', hi: 'कृपया एक वैध नाम और फोन नंबर दर्ज करें।' },
-    noPujaSelected: { en: 'No puja selected. Please try again.', hi: 'कोई पूजा चयनित नहीं। कृपया पुनः प्रयास करें।' },
-    success: { en: 'Success', hi: 'सफलता' },
-    bookingSubmitted: { en: 'Your special puja booking request has been submitted successfully!', hi: 'आपका विशेष पूजा बुकिंग अनुरोध सफलतापूर्वक जमा हो गया है!' },
-    error: { en: 'Error', hi: 'त्रुटि' },
-    failedToSave: { en: 'Failed to save booking:', hi: 'बुकिंग सहेजने में विफल:' }
+    autoClosesIn: { 
+      en: 'Auto-closes in', 
+      hi: 'स्वचालित रूप से बंद होगा',
+      bangla: 'স্বয়ংক্রিয়ভাবে বন্ধ হবে',
+      kannada: 'ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮುಚ್ಚುತ್ತದೆ',
+      punjabi: 'ਆਪਣੇ ਆਪ ਬੰਦ ਹੋ ਜਾਵੇਗਾ',
+      tamil: 'தானாக மூடப்படும்',
+      telugu: 'స్వయంచాలకంగా మూసివేయబడుతుంది'
+    },
+    pujaDetails: { 
+      en: 'Puja Details:', 
+      hi: 'पूजा विवरण:',
+      bangla: 'পূজার বিবরণ:',
+      kannada: 'ಪೂಜೆ ವಿವರಗಳು:',
+      punjabi: 'ਪੂਜਾ ਵਿਵਰਣ:',
+      tamil: 'பூஜை விவரங்கள்:',
+      telugu: 'పూజ వివరాలు:'
+    },
+    specialPujaDetails: { 
+      en: 'Special puja details will be available soon.', 
+      hi: 'विशेष पूजा विवरण जल्द ही उपलब्ध होगा।',
+      bangla: 'বিশেষ পূজার বিবরণ শীঘ্রই উপলব্ধ হবে।',
+      kannada: 'ವಿಶೇಷ ಪೂಜೆ ವಿವರಗಳು ಶೀಘ್ರದಲ್ಲೇ ಲಭ್ಯವಾಗುತ್ತದೆ।',
+      punjabi: 'ਵਿਸ਼ੇਸ਼ ਪੂਜਾ ਵਿਵਰਣ ਜਲਦੀ ਹੀ ਉਪਲਬਧ ਹੋਵੇਗਾ।',
+      tamil: 'சிறப்பு பூஜை விவரங்கள் விரைவில் கிடைக்கும்।',
+      telugu: 'ప్రత్యేక పూజ వివరాలు త్వరలో అందుబాటులో ఉంటాయి।'
+    },
+    morePujas: { 
+      en: 'more special pujas coming up', 
+      hi: 'और विशेष पूजाएं आने वाली हैं',
+      bangla: 'আরও বিশেষ পূজা আসছে',
+      kannada: 'ಇನ್ನಷ್ಟು ವಿಶೇಷ ಪೂಜೆಗಳು ಬರುತ್ತಿವೆ',
+      punjabi: 'ਹੋਰ ਵਿਸ਼ੇਸ਼ ਪੂਜਾਵਾਂ ਆ ਰਹੀਆਂ ਹਨ',
+      tamil: 'மேலும் சிறப்பு பூஜைகள் வருகின்றன',
+      telugu: 'మరిన్ని ప్రత్యేక పూజలు వస్తున్నాయి'
+    },
+    bookPuja: { 
+      en: 'Book Puja', 
+      hi: 'पूजा बुक करें',
+      bangla: 'পূজা বুক করুন',
+      kannada: 'ಪೂಜೆ ಬುಕ್ ಮಾಡಿ',
+      punjabi: 'ਪੂਜਾ ਬੁਕ ਕਰੋ',
+      tamil: 'பூஜை புக்கிங்',
+      telugu: 'పూజ బుక్ చేయండి'
+    },
+    viewAllSpecialPujas: { 
+      en: 'View All Special Pujas', 
+      hi: 'सभी विशेष पूजाएं देखें',
+      bangla: 'সব বিশেষ পূজা দেখুন',
+      kannada: 'ಎಲ್ಲಾ ವಿಶೇಷ ಪೂಜೆಗಳನ್ನು ವೀಕ್ಷಿಸಿ',
+      punjabi: 'ਸਾਰੀਆਂ ਵਿਸ਼ੇਸ਼ ਪੂਜਾਵਾਂ ਦੇਖੋ',
+      tamil: 'அனைத்து சிறப்பு பூஜைகளையும் பார்க்கவும்',
+      telugu: 'అన్ని ప్రత్యేక పూజలను చూడండి'
+    },
+    thanksForRequesting: { 
+      en: 'Thanks for requesting', 
+      hi: 'अनुरोध के लिए धन्यवाद',
+      bangla: 'অনুরোধের জন্য ধন্যবাদ',
+      kannada: 'ವಿನಂತಿಸಿದಕ್ಕೆ ಧನ್ಯವಾದಗಳು',
+      punjabi: 'ਅਨੁਰੋਧ ਲਈ ਧੰਨਵਾਦ',
+      tamil: 'கோரிக்கைக்கு நன்றி',
+      telugu: 'అభ్యర్థనకు ధన్యవాదాలు'
+    },
+    pleaseEnterFollowing: { 
+      en: 'please enter the following to let us contact you', 
+      hi: 'कृपया हमसे संपर्क करने के लिए निम्नलिखित दर्ज करें',
+      bangla: 'আমাদের সাথে যোগাযোগের জন্য অনুগ্রহ করে নিম্নলিখিত তথ্য দিন',
+      kannada: 'ನಮ್ಮೊಂದಿಗೆ ಸಂಪರ್ಕಿಸಲು ದಯವಿಟ್ಟು ಈ ಕೆಳಗಿನವುಗಳನ್ನು ನಮೂದಿಸಿ',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਸਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰਨ ਲਈ ਹੇਠਾਂ ਦਿੱਤੇ ਗਏ ਭਰੋ',
+      tamil: 'எங்களைத் தொடர்பு கொள்ள தயவுசெய்து பின்வருவனவற்றை உள்ளிடவும்',
+      telugu: 'మాతో సంప్రదించడానికి దయచేసి క్రింది వివరాలను నమోదు చేయండి'
+    },
+    fullName: { 
+      en: 'Full Name', 
+      hi: 'पूरा नाम',
+      bangla: 'পুরো নাম',
+      kannada: 'ಪೂರ್ಣ ಹೆಸರು',
+      punjabi: 'ਪੂਰਾ ਨਾਮ',
+      tamil: 'முழு பெயர்',
+      telugu: 'పూర్తి పేరు'
+    },
+    phoneNumber: { 
+      en: 'Phone Number', 
+      hi: 'फोन नंबर',
+      bangla: 'ফোন নম্বর',
+      kannada: 'ಫೋನ್ ನಂಬರ್',
+      punjabi: 'ਫੋਨ ਨੰਬਰ',
+      tamil: 'தொலைபேசி எண்',
+      telugu: 'ఫోన్ నంబర్'
+    },
+    date: { 
+      en: 'Date:', 
+      hi: 'तारीख:',
+      bangla: 'তারিখ:',
+      kannada: 'ದಿನಾಂಕ:',
+      punjabi: 'ਤਾਰੀਖ:',
+      tamil: 'தேதி:',
+      telugu: 'తేదీ:'
+    },
+    submitting: { 
+      en: 'Submitting...', 
+      hi: 'जमा हो रहा है...',
+      bangla: 'জমা দেওয়া হচ্ছে...',
+      kannada: 'ಸಲ್ಲಿಸಲಾಗುತ್ತಿದೆ...',
+      punjabi: 'ਜਮ੍ਹਾ ਹੋ ਰਿਹਾ ਹੈ...',
+      tamil: 'சமர்ப்பிக்கப்படுகிறது...',
+      telugu: 'సమర్పించబడుతోంది...'
+    },
+    confirm: { 
+      en: 'Confirm', 
+      hi: 'पुष्टि करें',
+      bangla: 'নিশ্চিত করুন',
+      kannada: 'ದೃಢೀಕರಿಸಿ',
+      punjabi: 'ਪੁਸ਼ਟੀ ਕਰੋ',
+      tamil: 'உறுதிப்படுத்தவும்',
+      telugu: 'నిర్ధారించండి'
+    },
+    cancel: { 
+      en: 'Cancel', 
+      hi: 'रद्द करें',
+      bangla: 'বাতিল করুন',
+      kannada: 'ರದ್ದುಗೊಳಿಸಿ',
+      punjabi: 'ਰੱਦ ਕਰੋ',
+      tamil: 'ரத்து செய்',
+      telugu: 'రద్దు చేయండి'
+    },
+    pleaseEnterValidName: { 
+      en: 'Please enter a valid name and phone number.', 
+      hi: 'कृपया एक वैध नाम और फोन नंबर दर्ज करें।',
+      bangla: 'অনুগ্রহ করে একটি বৈধ নাম এবং ফোন নম্বর দিন।',
+      kannada: 'ದಯವಿಟ್ಟು ಮಾನ್ಯ ಹೆಸರು ಮತ್ತು ಫೋನ್ ನಂಬರ್ ನಮೂದಿಸಿ।',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਨਾਮ ਅਤੇ ਫੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ।',
+      tamil: 'தயவுசெய்து சரியான பெயர் மற்றும் தொலைபேசி எண்ணை உள்ளிடவும்।',
+      telugu: 'దయచేసి చెల్లుబాటు అయ్యే పేరు మరియు ఫోన్ నంబర్ నమోదు చేయండి।'
+    },
+    noPujaSelected: { 
+      en: 'No puja selected. Please try again.', 
+      hi: 'कोई पूजा चयनित नहीं। कृपया पुनः प्रयास करें।',
+      bangla: 'কোন পূজা নির্বাচিত হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      kannada: 'ಯಾವುದೇ ಪೂಜೆ ಆಯ್ಕೆ ಮಾಡಲಾಗಿಲ್ಲ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।',
+      punjabi: 'ਕੋਈ ਪੂਜਾ ਚੁਣੀ ਨਹੀਂ ਗਈ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      tamil: 'பூஜை தேர்ந்தெடுக்கப்படவில்லை। தயவுசெய்து மீண்டும் முயற்சிக்கவும்।',
+      telugu: 'పూజ ఎంచుకోబడలేదు। దయచేసి మళ్లీ ప్రయత్నించండి।'
+    },
+    success: { 
+      en: 'Success', 
+      hi: 'सफलता',
+      bangla: 'সফলতা',
+      kannada: 'ಯಶಸ್ಸು',
+      punjabi: 'ਸਫਲਤਾ',
+      tamil: 'வெற்றி',
+      telugu: 'విజయం'
+    },
+    bookingSubmitted: { 
+      en: 'Your special puja booking request has been submitted successfully!', 
+      hi: 'आपका विशेष पूजा बुकिंग अनुरोध सफलतापूर्वक जमा हो गया है!',
+      bangla: 'আপনার বিশেষ পূজা বুকিং অনুরোধ সফলভাবে জমা দেওয়া হয়েছে!',
+      kannada: 'ನಿಮ್ಮ ವಿಶೇಷ ಪೂಜೆ ಬುಕಿಂಗ್ ವಿನಂತಿಯನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!',
+      punjabi: 'ਤੁਹਾਡਾ ਵਿਸ਼ੇਸ਼ ਪੂਜਾ ਬੁਕਿੰਗ ਅਨੁਰੋਧ ਸਫਲਤਾਪੂਰਵਕ ਜਮ੍ਹਾ ਹੋ ਗਿਆ ਹੈ!',
+      tamil: 'உங்கள் சிறப்பு பூஜை புக்கிங் கோரிக்கை வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!',
+      telugu: 'మీ ప్రత్యేక పూజ బుకింగ్ అభ్యర్థన విజయవంతంగా సమర్పించబడింది!'
+    },
+    error: { 
+      en: 'Error', 
+      hi: 'त्रुटि',
+      bangla: 'ত্রুটি',
+      kannada: 'ದೋಷ',
+      punjabi: 'ਗਲਤੀ',
+      tamil: 'பிழை',
+      telugu: 'లోపం'
+    },
+    failedToSave: { 
+      en: 'Failed to save booking:', 
+      hi: 'बुकिंग सहेजने में विफल:',
+      bangla: 'বুকিং সংরক্ষণ করতে ব্যর্থ:',
+      kannada: 'ಬುಕಿಂಗ್ ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ:',
+      punjabi: 'ਬੁਕਿੰਗ ਸੇਵ ਕਰਨ ਵਿੱਚ ਅਸਫਲ:',
+      tamil: 'புக்கிங் சேமிக்க முடியவில்லை:',
+      telugu: 'బుకింగ్ సేవ్ చేయడంలో విఫలమైంది:'
+    }
+  };
+
+  // Helper function to get translation
+  const getTranslation = (key: any) => {
+    const lang = currentLanguage === 'hindi' ? 'hi' : 
+                 currentLanguage === 'bangla' ? 'bangla' : 
+                 currentLanguage === 'kannada' ? 'kannada' :
+                 currentLanguage === 'punjabi' ? 'punjabi' :
+                 currentLanguage === 'tamil' ? 'tamil' :
+                 currentLanguage === 'telugu' ? 'telugu' : 'en';
+    return key[lang] || key.en;
   };
 
   const timeSlots = ['9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM'];
@@ -81,12 +252,12 @@ export default function SpecialDaysModal({
 
   const handleConfirmBooking = async () => {
     if (!name.trim() || phone.length < 7) {
-      Alert.alert('Please enter a valid name and phone number.');
+      Alert.alert(getTranslation(translations.pleaseEnterValidName));
       return;
     }
     
     if (!upcomingPujas[0]?.pujaName) {
-      Alert.alert('Error', 'No puja selected. Please try again.');
+      Alert.alert(getTranslation(translations.error), getTranslation(translations.noPujaSelected));
       return;
     }
     
@@ -110,11 +281,11 @@ export default function SpecialDaysModal({
       setBookingModalVisible(false);
       setName('');
       setPhone('');
-      Alert.alert('Success', 'Your special puja booking request has been submitted successfully!');
+      Alert.alert(getTranslation(translations.success), getTranslation(translations.bookingSubmitted));
     } catch (err: any) {
       console.error('❌ Booking error:', err.message);
       console.error('❌ Booking error response:', err.response?.data);
-      Alert.alert('Error', `Failed to save booking: ${err.response?.data?.error || err.message}`);
+      Alert.alert(getTranslation(translations.error), `${getTranslation(translations.failedToSave)} ${err.response?.data?.error || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -162,14 +333,14 @@ export default function SpecialDaysModal({
 
               {/* Timer indicator */}
               <View style={styles.timerContainer}>
-                <Text style={styles.timerText}>Auto-closes in {timeLeft}s</Text>
+                <Text style={styles.timerText}>{getTranslation(translations.autoClosesIn)} {timeLeft}s</Text>
               </View>
 
               <View style={styles.detailsContainer}>
-                <Text style={styles.detailsLabel}>Puja Details:</Text>
+                <Text style={styles.detailsLabel}>{getTranslation(translations.pujaDetails)}</Text>
                 <ScrollView style={styles.detailsScroll} showsVerticalScrollIndicator={false}>
                   <Text style={styles.detailsText}>
-                    {nextPuja.pujaDetails || 'Special puja details will be available soon.'}
+                    {nextPuja.pujaDetails || getTranslation(translations.specialPujaDetails)}
                   </Text>
                 </ScrollView>
               </View>
@@ -177,7 +348,7 @@ export default function SpecialDaysModal({
               {upcomingPujas.length > 1 && (
                 <View style={styles.morePujasContainer}>
                   <Text style={styles.morePujasText}>
-                    +{upcomingPujas.length - 1} more special pujas coming up
+                    +{upcomingPujas.length - 1} {getTranslation(translations.morePujas)}
                   </Text>
                 </View>
               )}
@@ -190,7 +361,7 @@ export default function SpecialDaysModal({
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text style={styles.bookPujaButtonText}>Book Puja</Text>
+                  <Text style={styles.bookPujaButtonText}>{getTranslation(translations.bookPuja)}</Text>
                 </LinearGradient>
               </TouchableOpacity>
 
@@ -202,7 +373,7 @@ export default function SpecialDaysModal({
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                 >
-                  <Text style={styles.viewButtonText}>View All Special Pujas</Text>
+                  <Text style={styles.viewButtonText}>{getTranslation(translations.viewAllSpecialPujas)}</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
@@ -219,26 +390,26 @@ export default function SpecialDaysModal({
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
             <View style={styles.modalTitleContainer}>
-              <Text style={styles.modalTitlePrefix}>Thanks for requesting </Text>
+              <Text style={styles.modalTitlePrefix}>{getTranslation(translations.thanksForRequesting)} </Text>
               <Text style={styles.modalTitleBold}>"{upcomingPujas[0]?.pujaName}"</Text>
-              <Text style={styles.modalTitleSuffix}> please enter the following to let us contact you</Text>
+              <Text style={styles.modalTitleSuffix}> {getTranslation(translations.pleaseEnterFollowing)}</Text>
             </View>
             <TextInput
               style={styles.modalInput}
-              placeholder="Full Name"
+              placeholder={getTranslation(translations.fullName)}
               value={name}
               onChangeText={setName}
             />
             <TextInput
               style={styles.modalInput}
-              placeholder="Phone Number"
+              placeholder={getTranslation(translations.phoneNumber)}
               value={phone}
               onChangeText={t => setPhone(t.replace(/[^0-9]/g, ''))}
               keyboardType="phone-pad"
               maxLength={10}
             />
             <TouchableOpacity onPress={() => setShowDate(true)} style={styles.datePickerBtn}>
-              <Text style={styles.datePickerText}>Date: {date.toLocaleDateString()}</Text>
+              <Text style={styles.datePickerText}>{getTranslation(translations.date)} {date.toLocaleDateString()}</Text>
             </TouchableOpacity>
             {showDate && (
               <DateTimePicker
@@ -269,10 +440,10 @@ export default function SpecialDaysModal({
                 onPress={handleConfirmBooking}
                 disabled={loading}
               >
-                <Text style={styles.modalConfirmText}>{loading ? 'Submitting...' : 'Confirm'}</Text>
+                <Text style={styles.modalConfirmText}>{loading ? getTranslation(translations.submitting) : getTranslation(translations.confirm)}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modalCancelBtn, {flex: 1, marginLeft: 8}]} onPress={() => setBookingModalVisible(false)}>
-                <Text style={styles.modalCancelText}>Cancel</Text>
+                <Text style={styles.modalCancelText}>{getTranslation(translations.cancel)}</Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>

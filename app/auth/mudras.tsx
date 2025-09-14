@@ -13,52 +13,335 @@ const { width } = Dimensions.get('window');
 export const options = { headerShown: false };
 
 export default function MudrasScreen() {
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
   const router = useRouter();
   const [showMudrasModal, setShowMudrasModal] = useState(false);
   const [mudrasCount, setMudrasCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  // Helper function to get translations
+  const getTranslation = (translations: any) => {
+    return currentLanguage === 'hindi' ? (translations.hi || translations.en) :
+           currentLanguage === 'bangla' ? (translations.bangla || translations.en) :
+           currentLanguage === 'kannada' ? (translations.kannada || translations.en) :
+           currentLanguage === 'punjabi' ? (translations.punjabi || translations.en) :
+           currentLanguage === 'tamil' ? (translations.tamil || translations.en) :
+           currentLanguage === 'telugu' ? (translations.telugu || translations.en) :
+           translations.en;
+  };
+
   const translations = {
-    headerTitle: { en: 'Mudras', hi: 'मुद्राएं' },
-    title: { en: 'Mudras', hi: 'मुद्राएं' },
-    currentMudras: { en: 'Current Mudras', hi: 'वर्तमान मुद्राएं' },
-    loadingMudras: { en: 'Loading mudras...', hi: 'मुद्राएं लोड हो रही हैं...' },
-    mudrasCount: { en: 'Mudras', hi: 'मुद्राएं' },
-    viewMudraHistory: { en: 'View Mudra History', hi: 'मुद्रा इतिहास देखें' },
-    howToEarnMudras: { en: 'How to earn Mudras', hi: 'मुद्राएं कैसे कमाएं' },
-    modalTitle: { en: 'How to Earn Mudras', hi: 'मुद्राएं कैसे कमाएं' },
-    closeButton: { en: '✕', hi: '✕' },
-    pujaActivities: { en: 'Puja activities', hi: 'पूजा गतिविधियां' },
-    onetimeActivities: { en: 'Onetime activities', hi: 'एक बार की गतिविधियां' },
-    dailyActivities: { en: 'Daily activities:', hi: 'दैनिक गतिविधियां:' },
+    headerTitle: { 
+      en: 'Mudras', 
+      hi: 'मुद्राएं',
+      bangla: 'মুদ্রা',
+      kannada: 'ಮುದ್ರೆಗಳು',
+      punjabi: 'ਮੁਦਰਾ',
+      tamil: 'முத்திரைகள்',
+      telugu: 'ముద్రలు'
+    },
+    title: { 
+      en: 'Mudras', 
+      hi: 'मुद्राएं',
+      bangla: 'মুদ্রা',
+      kannada: 'ಮುದ್ರೆಗಳು',
+      punjabi: 'ਮੁਦਰਾ',
+      tamil: 'முத்திரைகள்',
+      telugu: 'ముద్రలు'
+    },
+    currentMudras: { 
+      en: 'Current Mudras', 
+      hi: 'वर्तमान मुद्राएं',
+      bangla: 'বর্তমান মুদ্রা',
+      kannada: 'ಪ್ರಸ್ತುತ ಮುದ್ರೆಗಳು',
+      punjabi: 'ਮੌਜੂਦਾ ਮੁਦਰਾ',
+      tamil: 'தற்போதைய முத்திரைகள்',
+      telugu: 'ప్రస్తుత ముద్రలు'
+    },
+    loadingMudras: { 
+      en: 'Loading mudras...', 
+      hi: 'मुद्राएं लोड हो रही हैं...',
+      bangla: 'মুদ্রা লোড হচ্ছে...',
+      kannada: 'ಮುದ್ರೆಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...',
+      punjabi: 'ਮੁਦਰਾ ਲੋਡ ਹੋ ਰਹੀ ਹੈ...',
+      tamil: 'முத்திரைகள் ஏற்றப்படுகின்றன...',
+      telugu: 'ముద్రలు లోడ్ అవుతున్నాయి...'
+    },
+    mudrasCount: { 
+      en: 'Mudras', 
+      hi: 'मुद्राएं',
+      bangla: 'মুদ্রা',
+      kannada: 'ಮುದ್ರೆಗಳು',
+      punjabi: 'ਮੁਦਰਾ',
+      tamil: 'முத்திரைகள்',
+      telugu: 'ముద్రలు'
+    },
+    viewMudraHistory: { 
+      en: 'View Mudra History', 
+      hi: 'मुद्रा इतिहास देखें',
+      bangla: 'মুদ্রার ইতিহাস দেখুন',
+      kannada: 'ಮುದ್ರೆಗಳ ಇತಿಹಾಸವನ್ನು ನೋಡಿ',
+      punjabi: 'ਮੁਦਰਾ ਦਾ ਇਤਿਹਾਸ ਦੇਖੋ',
+      tamil: 'முத்திரை வரலாற்றைக் காண்க',
+      telugu: 'ముద్రల చరిత్రను చూడండి'
+    },
+    howToEarnMudras: { 
+      en: 'How to earn Mudras', 
+      hi: 'मुद्राएं कैसे कमाएं',
+      bangla: 'মুদ্রা কীভাবে অর্জন করবেন',
+      kannada: 'ಮುದ್ರೆಗಳನ್ನು ಹೇಗೆ ಗಳಿಸಬೇಕು',
+      punjabi: 'ਮੁਦਰਾ ਕਿਵੇਂ ਕਮਾਓ',
+      tamil: 'முத்திரைகளை எவ்வாறு சம்பாதிப்பது',
+      telugu: 'ముద్రలను ఎలా సంపాదించాలి'
+    },
+    modalTitle: { 
+      en: 'How to Earn Mudras', 
+      hi: 'मुद्राएं कैसे कमाएं',
+      bangla: 'মুদ্রা কীভাবে অর্জন করবেন',
+      kannada: 'ಮುದ್ರೆಗಳನ್ನು ಹೇಗೆ ಗಳಿಸಬೇಕು',
+      punjabi: 'ਮੁਦਰਾ ਕਿਵੇਂ ਕਮਾਓ',
+      tamil: 'முத்திரைகளை எவ்வாறு சம்பாதிப்பது',
+      telugu: 'ముద్రలను ఎలా సంపాదించాలి'
+    },
+    closeButton: { 
+      en: '✕', 
+      hi: '✕',
+      bangla: '✕',
+      kannada: '✕',
+      punjabi: '✕',
+      tamil: '✕',
+      telugu: '✕'
+    },
+    pujaActivities: { 
+      en: 'Puja activities', 
+      hi: 'पूजा गतिविधियां',
+      bangla: 'পূজার কার্যক্রম',
+      kannada: 'ಪೂಜಾ ಚಟುವಟಿಕೆಗಳು',
+      punjabi: 'ਪੂਜਾ ਦੀਆਂ ਗਤਿਵਿਧੀਆਂ',
+      tamil: 'பூஜை நடவடிக்கைகள்',
+      telugu: 'పూజ కార్యకలాపాలు'
+    },
+    onetimeActivities: { 
+      en: 'Onetime activities', 
+      hi: 'एक बार की गतिविधियां',
+      bangla: 'এককালীন কার্যক্রম',
+      kannada: 'ಒಮ್ಮೆ ಮಾತ್ರದ ಚಟುವಟಿಕೆಗಳು',
+      punjabi: 'ਇੱਕ ਵਾਰ ਦੀਆਂ ਗਤਿਵਿਧੀਆਂ',
+      tamil: 'ஒரு முறை நடவடிக்கைகள்',
+      telugu: 'ఒకసారి కార్యకలాపాలు'
+    },
+    dailyActivities: { 
+      en: 'Daily activities:', 
+      hi: 'दैनिक गतिविधियां:',
+      bangla: 'দৈনিক কার্যক্রম:',
+      kannada: 'ದೈನಂದಿನ ಚಟುವಟಿಕೆಗಳು:',
+      punjabi: 'ਰੋਜ਼ਾਨਾ ਗਤਿਵਿਧੀਆਂ:',
+      tamil: 'தினசரி நடவடிக்கைகள்:',
+      telugu: 'రోజువారీ కార్యకలాపాలు:'
+    },
     activities: {
-      bookPuja: { en: 'Book any Puja:', hi: 'कोई भी पूजा बुक करें:' },
-      referFriend: { en: 'Refer a Friend:', hi: 'मित्र को रेफर करें:' },
-      signUp: { en: 'Sign Up:', hi: 'साइन अप करें:' },
-      completeProfile: { en: 'Complete Profile:', hi: 'प्रोफाइल पूरा करें:' },
-      setupTemple: { en: 'Setup your Temple:', hi: 'अपना मंदिर सेटअप करें:' },
-      dailyLogin: { en: 'Daily Login:', hi: 'दैनिक लॉगिन:' },
-      offerFlowers: { en: 'Offer flowers to god:', hi: 'भगवान को फूल चढ़ाएं:' },
-      doAarti: { en: 'Do aarti:', hi: 'आरती करें:' },
-      ringBell: { en: 'Ring the bell:', hi: 'घंटी बजाएं:' },
-      playShankh: { en: 'Play Shankh:', hi: 'शंख बजाएं:' },
-      offerDhoop: { en: 'Offer Dhoop to God:', hi: 'भगवान को धूप चढ़ाएं:' },
-      listenAudioVideo: { en: 'Listen to Audio / Video:', hi: 'ऑडियो / वीडियो सुनें:' },
-      checkRashifal: { en: 'Check Rashifal:', hi: 'राशिफल देखें:' }
+      bookPuja: { 
+        en: 'Book any Puja:', 
+        hi: 'कोई भी पूजा बुक करें:',
+        bangla: 'যেকোনো পূজা বুক করুন:',
+        kannada: 'ಯಾವುದೇ ಪೂಜೆಯನ್ನು ಬುಕ್ ಮಾಡಿ:',
+        punjabi: 'ਕੋਈ ਵੀ ਪੂਜਾ ਬੁੱਕ ਕਰੋ:',
+        tamil: 'எந்த பூஜையையும் புக் செய்யுங்கள்:',
+        telugu: 'ఏదైనా పూజను బుక్ చేయండి:'
+      },
+      referFriend: { 
+        en: 'Refer a Friend:', 
+        hi: 'मित्र को रेफर करें:',
+        bangla: 'একজন বন্ধুকে রেফার করুন:',
+        kannada: 'ಸ್ನೇಹಿತನನ್ನು ರೆಫರ್ ಮಾಡಿ:',
+        punjabi: 'ਇੱਕ ਦੋਸਤ ਨੂੰ ਰੈਫਰ ਕਰੋ:',
+        tamil: 'ஒரு நண்பரை ரெஃபர் செய்யுங்கள்:',
+        telugu: 'ఒక స్నేహితుడిని రెఫర్ చేయండి:'
+      },
+      signUp: { 
+        en: 'Sign Up:', 
+        hi: 'साइन अप करें:',
+        bangla: 'সাইন আপ করুন:',
+        kannada: 'ಸೈನ್ ಅಪ್ ಮಾಡಿ:',
+        punjabi: 'ਸਾਈਨ ਅੱਪ ਕਰੋ:',
+        tamil: 'பதிவு செய்யுங்கள்:',
+        telugu: 'సైన్ అప్ చేయండి:'
+      },
+      completeProfile: { 
+        en: 'Complete Profile:', 
+        hi: 'प्रोफाइल पूरा करें:',
+        bangla: 'প্রোফাইল সম্পূর্ণ করুন:',
+        kannada: 'ಪ್ರೊಫೈಲ್ ಪೂರ್ಣಗೊಳಿಸಿ:',
+        punjabi: 'ਪ੍ਰੋਫਾਈਲ ਪੂਰਾ ਕਰੋ:',
+        tamil: 'சுயவிவரத்தை முடிக்கவும்:',
+        telugu: 'ప్రొఫైల్‌ను పూర్తి చేయండి:'
+      },
+      setupTemple: { 
+        en: 'Setup your Temple:', 
+        hi: 'अपना मंदिर सेटअप करें:',
+        bangla: 'আপনার মন্দির সেটআপ করুন:',
+        kannada: 'ನಿಮ್ಮ ದೇವಾಲಯವನ್ನು ಸೆಟಪ್ ಮಾಡಿ:',
+        punjabi: 'ਆਪਣਾ ਮੰਦਰ ਸੈੱਟਅੱਪ ਕਰੋ:',
+        tamil: 'உங்கள் கோவிலை அமைக்கவும்:',
+        telugu: 'మీ ఆలయాన్ని సెటప్ చేయండి:'
+      },
+      dailyLogin: { 
+        en: 'Daily Login:', 
+        hi: 'दैनिक लॉगिन:',
+        bangla: 'দৈনিক লগইন:',
+        kannada: 'ದೈನಂದಿನ ಲಾಗಿನ್:',
+        punjabi: 'ਰੋਜ਼ਾਨਾ ਲੌਗਇਨ:',
+        tamil: 'தினசரி உள்நுழைவு:',
+        telugu: 'రోజువారీ లాగిన్:'
+      },
+      offerFlowers: { 
+        en: 'Offer flowers to god:', 
+        hi: 'भगवान को फूल चढ़ाएं:',
+        bangla: 'ভগবানকে ফুল অর্পণ করুন:',
+        kannada: 'ದೇವರಿಗೆ ಹೂವುಗಳನ್ನು ಅರ್ಪಿಸಿ:',
+        punjabi: 'ਭਗਵਾਨ ਨੂੰ ਫੁੱਲ ਚੜ੍ਹਾਓ:',
+        tamil: 'கடவுளுக்கு பூக்களை அர்ப்பணிக்கவும்:',
+        telugu: 'దేవుడికి పూలు అర్పించండి:'
+      },
+      doAarti: { 
+        en: 'Do aarti:', 
+        hi: 'आरती करें:',
+        bangla: 'আরতি করুন:',
+        kannada: 'ಆರತಿ ಮಾಡಿ:',
+        punjabi: 'ਆਰਤੀ ਕਰੋ:',
+        tamil: 'ஆரத்தி செய்யுங்கள்:',
+        telugu: 'ఆరతి చేయండి:'
+      },
+      ringBell: { 
+        en: 'Ring the bell:', 
+        hi: 'घंटी बजाएं:',
+        bangla: 'ঘণ্টা বাজান:',
+        kannada: 'ಗಂಟೆ ಬಾರಿಸಿ:',
+        punjabi: 'ਘੰਟੀ ਵਜਾਓ:',
+        tamil: 'மணியை அடிக்கவும்:',
+        telugu: 'గంటను మోగించండి:'
+      },
+      playShankh: { 
+        en: 'Play Shankh:', 
+        hi: 'शंख बजाएं:',
+        bangla: 'শঙ্খ বাজান:',
+        kannada: 'ಶಂಖವನ್ನು ನುಡಿಸಿ:',
+        punjabi: 'ਸ਼ੰਖ ਵਜਾਓ:',
+        tamil: 'சங்கு வாசியுங்கள்:',
+        telugu: 'శంఖం వాయించండి:'
+      },
+      offerDhoop: { 
+        en: 'Offer Dhoop to God:', 
+        hi: 'भगवान को धूप चढ़ाएं:',
+        bangla: 'ভগবানকে ধূপ অর্পণ করুন:',
+        kannada: 'ದೇವರಿಗೆ ಧೂಪವನ್ನು ಅರ್ಪಿಸಿ:',
+        punjabi: 'ਭਗਵਾਨ ਨੂੰ ਧੂਪ ਚੜ੍ਹਾਓ:',
+        tamil: 'கடவுளுக்கு தூபம் அர்ப்பணிக்கவும்:',
+        telugu: 'దేవుడికి ధూపం అర్పించండి:'
+      },
+      listenAudioVideo: { 
+        en: 'Listen to Audio / Video:', 
+        hi: 'ऑडियो / वीडियो सुनें:',
+        bangla: 'অডিও / ভিডিও শুনুন:',
+        kannada: 'ಆಡಿಯೊ / ವೀಡಿಯೊ ಕೇಳಿ:',
+        punjabi: 'ਆਡੀਓ / ਵੀਡੀਓ ਸੁਣੋ:',
+        tamil: 'ஆடியோ / வீடியோ கேளுங்கள்:',
+        telugu: 'ఆడియో / వీడియో వినండి:'
+      },
+      checkRashifal: { 
+        en: 'Check Rashifal:', 
+        hi: 'राशिफल देखें:',
+        bangla: 'রাশিফল দেখুন:',
+        kannada: 'ರಾಶಿಫಲವನ್ನು ನೋಡಿ:',
+        punjabi: 'ਰਾਸ਼ੀਫਲ ਦੇਖੋ:',
+        tamil: 'ராசிபலம் பாருங்கள்:',
+        telugu: 'రాశిఫలం చూడండి:'
+      }
     },
     profileDetails: {
-      phoneNumber: { en: 'Phone Number:', hi: 'फोन नंबर:' },
-      dateOfBirth: { en: 'Date of Birth:', hi: 'जन्म तिथि:' },
-      fathersDateOfBirth: { en: 'Father\'s date of birth:', hi: 'पिता की जन्म तिथि:' },
-      mothersDateOfBirth: { en: 'Mother\'s date of birth:', hi: 'माता की जन्म तिथि:' },
-      childrensInfo: { en: 'Children\'s name and date of birth:', hi: 'बच्चों का नाम और जन्म तिथि:' }
+      phoneNumber: { 
+        en: 'Phone Number:', 
+        hi: 'फोन नंबर:',
+        bangla: 'ফোন নম্বর:',
+        kannada: 'ಫೋನ್ ಸಂಖ್ಯೆ:',
+        punjabi: 'ਫੋਨ ਨੰਬਰ:',
+        tamil: 'தொலைபேசி எண்:',
+        telugu: 'ఫోన్ నంబర్:'
+      },
+      dateOfBirth: { 
+        en: 'Date of Birth:', 
+        hi: 'जन्म तिथि:',
+        bangla: 'জন্ম তারিখ:',
+        kannada: 'ಜನ್ಮ ದಿನಾಂಕ:',
+        punjabi: 'ਜਨਮ ਤਾਰੀਖ:',
+        tamil: 'பிறந்த தேதி:',
+        telugu: 'పుట్టిన తేదీ:'
+      },
+      fathersDateOfBirth: { 
+        en: 'Father\'s date of birth:', 
+        hi: 'पिता की जन्म तिथि:',
+        bangla: 'পিতার জন্ম তারিখ:',
+        kannada: 'ತಂದೆಯ ಜನ್ಮ ದಿನಾಂಕ:',
+        punjabi: 'ਪਿਤਾ ਦੀ ਜਨਮ ਤਾਰੀਖ:',
+        tamil: 'தந்தையின் பிறந்த தேதி:',
+        telugu: 'తండ్రి పుట్టిన తేదీ:'
+      },
+      mothersDateOfBirth: { 
+        en: 'Mother\'s date of birth:', 
+        hi: 'माता की जन्म तिथि:',
+        bangla: 'মায়ের জন্ম তারিখ:',
+        kannada: 'ತಾಯಿಯ ಜನ್ಮ ದಿನಾಂಕ:',
+        punjabi: 'ਮਾਂ ਦੀ ਜਨਮ ਤਾਰੀਖ:',
+        tamil: 'தாயின் பிறந்த தேதி:',
+        telugu: 'తల్లి పుట్టిన తేదీ:'
+      },
+      childrensInfo: { 
+        en: 'Children\'s name and date of birth:', 
+        hi: 'बच्चों का नाम और जन्म तिथि:',
+        bangla: 'সন্তানদের নাম এবং জন্ম তারিখ:',
+        kannada: 'ಮಕ್ಕಳ ಹೆಸರು ಮತ್ತು ಜನ್ಮ ದಿನಾಂಕ:',
+        punjabi: 'ਬੱਚਿਆਂ ਦਾ ਨਾਮ ਅਤੇ ਜਨਮ ਤਾਰੀਖ:',
+        tamil: 'குழந்தைகளின் பெயர் மற்றும் பிறந்த தேதி:',
+        telugu: 'పిల్లల పేరు మరియు పుట్టిన తేదీ:'
+      }
     },
     mudraCounts: {
-      mudras: { en: 'Mudras', hi: 'मुद्राएं' },
-      perChildren: { en: '/ children', hi: '/ बच्चे' },
-      perAudioVideo: { en: 'per audio / video', hi: 'प्रति ऑडियो / वीडियो' },
-      maxPerDay: { en: '(Max 25 Mudras per day)', hi: '(प्रतिदिन अधिकतम 25 मुद्राएं)' }
+      mudras: { 
+        en: 'Mudras', 
+        hi: 'मुद्राएं',
+        bangla: 'মুদ্রা',
+        kannada: 'ಮುದ್ರೆಗಳು',
+        punjabi: 'ਮੁਦਰਾ',
+        tamil: 'முத்திரைகள்',
+        telugu: 'ముద్రలు'
+      },
+      perChildren: { 
+        en: '/ children', 
+        hi: '/ बच्चे',
+        bangla: '/ সন্তান',
+        kannada: '/ ಮಕ್ಕಳು',
+        punjabi: '/ ਬੱਚੇ',
+        tamil: '/ குழந்தைகள்',
+        telugu: '/ పిల్లలు'
+      },
+      perAudioVideo: { 
+        en: 'per audio / video', 
+        hi: 'प्रति ऑडियो / वीडियो',
+        bangla: 'প্রতি অডিও / ভিডিও',
+        kannada: 'ಪ್ರತಿ ಆಡಿಯೊ / ವೀಡಿಯೊ',
+        punjabi: 'ਪ੍ਰਤੀ ਆਡੀਓ / ਵੀਡੀਓ',
+        tamil: 'ஒவ்வொரு ஆடியோ / வீடியோவிற்கும்',
+        telugu: 'ప్రతి ఆడియో / వీడియోకు'
+      },
+      maxPerDay: { 
+        en: '(Max 25 Mudras per day)', 
+        hi: '(प्रतिदिन अधिकतम 25 मुद्राएं)',
+        bangla: '(প্রতিদিন সর্বোচ্চ 25 মুদ্রা)',
+        kannada: '(ದಿನಕ್ಕೆ ಗರಿಷ್ಠ 25 ಮುದ್ರೆಗಳು)',
+        punjabi: '(ਰੋਜ਼ਾਨਾ ਵੱਧ ਤੋਂ ਵੱਧ 25 ਮੁਦਰਾ)',
+        tamil: '(ஒரு நாளைக்கு அதிகபட்சம் 25 முத்திரைகள்)',
+        telugu: '(రోజుకు గరిష్ఠం 25 ముద్రలు)'
+      }
     }
   };
 
@@ -97,7 +380,7 @@ export default function MudrasScreen() {
         end={{ x: 1, y: 0 }}
       >
         <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>{isHindi ? translations.headerTitle.hi : translations.headerTitle.en}</Text>
+        <Text style={styles.headerTitle}>{getTranslation(translations.headerTitle)}</Text>
         <Image
           source={require('@/assets/images/temple illustration.png')}
           style={styles.temple}
@@ -106,10 +389,10 @@ export default function MudrasScreen() {
       <View style={styles.card}>
         <View style={styles.contentHeader}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>{isHindi ? translations.title.hi : translations.title.en}</Text>
+            <Text style={styles.title}>{getTranslation(translations.title)}</Text>
           </View>
         </View>
-        <Text style={styles.subtitle}>{isHindi ? translations.currentMudras.hi : translations.currentMudras.en}</Text>
+        <Text style={styles.subtitle}>{getTranslation(translations.currentMudras)}</Text>
         
         {/* Fixed back button container */}
         <TouchableOpacity style={styles.fixedBackButton} onPress={() => router.back()}>
@@ -119,16 +402,16 @@ export default function MudrasScreen() {
         {/* Placeholder for current mudras list */}
                  <View style={styles.mudraListPlaceholder}>
            {loading ? (
-             <Text style={{ color: '#888', fontSize: 16 }}>{isHindi ? translations.loadingMudras.hi : translations.loadingMudras.en}</Text>
+             <Text style={{ color: '#888', fontSize: 16 }}>{getTranslation(translations.loadingMudras)}</Text>
            ) : (
-             <Text style={styles.mudrasCountText}>{mudrasCount} {isHindi ? translations.mudrasCount.hi : translations.mudrasCount.en}</Text>
+             <Text style={styles.mudrasCountText}>{mudrasCount} {getTranslation(translations.mudrasCount)}</Text>
            )}
          </View>
                  <TouchableOpacity style={styles.historyLink} onPress={() => router.push('/auth/mudra-history')}>
-           <Text style={styles.historyLinkText}>{isHindi ? translations.viewMudraHistory.hi : translations.viewMudraHistory.en}</Text>
+           <Text style={styles.historyLinkText}>{getTranslation(translations.viewMudraHistory)}</Text>
          </TouchableOpacity>
         <TouchableOpacity style={styles.historyLink} onPress={() => setShowMudrasModal(true)}>
-          <Text style={styles.historyLinkText}>{isHindi ? translations.howToEarnMudras.hi : translations.howToEarnMudras.en}</Text>
+          <Text style={styles.historyLinkText}>{getTranslation(translations.howToEarnMudras)}</Text>
         </TouchableOpacity>
       </View>
       
@@ -142,12 +425,12 @@ export default function MudrasScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{isHindi ? translations.modalTitle.hi : translations.modalTitle.en}</Text>
+              <Text style={styles.modalTitle}>{getTranslation(translations.modalTitle)}</Text>
               <TouchableOpacity 
                 style={styles.closeButton}
                 onPress={() => setShowMudrasModal(false)}
               >
-                <Text style={styles.closeButtonText}>{isHindi ? translations.closeButton.hi : translations.closeButton.en}</Text>
+                <Text style={styles.closeButtonText}>{getTranslation(translations.closeButton)}</Text>
               </TouchableOpacity>
             </View>
             
@@ -158,76 +441,76 @@ export default function MudrasScreen() {
             >
                              {/* Puja Activities */}
                <View style={styles.section}>
-                 <Text style={styles.sectionTitle}>{isHindi ? translations.pujaActivities.hi : translations.pujaActivities.en}</Text>
+                 <Text style={styles.sectionTitle}>{getTranslation(translations.pujaActivities)}</Text>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.bookPuja.hi : translations.activities.bookPuja.en} <Text style={styles.mudraCount}>500 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.bookPuja)} <Text style={styles.mudraCount}>500 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.referFriend.hi : translations.activities.referFriend.en} <Text style={styles.mudraCount}>100 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.referFriend)} <Text style={styles.mudraCount}>100 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                </View>
                
                {/* One-time Activities */}
                <View style={styles.section}>
-                 <Text style={styles.sectionTitle}>{isHindi ? translations.onetimeActivities.hi : translations.onetimeActivities.en}</Text>
+                 <Text style={styles.sectionTitle}>{getTranslation(translations.onetimeActivities)}</Text>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.signUp.hi : translations.activities.signUp.en} <Text style={styles.mudraCount}>100 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.signUp)} <Text style={styles.mudraCount}>100 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.completeProfile.hi : translations.activities.completeProfile.en}</Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.completeProfile)}</Text>
                    <View style={styles.activityDetails}>
-                     <Text style={styles.activityDetail}>• {isHindi ? translations.profileDetails.phoneNumber.hi : translations.profileDetails.phoneNumber.en} <Text style={styles.mudraCount}>10 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
-                     <Text style={styles.activityDetail}>• {isHindi ? translations.profileDetails.dateOfBirth.hi : translations.profileDetails.dateOfBirth.en} <Text style={styles.mudraCount}>10 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
-                     <Text style={styles.activityDetail}>• {isHindi ? translations.profileDetails.fathersDateOfBirth.hi : translations.profileDetails.fathersDateOfBirth.en} <Text style={styles.mudraCount}>10 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
-                     <Text style={styles.activityDetail}>• {isHindi ? translations.profileDetails.mothersDateOfBirth.hi : translations.profileDetails.mothersDateOfBirth.en} <Text style={styles.mudraCount}>10 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
-                     <Text style={styles.activityDetail}>• {isHindi ? translations.profileDetails.childrensInfo.hi : translations.profileDetails.childrensInfo.en} <Text style={styles.mudraCount}>15 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en} {isHindi ? translations.mudraCounts.perChildren.hi : translations.mudraCounts.perChildren.en}</Text></Text>
+                     <Text style={styles.activityDetail}>• {getTranslation(translations.profileDetails.phoneNumber)} <Text style={styles.mudraCount}>10 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
+                     <Text style={styles.activityDetail}>• {getTranslation(translations.profileDetails.dateOfBirth)} <Text style={styles.mudraCount}>10 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
+                     <Text style={styles.activityDetail}>• {getTranslation(translations.profileDetails.fathersDateOfBirth)} <Text style={styles.mudraCount}>10 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
+                     <Text style={styles.activityDetail}>• {getTranslation(translations.profileDetails.mothersDateOfBirth)} <Text style={styles.mudraCount}>10 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
+                     <Text style={styles.activityDetail}>• {getTranslation(translations.profileDetails.childrensInfo)} <Text style={styles.mudraCount}>15 {getTranslation(translations.mudraCounts.mudras)} {getTranslation(translations.mudraCounts.perChildren)}</Text></Text>
                    </View>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.setupTemple.hi : translations.activities.setupTemple.en} <Text style={styles.mudraCount}>50 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.setupTemple)} <Text style={styles.mudraCount}>50 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                </View>
                
                {/* Daily Activities */}
                <View style={styles.section}>
-                 <Text style={styles.sectionTitle}>{isHindi ? translations.dailyActivities.hi : translations.dailyActivities.en}</Text>
+                 <Text style={styles.sectionTitle}>{getTranslation(translations.dailyActivities)}</Text>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.dailyLogin.hi : translations.activities.dailyLogin.en} <Text style={styles.mudraCount}>10 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.dailyLogin)} <Text style={styles.mudraCount}>10 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.offerFlowers.hi : translations.activities.offerFlowers.en} <Text style={styles.mudraCount}>5 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.offerFlowers)} <Text style={styles.mudraCount}>5 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.doAarti.hi : translations.activities.doAarti.en} <Text style={styles.mudraCount}>5 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.doAarti)} <Text style={styles.mudraCount}>5 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.ringBell.hi : translations.activities.ringBell.en} <Text style={styles.mudraCount}>5 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.ringBell)} <Text style={styles.mudraCount}>5 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.playShankh.hi : translations.activities.playShankh.en} <Text style={styles.mudraCount}>5 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.playShankh)} <Text style={styles.mudraCount}>5 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.offerDhoop.hi : translations.activities.offerDhoop.en} <Text style={styles.mudraCount}>5 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.offerDhoop)} <Text style={styles.mudraCount}>5 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.listenAudioVideo.hi : translations.activities.listenAudioVideo.en} <Text style={styles.mudraCount}>5 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en} {isHindi ? translations.mudraCounts.perAudioVideo.hi : translations.mudraCounts.perAudioVideo.en}</Text></Text>
-                   <Text style={styles.activitySubtext}>{isHindi ? translations.mudraCounts.maxPerDay.hi : translations.mudraCounts.maxPerDay.en}</Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.listenAudioVideo)} <Text style={styles.mudraCount}>5 {getTranslation(translations.mudraCounts.mudras)} {getTranslation(translations.mudraCounts.perAudioVideo)}</Text></Text>
+                   <Text style={styles.activitySubtext}>{getTranslation(translations.mudraCounts.maxPerDay)}</Text>
                  </View>
                  
                  <View style={styles.activityItem}>
-                   <Text style={styles.activityTitle}>{isHindi ? translations.activities.checkRashifal.hi : translations.activities.checkRashifal.en} <Text style={styles.mudraCount}>5 {isHindi ? translations.mudraCounts.mudras.hi : translations.mudraCounts.mudras.en}</Text></Text>
+                   <Text style={styles.activityTitle}>{getTranslation(translations.activities.checkRashifal)} <Text style={styles.mudraCount}>5 {getTranslation(translations.mudraCounts.mudras)}</Text></Text>
                  </View>
                </View>
             </ScrollView>

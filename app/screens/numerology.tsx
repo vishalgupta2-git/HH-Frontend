@@ -11,10 +11,29 @@ const CARD_MARGIN_TOP = -40;
 export const options = { headerShown: false };
 
 const NumerologyScreen: React.FC = () => {
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
+  
+  // Helper function to get translation
+  const getTranslation = (translations: any) => {
+    return currentLanguage === 'hindi' ? translations.hi :
+           currentLanguage === 'bangla' ? translations.bangla :
+           currentLanguage === 'kannada' ? translations.kannada :
+           currentLanguage === 'punjabi' ? translations.punjabi :
+           currentLanguage === 'tamil' ? translations.tamil :
+           currentLanguage === 'telugu' ? translations.telugu :
+           translations.en;
+  };
   
   const translations = {
-    headerTitle: { en: 'Hindu Heritage', hi: 'द हिंदू हेरिटेज' }
+    headerTitle: { 
+      en: 'Hindu Heritage', 
+      hi: 'द हिंदू हेरिटेज',
+      bangla: 'হিন্দু হেরিটেজ',
+      kannada: 'ಹಿಂದೂ ಹೆರಿಟೇಜ್',
+      punjabi: 'ਹਿੰਦੂ ਹੈਰੀਟੇਜ',
+      tamil: 'ஹிந்து ஹெரிடேஜ்',
+      telugu: 'హిందూ హెరిటేజ్'
+    }
   };
 
   return (
@@ -29,7 +48,7 @@ const NumerologyScreen: React.FC = () => {
         end={{ x: 1, y: 0 }}
       >
         <Image source={require('@/assets/images/hindu heritage.png')} style={styles.logo} />
-        <Text style={styles.headerTitle}>{isHindi ? translations.headerTitle.hi : translations.headerTitle.en}</Text>
+        <Text style={styles.headerTitle}>{getTranslation(translations.headerTitle)}</Text>
         <Image
           source={require('@/assets/images/temple illustration.png')}
           style={styles.temple}

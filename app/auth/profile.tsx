@@ -25,7 +25,18 @@ const rashiOptions = [
 export const options = { headerShown: false };
 
 export default function ProfileScreen() {
-  const { isHindi } = useLanguage();
+  const { isHindi, currentLanguage } = useLanguage();
+
+  // Helper function to get translation
+  const getTranslation = (key: any) => {
+    const lang = currentLanguage === 'hindi' ? 'hi' : 
+                 currentLanguage === 'bangla' ? 'bangla' : 
+                 currentLanguage === 'kannada' ? 'kannada' :
+                 currentLanguage === 'punjabi' ? 'punjabi' :
+                 currentLanguage === 'tamil' ? 'tamil' :
+                 currentLanguage === 'telugu' ? 'telugu' : 'en';
+    return key[lang] || key.en;
+  };
   // Basic Information
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -44,43 +55,267 @@ export default function ProfileScreen() {
   const router = useRouter();
 
   const translations = {
-    title: { en: 'Profile', hi: 'प्रोफाइल' },
-    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
-    contactInformation: { en: 'Contact Information', hi: 'संपर्क जानकारी' },
-    aboutYourself: { en: 'About Yourself', hi: 'अपने बारे में' },
-    saveProfile: { en: 'Update Profile', hi: 'प्रोफाइल अपडेट करें' },
-    congratulations: { en: 'Congratulations!', hi: 'बधाई हो!' },
-    profileUpdatedSuccessfully: { en: 'Profile updated successfully! You earned', hi: 'प्रोफाइल सफलतापूर्वक अपडेट हो गया! आपने कमाए' },
-    mudras: { en: 'mudras!', hi: 'मुद्राएं!' },
+    title: { 
+      en: 'Profile', 
+      hi: 'प्रोफाइल',
+      bangla: 'প্রোফাইল',
+      kannada: 'ಪ್ರೊಫೈಲ್',
+      punjabi: 'ਪ੍ਰੋਫਾਈਲ',
+      tamil: 'சுயவிவரம்',
+      telugu: 'ప్రొఫైల్'
+    },
+    loading: { 
+      en: 'Loading...', 
+      hi: 'लोड हो रहा है...',
+      bangla: 'লোড হচ্ছে...',
+      kannada: 'ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+      punjabi: 'ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...',
+      tamil: 'ஏற்றப்படுகிறது...',
+      telugu: 'లోడ్ అవుతోంది...'
+    },
+    contactInformation: { 
+      en: 'Contact Information', 
+      hi: 'संपर्क जानकारी',
+      bangla: 'যোগাযোগের তথ্য',
+      kannada: 'ಸಂಪರ್ಕ ಮಾಹಿತಿ',
+      punjabi: 'ਸੰਪਰਕ ਜਾਣਕਾਰੀ',
+      tamil: 'தொடர்பு தகவல்',
+      telugu: 'సంప్రదింపు సమాచారం'
+    },
+    aboutYourself: { 
+      en: 'About Yourself', 
+      hi: 'अपने बारे में',
+      bangla: 'আপনার সম্পর্কে',
+      kannada: 'ನಿಮ್ಮ ಬಗ್ಗೆ',
+      punjabi: 'ਆਪਣੇ ਬਾਰੇ',
+      tamil: 'உங்களைப் பற்றி',
+      telugu: 'మీ గురించి'
+    },
+    saveProfile: { 
+      en: 'Update Profile', 
+      hi: 'प्रोफाइल अपडेट करें',
+      bangla: 'প্রোফাইল আপডেট করুন',
+      kannada: 'ಪ್ರೊಫೈಲ್ ಅಪ್ಡೇಟ್ ಮಾಡಿ',
+      punjabi: 'ਪ੍ਰੋਫਾਈਲ ਅਪਡੇਟ ਕਰੋ',
+      tamil: 'சுயவிவரத்தை புதுப்பிக்கவும்',
+      telugu: 'ప్రొఫైల్‌ను నవీకరించండి'
+    },
+    congratulations: { 
+      en: 'Congratulations!', 
+      hi: 'बधाई हो!',
+      bangla: 'অভিনন্দন!',
+      kannada: 'ಅಭಿನಂದನೆಗಳು!',
+      punjabi: 'ਵਧਾਈਆਂ!',
+      tamil: 'வாழ்த்துக்கள்!',
+      telugu: 'అభినందనలు!'
+    },
+    profileUpdatedSuccessfully: { 
+      en: 'Profile updated successfully! You earned', 
+      hi: 'प्रोफाइल सफलतापूर्वक अपडेट हो गया! आपने कमाए',
+      bangla: 'প্রোফাইল সফলভাবে আপডেট হয়েছে! আপনি অর্জন করেছেন',
+      kannada: 'ಪ್ರೊಫೈಲ್ ಯಶಸ್ವಿಯಾಗಿ ಅಪ್ಡೇಟ್ ಆಯಿತು! ನೀವು ಗಳಿಸಿದ್ದೀರಿ',
+      punjabi: 'ਪ੍ਰੋਫਾਈਲ ਸਫਲਤਾਪੂਰਵਕ ਅਪਡੇਟ ਹੋ ਗਿਆ! ਤੁਸੀਂ ਕਮਾਇਆ',
+      tamil: 'சுயவிவரம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது! நீங்கள் சம்பாதித்தீர்கள்',
+      telugu: 'ప్రొఫైల్ విజయవంతంగా నవీకరించబడింది! మీరు సంపాదించారు'
+    },
+    mudras: { 
+      en: 'mudras!', 
+      hi: 'मुद्राएं!',
+      bangla: 'মুদ্রা!',
+      kannada: 'ಮುದ್ರೆಗಳು!',
+      punjabi: 'ਮੁਦਰਾਵਾਂ!',
+      tamil: 'முத்திரைகள்!',
+      telugu: 'ముద్రలు!'
+    },
     fields: {
-      firstName: { en: 'First Name *', hi: 'पहला नाम *' },
-      lastName: { en: 'Last Name', hi: 'अंतिम नाम' },
-      emailId: { en: 'E-mail ID (cannot be changed)', hi: 'ई-मेल आईडी (बदला नहीं जा सकता)' },
-      phoneNumber: { en: 'Enter Your Phone No', hi: 'अपना फोन नंबर दर्ज करें' },
-      gender: { en: 'Gender', hi: 'लिंग' },
-      rashi: { en: 'Rashi', hi: 'राशि' },
-      placeOfBirth: { en: 'Place of Birth', hi: 'जन्म स्थान' },
-      gotra: { en: 'Gotra', hi: 'गोत्र' },
-      dateTimeOfBirth: { en: 'Select Date & Time of Birth', hi: 'जन्म की तारीख और समय चुनें' },
+      firstName: { 
+        en: 'First Name *', 
+        hi: 'पहला नाम *',
+        bangla: 'নাম *',
+        kannada: 'ಮೊದಲ ಹೆಸರು *',
+        punjabi: 'ਪਹਿਲਾ ਨਾਮ *',
+        tamil: 'முதல் பெயர் *',
+        telugu: 'మొదటి పేరు *'
+      },
+      lastName: { 
+        en: 'Last Name', 
+        hi: 'अंतिम नाम',
+        bangla: 'শেষ নাম',
+        kannada: 'ಕೊನೆಯ ಹೆಸರು',
+        punjabi: 'ਆਖਰੀ ਨਾਮ',
+        tamil: 'கடைசி பெயர்',
+        telugu: 'చివరి పేరు'
+      },
+      emailId: { 
+        en: 'E-mail ID (cannot be changed)', 
+        hi: 'ई-मेल आईडी (बदला नहीं जा सकता)',
+        bangla: 'ই-মেইল আইডি (পরিবর্তন করা যাবে না)',
+        kannada: 'ಇ-ಮೇಲ್ ID (ಬದಲಾಯಿಸಲಾಗುವುದಿಲ್ಲ)',
+        punjabi: 'ਈ-ਮੇਲ ID (ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ)',
+        tamil: 'மின்னஞ்சல் ஐடி (மாற்ற முடியாது)',
+        telugu: 'ఇ-మెయిల్ ID (మార్చలేరు)'
+      },
+      phoneNumber: { 
+        en: 'Enter Your Phone No', 
+        hi: 'अपना फोन नंबर दर्ज करें',
+        bangla: 'আপনার ফোন নম্বর লিখুন',
+        kannada: 'ನಿಮ್ಮ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ',
+        punjabi: 'ਆਪਣਾ ਫੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ',
+        tamil: 'உங்கள் தொலைபேசி எண்ணை உள்ளிடவும்',
+        telugu: 'మీ ఫోన్ నంబర్‌ను నమోదు చేయండి'
+      },
+      gender: { 
+        en: 'Gender', 
+        hi: 'लिंग',
+        bangla: 'লিঙ্গ',
+        kannada: 'ಲಿಂಗ',
+        punjabi: 'ਲਿੰਗ',
+        tamil: 'பாலினம்',
+        telugu: 'లింగం'
+      },
+      rashi: { 
+        en: 'Rashi', 
+        hi: 'राशि',
+        bangla: 'রাশি',
+        kannada: 'ರಾಶಿ',
+        punjabi: 'ਰਾਸ਼ੀ',
+        tamil: 'ராசி',
+        telugu: 'రాశి'
+      },
+      placeOfBirth: { 
+        en: 'Place of Birth', 
+        hi: 'जन्म स्थान',
+        bangla: 'জন্মস্থান',
+        kannada: 'ಜನ್ಮಸ್ಥಳ',
+        punjabi: 'ਜਨਮ ਸਥਾਨ',
+        tamil: 'பிறப்பிடம்',
+        telugu: 'జనన స్థలం'
+      },
+      gotra: { 
+        en: 'Gotra', 
+        hi: 'गोत्र',
+        bangla: 'গোত্র',
+        kannada: 'ಗೋತ್ರ',
+        punjabi: 'ਗੋਤਰ',
+        tamil: 'கோத்திரம்',
+        telugu: 'గోత్రం'
+      },
+      dateTimeOfBirth: { 
+        en: 'Select Date & Time of Birth', 
+        hi: 'जन्म की तारीख और समय चुनें',
+        bangla: 'জন্মের তারিখ ও সময় নির্বাচন করুন',
+        kannada: 'ಜನ್ಮದ ದಿನಾಂಕ ಮತ್ತು ಸಮಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+        punjabi: 'ਜਨਮ ਦੀ ਤਾਰੀਖ ਅਤੇ ਸਮਾਂ ਚੁਣੋ',
+        tamil: 'பிறந்த தேதி மற்றும் நேரத்தைத் தேர்ந்தெடுக்கவும்',
+        telugu: 'జనన తేదీ మరియు సమయాన్ని ఎంచుకోండి'
+      },
     },
     options: {
-      male: { en: 'Male', hi: 'पुरुष' },
-      female: { en: 'Female', hi: 'महिला' },
-      other: { en: 'Other', hi: 'अन्य' },
+      male: { 
+        en: 'Male', 
+        hi: 'पुरुष',
+        bangla: 'পুরুষ',
+        kannada: 'ಪುರುಷ',
+        punjabi: 'ਪੁਰਸ਼',
+        tamil: 'ஆண்',
+        telugu: 'పురుషుడు'
+      },
+      female: { 
+        en: 'Female', 
+        hi: 'महिला',
+        bangla: 'মহিলা',
+        kannada: 'ಮಹಿಳೆ',
+        punjabi: 'ਮਹਿਲਾ',
+        tamil: 'பெண்',
+        telugu: 'స్త్రీ'
+      },
+      other: { 
+        en: 'Other', 
+        hi: 'अन्य',
+        bangla: 'অন্যান্য',
+        kannada: 'ಇತರೆ',
+        punjabi: 'ਹੋਰ',
+        tamil: 'மற்றவை',
+        telugu: 'ఇతర'
+      },
     },
     validation: {
-      firstNameMinLength: { en: 'First name must be at least 2 characters', hi: 'पहला नाम कम से कम 2 अक्षर का होना चाहिए' },
-      validPhoneNumber: { en: 'Enter a valid phone number', hi: 'एक वैध फोन नंबर दर्ज करें' },
-      profileUpdateSuccess: { en: 'Profile updated successfully!', hi: 'प्रोफाइल सफलतापूर्वक अपडेट हो गया!' },
-      profileUpdateError: { en: 'Failed to update profile:', hi: 'प्रोफाइल अपडेट करने में विफल:' }
+      firstNameMinLength: { 
+        en: 'First name must be at least 2 characters', 
+        hi: 'पहला नाम कम से कम 2 अक्षर का होना चाहिए',
+        bangla: 'নাম কমপক্ষে ২ অক্ষরের হতে হবে',
+        kannada: 'ಮೊದಲ ಹೆಸರು ಕನಿಷ್ಠ 2 ಅಕ್ಷರಗಳಾಗಿರಬೇಕು',
+        punjabi: 'ਪਹਿਲਾ ਨਾਮ ਘੱਟੋ-ਘੱਟ 2 ਅੱਖਰਾਂ ਦਾ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ',
+        tamil: 'முதல் பெயர் குறைந்தது 2 எழுத்துகளாக இருக்க வேண்டும்',
+        telugu: 'మొదటి పేరు కనీసం 2 అక్షరాలుగా ఉండాలి'
+      },
+      validPhoneNumber: { 
+        en: 'Enter a valid phone number', 
+        hi: 'एक वैध फोन नंबर दर्ज करें',
+        bangla: 'একটি বৈধ ফোন নম্বর লিখুন',
+        kannada: 'ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ',
+        punjabi: 'ਇੱਕ ਵੈਧ ਫੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ',
+        tamil: 'சரியான தொலைபேசி எண்ணை உள்ளிடவும்',
+        telugu: 'చెల్లుబాటు అయ్యే ఫోన్ నంబర్‌ను నమోదు చేయండి'
+      },
+      profileUpdateSuccess: { 
+        en: 'Profile updated successfully!', 
+        hi: 'प्रोफाइल सफलतापूर्वक अपडेट हो गया!',
+        bangla: 'প্রোফাইল সফলভাবে আপডেট হয়েছে!',
+        kannada: 'ಪ್ರೊಫೈಲ್ ಯಶಸ್ವಿಯಾಗಿ ಅಪ್ಡೇಟ್ ಆಯಿತು!',
+        punjabi: 'ਪ੍ਰੋਫਾਈਲ ਸਫਲਤਾਪੂਰਵਕ ਅਪਡੇਟ ਹੋ ਗਿਆ!',
+        tamil: 'சுயவிவரம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது!',
+        telugu: 'ప్రొఫైల్ విజయవంతంగా నవీకరించబడింది!'
+      },
+      profileUpdateError: { 
+        en: 'Failed to update profile:', 
+        hi: 'प्रोफाइल अपडेट करने में विफल:',
+        bangla: 'প্রোফাইল আপডেট করতে ব্যর্থ:',
+        kannada: 'ಪ್ರೊಫೈಲ್ ಅಪ್ಡೇಟ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ:',
+        punjabi: 'ਪ੍ਰੋਫਾਈਲ ਅਪਡੇਟ ਕਰਨ ਵਿੱਚ ਅਸਫਲ:',
+        tamil: 'சுயவிவரத்தை புதுப்பிக்க முடியவில்லை:',
+        telugu: 'ప్రొఫైల్‌ను నవీకరించడంలో విఫలమైంది:'
+      }
     },
     success: {
-      title: { en: 'Success', hi: 'सफलता' },
-      message: { en: 'Profile updated successfully!', hi: 'प्रोफाइल सफलतापूर्वक अपडेट हो गया!' }
+      title: { 
+        en: 'Success', 
+        hi: 'सफलता',
+        bangla: 'সফলতা',
+        kannada: 'ಯಶಸ್ಸು',
+        punjabi: 'ਸਫਲਤਾ',
+        tamil: 'வெற்றி',
+        telugu: 'విజయం'
+      },
+      message: { 
+        en: 'Profile updated successfully!', 
+        hi: 'प्रोफाइल सफलतापूर्वक अपडेट हो गया!',
+        bangla: 'প্রোফাইল সফলভাবে আপডেট হয়েছে!',
+        kannada: 'ಪ್ರೊಫೈಲ್ ಯಶಸ್ವಿಯಾಗಿ ಅಪ್ಡೇಟ್ ಆಯಿತು!',
+        punjabi: 'ਪ੍ਰੋਫਾਈਲ ਸਫਲਤਾਪੂਰਵਕ ਅਪਡੇਟ ਹੋ ਗਿਆ!',
+        tamil: 'சுயவிவரம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது!',
+        telugu: 'ప్రొఫైల్ విజయవంతంగా నవీకరించబడింది!'
+      }
     },
     error: {
-      title: { en: 'Error', hi: 'त्रुटि' },
-      message: { en: 'Failed to update profile:', hi: 'प्रोफाइल अपडेट करने में विफल:' }
+      title: { 
+        en: 'Error', 
+        hi: 'त्रुटि',
+        bangla: 'ত্রুটি',
+        kannada: 'ದೋಷ',
+        punjabi: 'ਗਲਤੀ',
+        tamil: 'பிழை',
+        telugu: 'లోపం'
+      },
+      message: { 
+        en: 'Failed to update profile:', 
+        hi: 'प्रोफाइल अपडेट करने में विफल:',
+        bangla: 'প্রোফাইল আপডেট করতে ব্যর্থ:',
+        kannada: 'ಪ್ರೊಫೈಲ್ ಅಪ್ಡೇಟ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ:',
+        punjabi: 'ਪ੍ਰੋਫਾਈਲ ਅਪਡੇਟ ਕਰਨ ਵਿੱਚ ਅਸਫਲ:',
+        tamil: 'சுயவிவரத்தை புதுப்பிக்க முடியவில்லை:',
+        telugu: 'ప్రొఫైల్‌ను నవీకరించడంలో విఫలమైంది:'
+      }
     }
   };
 
@@ -145,7 +380,7 @@ export default function ProfileScreen() {
     const numbersOnly = text.replace(/[^0-9]/g, '');
     setPhone(numbersOnly);
     if (numbersOnly.length < 7) {
-      setPhoneError(isHindi ? translations.validation.validPhoneNumber.hi : translations.validation.validPhoneNumber.en);
+      setPhoneError(getTranslation(translations.validation.validPhoneNumber));
     } else {
       setPhoneError('');
     }
@@ -157,7 +392,7 @@ export default function ProfileScreen() {
     
     const trimmedFirstName = firstName.trim();
     if (trimmedFirstName.length < 2) {
-      setFirstNameError(isHindi ? translations.validation.firstNameMinLength.hi : translations.validation.firstNameMinLength.en);
+      setFirstNameError(getTranslation(translations.validation.firstNameMinLength));
       valid = false;
     }
     
@@ -217,13 +452,13 @@ export default function ProfileScreen() {
     } catch (err: any) {
       console.error('❌ Error updating profile:', err);
       Alert.alert(
-        isHindi ? translations.error.title.hi : translations.error.title.en, 
-        `${isHindi ? translations.error.message.hi : translations.error.message.en} ${err.response?.data?.error || err.message}`
+        getTranslation(translations.error.title), 
+        `${getTranslation(translations.error.message)} ${err.response?.data?.error || err.message}`
       );
     }
   };
 
-  if (loading) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>{isHindi ? translations.loading.hi : translations.loading.en}</Text></View>;
+  if (loading) return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><Text>{getTranslation(translations.loading)}</Text></View>;
 
   return (
     <View style={styles.container}>
@@ -247,22 +482,22 @@ export default function ProfileScreen() {
             <Ionicons name="arrow-undo" size={24} color="#666" />
           </TouchableOpacity>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>{isHindi ? translations.title.hi : translations.title.en}</Text>
+            <Text style={styles.title}>{getTranslation(translations.title)}</Text>
           </View>
         </View>
         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 400 }} keyboardShouldPersistTaps="handled">
-          <Text style={styles.sectionLabel}>{isHindi ? translations.contactInformation.hi : translations.contactInformation.en}</Text>
+          <Text style={styles.sectionLabel}>{getTranslation(translations.contactInformation)}</Text>
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 14 }}>
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder={isHindi ? translations.fields.firstName.hi : translations.fields.firstName.en}
+              placeholder={getTranslation(translations.fields.firstName)}
               placeholderTextColor="#888"
               value={firstName}
               onChangeText={handleFirstNameChange}
             />
             <TextInput
               style={[styles.input, { flex: 1 }]}
-              placeholder={isHindi ? translations.fields.lastName.hi : translations.fields.lastName.en}
+              placeholder={getTranslation(translations.fields.lastName)}
               placeholderTextColor="#888"
               value={lastName}
               onChangeText={setLastName}
@@ -271,7 +506,7 @@ export default function ProfileScreen() {
           {firstNameError ? <Text style={styles.errorText}>{firstNameError}</Text> : null}
           <TextInput
             style={[styles.input, { backgroundColor: '#EEE', color: '#AAA' }]}
-            placeholder={isHindi ? translations.fields.emailId.hi : translations.fields.emailId.en}
+            placeholder={getTranslation(translations.fields.emailId)}
             placeholderTextColor="#888"
             value={email}
             editable={false}
@@ -282,7 +517,7 @@ export default function ProfileScreen() {
             </View>
             <TextInput
               style={styles.phoneInput}
-              placeholder={isHindi ? translations.fields.phoneNumber.hi : translations.fields.phoneNumber.en}
+              placeholder={getTranslation(translations.fields.phoneNumber)}
               placeholderTextColor="#888"
               value={phone}
               onChangeText={handlePhoneChange}
@@ -297,7 +532,7 @@ export default function ProfileScreen() {
           
                      {/* Date-Time Picker */}
                        <TouchableOpacity style={styles.input} onPress={() => setShowDateTime(true)}>
-              <Text style={styles.dropdownText}>{dob ? dob.toLocaleString() : (isHindi ? translations.fields.dateTimeOfBirth.hi : translations.fields.dateTimeOfBirth.en)}</Text>
+              <Text style={styles.dropdownText}>{dob ? dob.toLocaleString() : getTranslation(translations.fields.dateTimeOfBirth)}</Text>
             </TouchableOpacity>
           
                      {/* Date of Birth Picker */}
@@ -324,7 +559,7 @@ export default function ProfileScreen() {
           
           
           <TouchableOpacity style={styles.button} onPress={handleSave}>
-            <Text style={styles.buttonText}>{isHindi ? translations.saveProfile.hi : translations.saveProfile.en}</Text>
+            <Text style={styles.buttonText}>{getTranslation(translations.saveProfile)}</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -341,9 +576,9 @@ export default function ProfileScreen() {
               <View style={styles.mudraIconContainer}>
                 <Text style={styles.mudraIcon}>🏆</Text>
               </View>
-              <Text style={styles.mudraTitle}>{isHindi ? translations.congratulations.hi : translations.congratulations.en}</Text>
+              <Text style={styles.mudraTitle}>{getTranslation(translations.congratulations)}</Text>
               <Text style={styles.mudraMessage}>
-                {isHindi ? translations.profileUpdatedSuccessfully.hi : translations.profileUpdatedSuccessfully.en} {mudrasEarned} {isHindi ? translations.mudras.hi : translations.mudras.en}
+                {getTranslation(translations.profileUpdatedSuccessfully)} {mudrasEarned} {getTranslation(translations.mudras)}
               </Text>
             </View>
           </View>
@@ -362,9 +597,9 @@ export default function ProfileScreen() {
               <View style={styles.mudraIconContainer}>
                 <Text style={styles.mudraIcon}>✅</Text>
               </View>
-              <Text style={styles.mudraTitle}>{isHindi ? translations.success.title.hi : translations.success.title.en}</Text>
+              <Text style={styles.mudraTitle}>{getTranslation(translations.success.title)}</Text>
               <Text style={styles.mudraMessage}>
-                {isHindi ? translations.success.message.hi : translations.success.message.en}
+                {getTranslation(translations.success.message)}
               </Text>
             </View>
           </View>
@@ -710,13 +945,6 @@ const styles = StyleSheet.create({
      color: '#666',
      textAlign: 'center',
      lineHeight: 22,
-   },
-   title: {
-     fontSize: 20,
-     fontWeight: 'bold',
-     color: '#FF6A00',
-     marginBottom: 18,
-     textAlign: 'center',
    },
    // New styles for contentHeader
    contentHeader: {

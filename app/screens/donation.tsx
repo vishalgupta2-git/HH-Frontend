@@ -58,28 +58,183 @@ interface TempleCharity {
 }
 
 export default function DonationScreen() {
-  const { isHindi } = useLanguage();
+  const { isHindi, isBangla, isKannada, isPunjabi, isTamil, isTelugu, currentLanguage } = useLanguage();
+  
+  // Helper function to get translations
+  const getTranslation = (translations: any) => {
+    return currentLanguage === 'hindi' ? (translations.hi || translations.en) :
+           currentLanguage === 'bangla' ? (translations.bangla || translations.en) :
+           currentLanguage === 'kannada' ? (translations.kannada || translations.en) :
+           currentLanguage === 'punjabi' ? (translations.punjabi || translations.en) :
+           currentLanguage === 'tamil' ? (translations.tamil || translations.en) :
+           currentLanguage === 'telugu' ? (translations.telugu || translations.en) :
+           translations.en;
+  };
   
   const translations = {
-    searchPlaceholder: { en: 'Search temples and charities...', hi: 'मंदिर और धर्मार्थ संस्थाओं की खोज करें...' },
-    temples: { en: 'Temples', hi: 'मंदिर' },
-    charities: { en: 'Charities', hi: 'धर्मार्थ संस्थाएं' },
-    loading: { en: 'Loading...', hi: 'लोड हो रहा है...' },
-    noDataFound: { en: 'No temples or charities found.', hi: 'कोई मंदिर या धर्मार्थ संस्था नहीं मिली।' },
-    errorLoading: { en: 'Error loading data. Please try again.', hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।' },
-    pullToRefresh: { en: 'Pull to refresh', hi: 'रिफ्रेश करने के लिए खींचें' },
+    searchPlaceholder: { 
+      en: 'Search temples and charities...', 
+      hi: 'मंदिर और धर्मार्थ संस्थाओं की खोज करें...',
+      bangla: 'মন্দির এবং দাতব্য প্রতিষ্ঠান খুঁজুন...',
+      kannada: 'ದೇವಾಲಯಗಳು ಮತ್ತು ದಾನ ಸಂಸ್ಥೆಗಳನ್ನು ಹುಡುಕಿ...',
+      punjabi: 'ਮੰਦਰ ਅਤੇ ਧਰਮਾਰਥ ਸੰਸਥਾਵਾਂ ਖੋਜੋ...',
+      tamil: 'கோவில்கள் மற்றும் தர்மார்த்த நிறுவனங்களைத் தேடுங்கள்...',
+      telugu: 'దేవాలయాలు మరియు దాన సంస్థలను వెతకండి...'
+    },
+    temples: { 
+      en: 'Temples', 
+      hi: 'मंदिर',
+      bangla: 'মন্দির',
+      kannada: 'ದೇವಾಲಯಗಳು',
+      punjabi: 'ਮੰਦਰ',
+      tamil: 'கோவில்கள்',
+      telugu: 'దేవాలయాలు'
+    },
+    charities: { 
+      en: 'Charities', 
+      hi: 'धर्मार्थ संस्थाएं',
+      bangla: 'দাতব্য প্রতিষ্ঠান',
+      kannada: 'ದಾನ ಸಂಸ್ಥೆಗಳು',
+      punjabi: 'ਧਰਮਾਰਥ ਸੰਸਥਾਵਾਂ',
+      tamil: 'தர்மார்த்த நிறுவனங்கள்',
+      telugu: 'దాన సంస్థలు'
+    },
+    loading: { 
+      en: 'Loading...', 
+      hi: 'लोड हो रहा है...',
+      bangla: 'লোড হচ্ছে...',
+      kannada: 'ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+      punjabi: 'ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...',
+      tamil: 'ஏற்றப்படுகிறது...',
+      telugu: 'లోడ్ అవుతోంది...'
+    },
+    noDataFound: { 
+      en: 'No temples or charities found.', 
+      hi: 'कोई मंदिर या धर्मार्थ संस्था नहीं मिली।',
+      bangla: 'কোনো মন্দির বা দাতব্য প্রতিষ্ঠান পাওয়া যায়নি।',
+      kannada: 'ದೇವಾಲಯಗಳು ಅಥವಾ ದಾನ ಸಂಸ್ಥೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ।',
+      punjabi: 'ਕੋਈ ਮੰਦਰ ਜਾਂ ਧਰਮਾਰਥ ਸੰਸਥਾ ਨਹੀਂ ਮਿਲੀ।',
+      tamil: 'கோவில்கள் அல்லது தர்மார்த்த நிறுவனங்கள் கிடைக்கவில்லை।',
+      telugu: 'దేవాలయాలు లేదా దాన సంస్థలు కనుగొనబడలేదు।'
+    },
+    errorLoading: { 
+      en: 'Error loading data. Please try again.', 
+      hi: 'डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।',
+      bangla: 'ডেটা লোড করতে ত্রুটি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      kannada: 'ಡೇಟಾ ಲೋಡ್ ಮಾಡುವಲ್ಲಿ ದೋಷ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।',
+      punjabi: 'ਡੇਟਾ ਲੋਡ ਕਰਨ ਵਿੱਚ ਗਲਤੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      tamil: 'தரவு ஏற்றுவதில் பிழை। தயவுசெய்து மீண்டும் முயற்சிக்கவும்।',
+      telugu: 'డేటా లోడ్ చేయడంలో లోపం। దయచేసి మళ్లీ ప్రయత్నించండి।'
+    },
+    pullToRefresh: { 
+      en: 'Pull to refresh', 
+      hi: 'रिफ्रेश करने के लिए खींचें',
+      bangla: 'রিফ্রেশ করতে টানুন',
+      kannada: 'ರಿಫ್ರೆಶ್ ಮಾಡಲು ಎಳೆಯಿರಿ',
+      punjabi: 'ਰਿਫਰੈਸ਼ ਕਰਨ ਲਈ ਖਿੱਚੋ',
+      tamil: 'புதுப்பிக்க இழுக்கவும்',
+      telugu: 'రిఫ్రెష్ చేయడానికి లాగండి'
+    },
     donationForm: {
-      title: { en: 'Donation Form', hi: 'दान फॉर्म' },
-      amount: { en: 'Donation Amount', hi: 'दान राशि' },
-      currency: { en: 'Currency', hi: 'मुद्रा' },
-      date: { en: 'Donation Date', hi: 'दान की तारीख' },
-      timeSlot: { en: 'Time Slot', hi: 'समय स्लॉट' },
-      name: { en: 'Your Name', hi: 'आपका नाम' },
-      phone: { en: 'Phone Number', hi: 'फोन नंबर' },
-      email: { en: 'Email', hi: 'ईमेल' },
-      message: { en: 'Message (Optional)', hi: 'संदेश (वैकल्पिक)' },
-      submit: { en: 'Submit Donation', hi: 'दान जमा करें' },
-      cancel: { en: 'Cancel', hi: 'रद्द करें' }
+      title: { 
+        en: 'Donation Form', 
+        hi: 'दान फॉर्म',
+        bangla: 'দান ফর্ম',
+        kannada: 'ದಾನ ಫಾರ್ಮ್',
+        punjabi: 'ਦਾਨ ਫਾਰਮ',
+        tamil: 'தானம் படிவம்',
+        telugu: 'దానం ఫారమ్'
+      },
+      amount: { 
+        en: 'Donation Amount', 
+        hi: 'दान राशि',
+        bangla: 'দানের পরিমাণ',
+        kannada: 'ದಾನದ ಮೊತ್ತ',
+        punjabi: 'ਦਾਨ ਦੀ ਰਕਮ',
+        tamil: 'தானத் தொகை',
+        telugu: 'దానం మొత్తం'
+      },
+      currency: { 
+        en: 'Currency', 
+        hi: 'मुद्रा',
+        bangla: 'মুদ্রা',
+        kannada: 'ಕರೆನ್ಸಿ',
+        punjabi: 'ਮੁਦਰਾ',
+        tamil: 'நாணயம்',
+        telugu: 'కరెన్సీ'
+      },
+      date: { 
+        en: 'Donation Date', 
+        hi: 'दान की तारीख',
+        bangla: 'দানের তারিখ',
+        kannada: 'ದಾನದ ದಿನಾಂಕ',
+        punjabi: 'ਦਾਨ ਦੀ ਤਾਰੀਖ',
+        tamil: 'தானத் தேதி',
+        telugu: 'దానం తేదీ'
+      },
+      timeSlot: { 
+        en: 'Time Slot', 
+        hi: 'समय स्लॉट',
+        bangla: 'সময় স্লট',
+        kannada: 'ಸಮಯ ಸ್ಲಾಟ್',
+        punjabi: 'ਸਮਾਂ ਸਲਾਟ',
+        tamil: 'நேர இடைவெளி',
+        telugu: 'సమయ స్లాట్'
+      },
+      name: { 
+        en: 'Your Name', 
+        hi: 'आपका नाम',
+        bangla: 'আপনার নাম',
+        kannada: 'ನಿಮ್ಮ ಹೆಸರು',
+        punjabi: 'ਤੁਹਾਡਾ ਨਾਮ',
+        tamil: 'உங்கள் பெயர்',
+        telugu: 'మీ పేరు'
+      },
+      phone: { 
+        en: 'Phone Number', 
+        hi: 'फोन नंबर',
+        bangla: 'ফোন নম্বর',
+        kannada: 'ಫೋನ್ ಸಂಖ್ಯೆ',
+        punjabi: 'ਫੋਨ ਨੰਬਰ',
+        tamil: 'தொலைபேசி எண்',
+        telugu: 'ఫోన్ నంబర్'
+      },
+      email: { 
+        en: 'Email', 
+        hi: 'ईमेल',
+        bangla: 'ইমেইল',
+        kannada: 'ಇಮೇಲ್',
+        punjabi: 'ਈਮੇਲ',
+        tamil: 'மின்னஞ்சல்',
+        telugu: 'ఇమెయిల్'
+      },
+      message: { 
+        en: 'Message (Optional)', 
+        hi: 'संदेश (वैकल्पिक)',
+        bangla: 'বার্তা (ঐচ্ছিক)',
+        kannada: 'ಸಂದೇಶ (ಐಚ್ಛಿಕ)',
+        punjabi: 'ਸੁਨੇਹਾ (ਵਿਕਲਪਿਕ)',
+        tamil: 'செய்தி (விருப்பமானது)',
+        telugu: 'సందేశం (ఐచ్ఛికం)'
+      },
+      submit: { 
+        en: 'Submit Donation', 
+        hi: 'दान जमा करें',
+        bangla: 'দান জমা দিন',
+        kannada: 'ದಾನವನ್ನು ಸಲ್ಲಿಸಿ',
+        punjabi: 'ਦਾਨ ਜਮ੍ਹਾ ਕਰੋ',
+        tamil: 'தானத்தை சமர்ப்பிக்கவும்',
+        telugu: 'దానాన్ని సమర్పించండి'
+      },
+      cancel: { 
+        en: 'Cancel', 
+        hi: 'रद्द करें',
+        bangla: 'বাতিল করুন',
+        kannada: 'ರದ್ದುಗೊಳಿಸಿ',
+        punjabi: 'ਰੱਦ ਕਰੋ',
+        tamil: 'ரத்து செய்யுங்கள்',
+        telugu: 'రద్దు చేయండి'
+      }
     },
     timeSlots: {
       slot1: { en: '8AM-10AM', hi: 'सुबह 8-10 बजे' },
@@ -95,19 +250,233 @@ export default function DonationScreen() {
       euro: { en: '€', hi: '€' },
       pound: { en: '£', hi: '£' }
     },
-    success: { en: 'Donation submitted successfully!', hi: 'दान सफलतापूर्वक जमा हो गया!' },
-    error: { en: 'Error submitting donation. Please try again.', hi: 'दान जमा करने में त्रुटि। कृपया पुनः प्रयास करें।' },
+    success: { 
+      en: 'Donation submitted successfully!', 
+      hi: 'दान सफलतापूर्वक जमा हो गया!',
+      bangla: 'দান সফলভাবে জমা হয়েছে!',
+      kannada: 'ದಾನವನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಸಲಾಗಿದೆ!',
+      punjabi: 'ਦਾਨ ਸਫਲਤਾਪੂਰਵਕ ਜਮ੍ਹਾ ਹੋ ਗਿਆ!',
+      tamil: 'தானம் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!',
+      telugu: 'దానం విజయవంతంగా సమర్పించబడింది!'
+    },
+    error: { 
+      en: 'Error submitting donation. Please try again.', 
+      hi: 'दान जमा करने में त्रुटि। कृपया पुनः प्रयास करें।',
+      bangla: 'দান জমা করতে ত্রুটি। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      kannada: 'ದಾನವನ್ನು ಸಲ್ಲಿಸುವಲ್ಲಿ ದೋಷ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।',
+      punjabi: 'ਦਾਨ ਜਮ੍ਹਾ ਕਰਨ ਵਿੱਚ ਗਲਤੀ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      tamil: 'தானத்தை சமர்ப்பிக்கும்போது பிழை। தயவுசெய்து மீண்டும் முயற்சிக்கவும்।',
+      telugu: 'దానాన్ని సమర్పించడంలో లోపం। దయచేసి మళ్లీ ప్రయత్నించండి।'
+    },
+    // Error messages
+    invalidName: {
+      en: 'Invalid Name',
+      hi: 'अमान्य नाम',
+      bangla: 'অবৈধ নাম',
+      kannada: 'ಅಮಾನ್ಯ ಹೆಸರು',
+      punjabi: 'ਗਲਤ ਨਾਮ',
+      tamil: 'தவறான பெயர்',
+      telugu: 'చెల్లని పేరు'
+    },
+    nameMinLength: {
+      en: 'Name must be at least 3 characters long.',
+      hi: 'नाम कम से कम 3 अक्षर का होना चाहिए।',
+      bangla: 'নাম কমপক্ষে ৩ অক্ষরের হতে হবে।',
+      kannada: 'ಹೆಸರು ಕನಿಷ್ಠ 3 ಅಕ್ಷರಗಳು ಇರಬೇಕು।',
+      punjabi: 'ਨਾਮ ਘੱਟੋ-ਘੱਟ 3 ਅੱਖਰਾਂ ਦਾ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ।',
+      tamil: 'பெயர் குறைந்தது 3 எழுத்துகள் இருக்க வேண்டும்।',
+      telugu: 'పేరు కనీసం 3 అక్షరాలుగా ఉండాలి।'
+    },
+    invalidPhone: {
+      en: 'Invalid Phone',
+      hi: 'अमान्य फोन',
+      bangla: 'অবৈধ ফোন',
+      kannada: 'ಅಮಾನ್ಯ ಫೋನ್',
+      punjabi: 'ਗਲਤ ਫੋਨ',
+      tamil: 'தவறான தொலைபேசி',
+      telugu: 'చెల్లని ఫోన్'
+    },
+    phoneValidNumber: {
+      en: 'Please enter a valid phone number.',
+      hi: 'कृपया एक वैध फोन नंबर दर्ज करें।',
+      bangla: 'অনুগ্রহ করে একটি বৈধ ফোন নম্বর লিখুন।',
+      kannada: 'ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ।',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਫੋਨ ਨੰਬਰ ਦਰਜ ਕਰੋ।',
+      tamil: 'தயவுசெய்து சரியான தொலைபேசி எண்ணை உள்ளிடவும்।',
+      telugu: 'దయచేసి చెల్లుబాటు అయ్యే ఫోన్ నంబర్ నమోదు చేయండి।'
+    },
+    invalidAmount: {
+      en: 'Invalid Amount',
+      hi: 'अमान्य राशि',
+      bangla: 'অবৈধ পরিমাণ',
+      kannada: 'ಅಮಾನ್ಯ ಮೊತ್ತ',
+      punjabi: 'ਗਲਤ ਰਕਮ',
+      tamil: 'தவறான தொகை',
+      telugu: 'చెల్లని మొత్తం'
+    },
+    amountValidNumber: {
+      en: 'Please enter a valid donation amount.',
+      hi: 'कृपया एक वैध दान राशि दर्ज करें।',
+      bangla: 'অনুগ্রহ করে একটি বৈধ দান পরিমাণ লিখুন।',
+      kannada: 'ದಯವಿಟ್ಟು ಮಾನ್ಯವಾದ ದಾನ ಮೊತ್ತವನ್ನು ನಮೂದಿಸಿ।',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਵੈਧ ਦਾਨ ਰਕਮ ਦਰਜ ਕਰੋ।',
+      tamil: 'தயவுசெய்து சரியான நன்கொடை தொகையை உள்ளிடவும்।',
+      telugu: 'దయచేసి చెల్లుబాటు అయ్యే దాన మొత్తాన్ని నమోదు చేయండి।'
+    },
+    invalidDate: {
+      en: 'Invalid Date',
+      hi: 'अमान्य तारीख',
+      bangla: 'অবৈধ তারিখ',
+      kannada: 'ಅಮಾನ್ಯ ದಿನಾಂಕ',
+      punjabi: 'ਗਲਤ ਤਾਰੀਖ',
+      tamil: 'தவறான தேதி',
+      telugu: 'చెల్లని తేదీ'
+    },
+    selectDate: {
+      en: 'Please select a preferred date.',
+      hi: 'कृपया एक पसंदीदा तारीख चुनें।',
+      bangla: 'অনুগ্রহ করে একটি পছন্দের তারিখ নির্বাচন করুন।',
+      kannada: 'ದಯವಿಟ್ಟು ಆದ್ಯತೆಯ ದಿನಾಂಕವನ್ನು ಆಯ್ಕೆಮಾಡಿ।',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਪਸੰਦੀਦਾ ਤਾਰੀਖ ਚੁਣੋ।',
+      tamil: 'தயவுசெய்து விருப்பமான தேதியைத் தேர்ந்தெடுக்கவும்।',
+      telugu: 'దయచేసి ఇష్టమైన తేదీని ఎంచుకోండి।'
+    },
+    invalidTime: {
+      en: 'Invalid Time',
+      hi: 'अमान्य समय',
+      bangla: 'অবৈধ সময়',
+      kannada: 'ಅಮಾನ್ಯ ಸಮಯ',
+      punjabi: 'ਗਲਤ ਸਮਾਂ',
+      tamil: 'தவறான நேரம்',
+      telugu: 'చెల్లని సమయం'
+    },
+    selectTimeSlot: {
+      en: 'Please select a preferred time slot.',
+      hi: 'कृपया एक पसंदीदा समय स्लॉट चुनें।',
+      bangla: 'অনুগ্রহ করে একটি পছন্দের সময় স্লট নির্বাচন করুন।',
+      kannada: 'ದಯವಿಟ್ಟು ಆದ್ಯತೆಯ ಸಮಯ ಸ್ಲಾಟ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ।',
+      punjabi: 'ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਪਸੰਦੀਦਾ ਸਮਾਂ ਸਲਾਟ ਚੁਣੋ।',
+      tamil: 'தயவுசெய்து விருப்பமான நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்।',
+      telugu: 'దయచేసి ఇష్టమైన సమయ స్లాట్‌ను ఎంచుకోండి।'
+    },
+    donationSuccessful: {
+      en: 'Donation Successful!',
+      hi: 'दान सफल!',
+      bangla: 'দান সফল!',
+      kannada: 'ದಾನ ಯಶಸ್ವಿ!',
+      punjabi: 'ਦਾਨ ਸਫਲ!',
+      tamil: 'நன்கொடை வெற்றிகரமானது!',
+      telugu: 'దానం విజయవంతం!'
+    },
+    thankYouDonation: {
+      en: 'Thank you for your donation. We will contact you soon.',
+      hi: 'आपके दान के लिए धन्यवाद। हम जल्द ही आपसे संपर्क करेंगे।',
+      bangla: 'আপনার দানের জন্য ধন্যবাদ। আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।',
+      kannada: 'ನಿಮ್ಮ ದಾನಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು। ನಾವು ಶೀಘ್ರದಲ್ಲೇ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತೇವೆ।',
+      punjabi: 'ਤੁਹਾਡੇ ਦਾਨ ਲਈ ਧੰਨਵਾਦ। ਅਸੀਂ ਜਲਦੀ ਹੀ ਤੁਹਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰਾਂਗੇ।',
+      tamil: 'உங்கள் நன்கொடைக்கு நன்றி। விரைவில் உங்களைத் தொடர்பு கொள்வோம்।',
+      telugu: 'మీ దానానికి ధన్యవాదాలు। మేము త్వరలో మీతో సంప్రదిస్తాము।'
+    },
+    failedToSubmit: {
+      en: 'Failed to submit donation. Please try again.',
+      hi: 'दान जमा करने में विफल। कृपया पुनः प्रयास करें।',
+      bangla: 'দান জমা দিতে ব্যর্থ। অনুগ্রহ করে আবার চেষ্টা করুন।',
+      kannada: 'ದಾನವನ್ನು ಸಲ್ಲಿಸಲು ವಿಫಲವಾಗಿದೆ। ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ।',
+      punjabi: 'ਦਾਨ ਜਮ੍ਹਾ ਕਰਨ ਵਿੱਚ ਅਸਫਲ। ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।',
+      tamil: 'நன்கொடையை சமர்ப்பிக்க முடியவில்லை। தயவுசெய்து மீண்டும் முயற்சிக்கவும்।',
+      telugu: 'దానాన్ని సమర్పించడంలో విఫలమైంది। దయచేసి మళ్లీ ప్రయత్నించండి।'
+    },
     modal: {
-      showingItems: { en: 'Showing', hi: 'दिखा रहे हैं' },
-      item: { en: 'item', hi: 'आइटम' },
-      items: { en: 'items', hi: 'आइटम' },
-      about: { en: 'About', hi: 'के बारे में' },
-      gallery: { en: 'Gallery', hi: 'गैलरी' },
-      donate: { en: 'Donate', hi: 'दान करें' },
-      noImagesAvailable: { en: 'No images available', hi: 'कोई छवि उपलब्ध नहीं' },
-      thankYouSupporting: { en: 'Thank you for supporting the', hi: 'का समर्थन करने के लिए धन्यवाद' },
-      contactInfo: { en: 'Please provide the following information for us to contact you', hi: 'हमसे संपर्क करने के लिए कृपया निम्नलिखित जानकारी प्रदान करें' },
-      thankYouDonation: { en: 'Thank you for your donation. We will contact you soon.', hi: 'आपके दान के लिए धन्यवाद। हम जल्द ही आपसे संपर्क करेंगे।' }
+      showingItems: { 
+        en: 'Showing', 
+        hi: 'दिखा रहे हैं',
+        bangla: 'দেখানো হচ্ছে',
+        kannada: 'ತೋರಿಸುತ್ತಿದೆ',
+        punjabi: 'ਦਿਖਾ ਰਹੇ ਹਨ',
+        tamil: 'காட்டப்படுகிறது',
+        telugu: 'చూపిస్తోంది'
+      },
+      item: { 
+        en: 'item', 
+        hi: 'आइटम',
+        bangla: 'আইটেম',
+        kannada: 'ಐಟಂ',
+        punjabi: 'ਆਈਟਮ',
+        tamil: 'உருப்படி',
+        telugu: 'ఐటమ్'
+      },
+      items: { 
+        en: 'items', 
+        hi: 'आइटम',
+        bangla: 'আইটেম',
+        kannada: 'ಐಟಂಗಳು',
+        punjabi: 'ਆਈਟਮ',
+        tamil: 'உருப்படிகள்',
+        telugu: 'ఐటమ్లు'
+      },
+      about: { 
+        en: 'About', 
+        hi: 'के बारे में',
+        bangla: 'সম্পর্কে',
+        kannada: 'ಬಗ್ಗೆ',
+        punjabi: 'ਬਾਰੇ',
+        tamil: 'பற்றி',
+        telugu: 'గురించి'
+      },
+      gallery: { 
+        en: 'Gallery', 
+        hi: 'गैलरी',
+        bangla: 'গ্যালারি',
+        kannada: 'ಗ್ಯಾಲರಿ',
+        punjabi: 'ਗੈਲਰੀ',
+        tamil: 'கேலரி',
+        telugu: 'గ్యాలరీ'
+      },
+      donate: { 
+        en: 'Donate', 
+        hi: 'दान करें',
+        bangla: 'দান করুন',
+        kannada: 'ದಾನ ಮಾಡಿ',
+        punjabi: 'ਦਾਨ ਕਰੋ',
+        tamil: 'தானம் செய்யுங்கள்',
+        telugu: 'దానం చేయండి'
+      },
+      noImagesAvailable: { 
+        en: 'No images available', 
+        hi: 'कोई छवि उपलब्ध नहीं',
+        bangla: 'কোনো ছবি পাওয়া যায়নি',
+        kannada: 'ಚಿತ್ರಗಳು ಲಭ್ಯವಿಲ್ಲ',
+        punjabi: 'ਕੋਈ ਤਸਵੀਰ ਉਪਲਬਧ ਨਹੀਂ',
+        tamil: 'படங்கள் கிடைக்கவில்லை',
+        telugu: 'చిత్రాలు అందుబాటులో లేవు'
+      },
+      thankYouSupporting: { 
+        en: 'Thank you for supporting the', 
+        hi: 'का समर्थन करने के लिए धन्यवाद',
+        bangla: 'সমর্থন করার জন্য ধন্যবাদ',
+        kannada: 'ಬೆಂಬಲಿಸಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು',
+        punjabi: 'ਸਹਾਇਤਾ ਕਰਨ ਲਈ ਧੰਨਵਾਦ',
+        tamil: 'ஆதரவளித்ததற்கு நன்றி',
+        telugu: 'మద్దతు ఇచ్చినందుకు ధన్యవాదాలు'
+      },
+      contactInfo: { 
+        en: 'Please provide the following information for us to contact you', 
+        hi: 'हमसे संपर्क करने के लिए कृपया निम्नलिखित जानकारी प्रदान करें',
+        bangla: 'আমাদের সাথে যোগাযোগের জন্য অনুগ্রহ করে নিম্নলিখিত তথ্য প্রদান করুন',
+        kannada: 'ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸಲು ದಯವಿಟ್ಟು ಈ ಕೆಳಗಿನ ಮಾಹಿತಿಯನ್ನು ನೀಡಿ',
+        punjabi: 'ਅਸੀਂ ਤੁਹਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰਨ ਲਈ ਕਿਰਪਾ ਕਰਕੇ ਹੇਠ ਲਿਖੀ ਜਾਣਕਾਰੀ ਦਿਓ',
+        tamil: 'உங்களைத் தொடர்பு கொள்ள எங்களுக்கு தயவுசெய்து பின்வரும் தகவலை வழங்கவும்',
+        telugu: 'మేము మీతో సంప్రదించడానికి దయచేసి క్రింది సమాచారాన్ని అందించండి'
+      },
+      thankYouDonation: { 
+        en: 'Thank you for your donation. We will contact you soon.', 
+        hi: 'आपके दान के लिए धन्यवाद। हम जल्द ही आपसे संपर्क करेंगे।',
+        bangla: 'আপনার দানের জন্য ধন্যবাদ। আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।',
+        kannada: 'ನಿಮ್ಮ ದಾನಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು। ನಾವು ಶೀಘ್ರದಲ್ಲೇ ನಿಮ್ಮನ್ನು ಸಂಪರ್ಕಿಸುತ್ತೇವೆ।',
+        punjabi: 'ਤੁਹਾਡੇ ਦਾਨ ਲਈ ਧੰਨਵਾਦ। ਅਸੀਂ ਜਲਦੀ ਹੀ ਤੁਹਾਡੇ ਨਾਲ ਸੰਪਰਕ ਕਰਾਂਗੇ।',
+        tamil: 'உங்கள் தானத்திற்கு நன்றி। நாங்கள் விரைவில் உங்களைத் தொடர்பு கொள்வோம்।',
+        telugu: 'మీ దానానికి ధన్యవాదాలు। మేము త్వరలో మీతో సంప్రదిస్తాము।'
+      }
     }
   };
 
@@ -487,7 +856,7 @@ export default function DonationScreen() {
             ]}
           />
         </LinearGradient>
-        <Text style={styles.toggleLabel}>{isHindi ? translations.temples.hi : translations.temples.en}</Text>
+        <Text style={styles.toggleLabel}>{getTranslation(translations.temples)}</Text>
       </TouchableOpacity>
 
       {/* Charities Toggle */}
@@ -508,7 +877,7 @@ export default function DonationScreen() {
             ]}
           />
         </LinearGradient>
-        <Text style={styles.toggleLabel}>{isHindi ? translations.charities.hi : translations.charities.en}</Text>
+        <Text style={styles.toggleLabel}>{getTranslation(translations.charities)}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -544,7 +913,7 @@ export default function DonationScreen() {
   return (
     <View style={styles.container}>
       <HomeHeader 
-        searchPlaceholder={isHindi ? translations.searchPlaceholder.hi : translations.searchPlaceholder.en}
+        searchPlaceholder={getTranslation(translations.searchPlaceholder)}
         showDailyPujaButton={false} 
         onSearchChange={setSearchQuery}
         extraContent={toggleControls}
@@ -557,7 +926,7 @@ export default function DonationScreen() {
           <View style={{ marginBottom: 20 }}>
             <View style={styles.statsRow}>
               <Text style={styles.statsText}>
-                {isHindi ? translations.modal.showingItems.hi : translations.modal.showingItems.en} {filteredData.length} {filteredData.length === 1 ? (isHindi ? translations.modal.item.hi : translations.modal.item.en) : (isHindi ? translations.modal.items.hi : translations.modal.items.en)}
+                {getTranslation(translations.modal.showingItems)} {filteredData.length} {filteredData.length === 1 ? getTranslation(translations.modal.item) : getTranslation(translations.modal.items)}
                 {searchQuery && ` for "${searchQuery}"`}
                 {pagination.total > 0 && ` of ${pagination.total} total`}
               </Text>
@@ -578,7 +947,7 @@ export default function DonationScreen() {
                   onRefresh={onRefresh}
                   colors={['#FF6A00']}
                   tintColor="#FF6A00"
-                  title="Pull to refresh"
+                  title={getTranslation(translations.pullToRefresh)}
                   titleColor="#666"
                 />
               }
@@ -745,7 +1114,7 @@ export default function DonationScreen() {
             alignItems: 'center'
           }}>
             <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
-              {isHindi ? 'दिखाने के लिए कोई आइटम नहीं' : 'No items to display'}
+              {getTranslation(translations.noDataFound)}
             </Text>
             <Text>Data length: {data.length}</Text>
             <Text>Filtered length: {filteredData.length}</Text>
@@ -766,7 +1135,7 @@ export default function DonationScreen() {
               marginTop: 15,
               textAlign: 'center'
             }}>
-              {pagination.hasMore ? (isHindi ? 'और लोड हो रहा है...' : 'Loading more...') : (isHindi ? 'मंदिर और धर्मार्थ संस्थाएं लोड हो रही हैं...' : 'Loading temples and charities...')}
+              {pagination.hasMore ? getTranslation(translations.loading) : getTranslation(translations.loading)}
             </Text>
           </View>
         )}
@@ -780,7 +1149,7 @@ export default function DonationScreen() {
             alignItems: 'center'
           }}>
             <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>
-              {isHindi ? 'त्रुटि:' : 'Error:'}
+              {getTranslation(translations.errorLoading)}
             </Text>
             <Text style={{ color: 'white', fontSize: 14, textAlign: 'center' }}>
               {error}
@@ -867,7 +1236,7 @@ export default function DonationScreen() {
                   color: '#333',
                   marginBottom: 10
                 }}>
-                  {isHindi ? translations.modal.about.hi : translations.modal.about.en}
+                  {getTranslation(translations.modal.about)}
                 </Text>
                 <Text style={{
                   fontSize: 14,
@@ -897,7 +1266,7 @@ export default function DonationScreen() {
                 fontSize: 18,
                 fontWeight: 'bold'
               }}>
-                {isHindi ? translations.modal.donate.hi : translations.modal.donate.en}
+                {getTranslation(translations.modal.donate)}
               </Text>
             </TouchableOpacity>
 
@@ -909,7 +1278,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 15
               }}>
-                {isHindi ? translations.modal.gallery.hi : translations.modal.gallery.en}
+                {getTranslation(translations.modal.gallery)}
               </Text>
               
               {modalLoading ? (
@@ -1137,7 +1506,7 @@ export default function DonationScreen() {
                 fontWeight: 'bold',
                 color: '#FF6A00'
               }}>
-                {isHindi ? translations.donationForm.title.hi : translations.donationForm.title.en}
+                {getTranslation(translations.donationForm.title)}
               </Text>
               <TouchableOpacity
                 style={{ padding: 5 }}
@@ -1155,8 +1524,8 @@ export default function DonationScreen() {
                 marginBottom: 20,
                 lineHeight: 24
               }}>
-                {isHindi ? `${selectedItem?.name} ${translations.modal.thankYouSupporting.hi}` : `${translations.modal.thankYouSupporting.en} ${selectedItem?.name}`}
-                {'\n'}{isHindi ? translations.modal.contactInfo.hi : translations.modal.contactInfo.en}
+                {getTranslation(translations.modal.thankYouSupporting)} {selectedItem?.name}
+                {'\n'}{getTranslation(translations.modal.contactInfo)}
               </Text>
             
             <View style={{ marginBottom: 15 }}>
@@ -1166,7 +1535,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                {isHindi ? "नाम (न्यूनतम 3 अक्षर) *" : "Name (Min 3 characters) *"}
+                {getTranslation(translations.donationForm.name)} *
               </Text>
               <TextInput
                 style={{
@@ -1179,7 +1548,7 @@ export default function DonationScreen() {
                 }}
                 value={donationForm.name}
                 onChangeText={(text) => setDonationForm(prev => ({ ...prev, name: text }))}
-                placeholder={isHindi ? "अपना पूरा नाम दर्ज करें" : "Enter your full name"}
+                placeholder={getTranslation(translations.donationForm.name)}
                 placeholderTextColor="#999"
               />
             </View>
@@ -1191,7 +1560,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                {isHindi ? "फोन नंबर (न्यूनतम 10 अंक) *" : "Phone Number (Min 10 digits) *"}
+                {getTranslation(translations.donationForm.phone)} *
               </Text>
               <TextInput
                 style={{
@@ -1204,7 +1573,7 @@ export default function DonationScreen() {
                 }}
                 value={donationForm.phone}
                 onChangeText={(text) => setDonationForm(prev => ({ ...prev, phone: text }))}
-                placeholder={isHindi ? "अपना फोन नंबर दर्ज करें" : "Enter your phone number"}
+                placeholder={getTranslation(translations.donationForm.phone)}
                 placeholderTextColor="#999"
                 keyboardType="phone-pad"
               />
@@ -1217,7 +1586,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                {isHindi ? translations.donationForm.amount.hi + " *" : translations.donationForm.amount.en + " *"}
+                {getTranslation(translations.donationForm.amount)} *
               </Text>
               <View style={{
                 flexDirection: 'row',
@@ -1269,7 +1638,7 @@ export default function DonationScreen() {
                     const cleanText = text.replace(/[^0-9]/g, '');
                     setDonationForm(prev => ({ ...prev, amount: cleanText }));
                   }}
-                  placeholder={isHindi ? "राशि दर्ज करें" : "Enter amount"}
+                  placeholder={getTranslation(translations.donationForm.amount)}
                   placeholderTextColor="#999"
                   keyboardType="numeric"
                 />
@@ -1283,7 +1652,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                {isHindi ? "पसंदीदा तारीख *" : "Preferred Date *"}
+                {getTranslation(translations.donationForm.date)} *
               </Text>
               <TouchableOpacity
                 style={{
@@ -1299,7 +1668,7 @@ export default function DonationScreen() {
                   fontSize: 16,
                   color: donationForm.date ? '#333' : '#999'
                 }}>
-                  {donationForm.date ? donationForm.date : (isHindi ? 'तारीख चुनें' : 'Select Date')}
+                  {donationForm.date ? donationForm.date : getTranslation(translations.donationForm.date)}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1311,7 +1680,7 @@ export default function DonationScreen() {
                 color: '#333',
                 marginBottom: 8
               }}>
-                {isHindi ? "पसंदीदा समय स्लॉट *" : "Preferred Time Slot *"}
+                {getTranslation(translations.donationForm.timeSlot)} *
               </Text>
               <View style={{
                 flexDirection: 'row',
@@ -1353,27 +1722,27 @@ export default function DonationScreen() {
               onPress={async () => {
                 // Validation
                 if (!donationForm.name || donationForm.name.trim().length < 3) {
-                  Alert.alert(isHindi ? 'अमान्य नाम' : 'Invalid Name', isHindi ? 'नाम कम से कम 3 अक्षर का होना चाहिए।' : 'Name must be at least 3 characters long.');
+                  Alert.alert(getTranslation(translations.invalidName), getTranslation(translations.nameMinLength));
                   return;
                 }
                 
                 if (!donationForm.phone || donationForm.phone.length < 10) {
-                  Alert.alert(isHindi ? 'अमान्य फोन' : 'Invalid Phone', isHindi ? 'कृपया एक वैध फोन नंबर दर्ज करें।' : 'Please enter a valid phone number.');
+                  Alert.alert(getTranslation(translations.invalidPhone), getTranslation(translations.phoneValidNumber));
                   return;
                 }
                 
                 if (!donationForm.amount || parseFloat(donationForm.amount) <= 0) {
-                  Alert.alert(isHindi ? 'अमान्य राशि' : 'Invalid Amount', isHindi ? 'कृपया एक वैध दान राशि दर्ज करें।' : 'Please enter a valid donation amount.');
+                  Alert.alert(getTranslation(translations.invalidAmount), getTranslation(translations.amountValidNumber));
                   return;
                 }
                 
                 if (!donationForm.date) {
-                  Alert.alert(isHindi ? 'अमान्य तारीख' : 'Invalid Date', isHindi ? 'कृपया एक पसंदीदा तारीख चुनें।' : 'Please select a preferred date.');
+                  Alert.alert(getTranslation(translations.invalidDate), getTranslation(translations.selectDate));
                   return;
                 }
                 
                 if (!donationForm.timeSlot) {
-                  Alert.alert(isHindi ? 'अमान्य समय' : 'Invalid Time', isHindi ? 'कृपया एक पसंदीदा समय स्लॉट चुनें।' : 'Please select a preferred time slot.');
+                  Alert.alert(getTranslation(translations.invalidTime), getTranslation(translations.selectTimeSlot));
                   return;
                 }
                 
@@ -1398,8 +1767,8 @@ export default function DonationScreen() {
                   if (response.ok) {
                     const result = await response.json();
                     Alert.alert(
-                      isHindi ? 'दान सफल!' : 'Donation Successful!',
-                      'Thank you for your donation. We will contact you soon.',
+                      getTranslation(translations.donationSuccessful),
+                      getTranslation(translations.thankYouDonation),
                       [
                         {
                           text: 'OK',
@@ -1421,10 +1790,10 @@ export default function DonationScreen() {
                     );
                   } else {
                     const errorData = await response.json();
-                    Alert.alert(isHindi ? 'त्रुटि' : 'Error', errorData.error || (isHindi ? 'दान जमा करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to submit donation. Please try again.'));
+                    Alert.alert(getTranslation(translations.error), errorData.error || getTranslation(translations.failedToSubmit));
                   }
                 } catch (error) {
-                  Alert.alert(isHindi ? 'त्रुटि' : 'Error', isHindi ? 'दान जमा करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to submit donation. Please try again.');
+                  Alert.alert(getTranslation(translations.error), getTranslation(translations.failedToSubmit));
                 }
               }}
             >
@@ -1433,7 +1802,7 @@ export default function DonationScreen() {
                 fontSize: 18,
                 fontWeight: 'bold'
               }}>
-                {isHindi ? translations.donationForm.submit.hi : translations.donationForm.submit.en}
+                {getTranslation(translations.donationForm.submit)}
               </Text>
             </TouchableOpacity>
             
