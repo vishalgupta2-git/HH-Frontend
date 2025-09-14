@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Modal, Tou
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PanGestureHandler as RNGestureHandler, State } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
+
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
 import { useAudioVideoModal } from '@/contexts/AudioVideoModalContext';
@@ -163,6 +165,9 @@ export default function NavratriVirtualDarshan2025() {
   // Bell swing animation refs
   const leftBellSwing = useRef(new Animated.Value(0)).current;
   const rightBellSwing = useRef(new Animated.Value(0)).current;
+  
+  // Gradient animation refs
+  const gradientAnimation = useRef(new Animated.Value(0)).current;
   
   // Flower animation state
   const [flowers, setFlowers] = useState<Array<{
@@ -327,7 +332,6 @@ export default function NavratriVirtualDarshan2025() {
 
     const totalDuration = 5000; // 5 seconds total
     setTimeout(() => {
-      console.log('Flower animation completed');
       setIsFlowerAnimationRunning(false);
       setFlowers([]);
     }, totalDuration);
@@ -395,6 +399,33 @@ export default function NavratriVirtualDarshan2025() {
       console.log('Error playing bell sound:', error);
     }
   };
+
+  // Gradient animation function
+  const startGradientAnimation = () => {
+    const animateGradient = () => {
+      Animated.sequence([
+        Animated.timing(gradientAnimation, {
+          toValue: 1,
+          duration: 2000, // 2 seconds
+          useNativeDriver: false,
+        }),
+        Animated.timing(gradientAnimation, {
+          toValue: 0,
+          duration: 2000, // 2 seconds
+          useNativeDriver: false,
+        }),
+      ]).start(() => {
+        // Loop the animation
+        animateGradient();
+      });
+    };
+    animateGradient();
+  };
+
+  // Start gradient animation on component mount
+  React.useEffect(() => {
+    startGradientAnimation();
+  }, []);
 
   const swingBells = () => {
     // Left bell custom animation: 0s straight, 0.5s angle, 1s straight, 1.5s angle, 2s straight
@@ -503,8 +534,17 @@ export default function NavratriVirtualDarshan2025() {
       </Animated.View>
 
       {/* Gradient Header - Z-index 151 */}
-      <LinearGradient
-        colors={['#FFAE51', '#E87C00']}
+      <AnimatedLinearGradient
+        colors={[
+          gradientAnimation.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['#FFAE51', '#FF8C42'], // Slight color shift
+          }),
+          gradientAnimation.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['#E87C00', '#FF6B35'], // Slight color shift
+          }),
+        ]}
         style={styles.gradientHeader}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -513,10 +553,10 @@ export default function NavratriVirtualDarshan2025() {
       {/* Temple Name and Day - Z-index 201 */}
       <View style={styles.templeInfo}>
         <Text style={styles.templeTitle}>
-          {currentTemple.date} • Navratri 2025 Day {formatDay(currentTemple.day)} - {currentTemple.name}
+          {currentTemple.date} • Navratri 2025 Day {formatDay(currentTemple.day)}
         </Text>
-        <Text style={styles.imageName}>
-          {currentImage.name.replace('.jpg', '')}
+        <Text style={styles.templeSubtitle}>
+          {currentTemple.name}
         </Text>
       </View>
 
@@ -612,13 +652,6 @@ export default function NavratriVirtualDarshan2025() {
         </TouchableOpacity>
       </View>
 
-      {/* Flower Animation Overlay */}
-      {flowers.length > 0 && (
-        <View style={styles.flowerDebugInfo}>
-          <Text style={styles.debugText}>Flowers: {flowers.length}</Text>
-          <Text style={styles.debugText}>Start: 125px, End: {Math.round(screenHeight * 0.8)}px</Text>
-        </View>
-      )}
       {flowers.map((flower) => (
         <Animated.View
           key={flower.id}
@@ -871,21 +904,15 @@ const styles = StyleSheet.create({
   templeTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FF6A00',
+    color: '#FFFFFF',
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-    marginBottom: 5,
+    marginBottom: 2,
   },
-  imageName: {
-    fontSize: 14,
+  templeSubtitle: {
+    fontSize: 18,
     fontWeight: '600',
-    color: '#FF6A00',
+    color: '#FFFFFF',
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
   },
   imageContainer: {
     position: 'absolute',
@@ -1035,19 +1062,5 @@ const styles = StyleSheet.create({
   },
   flowerEmoji: {
     fontSize: 30,
-  },
-  // Debug styles
-  flowerDebugInfo: {
-    position: 'absolute',
-    top: 50,
-    left: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 5,
-    borderRadius: 5,
-    zIndex: 2000,
-  },
-  debugText: {
-    color: 'white',
-    fontSize: 12,
   },
 });
