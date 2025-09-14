@@ -172,6 +172,43 @@ export default function NavratriVirtualDarshan2025() {
   // Scrolling text animation refs
   const scrollTextAnimation = useRef(new Animated.Value(0)).current;
   
+  // Twinkling lights animation refs
+  const twinkleAnimations = useRef(
+    Array.from({ length: 20 }, () => ({
+      opacity: new Animated.Value(0),
+      scale: new Animated.Value(0.5),
+    }))
+  ).current;
+  
+  // Light positions and colors state
+  const [lightPositions, setLightPositions] = useState(
+    Array.from({ length: 20 }, () => ({
+      left: Math.random() * (screenWidth - 20),
+      top: Math.random() * (screenHeight - 200) + 100,
+      color: Math.floor(Math.random() * 5), // 0-4 for different colors
+    }))
+  );
+  
+  // String lights animation refs
+  const leftStringLights = useRef(
+    Array.from({ length: 15 }, () => new Animated.Value(1)) // Always at 100% intensity
+  ).current;
+  const rightStringLights = useRef(
+    Array.from({ length: 15 }, () => new Animated.Value(1)) // Always at 100% intensity
+  ).current;
+  
+  // Bulb colors state
+  const [leftBulbData, setLeftBulbData] = useState(
+    Array.from({ length: 15 }, () => ({
+      color: Math.floor(Math.random() * 4), // 0-3 for 4 colors
+    }))
+  );
+  const [rightBulbData, setRightBulbData] = useState(
+    Array.from({ length: 15 }, () => ({
+      color: Math.floor(Math.random() * 4), // 0-3 for 4 colors
+    }))
+  );
+  
   // Flower animation state
   const [flowers, setFlowers] = useState<Array<{
     id: string;
@@ -439,10 +476,133 @@ export default function NavratriVirtualDarshan2025() {
     animateScrollingText();
   };
 
+  // Function to get color style based on color index
+  const getLightColorStyle = (colorIndex: number) => {
+    const colorStyles = [
+      { textShadowColor: 'rgba(255, 215, 0, 0.8)' }, // Gold
+      { textShadowColor: 'rgba(255, 255, 255, 0.8)' }, // White
+      { textShadowColor: 'rgba(255, 182, 193, 0.8)' }, // Pink
+      { textShadowColor: 'rgba(144, 238, 144, 0.8)' }, // Light Green
+      { textShadowColor: 'rgba(173, 216, 230, 0.8)' }, // Light Blue
+    ];
+    return colorStyles[colorIndex] || colorStyles[0];
+  };
+
+  // 4 specified colors
+  const bulbColors = [
+    '#FF0000', // Red
+    '#0000FF', // Blue
+    '#00FF00', // Green
+    '#FFFF00', // Yellow
+  ];
+
+  // Function to get bulb color
+  const getBulbColor = (colorIndex: number) => {
+    return bulbColors[colorIndex] || bulbColors[0];
+  };
+
+  // Function to get bulb shape component
+  const getBulbShape = (shapeIndex: number, color: string, size: number) => {
+    switch (shapeIndex) {
+      case 0: // Star
+        return <Text style={[styles.starShape, { color, fontSize: size }]}>⭐</Text>;
+      case 1: // Round
+        return <View style={[styles.roundShape, { backgroundColor: color, width: size, height: size, borderRadius: size / 2 }]} />;
+      case 2: // Triangle
+        return <View style={[styles.triangleShape, { borderBottomColor: color, borderLeftWidth: size / 2, borderRightWidth: size / 2, borderBottomWidth: size }]} />;
+      default:
+        return <View style={[styles.roundShape, { backgroundColor: color, width: size, height: size, borderRadius: size / 2 }]} />;
+    }
+  };
+
+  // Function to randomize light positions and colors
+  const randomizeLights = () => {
+    setLightPositions(
+      Array.from({ length: 20 }, () => ({
+        left: Math.random() * (screenWidth - 20),
+        top: Math.random() * (screenHeight - 200) + 100,
+        color: Math.floor(Math.random() * 5), // 0-4 for different colors
+      }))
+    );
+  };
+
+  // String lights animation function
+  const startStringLightsAnimation = () => {
+    // Use setInterval instead of recursive setTimeout to avoid useInsertionEffect issues
+    const colorChangeInterval = setInterval(() => {
+      // Randomize colors for next cycle
+      setLeftBulbData(Array.from({ length: 15 }, () => ({
+        color: Math.floor(Math.random() * 4), // 0-3 for 4 colors
+      })));
+      setRightBulbData(Array.from({ length: 15 }, () => ({
+        color: Math.floor(Math.random() * 4), // 0-3 for 4 colors
+      })));
+    }, 2000 + Math.random() * 2000); // Random interval 2-4 seconds
+
+    // Return cleanup function
+    return () => clearInterval(colorChangeInterval);
+  };
+
+  // Twinkling lights animation function
+  const startTwinklingLightsAnimation = () => {
+    twinkleAnimations.forEach((light, index) => {
+      const animateLight = () => {
+        const delay = Math.random() * 2000; // Random delay up to 2 seconds
+        const duration = 1000 + Math.random() * 2000; // Random duration 1-3 seconds
+        
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.parallel([
+            Animated.timing(light.opacity, {
+              toValue: 1,
+              duration: duration / 2,
+              useNativeDriver: true,
+            }),
+            Animated.timing(light.scale, {
+              toValue: 1,
+              duration: duration / 2,
+              useNativeDriver: true,
+            }),
+          ]),
+          Animated.parallel([
+            Animated.timing(light.opacity, {
+              toValue: 0,
+              duration: duration / 2,
+              useNativeDriver: true,
+            }),
+            Animated.timing(light.scale, {
+              toValue: 0.5,
+              duration: duration / 2,
+              useNativeDriver: true,
+            }),
+          ]),
+        ]).start(() => {
+          // Loop the animation
+          animateLight();
+        });
+      };
+      animateLight();
+    });
+  };
+
   // Start animations on component mount
   React.useEffect(() => {
     startGradientAnimation();
     startScrollingTextAnimation();
+    startTwinklingLightsAnimation();
+    const stringLightsCleanup = startStringLightsAnimation();
+    
+    // Randomize light positions every 5 seconds
+    const positionInterval = setInterval(() => {
+      randomizeLights();
+    }, 5000);
+    
+    return () => {
+      clearInterval(positionInterval);
+      if (stringLightsCleanup) {
+        stringLightsCleanup();
+      }
+    };
   }, []);
 
   const swingBells = () => {
@@ -642,6 +802,97 @@ export default function NavratriVirtualDarshan2025() {
           </Text>
         </Animated.View>
       </View>
+
+      {/* Twinkling Lights - Z-index 101 */}
+      {twinkleAnimations.map((light, index) => {
+        const lightPosition = lightPositions[index];
+        const colorStyles = getLightColorStyle(lightPosition.color);
+        
+        return (
+          <Animated.View
+            key={index}
+            style={[
+              styles.twinklingLight,
+              {
+                left: lightPosition.left,
+                top: lightPosition.top,
+                opacity: light.opacity,
+                transform: [{ scale: light.scale }],
+              },
+            ]}
+          >
+            <Text style={[styles.starIcon, colorStyles]}>✨</Text>
+          </Animated.View>
+        );
+      })}
+
+      {/* Left String Lights - Z-index 250 */}
+      {leftStringLights.map((light, index) => {
+        const bulbSize = screenHeight * 0.02; // 2% of screen height
+        const bulbData = leftBulbData[index];
+        const bulbColor = getBulbColor(bulbData.color);
+        const startY = 140; // Start at 140px
+        const endY = screenHeight * 0.9; // End at 90% of screen height
+        const totalHeight = endY - startY;
+        const top = startY + (index * totalHeight / 14); // Distribute 15 bulbs evenly
+        
+        return (
+          <Animated.View
+            key={`left-${index}`}
+            style={[
+              styles.stringLightBulb,
+              {
+                left: 10,
+                top: top,
+                opacity: light,
+                width: bulbSize,
+                height: bulbSize,
+              },
+            ]}
+          >
+            <Text style={[styles.starIcon, { 
+              color: bulbColor, 
+              fontSize: bulbSize, 
+              textShadowColor: bulbColor,
+              textShadowRadius: 8 
+            }]}>✦</Text>
+          </Animated.View>
+        );
+      })}
+
+      {/* Right String Lights - Z-index 250 */}
+      {rightStringLights.map((light, index) => {
+        const bulbSize = screenHeight * 0.02; // 2% of screen height
+        const bulbData = rightBulbData[index];
+        const bulbColor = getBulbColor(bulbData.color);
+        const startY = 140; // Start at 140px
+        const endY = screenHeight * 0.9; // End at 90% of screen height
+        const totalHeight = endY - startY;
+        const top = startY + (index * totalHeight / 14); // Distribute 15 bulbs evenly
+        
+        return (
+          <Animated.View
+            key={`right-${index}`}
+            style={[
+              styles.stringLightBulb,
+              {
+                right: 10,
+                top: top,
+                opacity: light,
+                width: bulbSize,
+                height: bulbSize,
+              },
+            ]}
+          >
+            <Text style={[styles.starIcon, { 
+              color: bulbColor, 
+              fontSize: bulbSize, 
+              textShadowColor: bulbColor,
+              textShadowRadius: 8 
+            }]}>✦</Text>
+          </Animated.View>
+        );
+      })}
 
       {/* Main Image Container with Gesture Handler */}
       <RNGestureHandler
@@ -1066,6 +1317,55 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+  },
+  twinklingLight: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 101,
+  },
+  starIcon: {
+    fontSize: 20,
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
+  },
+  stringLightBulb: {
+    position: 'absolute',
+    zIndex: 60, // Above image container (z-index 51)
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  starShape: {
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+  },
+  coloredBulb: {
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  roundShape: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  triangleShape: {
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   imageContainer: {
     position: 'absolute',
