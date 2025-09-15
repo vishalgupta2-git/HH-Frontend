@@ -1412,7 +1412,6 @@ export default function TestTempleScreen() {
       };
       
       await saveTempleConfigurationNewStyle(templeConfig);
-      console.log('🔄 Auto-saved temple configuration');
     } catch (error) {
       console.error('❌ Auto-save failed:', error);
     }

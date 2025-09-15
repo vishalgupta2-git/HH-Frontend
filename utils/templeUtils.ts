@@ -277,4 +277,32 @@ export const saveTempleConfigurationNewStyle = async (templeConfig: any): Promis
     console.error('❌ [NEW STYLE SAVE] Error saving temple configuration:', error);
     return false;
   }
+};
+
+// New optimized function to get user temple configuration with single API call (LEFT JOIN)
+export const loadUserTempleConfigOptimized = async (email: string): Promise<any | null> => {
+  try {
+    console.log('🔍 [OPTIMIZED LOAD] Loading user temple config with single API call for:', email);
+    
+    const response = await axios.get(getEndpointUrl('USER_TEMPLE_CONFIG'), {
+      params: { email },
+      headers: getAuthHeaders()
+    });
+    
+    if (response.data.success) {
+      const data = response.data.data;
+      
+      // Return the temple information if it exists, otherwise return null
+      return data.temple_information || null;
+    }
+    
+    return null;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      console.log('🔍 [OPTIMIZED LOAD] User not found:', email);
+      return null;
+    }
+    console.error('❌ [OPTIMIZED LOAD] Error loading user temple config:', error);
+    return null;
+  }
 }; 

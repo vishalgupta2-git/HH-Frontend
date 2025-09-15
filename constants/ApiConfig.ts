@@ -54,6 +54,7 @@ export const API_CONFIG = {
     // New Style Temple Management
     SAVE_USER_TEMPLE_NEW_STYLE: '/api/save-user-temple-new-style',
     GET_USER_TEMPLE_NEW_STYLE: '/api/get-user-temple-new-style',
+    USER_TEMPLE_CONFIG: '/api/user-temple-config', // New single API with LEFT JOIN
     
     // Temples and Charities
     TEMPLES_CHARITIES: '/api/temples-charities',
