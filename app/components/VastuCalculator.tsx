@@ -51,6 +51,26 @@ const VastuCalculator: React.FC = () => {
            translations.en;
   };
 
+  // Helper function to get direction translation
+  const getDirectionTranslation = (direction: string) => {
+    const directionMap: { [key: string]: string } = {
+      'North': 'north',
+      'South': 'south', 
+      'East': 'east',
+      'West': 'west',
+      'North-East': 'northEast',
+      'North-West': 'northWest',
+      'South-East': 'southEast',
+      'South-West': 'southWest'
+    };
+    
+    const translationKey = directionMap[direction];
+    if (translationKey && translations.directions[translationKey]) {
+      return getTranslation(translations.directions[translationKey]);
+    }
+    return direction; // fallback to original
+  };
+
   const translations = {
     calculator: {
       en: 'Calculator',
@@ -295,6 +315,15 @@ const VastuCalculator: React.FC = () => {
       tamil: 'நிற பரிகாரங்கள்',
       telugu: 'రంగు పరిహారాలు'
     },
+    elementRemedies: {
+      en: 'Element Remedies',
+      hi: 'तत्व उपाय',
+      bangla: 'উপাদান প্রতিকার',
+      kannada: 'ಅಂಶ ಪರಿಹಾರಗಳು',
+      punjabi: 'ਤੱਤ ਉਪਾਅ',
+      tamil: 'கூறு பரிகாரங்கள்',
+      telugu: 'అంశం పరిహారాలు'
+    },
     aboutVastuShastra: {
       en: 'About Vastu Shastra',
       hi: 'वास्तु शास्त्र के बारे में',
@@ -321,6 +350,213 @@ const VastuCalculator: React.FC = () => {
       punjabi: 'ਅੱਠ ਦਿਸ਼ਾਵਾਂ (ਅਸ਼ਟਦਿਕ) ਵਾਸਤੂ ਵਿੱਚ ਮਹੱਤਵਪੂਰਨ ਭੂਮਿਕਾ ਨਿਭਾਉਂਦੀਆਂ ਹਨ, ਹਰ ਇੱਕ ਨਾਲ ਖਾਸ ਤੱਤ, ਰੰਗ ਅਤੇ ਦੇਵਤੇ ਜੁੜੇ ਹੋਏ ਹਨ। ਵਾਸਤੂ ਸਿਧਾਂਤਾਂ ਦੇ ਅਨੁਸਾਰ ਸਹੀ ਕਮਰੇ ਦੀ ਜਗ੍ਹਾ ਨਿਵਾਸੀਆਂ ਲਈ ਸਿਹਤ, ਦੌਲਤ ਅਤੇ ਖੁਸ਼ੀ ਲਿਆ ਸਕਦੀ ਹੈ।',
       tamil: 'எட்டு திசைகள் (அஷ்டதிக்) வாஸ்துவில் முக்கிய பங்கு வகிக்கின்றன, ஒவ்வொன்றும் குறிப்பிட்ட கூறுகள், நிறங்கள் மற்றும் தெய்வங்கள் தொடர்புடையவை. வாஸ்து கொள்கைகளின்படி சரியான அறை வைப்பு குடியிருப்பாளர்களுக்கு ஆரோக்கியம், செல்வம் மற்றும் மகிழ்ச்சியைக் கொண்டு வரலாம்.',
       telugu: 'ఎనిమిది దిశలు (అష్టదిక్) వాస్తువులో కీలక పాత్ర పోషిస్తాయి, ప్రతి దానికి నిర్దిష్ట అంశాలు, రంగులు మరియు దేవతలు సంబంధం కలిగి ఉంటాయి. వాస్తు సూత్రాల ప్రకారం సరైన గది ఉంచడం నివాసులకు ఆరోగ్యం, సంపద మరియు ఆనందాన్ని తీసుకురాగలదు.'
+    },
+    // Direction names
+    directions: {
+      north: {
+        en: 'North',
+        hi: 'उत्तर',
+        bangla: 'উত্তর',
+        kannada: 'ಉತ್ತರ',
+        punjabi: 'ਉੱਤਰ',
+        tamil: 'வடக்கு',
+        telugu: 'ఉత్తరం'
+      },
+      south: {
+        en: 'South',
+        hi: 'दक्षिण',
+        bangla: 'দক্ষিণ',
+        kannada: 'ದಕ್ಷಿಣ',
+        punjabi: 'ਦੱਖਣ',
+        tamil: 'தெற்கு',
+        telugu: 'దక్షిణం'
+      },
+      east: {
+        en: 'East',
+        hi: 'पूर्व',
+        bangla: 'পূর্ব',
+        kannada: 'ಪೂರ್ವ',
+        punjabi: 'ਪੂਰਬ',
+        tamil: 'கிழக்கு',
+        telugu: 'తూర్పు'
+      },
+      west: {
+        en: 'West',
+        hi: 'पश्चिम',
+        bangla: 'পশ্চিম',
+        kannada: 'ಪಶ್ಚಿಮ',
+        punjabi: 'ਪੱਛਮ',
+        tamil: 'மேற்கு',
+        telugu: 'పడమర'
+      },
+      northEast: {
+        en: 'North-East',
+        hi: 'उत्तर-पूर्व',
+        bangla: 'উত্তর-পূর্ব',
+        kannada: 'ಉತ್ತರ-ಪೂರ್ವ',
+        punjabi: 'ਉੱਤਰ-ਪੂਰਬ',
+        tamil: 'வடகிழக்கு',
+        telugu: 'ఉత్తర-తూర్పు'
+      },
+      northWest: {
+        en: 'North-West',
+        hi: 'उत्तर-पश्चिम',
+        bangla: 'উত্তর-পশ্চিম',
+        kannada: 'ಉತ್ತರ-ಪಶ್ಚಿಮ',
+        punjabi: 'ਉੱਤਰ-ਪੱਛਮ',
+        tamil: 'வடமேற்கு',
+        telugu: 'ఉత్తర-పడమర'
+      },
+      southEast: {
+        en: 'South-East',
+        hi: 'दक्षिण-पूर्व',
+        bangla: 'দক্ষিণ-পূর্ব',
+        kannada: 'ದಕ್ಷಿಣ-ಪೂರ್ವ',
+        punjabi: 'ਦੱਖਣ-ਪੂਰਬ',
+        tamil: 'தென்கிழக்கு',
+        telugu: 'దక్షిణ-తూర్పు'
+      },
+      southWest: {
+        en: 'South-West',
+        hi: 'दक्षिण-पश्चिम',
+        bangla: 'দক্ষিণ-পশ্চিম',
+        kannada: 'ದಕ್ಷಿಣ-ಪಶ್ಚಿಮ',
+        punjabi: 'ਦੱਖਣ-ਪੱਛਮ',
+        tamil: 'தென்மேற்கு',
+        telugu: 'దక్షిణ-పడమర'
+      }
+    },
+    // Direction analysis content
+    directionAnalysisContent: {
+      element: {
+        en: 'Element',
+        hi: 'तत्व',
+        bangla: 'উপাদান',
+        kannada: 'ಅಂಶ',
+        punjabi: 'ਤੱਤ',
+        tamil: 'கூறு',
+        telugu: 'అంశం'
+      },
+      color: {
+        en: 'Color',
+        hi: 'रंग',
+        bangla: 'রঙ',
+        kannada: 'ಬಣ್ಣ',
+        punjabi: 'ਰੰਗ',
+        tamil: 'நிறம்',
+        telugu: 'రంగు'
+      },
+      deity: {
+        en: 'Deity',
+        hi: 'देवता',
+        bangla: 'দেবতা',
+        kannada: 'ದೇವತೆ',
+        punjabi: 'ਦੇਵਤਾ',
+        tamil: 'தெய்வம்',
+        telugu: 'దేవత'
+      },
+      suitableFor: {
+        en: 'Suitable for',
+        hi: 'के लिए उपयुक्त',
+        bangla: 'এর জন্য উপযুক্ত',
+        kannada: 'ಗೆ ಸೂಕ್ತ',
+        punjabi: 'ਲਈ ਢੁਕਵਾਂ',
+        tamil: 'க்கு பொருத்தமானது',
+        telugu: 'కోసం తగినది'
+      },
+      avoidFor: {
+        en: 'Avoid for',
+        hi: 'के लिए टालें',
+        bangla: 'এর জন্য এড়িয়ে চলুন',
+        kannada: 'ಗಾಗಿ ತಪ್ಪಿಸಿ',
+        punjabi: 'ਲਈ ਟਾਲੋ',
+        tamil: 'க்கு தவிர்க்கவும்',
+        telugu: 'కోసం తప్పించుకోండి'
+      },
+      remedies: {
+        en: 'Remedies',
+        hi: 'उपाय',
+        bangla: 'প্রতিকার',
+        kannada: 'ಪರಿಹಾರಗಳು',
+        punjabi: 'ਉਪਾਅ',
+        tamil: 'பரிகாரங்கள்',
+        telugu: 'పరిహారాలు'
+      },
+      bestFor: {
+        en: 'Best for',
+        hi: 'के लिए सबसे अच्छा',
+        bangla: 'এর জন্য সবচেয়ে ভালো',
+        kannada: 'ಗೆ ಅತ್ಯುತ್ತಮ',
+        punjabi: 'ਲਈ ਸਭ ਤੋਂ ਵਧੀਆ',
+        tamil: 'க்கு சிறந்தது',
+        telugu: 'కోసం ఉత్తమం'
+      }
+    },
+    // Clear button and other UI elements
+    clear: {
+      en: 'Clear',
+      hi: 'साफ़ करें',
+      bangla: 'পরিষ্কার করুন',
+      kannada: 'ತೆರವುಗೊಳಿಸಿ',
+      punjabi: 'ਸਾਫ਼ ਕਰੋ',
+      tamil: 'அழிக்கவும்',
+      telugu: 'తుడిచివేయండి'
+    },
+    gotIt: {
+      en: 'Got it!',
+      hi: 'समझ गया!',
+      bangla: 'বুঝেছি!',
+      kannada: 'ತಿಳಿದಿತ್ತು!',
+      punjabi: 'ਸਮਝ ਗਏ!',
+      tamil: 'புரிந்தது!',
+      telugu: 'అర్థమైంది!'
+    },
+    // Room analysis
+    roomPlacementAnalysis: {
+      en: 'Room Placement Analysis',
+      hi: 'कमरा स्थान विश्लेषण',
+      bangla: 'ঘরের অবস্থান বিশ্লেষণ',
+      kannada: 'ಕೋಣೆ ಇಡುವಿಕೆ ವಿಶ್ಲೇಷಣೆ',
+      punjabi: 'ਕਮਰੇ ਦੀ ਜਗ੍ਹਾ ਵਿਸ਼ਲੇਸ਼ਣ',
+      tamil: 'அறை வைப்பு பகுப்பாய்வு',
+      telugu: 'గది ఉంచడం విశ్లేషణ'
+    },
+    vastuAnalysisResults: {
+      en: 'Vastu Analysis Results',
+      hi: 'वास्तु विश्लेषण परिणाम',
+      bangla: 'ভাস্টু বিশ্লেষণ ফলাফল',
+      kannada: 'ವಾಸ್ತು ವಿಶ್ಲೇಷಣೆ ಫಲಿತಾಂಶಗಳು',
+      punjabi: 'ਵਾਸਤੂ ਵਿਸ਼ਲੇਸ਼ਣ ਨਤੀਜੇ',
+      tamil: 'வாஸ்து பகுப்பாய்வு முடிவுகள்',
+      telugu: 'వాస్తు విశ్లేషణ ఫలితాలు'
+    },
+    // Remedies content
+    generalRemediesContent: {
+      en: '• Keep your home clean and clutter-free\n• Ensure proper ventilation in all rooms\n• Use natural light whenever possible\n• Place mirrors strategically to enhance positive energy\n• Use appropriate colors for each direction\n• Keep the center of your home open and clean\n• Place heavy furniture in South-West direction\n• Avoid placing kitchen and bathroom in North-East',
+      hi: '• अपने घर को साफ और अव्यवस्था मुक्त रखें\n• सभी कमरों में उचित वेंटिलेशन सुनिश्चित करें\n• जब भी संभव हो प्राकृतिक प्रकाश का उपयोग करें\n• सकारात्मक ऊर्जा बढ़ाने के लिए दर्पण को रणनीतिक रूप से रखें\n• प्रत्येक दिशा के लिए उपयुक्त रंगों का उपयोग करें\n• अपने घर के केंद्र को खुला और साफ रखें\n• भारी फर्नीचर को दक्षिण-पश्चिम दिशा में रखें\n• रसोई और बाथरूम को उत्तर-पूर्व में न रखें',
+      bangla: '• আপনার বাড়ি পরিষ্কার এবং জঞ্জালমুক্ত রাখুন\n• সব ঘরে যথাযথ বায়ুচলাচল নিশ্চিত করুন\n• সম্ভব হলে প্রাকৃতিক আলো ব্যবহার করুন\n• ইতিবাচক শক্তি বাড়াতে আয়নাগুলি কৌশলগতভাবে রাখুন\n• প্রতিটি দিকের জন্য উপযুক্ত রং ব্যবহার করুন\n• আপনার বাড়ির কেন্দ্র খোলা এবং পরিষ্কার রাখুন\n• ভারী আসবাব দক্ষিণ-পশ্চিম দিকে রাখুন\n• রান্নাঘর এবং স্নানাগার উত্তর-পূর্বে না রাখুন',
+      kannada: '• ನಿಮ್ಮ ಮನೆಯನ್ನು ಸ್ವಚ್ಛ ಮತ್ತು ಗೊಂದಲ-ಮುಕ್ತವಾಗಿ ಇರಿಸಿ\n• ಎಲ್ಲಾ ಕೋಣೆಗಳಲ್ಲಿ ಸರಿಯಾದ ಗಾಳಿ ಸಂಚಾರವನ್ನು ಖಚಿತಪಡಿಸಿ\n• ಸಾಧ್ಯವಾದಾಗ ನೈಸರ್ಗಿಕ ಬೆಳಕನ್ನು ಬಳಸಿ\n• ಸಕಾರಾತ್ಮಕ ಶಕ್ತಿಯನ್ನು ಹೆಚ್ಚಿಸಲು ಕನ್ನಡಿಗಳನ್ನು ಕಾರ್ಯತಂತ್ರದ ಪ್ರಕಾರ ಇರಿಸಿ\n• ಪ್ರತಿ ದಿಕ್ಕಿಗೆ ಯೋಗ್ಯ ಬಣ್ಣಗಳನ್ನು ಬಳಸಿ\n• ನಿಮ್ಮ ಮನೆಯ ಮಧ್ಯಭಾಗವನ್ನು ತೆರೆದು ಸ್ವಚ್ಛವಾಗಿ ಇರಿಸಿ\n• ಭಾರೀ ಪೀಠೋಪಕರಣಗಳನ್ನು ದಕ್ಷಿಣ-ಪಶ್ಚಿಮ ದಿಕ್ಕಿನಲ್ಲಿ ಇರಿಸಿ\n• ಅಡುಗೆಮನೆ ಮತ್ತು ಸ್ನಾನಗೃಹವನ್ನು ಉತ್ತರ-ಪೂರ್ವದಲ್ಲಿ ಇರಿಸಬೇಡಿ',
+      punjabi: '• ਆਪਣੇ ਘਰ ਨੂੰ ਸਾਫ਼ ਅਤੇ ਬੇਤਰਤੀਬਤਾ-ਮੁਕਤ ਰੱਖੋ\n• ਸਾਰੇ ਕਮਰਿਆਂ ਵਿੱਚ ਢੁਕਵੀਂ ਹਵਾ-ਬਾਗ ਯਕੀਨੀ ਬਣਾਓ\n• ਜਦੋਂ ਵੀ ਸੰਭਵ ਹੋਵੇ ਕੁਦਰਤੀ ਰੌਸ਼ਨੀ ਦੀ ਵਰਤੋਂ ਕਰੋ\n• ਸਕਾਰਾਤਮਕ ਊਰਜਾ ਵਧਾਉਣ ਲਈ ਸ਼ੀਸ਼ਿਆਂ ਨੂੰ ਰਣਨੀਤਕ ਤੌਰ \'ਤੇ ਰੱਖੋ\n• ਹਰ ਦਿਸ਼ਾ ਲਈ ਢੁਕਵੇਂ ਰੰਗਾਂ ਦੀ ਵਰਤੋਂ ਕਰੋ\n• ਆਪਣੇ ਘਰ ਦੇ ਕੇਂਦਰ ਨੂੰ ਖੁੱਲ੍ਹਾ ਅਤੇ ਸਾਫ਼ ਰੱਖੋ\n• ਭਾਰੀ ਫਰਨੀਚਰ ਨੂੰ ਦੱਖਣ-ਪੱਛਮ ਦਿਸ਼ਾ ਵਿੱਚ ਰੱਖੋ\n• ਰਸੋਈ ਅਤੇ ਬਾਥਰੂਮ ਨੂੰ ਉੱਤਰ-ਪੂਰਬ ਵਿੱਚ ਨਾ ਰੱਖੋ',
+      tamil: '• உங்கள் வீட்டை சுத்தமாகவும் குழப்பமற்றதாகவும் வைத்திருங்கள்\n• அனைத்து அறைகளிலும் சரியான காற்றோட்டத்தை உறுதிப்படுத்துங்கள்\n• சாத்தியமானபோதெல்லாம் இயற்கை வெளிச்சத்தைப் பயன்படுத்துங்கள்\n• நேர்மறை ஆற்றலை அதிகரிக்க முகங்களை உத்தியோகபூர்வமாக வைக்கவும்\n• ஒவ்வொரு திசைக்கும் பொருத்தமான நிறங்களைப் பயன்படுத்தவும்\n• உங்கள் வீட்டின் மையத்தைத் திறந்து சுத்தமாக வைத்திருங்கள்\n• கனமான தளபாடங்களை தென்மேற்கு திசையில் வைக்கவும்\n• சமையலறை மற்றும் குளியலறையை வடகிழக்கில் வைக்க வேண்டாம்',
+      telugu: '• మీ ఇంటిని శుభ్రంగా మరియు గందరగోళం లేకుండా ఉంచండి\n• అన్ని గదులలో తగిన గాలి ప్రసరణను నిర్ధారించండి\n• సాధ్యమైనప్పుడల్లా సహజ వెలుతురును ఉపయోగించండి\n• సానుకూల శక్తిని పెంచడానికి అద్దాలను వ్యూహాత్మకంగా ఉంచండి\n• ప్రతి దిశకు తగిన రంగులను ఉపయోగించండి\n• మీ ఇంటి మధ్యభాగాన్ని తెరిచి శుభ్రంగా ఉంచండి\n• బరువైన ఫర్నిచర్‌ను దక్షిణ-పడమర దిశలో ఉంచండి\n• వంటగది మరియు బాత్ రూమ్‌ను ఉత్తర-తూర్పున ఉంచకండి'
+    },
+    colorRemediesContent: {
+      en: '• North: Blue/Black for wealth\n• South: Red/Orange for energy\n• East: Green/Yellow for health\n• West: Brown/Yellow for stability\n• North-East: Light Blue/White for purity\n• South-East: Red/Orange for fire\n• South-West: Brown/Red for grounding\n• North-West: Grey/White for balance',
+      hi: '• उत्तर: धन के लिए नीला/काला\n• दक्षिण: ऊर्जा के लिए लाल/नारंगी\n• पूर्व: स्वास्थ्य के लिए हरा/पीला\n• पश्चिम: स्थिरता के लिए भूरा/पीला\n• उत्तर-पूर्व: शुद्धता के लिए हल्का नीला/सफेद\n• दक्षिण-पूर्व: आग के लिए लाल/नारंगी\n• दक्षिण-पश्चिम: जमीन के लिए भूरा/लाल\n• उत्तर-पश्चिम: संतुलन के लिए ग्रे/सफेद',
+      bangla: '• উত্তর: সম্পদের জন্য নীল/কালো\n• দক্ষিণ: শক্তির জন্য লাল/কমলা\n• পূর্ব: স্বাস্থ্যের জন্য সবুজ/হলুদ\n• পশ্চিম: স্থিতিশীলতার জন্য বাদামী/হলুদ\n• উত্তর-পূর্ব: বিশুদ্ধতার জন্য হালকা নীল/সাদা\n• দক্ষিণ-পূর্ব: আগুনের জন্য লাল/কমলা\n• দক্ষিণ-পশ্চিম: ভিত্তির জন্য বাদামী/লাল\n• উত্তর-পশ্চিম: ভারসাম্যের জন্য ধূসর/সাদা',
+      kannada: '• ಉತ್ತರ: ಸಂಪತ್ತಿಗಾಗಿ ನೀಲಿ/ಕಪ್ಪು\n• ದಕ್ಷಿಣ: ಶಕ್ತಿಗಾಗಿ ಕೆಂಪು/ಕಿತ್ತಳೆ\n• ಪೂರ್ವ: ಆರೋಗ್ಯಕ್ಕಾಗಿ ಹಸಿರು/ಹಳದಿ\n• ಪಶ್ಚಿಮ: ಸ್ಥಿರತೆಗಾಗಿ ಕಂದು/ಹಳದಿ\n• ಉತ್ತರ-ಪೂರ್ವ: ಶುದ್ಧತೆಗಾಗಿ ತಿಳಿ ನೀಲಿ/ಬಿಳಿ\n• ದಕ್ಷಿಣ-ಪೂರ್ವ: ಬೆಂಕಿಗಾಗಿ ಕೆಂಪು/ಕಿತ್ತಳೆ\n• ದಕ್ಷಿಣ-ಪಶ್ಚಿಮ: ನೆಲಗಟ್ಟಿಗಾಗಿ ಕಂದು/ಕೆಂಪು\n• ಉತ್ತರ-ಪಶ್ಚಿಮ: ಸಮತೋಲನಕ್ಕಾಗಿ ಬೂದು/ಬಿಳಿ',
+      punjabi: '• ਉੱਤਰ: ਦੌਲਤ ਲਈ ਨੀਲਾ/ਕਾਲਾ\n• ਦੱਖਣ: ਊਰਜਾ ਲਈ ਲਾਲ/ਸੰਤਰੀ\n• ਪੂਰਬ: ਸਿਹਤ ਲਈ ਹਰਾ/ਪੀਲਾ\n• ਪੱਛਮ: ਸਥਿਰਤਾ ਲਈ ਭੂਰਾ/ਪੀਲਾ\n• ਉੱਤਰ-ਪੂਰਬ: ਸ਼ੁੱਧਤਾ ਲਈ ਹਲਕਾ ਨੀਲਾ/ਚਿੱਟਾ\n• ਦੱਖਣ-ਪੂਰਬ: ਅੱਗ ਲਈ ਲਾਲ/ਸੰਤਰੀ\n• ਦੱਖਣ-ਪੱਛਮ: ਜ਼ਮੀਨ ਲਈ ਭੂਰਾ/ਲਾਲ\n• ਉੱਤਰ-ਪੱਛਮ: ਸੰਤੁਲਨ ਲਈ ਗ੍ਰੇ/ਚਿੱਟਾ',
+      tamil: '• வடக்கு: செல்வத்திற்கு நீலம்/கருப்பு\n• தெற்கு: ஆற்றலுக்கு சிவப்பு/ஆரஞ்சு\n• கிழக்கு: ஆரோக்கியத்திற்கு பச்சை/மஞ்சள்\n• மேற்கு: நிலைத்தன்மைக்கு பழுப்பு/மஞ்சள்\n• வடகிழக்கு: தூய்மைக்கு வெளிர் நீலம்/வெள்ளை\n• தென்கிழக்கு: நெருப்புக்கு சிவப்பு/ஆரஞ்சு\n• தென்மேற்கு: அடித்தளத்திற்கு பழுப்பு/சிவப்பு\n• வடமேற்கு: சமநிலைக்கு சாம்பல்/வெள்ளை',
+      telugu: '• ఉత్తరం: సంపద కోసం నీలం/నలుపు\n• దక్షిణం: శక్తి కోసం ఎరుపు/నారింజ\n• తూర్పు: ఆరోగ్యం కోసం ఆకుపచ్చ/పసుపు\n• పడమర: స్థిరత్వం కోసం గోధుమ/పసుపు\n• ఉత్తర-తూర్పు: శుద్ధత కోసం తెలుపు నీలం/తెలుపు\n• దక్షిణ-తూర్పు: అగ్ని కోసం ఎరుపు/నారింజ\n• దక్షిణ-పడమర: భూమికి గోధుమ/ఎరుపు\n• ఉత్తర-పడమర: సమతుల్యత కోసం బూడిద/తెలుపు'
+    },
+    elementRemediesContent: {
+      en: '• Water: Place water fountains in North\n• Fire: Use red colors and fire elements in South-East\n• Earth: Place heavy items in South-West\n• Air: Use wind chimes and keep East well-ventilated\n• Space: Keep center of home open and clean',
+      hi: '• जल: उत्तर में जल फव्वारे रखें\n• अग्नि: दक्षिण-पूर्व में लाल रंग और अग्नि तत्वों का उपयोग करें\n• पृथ्वी: दक्षिण-पश्चिम में भारी वस्तुएं रखें\n• वायु: पूर्व में हवा की घंटियों का उपयोग करें और अच्छी वेंटिलेशन रखें\n• आकाश: घर के केंद्र को खुला और साफ रखें',
+      bangla: '• জল: উত্তর দিকে জল ফোয়ারা রাখুন\n• আগুন: দক্ষিণ-পূর্বে লাল রং এবং আগুনের উপাদান ব্যবহার করুন\n• পৃথিবী: দক্ষিণ-পশ্চিমে ভারী জিনিস রাখুন\n• বাতাস: পূর্বে বায়ু ঘণ্টা ব্যবহার করুন এবং ভালো বায়ুচলাচল রাখুন\n• আকাশ: বাড়ির কেন্দ্র খোলা এবং পরিষ্কার রাখুন',
+      kannada: '• ನೀರು: ಉತ್ತರದಲ್ಲಿ ನೀರಿನ ಚಿಲುಮೆಗಳನ್ನು ಇರಿಸಿ\n• ಬೆಂಕಿ: ದಕ್ಷಿಣ-ಪೂರ್ವದಲ್ಲಿ ಕೆಂಪು ಬಣ್ಣಗಳು ಮತ್ತು ಬೆಂಕಿ ಅಂಶಗಳನ್ನು ಬಳಸಿ\n• ಭೂಮಿ: ದಕ್ಷಿಣ-ಪಶ್ಚಿಮದಲ್ಲಿ ಭಾರೀ ವಸ್ತುಗಳನ್ನು ಇರಿಸಿ\n• ಗಾಳಿ: ಪೂರ್ವದಲ್ಲಿ ಗಾಳಿ ಗಂಟೆಗಳನ್ನು ಬಳಸಿ ಮತ್ತು ಉತ್ತಮ ಗಾಳಿ ಸಂಚಾರವನ್ನು ಇರಿಸಿ\n• ಆಕಾಶ: ಮನೆಯ ಮಧ್ಯಭಾಗವನ್ನು ತೆರೆದು ಸ್ವಚ್ಛವಾಗಿ ಇರಿಸಿ',
+      punjabi: '• ਪਾਣੀ: ਉੱਤਰ ਵਿੱਚ ਪਾਣੀ ਦੇ ਫੁਹਾਰੇ ਰੱਖੋ\n• ਅੱਗ: ਦੱਖਣ-ਪੂਰਬ ਵਿੱਚ ਲਾਲ ਰੰਗ ਅਤੇ ਅੱਗ ਦੇ ਤੱਤ ਵਰਤੋ\n• ਧਰਤੀ: ਦੱਖਣ-ਪੱਛਮ ਵਿੱਚ ਭਾਰੀ ਚੀਜ਼ਾਂ ਰੱਖੋ\n• ਹਵਾ: ਪੂਰਬ ਵਿੱਚ ਹਵਾ ਦੀਆਂ ਘੰਟੀਆਂ ਵਰਤੋ ਅਤੇ ਚੰਗੀ ਹਵਾ-ਬਾਗ ਰੱਖੋ\n• ਅਕਾਸ਼: ਘਰ ਦੇ ਕੇਂਦਰ ਨੂੰ ਖੁੱਲ੍ਹਾ ਅਤੇ ਸਾਫ਼ ਰੱਖੋ',
+      tamil: '• நீர்: வடக்கில் நீர் நீரூற்றுகள் வைக்கவும்\n• நெருப்பு: தென்கிழக்கில் சிவப்பு நிறங்கள் மற்றும் நெருப்பு கூறுகளைப் பயன்படுத்தவும்\n• பூமி: தென்மேற்கில் கனமான பொருட்களை வைக்கவும்\n• காற்று: கிழக்கில் காற்று மணிகள் பயன்படுத்தவும் மற்றும் நல்ல காற்றோட்டம் வைக்கவும்\n• விண்வெளி: வீட்டின் மையத்தைத் திறந்து சுத்தமாக வைக்கவும்',
+      telugu: '• నీరు: ఉత్తరంలో నీటి ఫౌంటైన్‌లు ఉంచండి\n• అగ్ని: దక్షిణ-తూర్పులో ఎరుపు రంగులు మరియు అగ్ని అంశాలను ఉపయోగించండి\n• భూమి: దక్షిణ-పడమరలో బరువైన వస్తువులను ఉంచండి\n• గాలి: తూర్పులో గాలి గంటలను ఉపయోగించండి మరియు మంచి గాలి ప్రసరణను ఉంచండి\n• ఆకాశం: ఇంటి మధ్యభాగాన్ని తెరిచి శుభ్రంగా ఉంచండి'
     }
   };
 
@@ -686,7 +922,7 @@ const VastuCalculator: React.FC = () => {
                       styles.directionButtonText,
                       houseFacing === direction && styles.selectedDirectionText
                     ]}>
-                      {direction}
+                      {getDirectionTranslation(direction)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -703,10 +939,10 @@ const VastuCalculator: React.FC = () => {
           >
             <View style={styles.sectionHeaderContent}>
               <Text style={styles.sectionLabel}>
-                Main Entrance <Text style={styles.required}>*</Text>
+                {getTranslation(translations.mainEntrance)} <Text style={styles.required}>*</Text>
               </Text>
               <Text style={styles.selectedValue}>
-                {mainEntrance || 'Not selected'}
+                {mainEntrance ? getDirectionTranslation(mainEntrance) : getTranslation(translations.notSelected)}
               </Text>
             </View>
             <Text style={[
@@ -736,7 +972,7 @@ const VastuCalculator: React.FC = () => {
                       styles.directionButtonText,
                       mainEntrance === direction && styles.selectedDirectionText
                     ]}>
-                      {direction}
+                      {getDirectionTranslation(direction)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -792,7 +1028,7 @@ const VastuCalculator: React.FC = () => {
                         styles.directionButtonText,
                         room.state === direction && styles.selectedDirectionText
                       ]}>
-                        {direction}
+                        {getDirectionTranslation(direction)}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -817,14 +1053,14 @@ const VastuCalculator: React.FC = () => {
           style={styles.clearButton}
           onPress={clearAll}
         >
-          <Text style={styles.clearButtonText}>Clear</Text>
+          <Text style={styles.clearButtonText}>{getTranslation(translations.clear)}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Results Section */}
       {results && (
         <View style={styles.resultsSection}>
-          <Text style={styles.sectionTitle}>Vastu Analysis Results</Text>
+          <Text style={styles.sectionTitle}>{getTranslation(translations.vastuAnalysisResults)}</Text>
           
           {/* Overall Score */}
           <View style={styles.scoreCard}>
@@ -842,16 +1078,16 @@ const VastuCalculator: React.FC = () => {
 
           {/* Room Analysis */}
           <View style={styles.roomAnalysisCard}>
-            <Text style={styles.analysisTitle}>Room Placement Analysis</Text>
+            <Text style={styles.analysisTitle}>{getTranslation(translations.roomPlacementAnalysis)}</Text>
             
             {[
-              { name: 'Main Entrance', location: results.mainEntrance },
-              { name: 'Bedroom', location: results.bedroom },
-              { name: 'Kitchen', location: results.kitchen },
-              { name: 'Living Room', location: results.livingRoom },
-              { name: 'Bathroom', location: results.bathroom },
-              { name: 'Study Room', location: results.studyRoom },
-                             { name: 'Puja Room', location: results.poojaRoom }
+              { name: 'Main Entrance', translationKey: 'mainEntrance', location: results.mainEntrance },
+              { name: 'Bedroom', translationKey: 'bedroom', location: results.bedroom },
+              { name: 'Kitchen', translationKey: 'kitchen', location: results.kitchen },
+              { name: 'Living Room', translationKey: 'livingRoom', location: results.livingRoom },
+              { name: 'Bathroom', translationKey: 'bathroom', location: results.bathroom },
+              { name: 'Study Room', translationKey: 'studyRoom', location: results.studyRoom },
+              { name: 'Puja Room', translationKey: 'poojaRoom', location: results.poojaRoom }
             ].map((room) => {
               if (!room.location) return null;
               const guidelines = roomGuidelines[room.name as keyof typeof roomGuidelines];
@@ -859,8 +1095,8 @@ const VastuCalculator: React.FC = () => {
                
               return (
                 <View key={room.name} style={styles.roomAnalysisItem}>
-                  <Text style={styles.roomName}>{room.name}</Text>
-                  <Text style={styles.roomLocation}>{room.location}</Text>
+                  <Text style={styles.roomName}>{getTranslation(translations[room.translationKey as keyof typeof translations])}</Text>
+                  <Text style={styles.roomLocation}>{getDirectionTranslation(room.location)}</Text>
                   <Text style={styles.roomPlacement}>{placement}</Text>
                 </View>
               );
@@ -893,24 +1129,24 @@ const VastuCalculator: React.FC = () => {
           <TouchableOpacity
             key={direction}
             style={styles.directionCard}
-            onPress={() => showInfo(direction, 
-              `${direction} Direction Analysis:\n\n` +
-              `Element: ${info.element}\n` +
-              `Color: ${info.color}\n` +
-              `Deity: ${info.deity}\n\n` +
-              `Suitable for: ${info.suitableFor.join(', ')}\n` +
-              `Avoid for: ${info.avoidFor.join(', ')}\n\n` +
-              `Remedies: ${info.remedies.join(', ')}`
+            onPress={() => showInfo(getDirectionTranslation(direction), 
+              `${getDirectionTranslation(direction)} ${getTranslation(translations.directionAnalysis)}:\n\n` +
+              `${getTranslation(translations.directionAnalysisContent.element)}: ${info.element}\n` +
+              `${getTranslation(translations.directionAnalysisContent.color)}: ${info.color}\n` +
+              `${getTranslation(translations.directionAnalysisContent.deity)}: ${info.deity}\n\n` +
+              `${getTranslation(translations.directionAnalysisContent.suitableFor)}: ${info.suitableFor.join(', ')}\n` +
+              `${getTranslation(translations.directionAnalysisContent.avoidFor)}: ${info.avoidFor.join(', ')}\n\n` +
+              `${getTranslation(translations.directionAnalysisContent.remedies)}: ${info.remedies.join(', ')}`
             )}
           >
             <View style={styles.directionCardHeader}>
-              <Text style={styles.directionCardTitle}>{direction}</Text>
+              <Text style={styles.directionCardTitle}>{getDirectionTranslation(direction)}</Text>
               <Text style={styles.dropdownButtonText}>i</Text>
             </View>
-            <Text style={styles.directionCardElement}>Element: {info.element}</Text>
-            <Text style={styles.directionCardDeity}>Deity: {info.deity}</Text>
+            <Text style={styles.directionCardElement}>{getTranslation(translations.directionAnalysisContent.element)}: {info.element}</Text>
+            <Text style={styles.directionCardDeity}>{getTranslation(translations.directionAnalysisContent.deity)}: {info.deity}</Text>
             <Text style={styles.directionCardSuitable}>
-              Best for: {info.suitableFor.slice(0, 2).join(', ')}
+              {getTranslation(translations.directionAnalysisContent.bestFor)}: {info.suitableFor.slice(0, 2).join(', ')}
             </Text>
           </TouchableOpacity>
         ))}
@@ -926,39 +1162,21 @@ const VastuCalculator: React.FC = () => {
         <View style={styles.remedyCard}>
           <Text style={styles.remedyTitle}>{getTranslation(translations.generalRemedies)}</Text>
           <Text style={styles.remedyText}>
-            • Keep your home clean and clutter-free{'\n'}
-            • Ensure proper ventilation in all rooms{'\n'}
-            • Use natural light whenever possible{'\n'}
-            • Place mirrors strategically to enhance positive energy{'\n'}
-            • Use appropriate colors for each direction{'\n'}
-            • Keep the center of your home open and clean{'\n'}
-            • Place heavy furniture in South-West direction{'\n'}
-            • Avoid placing kitchen and bathroom in North-East
+            {getTranslation(translations.generalRemediesContent)}
           </Text>
         </View>
 
         <View style={styles.remedyCard}>
-          <Text style={styles.remedyTitle}>Color Remedies</Text>
+          <Text style={styles.remedyTitle}>{getTranslation(translations.colorRemedies)}</Text>
           <Text style={styles.remedyText}>
-            • North: Blue/Black for wealth{'\n'}
-            • South: Red/Orange for energy{'\n'}
-            • East: Green/Yellow for health{'\n'}
-            • West: Brown/Yellow for stability{'\n'}
-            • North-East: Light Blue/White for purity{'\n'}
-            • South-East: Red/Orange for fire{'\n'}
-            • South-West: Brown/Red for grounding{'\n'}
-            • North-West: Grey/White for balance
+            {getTranslation(translations.colorRemediesContent)}
           </Text>
         </View>
 
         <View style={styles.remedyCard}>
-          <Text style={styles.remedyTitle}>Element Remedies</Text>
+          <Text style={styles.remedyTitle}>{getTranslation(translations.elementRemedies)}</Text>
           <Text style={styles.remedyText}>
-            • Water: Place water fountains in North{'\n'}
-            • Fire: Use red colors and fire elements in South-East{'\n'}
-            • Earth: Place heavy items in South-West{'\n'}
-            • Air: Use wind chimes and keep East well-ventilated{'\n'}
-            • Space: Keep center of home open and clean
+            {getTranslation(translations.elementRemediesContent)}
           </Text>
         </View>
       </View>
@@ -1002,12 +1220,12 @@ const VastuCalculator: React.FC = () => {
 
         {/* Information Section */}
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>About Vastu Shastra</Text>
+          <Text style={styles.sectionTitle}>{getTranslation(translations.aboutVastuShastra)}</Text>
           <Text style={styles.infoText}>
-            Vastu Shastra is an ancient Indian science of architecture and design that aims to create harmony between nature and human dwellings. It is based on the principle that everything in the universe has energy, and the proper placement of rooms and objects can enhance positive energy flow.
+            {getTranslation(translations.vastuDescription1)}
           </Text>
           <Text style={styles.infoText}>
-            The eight directions (Ashtadik) play a crucial role in Vastu, each having specific elements, colors, and deities associated with them. Proper room placement according to Vastu principles can bring health, wealth, and happiness to the residents.
+            {getTranslation(translations.vastuDescription2)}
           </Text>
         </View>
       </View>
@@ -1045,7 +1263,7 @@ const VastuCalculator: React.FC = () => {
               onPress={closeInfoModal}
             >
               <View style={styles.modalCloseButtonGradient}>
-                <Text style={styles.modalCloseButtonText}>Got it!</Text>
+                <Text style={styles.modalCloseButtonText}>{getTranslation(translations.gotIt)}</Text>
               </View>
             </TouchableOpacity>
           </TouchableOpacity>

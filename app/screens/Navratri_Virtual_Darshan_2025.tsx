@@ -600,7 +600,7 @@ export default function NavratriVirtualDarshan2025() {
       setRightBulbData(Array.from({ length: 15 }, () => ({
         color: Math.floor(Math.random() * 4), // 0-3 for 4 colors
       })));
-    }, 5000); // Change colors every 5 seconds
+    }, 2000); // Change colors every 2 seconds
 
     // Return cleanup function
     return () => clearInterval(colorChangeInterval);
