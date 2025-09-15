@@ -33,6 +33,7 @@ export const API_CONFIG = {
     SIGNUP: '/api/signup',
     SEND_OTP: '/api/send-otp',
     VERIFY_OTP: '/api/verify-otp',
+    LOGIN_SEND_OTP: '/api/login-send-otp', // New optimized login + send OTP
     USER: '/api/user',
     UPDATE_PROFILE: '/api/update-profile',
     UPDATE_COMPLETE_PROFILE: '/api/update-complete-profile',

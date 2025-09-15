@@ -245,12 +245,12 @@ export default function LoginScreen() {
     }
     
     try {
-      // First check if user exists in database
-      const userCheckResponse = await axios.get(`${getEndpointUrl('USER')}?email=${encodeURIComponent(email)}`, {
+      // Use new optimized single API call: check user exists + send OTP
+      const response = await axios.post(getEndpointUrl('LOGIN_SEND_OTP'), { email }, {
         headers: getAuthHeaders()
       });
       
-      if (!userCheckResponse.data.user) {
+      if (!response.data.success || !response.data.userExists) {
         // User doesn't exist, show message and redirect to signup
         setShowUserNotExistsModal(true);
         setTimeout(() => {
@@ -260,20 +260,12 @@ export default function LoginScreen() {
         return;
       }
       
-      // User exists, proceed with OTP
-      await axios.post(getEndpointUrl('SEND_OTP'), { email }, {
-        headers: getAuthHeaders()
-      });
+      // User exists and OTP sent successfully, navigate to OTP screen
       router.push({ pathname: '/auth/otp', params: { email, from: 'login' } });
     } catch (err: any) {
-      if (err.response?.status === 404) {
-        // User doesn't exist (404 from user check)
-        setShowUserNotExistsModal(true);
-        setTimeout(() => {
-          setShowUserNotExistsModal(false);
-          router.push('/auth/signup');
-        }, 2000);
-      } else if (err.response?.status === 429) {
+      console.error('Login error:', err);
+      
+      if (err.response?.status === 429) {
         // Lockout error
         setEmailError(err.response?.data?.error || getTranslation(translations.validation.tooManyAttempts));
       } else {
