@@ -280,8 +280,8 @@ export default function ProfileScreen() {
     success: {
       title: { 
         en: 'Success', 
-        hi: 'सफलता',
-        bangla: 'সফলতা',
+        hi: 'सम्पूर्ण',
+        bangla: 'সফল হয়েছেন',
         kannada: 'ಯಶಸ್ಸು',
         punjabi: 'ਸਫਲਤਾ',
         tamil: 'வெற்றி',

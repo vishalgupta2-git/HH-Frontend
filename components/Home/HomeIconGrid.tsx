@@ -31,7 +31,7 @@ const getIcons = (currentLanguage: string, showAudioVideoModal?: () => void) => 
   },
   { 
     label: currentLanguage === 'hindi' ? 'दान' : 
-           currentLanguage === 'bangla' ? 'দান' :
+           currentLanguage === 'bangla' ? 'দান করুন' :
            currentLanguage === 'kannada' ? 'ದಾನ' :
            currentLanguage === 'punjabi' ? 'ਦਾਨ' :
            currentLanguage === 'tamil' ? 'தானம்' :
@@ -42,7 +42,7 @@ const getIcons = (currentLanguage: string, showAudioVideoModal?: () => void) => 
   },
   { 
     label: currentLanguage === 'hindi' ? 'मन्नत' : 
-           currentLanguage === 'bangla' ? 'মননত' :
+           currentLanguage === 'bangla' ? 'মান্নত' :
            currentLanguage === 'kannada' ? 'ಮನ್ನತ್' :
            currentLanguage === 'punjabi' ? 'ਮੰਨਤ' :
            currentLanguage === 'tamil' ? 'மன்னதம்' :
@@ -65,7 +65,7 @@ const getIcons = (currentLanguage: string, showAudioVideoModal?: () => void) => 
   },
   { 
     label: currentLanguage === 'hindi' ? 'पूजा मार्गदर्शन' : 
-           currentLanguage === 'bangla' ? 'পূজা নির্দেশনা' :
+           currentLanguage === 'bangla' ? 'পুজোর নির্দেশনা' :
            currentLanguage === 'kannada' ? 'ಪೂಜೆ ಮಾರ್ಗದರ್ಶನ' :
            currentLanguage === 'punjabi' ? 'ਪੂਜਾ ਮਾਰਗਦਰਸ਼ਨ' :
            currentLanguage === 'tamil' ? 'பூஜை வழிகாட்டுதல்' :
@@ -76,7 +76,7 @@ const getIcons = (currentLanguage: string, showAudioVideoModal?: () => void) => 
   },
   { 
     label: currentLanguage === 'hindi' ? 'विशेष दिन पूजा' : 
-           currentLanguage === 'bangla' ? 'বিশেষ দিন পূজা' :
+           currentLanguage === 'bangla' ? 'বিশেষ দিনের পুজো' :
            currentLanguage === 'kannada' ? 'ವಿಶೇಷ ದಿನ ಪೂಜೆ' :
            currentLanguage === 'punjabi' ? 'ਵਿਸ਼ੇਸ਼ ਦਿਨ ਪੂਜਾ' :
            currentLanguage === 'tamil' ? 'சிறப்பு நாள் பூஜை' :
@@ -87,7 +87,7 @@ const getIcons = (currentLanguage: string, showAudioVideoModal?: () => void) => 
   },
   { 
     label: currentLanguage === 'hindi' ? 'प्रोफेशनल पूजा' : 
-           currentLanguage === 'bangla' ? 'পেশাদার পূজা' :
+           currentLanguage === 'bangla' ? 'পুরোহিত পুজো' :
            currentLanguage === 'kannada' ? 'ವೃತ್ತಿಪರ ಪೂಜೆ' :
            currentLanguage === 'punjabi' ? 'ਪੇਸ਼ੇਵਰ ਪੂਜਾ' :
            currentLanguage === 'tamil' ? 'தொழில்முறை பூஜை' :

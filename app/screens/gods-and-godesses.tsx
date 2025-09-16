@@ -66,7 +66,7 @@ export default function GodsAndGodessesScreen() {
       popular: { 
         en: 'Beloved Popular Deities', 
         hi: 'प्रिय लोकप्रिय देवता',
-        bangla: 'প্রিয় জনপ্রিয় দেবতা',
+        bangla: 'প্রিয় জনপ্রিয় দেব দেবী',
         kannada: 'ಪ್ರಿಯ ಜನಪ್ರಿಯ ದೇವತೆಗಳು',
         punjabi: 'ਪਿਆਰੇ ਲੋਕਪ੍ਰਿਯ ਦੇਵਤੇ',
         tamil: 'பிரியமான பிரபல தெய்வங்கள்',
@@ -75,7 +75,7 @@ export default function GodsAndGodessesScreen() {
       vedic: { 
         en: 'Vedic Solar and Cosmic Deities', 
         hi: 'वैदिक सौर और ब्रह्मांडीय देवता',
-        bangla: 'বৈদিক সৌর এবং মহাজাগতিক দেবতা',
+        bangla: 'বৈদিক সৌর এবং মহাজাগতিক দেব দেবী',
         kannada: 'ವೈದಿಕ ಸೌರ ಮತ್ತು ಬ್ರಹ್ಮಾಂಡೀಯ ದೇವತೆಗಳು',
         punjabi: 'ਵੈਦਿਕ ਸੂਰਜੀ ਅਤੇ ਬ੍ਰਹਮੰਡੀ ਦੇਵਤੇ',
         tamil: 'வேத சூரிய மற்றும் விண்ணுலக தெய்வங்கள்',
@@ -84,7 +84,7 @@ export default function GodsAndGodessesScreen() {
       secondary: { 
         en: 'Important Secondary Deities', 
         hi: 'महत्वपूर्ण द्वितीयक देवता',
-        bangla: 'গুরুত্বপূর্ণ গৌণ দেবতা',
+        bangla: 'গুরুত্বপূর্ণ গৌণ দেব দেবী',
         kannada: 'ಪ್ರಮುಖ ದ್ವಿತೀಯಕ ದೇವತೆಗಳು',
         punjabi: 'ਮਹੱਤਵਪੂਰਨ ਦੁਤੀਆ ਦੇਵਤੇ',
         tamil: 'முக்கியமான இரண்டாம் நிலை தெய்வங்கள்',

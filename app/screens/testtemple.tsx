@@ -303,7 +303,7 @@ export default function TestTempleScreen() {
     loadingBackground: {
       en: 'Loading background...',
       hi: 'पृष्ठभूमि लोड हो रही है...',
-      bangla: 'পটভূমি লোড হচ্ছে...',
+      bangla: 'সিংহাসনের পটভূমি লোড হচ্ছে...',
       kannada: 'ಹಿನ್ನೆಲೆ ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
       punjabi: 'ਬੈਕਗ੍ਰਾਊਂਡ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...',
       tamil: 'பின்னணி ஏற்றப்படுகிறது...',
@@ -348,7 +348,7 @@ export default function TestTempleScreen() {
     noDeityMessage: {
       en: 'Please select deities to setup your own temple',
       hi: 'कृपया अपना मंदिर सेटअप करने के लिए देवताओं का चयन करें',
-      bangla: 'আপনার নিজের মন্দির সেটআপ করার জন্য দেবতাদের নির্বাচন করুন',
+      bangla: 'আপনার নিজের মন্দির সেটআপ করার জন্য দেব দেবী নির্বাচন করুন',
       kannada: 'ನಿಮ್ಮ ಸ್ವಂತ ದೇವಾಲಯವನ್ನು ಸೆಟಪ್ ಮಾಡಲು ದೇವತೆಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ',
       punjabi: 'ਆਪਣਾ ਮੰਦਰ ਸੈਟਅੱਪ ਕਰਨ ਲਈ ਦੇਵਤਿਆਂ ਦਾ ਚੋਣ ਕਰੋ',
       tamil: 'உங்கள் சொந்த கோவிலை அமைக்க தெய்வங்களைத் தேர்ந்தெடுக்கவும்',
@@ -357,7 +357,7 @@ export default function TestTempleScreen() {
     selectDeities: {
       en: 'Select Deities',
       hi: 'देवता चुनें',
-      bangla: 'দেবতা নির্বাচন করুন',
+      bangla: 'দেব দেবী নির্বাচন করুন',
       kannada: 'ದೇವತೆಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ',
       punjabi: 'ਦੇਵਤਿਆਂ ਦਾ ਚੋਣ ਕਰੋ',
       tamil: 'தெய்வங்களைத் தேர்ந்தெடுக்கவும்',
@@ -375,7 +375,7 @@ export default function TestTempleScreen() {
     deity: {
       en: 'Deity',
       hi: 'देवता',
-      bangla: 'দেবতা',
+      bangla: 'দেব দেবী',
       kannada: 'ದೇವತೆ',
       punjabi: 'ਦੇਵਤਾ',
       tamil: 'தெய்வம்',
@@ -384,7 +384,7 @@ export default function TestTempleScreen() {
     background: {
       en: 'BG',
       hi: 'बैकग्राउंड',
-      bangla: 'পটভূমি',
+      bangla: 'সিংহাসনের পটভূমি',
       kannada: 'ಹಿನ್ನೆಲೆ',
       punjabi: 'ਬੈਕਗ੍ਰਾਊਂਡ',
       tamil: 'பின்னணி',
@@ -2587,7 +2587,7 @@ export default function TestTempleScreen() {
                 style={styles.pujaIconImage}
                 resizeMode="contain"
               />
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'शंख' : 'Shankh'}</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{getTranslation(translations.shankh)}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.pujaIconItem, isFlowerAnimationRunning && styles.pujaIconItemDisabled]} 
@@ -2596,7 +2596,7 @@ export default function TestTempleScreen() {
               activeOpacity={0.7}
             >
               <Text style={styles.pujaIcon}>🔔</Text>
-              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{isHindi ? 'घंटी' : 'Ghanti'}</Text>
+              <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">{getTranslation(translations.ghanti)}</Text>
             </TouchableOpacity>
           </View>
         </>
@@ -3047,7 +3047,7 @@ export default function TestTempleScreen() {
             disabled={isPujaRitualActive}
           >
             <Text style={styles.performPujaButtonText}>
-              {isPujaRitualActive ? (isHindi ? 'पूजा हो रही है...' : 'Performing Puja...') : (isHindi ? 'पूजा करें' : 'Perform Puja')}
+              {isPujaRitualActive ? getTranslation(translations.performingPuja) : getTranslation(translations.performPuja)}
             </Text>
           </TouchableOpacity>
           
@@ -3074,7 +3074,7 @@ export default function TestTempleScreen() {
               <Text style={[styles.secondRowButtonText, {
                 fontWeight: currentScreen === 'myTemple' ? '700' : '600',
                 fontSize: currentScreen === 'myTemple' ? 13 : 12,
-              }]}>{isHindi ? 'मेरा मंदिर' : 'My Temple'}</Text>
+              }]}>{getTranslation(translations.myTemple)}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -3092,7 +3092,7 @@ export default function TestTempleScreen() {
               <Text style={[styles.secondRowButtonText, {
                 fontWeight: currentScreen === 'todaysPuja' ? '700' : '600',
                 fontSize: currentScreen === 'todaysPuja' ? 13 : 12,
-              }]}>{isHindi ? 'आज की पूजा' : 'Today\'s Pujas'}</Text>
+              }]}>{getTranslation(translations.todaysPujas)}</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
@@ -3110,7 +3110,7 @@ export default function TestTempleScreen() {
               <Text style={[styles.secondRowButtonText, {
                 fontWeight: currentScreen === 'allTemples' ? '700' : '600',
                 fontSize: currentScreen === 'allTemples' ? 13 : 12,
-              }]}>{isHindi ? 'सभी मंदिर' : 'All Temples'}</Text>
+              }]}>{getTranslation(translations.allTemples)}</Text>
             </TouchableOpacity>
           </View>
         </>

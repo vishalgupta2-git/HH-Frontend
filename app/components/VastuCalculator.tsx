@@ -449,7 +449,7 @@ const VastuCalculator: React.FC = () => {
       deity: {
         en: 'Deity',
         hi: 'देवता',
-        bangla: 'দেবতা',
+        bangla: 'দেব দেবী',
         kannada: 'ದೇವತೆ',
         punjabi: 'ਦੇਵਤਾ',
         tamil: 'தெய்வம்',

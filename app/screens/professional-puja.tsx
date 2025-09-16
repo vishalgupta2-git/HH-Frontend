@@ -250,7 +250,7 @@ export default function ProfessionalPujaScreen() {
     deity: { 
       en: 'Deity', 
       hi: 'देवता',
-      bangla: 'দেবতা',
+      bangla: 'দেব দেবী',
       kannada: 'ದೇವತೆ',
       punjabi: 'ਦੇਵਤਾ',
       tamil: 'தெய்வம்',
@@ -259,7 +259,7 @@ export default function ProfessionalPujaScreen() {
     mainDeity: { 
       en: 'Main Deity', 
       hi: 'मुख्य देवता',
-      bangla: 'প্রধান দেবতা',
+      bangla: 'প্রধান দেব দেবী',
       kannada: 'ಮುಖ್ಯ ದೇವತೆ',
       punjabi: 'ਮੁੱਖ ਦੇਵਤਾ',
       tamil: 'முதன்மை தெய்வம்',

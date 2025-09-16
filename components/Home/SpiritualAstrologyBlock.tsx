@@ -102,7 +102,7 @@ const getSpiritualItems = (currentLanguage: string): SpiritualItem[] => [
   },
   { 
     label: currentLanguage === 'hindi' ? 'कैलेंडर' : 
-           currentLanguage === 'bangla' ? 'ক্যালেন্ডার' :
+           currentLanguage === 'bangla' ? 'পঞ্জিকা' :
            currentLanguage === 'kannada' ? 'ಕ್ಯಾಲೆಂಡರ್' :
            currentLanguage === 'punjabi' ? 'ਕੈਲੰਡਰ' :
            currentLanguage === 'tamil' ? 'காலண்டர்' :
@@ -138,7 +138,7 @@ const getAstrologyItems = (currentLanguage: string) => [
   },
   { 
     label: currentLanguage === 'hindi' ? 'अंक ज्योतिष' : 
-           currentLanguage === 'bangla' ? 'অংক জ্যোতিষ' :
+           currentLanguage === 'bangla' ? 'সংখ্যাতত্ত্ব' :
            currentLanguage === 'kannada' ? 'ಅಂಕ ಜ್ಯೋತಿಷ್ಯ' :
            currentLanguage === 'punjabi' ? 'ਅੰਕ ਜੋਤਿਸ਼' :
            currentLanguage === 'tamil' ? 'எண் ஜோதிடம்' :
@@ -149,7 +149,7 @@ const getAstrologyItems = (currentLanguage: string) => [
   },
   { 
     label: currentLanguage === 'hindi' ? 'ज्योतिष' : 
-           currentLanguage === 'bangla' ? 'জ্যোতিষ' :
+           currentLanguage === 'bangla' ? 'জ্যোতিষ শাস্ত্র' :
            currentLanguage === 'kannada' ? 'ಜ್ಯೋತಿಷ್ಯ' :
            currentLanguage === 'punjabi' ? 'ਜੋਤਿਸ਼' :
            currentLanguage === 'tamil' ? 'ஜோதிடம்' :

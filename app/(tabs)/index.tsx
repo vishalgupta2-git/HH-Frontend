@@ -227,13 +227,13 @@ export default function HomeScreen() {
              <View style={styles.navratriButtonContent}>
                <IconSymbol name="sparkles" size={24} color="#FF6A00" />
                <Text style={styles.navratriButtonText}>
-                 {currentLanguage === 'hindi' ? 'नवरात्रि 2025 पूजा' : 
-                  currentLanguage === 'bangla' ? 'নবরাত্রি ২০২৫ পূজা' :
-                  currentLanguage === 'kannada' ? 'ನವರಾತ್ರಿ 2025 ಪೂಜೆ' :
-                  currentLanguage === 'punjabi' ? 'ਨਵਰਾਤਰੀ 2025 ਪੂਜਾ' :
-                  currentLanguage === 'tamil' ? 'நவராத்திரி 2025 பூஜை' :
-                  currentLanguage === 'telugu' ? 'నవరాత్రి 2025 పూజ' :
-                  'Navratri 2025 Puja'}
+                 {currentLanguage === 'hindi' ? 'प्रतिदिन नवरात्रि पूजा' : 
+                  currentLanguage === 'bangla' ? 'প্রত্যেক দিনের দুর্গাপুজা' :
+                  currentLanguage === 'kannada' ? 'ದೈನಂದಿನ ನವರಾತ್ರಿ ಪೂಜೆ' :
+                  currentLanguage === 'punjabi' ? 'ਰੋਜ਼ਾਨਾ ਨਵਰਾਤਰੀ ਪੂਜਾ' :
+                  currentLanguage === 'tamil' ? 'தினசரி நவராத்திரி பூஜை' :
+                  currentLanguage === 'telugu' ? 'రోజువారీ నవరాత్రి పూజ' :
+                  'Everyday Navaratri Puja'}
                </Text>
                <IconSymbol name="chevron.right" size={20} color="#FF6A00" />
              </View>
@@ -343,7 +343,7 @@ export default function HomeScreen() {
                   {[
                     { 
                       name: currentLanguage === 'hindi' ? 'नवरात्रि' : 
-                            currentLanguage === 'bangla' ? 'নবরাত্রি' :
+                            currentLanguage === 'bangla' ? 'দুর্গাপুজা' :
                             currentLanguage === 'kannada' ? 'ನವರಾತ್ರಿ' :
                             currentLanguage === 'punjabi' ? 'ਨਵਰਾਤਰੀ' :
                             currentLanguage === 'tamil' ? 'நவராத்திரி' :
@@ -354,7 +354,7 @@ export default function HomeScreen() {
                     },
                     { 
                       name: currentLanguage === 'hindi' ? 'दशहरा' : 
-                            currentLanguage === 'bangla' ? 'দশেরা' :
+                            currentLanguage === 'bangla' ? 'বিজয়া দশমী' :
                             currentLanguage === 'kannada' ? 'ದಸರಾ' :
                             currentLanguage === 'punjabi' ? 'ਦਸੇਹਰਾ' :
                             currentLanguage === 'tamil' ? 'தசரா' :
@@ -425,7 +425,7 @@ export default function HomeScreen() {
                     },
                     { 
                       name: currentLanguage === 'hindi' ? 'भाई दूज' : 
-                            currentLanguage === 'bangla' ? 'ভাই দুজ' :
+                            currentLanguage === 'bangla' ? 'ভাই ফোটা' :
                             currentLanguage === 'kannada' ? 'ಭಾಯಿ ದೂಜ್' :
                             currentLanguage === 'punjabi' ? 'ਭਾਈ ਦੂਜ' :
                             currentLanguage === 'tamil' ? 'பாய் தூஜ்' :
