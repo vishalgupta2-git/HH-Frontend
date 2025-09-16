@@ -15,10 +15,11 @@ const languageOptions = [
   { key: 'english' as Language, label: 'English' },
   { key: 'hindi' as Language, label: 'हिंदी' },
   { key: 'bangla' as Language, label: 'বাংলা' },
-  { key: 'kannada' as Language, label: 'ಕನ್ನಡ' },
-  { key: 'punjabi' as Language, label: 'ਪੰਜਾਬੀ' },
-  { key: 'tamil' as Language, label: 'தமிழ்' },
-  { key: 'telugu' as Language, label: 'తెలుగు' },
+  // Temporarily hidden languages - functionality preserved
+  // { key: 'kannada' as Language, label: 'ಕನ್ನಡ' },
+  // { key: 'punjabi' as Language, label: 'ਪੰਜਾਬੀ' },
+  // { key: 'tamil' as Language, label: 'தமிழ்' },
+  // { key: 'telugu' as Language, label: 'తెలుగు' },
 ];
 
 export default function LanguageDropdown({ 

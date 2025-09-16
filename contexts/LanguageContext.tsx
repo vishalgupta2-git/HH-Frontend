@@ -36,8 +36,16 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const loadLanguagePreference = async () => {
       try {
         const savedLanguage = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
-        if (savedLanguage !== null && ['english', 'hindi', 'bangla', 'kannada', 'punjabi', 'tamil', 'telugu'].includes(savedLanguage)) {
+        // Only allow visible languages: english, hindi, bangla
+        const visibleLanguages = ['english', 'hindi', 'bangla'];
+        if (savedLanguage !== null && visibleLanguages.includes(savedLanguage)) {
           setCurrentLanguage(savedLanguage as Language);
+        } else if (savedLanguage !== null && !visibleLanguages.includes(savedLanguage)) {
+          // If user has a hidden language selected, fallback to English
+          console.log('Hidden language detected, falling back to English:', savedLanguage);
+          setCurrentLanguage('english');
+          // Update storage to reflect the change
+          await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, 'english');
         }
       } catch (error) {
         console.error('Error loading language preference:', error);
@@ -50,6 +58,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
   
   const setLanguage = async (language: Language) => {
+    // Only allow visible languages
+    const visibleLanguages = ['english', 'hindi', 'bangla'];
+    if (!visibleLanguages.includes(language)) {
+      console.warn('Attempted to set hidden language, falling back to English:', language);
+      language = 'english';
+    }
+    
     setCurrentLanguage(language);
     
     // Save language preference to AsyncStorage
@@ -60,15 +75,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   };
   
-  // Keep toggleLanguage for backward compatibility (cycles through languages)
+  // Keep toggleLanguage for backward compatibility (cycles through visible languages only)
   const toggleLanguage = async () => {
     const nextLanguage: Language = 
       currentLanguage === 'english' ? 'hindi' : 
       currentLanguage === 'hindi' ? 'bangla' : 
-      currentLanguage === 'bangla' ? 'kannada' :
-      currentLanguage === 'kannada' ? 'punjabi' :
-      currentLanguage === 'punjabi' ? 'tamil' :
-      currentLanguage === 'tamil' ? 'telugu' : 'english';
+      currentLanguage === 'bangla' ? 'english' : 'english';
     setLanguage(nextLanguage);
   };
 

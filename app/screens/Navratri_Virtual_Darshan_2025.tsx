@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Modal, Tou
 import { useLanguage } from '@/contexts/LanguageContext';
 import { PanGestureHandler as RNGestureHandler, State } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getNavratriTranslation } from '@/constants/navratriTranslations';
 
 const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -61,10 +62,11 @@ const getImageSource = (imageName: string) => {
 
 
 // Temple data structure based on the spreadsheet
+// Deity data with translation keys
 const templeData = [
   {
     day: 1,
-    name: 'Maa Shailputri',
+    nameKey: 'shailputri',
     date: '22-Sep',
     images: [
       { name: 'MaaShailputri_1.jpg', width: 736, height: 1330 },
@@ -74,7 +76,7 @@ const templeData = [
   },
   {
     day: 2,
-    name: 'Maa Bhramcharini',
+    nameKey: 'bhramcharini',
     date: '23-Sep',
     images: [
       { name: 'MaaBhramcharini_1.jpg', width: 736, height: 1312 },
@@ -84,7 +86,7 @@ const templeData = [
   },
   {
     day: 3,
-    name: 'Maa Chandraghanta',
+    nameKey: 'chandraghanta',
     date: '24-Sep',
     images: [
       { name: 'ChandraGhanta_1.jpg', width: 736, height: 1319 },
@@ -93,7 +95,7 @@ const templeData = [
   },
   {
     day: 4,
-    name: 'Maa Kushmanda',
+    nameKey: 'kushmanda',
     date: '25-Sep',
     images: [
       { name: 'Kushmanda_1.jpg', width: 736, height: 1306 },
@@ -103,7 +105,7 @@ const templeData = [
   },
   {
     day: 5,
-    name: 'Maa Skandamata',
+    nameKey: 'skandamata',
     date: '26-Sep',
     images: [
       { name: 'Skandamata_1.jpg', width: 736, height: 1303 },
@@ -112,7 +114,7 @@ const templeData = [
   },
   {
     day: 6,
-    name: 'Maa Katyayani',
+    nameKey: 'katyayani',
     date: '27-Sep',
     images: [
       { name: 'Katyayani_1.jpg', width: 736, height: 1318 },
@@ -121,7 +123,7 @@ const templeData = [
   },
   {
     day: 7,
-    name: 'Maa Kalratri',
+    nameKey: 'kalratri',
     date: '28-Sep',
     images: [
       { name: 'Kalratri_1.jpg', width: 736, height: 1350 },
@@ -130,7 +132,7 @@ const templeData = [
   },
   {
     day: 8,
-    name: 'Maa Mahagauri',
+    nameKey: 'mahagauri',
     date: '29-Sep',
     images: [
       { name: 'Mahagauri_1.jpg', width: 736, height: 1311 },
@@ -139,7 +141,7 @@ const templeData = [
   },
   {
     day: 9,
-    name: 'Maa Siddhidatri',
+    nameKey: 'siddhidatri',
     date: '30-Sep',
     images: [
       { name: 'Siddhidatri.jpg', width: 736, height: 1318 }
@@ -160,8 +162,8 @@ const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) 
       },
       onPanResponderGrant: () => {
         pan.setOffset({
-          x: pan.x._value || 0,
-          y: pan.y._value || 0,
+          x: (pan.x as any)._value || 0,
+          y: (pan.y as any)._value || 0,
         });
         pan.setValue({ x: 0, y: 0 });
         Animated.spring(scale, { toValue: 1.1, useNativeDriver: true }).start();
@@ -205,6 +207,17 @@ export default function NavratriVirtualDarshan2025() {
   const { currentLanguage } = useLanguage();
   const { showAudioVideoModal } = useAudioVideoModal();
   const [currentDay, setCurrentDay] = useState(0); // Index in templeData array
+
+  // Helper function to get current temple with translated name
+  const getCurrentTemple = () => {
+    const temple = templeData[currentDay];
+    return {
+      ...temple,
+      name: getNavratriTranslation(`deityNames.${temple.nameKey}`, currentLanguage)
+    };
+  };
+
+  const currentTemple = getCurrentTemple();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Puja icon states
@@ -283,7 +296,6 @@ export default function NavratriVirtualDarshan2025() {
   }>>([]);
   const flowerIdCounter = useRef(0);
   
-  const currentTemple = templeData[currentDay];
   const currentImage = currentTemple.images[currentImageIndex];
   
   // Calculate image scaling
@@ -862,7 +874,7 @@ export default function NavratriVirtualDarshan2025() {
           ]}
         >
           <Text style={styles.scrollingText} numberOfLines={1}>
-            Swipe up / down for other temples of {currentTemple.name}, Swipe left / right for temples of other Maa
+            {getNavratriTranslation('swipeInstructions', currentLanguage, currentTemple.name)}
           </Text>
         </Animated.View>
       </View>
@@ -993,7 +1005,9 @@ export default function NavratriVirtualDarshan2025() {
             style={styles.pujaIconImage}
             resizeMode="contain"
           />
-          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Flowers</Text>
+          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">
+            {getNavratriTranslation('flowers', currentLanguage)}
+          </Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
@@ -1007,7 +1021,9 @@ export default function NavratriVirtualDarshan2025() {
             style={styles.pujaIconImage}
             resizeMode="contain"
           />
-          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Aarti</Text>
+          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">
+            {getNavratriTranslation('aarti', currentLanguage)}
+          </Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
@@ -1020,7 +1036,9 @@ export default function NavratriVirtualDarshan2025() {
             size={36} 
             color="#FFFFFF" 
           />
-          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Music</Text>
+          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">
+            {getNavratriTranslation('music', currentLanguage)}
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -1037,7 +1055,9 @@ export default function NavratriVirtualDarshan2025() {
             style={styles.pujaIconImage}
             resizeMode="contain"
           />
-          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Shankh</Text>
+          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">
+            {getNavratriTranslation('shankh', currentLanguage)}
+          </Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
@@ -1047,7 +1067,9 @@ export default function NavratriVirtualDarshan2025() {
           activeOpacity={0.7}
         >
           <Text style={styles.pujaIcon}>🔔</Text>
-          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">Ghanti</Text>
+          <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">
+            {getNavratriTranslation('ghanti', currentLanguage)}
+          </Text>
         </TouchableOpacity>
         
         {/* Light Switch */}
@@ -1061,7 +1083,7 @@ export default function NavratriVirtualDarshan2025() {
             {lightsOn ? '💡' : '🔌'}
           </Text>
           <Text style={styles.pujaIconLabel} numberOfLines={1} ellipsizeMode="tail">
-            {lightsOn ? 'Lights ON' : 'Lights OFF'}
+            {lightsOn ? getNavratriTranslation('lightsOn', currentLanguage) : getNavratriTranslation('lightsOff', currentLanguage)}
           </Text>
         </TouchableOpacity>
       </View>
@@ -1173,73 +1195,97 @@ export default function NavratriVirtualDarshan2025() {
               >
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('hibiscus')}>
                   <View style={styles.flowerIconContainer}><Text style={styles.flowerOptionEmoji}>🌺</Text></View>
-                  <Text style={styles.flowerOptionLabel}>Hibiscus</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.hibiscus', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('redRose')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/rose.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>Red Rose</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.redRose', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('whiteRose')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/whiterose.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>White Rose</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.whiteRose', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('jasmine')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/jasmine.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>Jasmine</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.jasmine', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('yellowShevanthi')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/YellowShevanthi.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>Yellow Shevanthi</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.yellowShevanthi', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('whiteShevanthi')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/WhiteShevanthi.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>White Shevanthi</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.whiteShevanthi', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('redShevanthi')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/RedShevanthi.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>Red Shevanthi</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.redShevanthi', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('tulsi')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/tulsi.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>Tulsi</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.tulsi', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('rajnigandha')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/rajnigandha.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>Rajnigandha</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.rajnigandha', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('parajita')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/parajita.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>Parajita</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.parajita', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('datura')}>
                   <View style={styles.flowerIconContainer}>
                     <Image source={require('@/assets/images/icons/own temple/Datura.png')} style={styles.flowerOptionImage} resizeMode="contain" />
                   </View>
-                  <Text style={styles.flowerOptionLabel}>Datura</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.datura', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.flowerOption} onPress={() => dropFlowers('mix')}>
                   <View style={styles.flowerIconContainer}>
                     <Text style={styles.flowerOptionEmoji}>🌸</Text>
                   </View>
-                  <Text style={styles.flowerOptionLabel}>Mixed Flowers</Text>
+                  <Text style={styles.flowerOptionLabel}>
+                    {getNavratriTranslation('flowerTypes.mixedFlowers', currentLanguage)}
+                  </Text>
                 </TouchableOpacity>
               </ScrollView>
             </View>
@@ -1258,7 +1304,9 @@ export default function NavratriVirtualDarshan2025() {
           <View style={styles.aartiModalOverlay}>
             {!thaliImageLoaded && (
               <View style={styles.thaliLoadingContainer}>
-                <Text style={styles.thaliLoadingText}>Loading Aarti Thali...</Text>
+                <Text style={styles.thaliLoadingText}>
+                  {getNavratriTranslation('loadingThali', currentLanguage)}
+                </Text>
               </View>
             )}
             <DraggableThali onImageLoad={() => setThaliImageLoaded(true)} />
