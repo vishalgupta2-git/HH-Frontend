@@ -343,10 +343,10 @@ export function SocialRow() {
   
   // Facebook function to open your profile
   const openFacebookProfile = () => {
-    const facebookUrl = 'https://www.facebook.com/profile.php?id=61578706766530';
+    const facebookUrl = 'https://www.facebook.com/profile.php?id=61580880367031';
     
     // Try to open Facebook app first
-    const appUrl = `fb://profile/61578706766530`;
+    const appUrl = `fb://profile/61580880367031`;
     
     Linking.openURL(appUrl).catch(() => {
       // Fallback: open in browser if app not installed
