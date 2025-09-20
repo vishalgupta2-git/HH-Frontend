@@ -521,29 +521,17 @@ export default function NavratriVirtualDarshan2025() {
     try {
       const { sound } = await Audio.Sound.createAsync(require('@/assets/sounds/TempleBell.mp3'));
       
-      // Play first 4 seconds twice
-      const playBellSequence = async () => {
-        // First play - 4 seconds
-        await sound.setPositionAsync(0);
-        await sound.playAsync();
-        await new Promise(resolve => setTimeout(resolve, 4000)); // Wait 4 seconds
-        await sound.stopAsync();
-        
-        // Second play - 4 seconds
-        await sound.setPositionAsync(0);
-        await sound.playAsync();
-        await new Promise(resolve => setTimeout(resolve, 4000)); // Wait 4 seconds
-        await sound.stopAsync();
-        
-        // Clean up
-        await sound.unloadAsync();
-      };
-      
-      // Start the sequence
-      playBellSequence();
-      
-      // Trigger bell swing animation
+      // Start bell swing animation immediately
       swingBells();
+      
+      // Play first 4 seconds once (while bells are swinging)
+      await sound.setPositionAsync(0);
+      await sound.playAsync();
+      await new Promise(resolve => setTimeout(resolve, 4000)); // Wait 4 seconds
+      await sound.stopAsync();
+      
+      // Clean up
+      await sound.unloadAsync();
     } catch (error) {
       console.log('Error playing bell sound:', error);
     }
