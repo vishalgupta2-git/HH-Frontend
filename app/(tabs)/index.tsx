@@ -3,17 +3,17 @@ import HomeIconGrid from '@/components/Home/HomeIconGrid';
 import ReferralConnectBlock, { SocialRow } from '@/components/Home/ReferralConnectBlock';
 import SpiritualAstrologyBlock from '@/components/Home/SpiritualAstrologyBlock';
 
-import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
 import ReferralSuccessModal from '@/components/Home/ReferralSuccessModal';
-import React, { useEffect, useState, useRef } from 'react';
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, Image, Animated } from 'react-native';
+import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { hasVisitedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUtils';
-import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
-import { shouldShowSpecialDaysModal } from '@/utils/bookingUtils';
-import { useRouter } from 'expo-router';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { getUserFirstName, hasVisitedDailyPujaToday } from '@/utils/dailyPujaUtils';
+import { UpcomingPuja } from '@/utils/specialDaysUtils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Image, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 
 export default function HomeScreen() {
@@ -224,19 +224,26 @@ export default function HomeScreen() {
              onPress={() => router.push('/screens/Navratri_Virtual_Darshan_2025')}
              activeOpacity={0.8}
            >
-             <View style={styles.navratriButtonContent}>
-               <IconSymbol name="sparkles" size={24} color="#FF6A00" />
-               <Text style={styles.navratriButtonText}>
-                 {currentLanguage === 'hindi' ? 'प्रतिदिन नवरात्रि पूजा' : 
-                  currentLanguage === 'bangla' ? 'প্রত্যেক দিনের দুর্গাপুজা' :
-                  currentLanguage === 'kannada' ? 'ದೈನಂದಿನ ನವರಾತ್ರಿ ಪೂಜೆ' :
-                  currentLanguage === 'punjabi' ? 'ਰੋਜ਼ਾਨਾ ਨਵਰਾਤਰੀ ਪੂਜਾ' :
-                  currentLanguage === 'tamil' ? 'தினசரி நவராத்திரி பூஜை' :
-                  currentLanguage === 'telugu' ? 'రోజువారీ నవరాత్రి పూజ' :
-                  'Everyday Navaratri Puja'}
-               </Text>
-               <IconSymbol name="chevron.right" size={20} color="#FF6A00" />
-             </View>
+             <LinearGradient
+               colors={['#FF6A00', '#FF9933', '#FFB366']}
+               start={{ x: 0, y: 0 }}
+               end={{ x: 1, y: 0 }}
+               style={styles.navratriButtonGradient}
+             >
+               <View style={styles.navratriButtonContent}>
+                 <IconSymbol name="sparkles" size={24} color="#fff" />
+                 <Text style={styles.navratriButtonText}>
+                   {currentLanguage === 'hindi' ? 'प्रतिदिन नवरात्रि पूजा' : 
+                    currentLanguage === 'bangla' ? 'প্রত্যেক দিনের দুর্গাপুজা' :
+                    currentLanguage === 'kannada' ? 'ದೈನಂದಿನ ನವರಾತ್ರಿ ಪೂಜೆ' :
+                    currentLanguage === 'punjabi' ? 'ਰੋਜ਼ਾਨਾ ਨਵਰਾਤਰੀ ਪੂਜਾ' :
+                    currentLanguage === 'tamil' ? 'தினசரி நவராத்திரி பூஜை' :
+                    currentLanguage === 'telugu' ? 'రోజువారీ నవరాత్రి పూజ' :
+                    'Everyday Navaratri Puja'}
+                 </Text>
+                 <IconSymbol name="chevron.right" size={20} color="#fff" />
+               </View>
+             </LinearGradient>
            </TouchableOpacity>
          </View>
          
@@ -586,19 +593,21 @@ const styles = StyleSheet.create({
   },
   // Navratri 2025 Puja Button styles
   navratriButton: {
-    backgroundColor: '#fff',
     borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    borderWidth: 2,
-    borderColor: '#FF6A00',
     width: '92%',
     alignSelf: 'center',
+  },
+  navratriButtonGradient: {
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderWidth: 2,
+    borderColor: '#FF6A00',
   },
   navratriButtonContent: {
     flexDirection: 'row',
@@ -608,7 +617,7 @@ const styles = StyleSheet.create({
   navratriButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
+    color: '#fff',
     flex: 1,
     marginLeft: 12,
   },

@@ -1,28 +1,26 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import 'react-native-reanimated';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
-import { Audio } from 'expo-av';
-import { awardMudras, hasEarnedDailyMudras, MUDRA_ACTIVITIES } from '@/utils/mudraUtils';
-import { hasVisitedDailyPujaToday, hasCompletedDailyPujaToday, getUserFirstName } from '@/utils/dailyPujaUtils';
-import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
+import AudioVideoModal from '@/components/AudioVideoModal';
 import DailyPujaReminderModal from '@/components/Home/DailyPujaReminderModal';
 import SpecialDaysModal from '@/components/Home/SpecialDaysModal';
-import AudioVideoModal from '@/components/AudioVideoModal';
-import { View, TouchableOpacity, Text, StyleSheet, Platform, Image } from 'react-native';
-import { useRouter, usePathname } from 'expo-router';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { getUserFirstName, hasVisitedDailyPujaToday } from '@/utils/dailyPujaUtils';
+import { awardMudras, hasEarnedDailyMudras } from '@/utils/mudraUtils';
+import { getUpcomingSpecialPujas, UpcomingPuja } from '@/utils/specialDaysUtils';
 import { MaterialIcons } from '@expo/vector-icons';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Audio } from 'expo-av';
+import { useFonts } from 'expo-font';
+import { Stack, usePathname, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import * as Updates from 'expo-updates';
+import { useEffect, useState } from 'react';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { useLanguage, LanguageProvider } from '@/contexts/LanguageContext';
 import { AudioVideoModalProvider, useAudioVideoModal } from '@/contexts/AudioVideoModalContext';
+import { LanguageProvider, useLanguage } from '@/contexts/LanguageContext';
+import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Global Bottom Navigation Component
 function GlobalBottomNavigation() {
@@ -362,6 +360,39 @@ export default function RootLayout() {
       checkAndShowModals();
     }
   }, [appInitialized]);
+
+  // Check for OTA updates on app launch
+  useEffect(() => {
+    async function checkForUpdates() {
+      try {
+        console.log('🔍 OTA Update Check Starting...');
+        console.log('🔍 Updates.isEnabled:', Updates.isEnabled);
+        console.log('🔍 __DEV__:', __DEV__);
+        
+        // Check for updates in both preview and production builds
+        if (Updates.isEnabled) {
+          console.log('🔍 Checking for updates...');
+          const update = await Updates.checkForUpdateAsync();
+          console.log('🔍 Update check result:', update);
+          
+          if (update.isAvailable) {
+            console.log('🔄 Update available, downloading...');
+            await Updates.fetchUpdateAsync();
+            console.log('✅ Update downloaded, reloading app...');
+            await Updates.reloadAsync();
+          } else {
+            console.log('✅ App is up to date');
+          }
+        } else {
+          console.log('❌ Updates not enabled');
+        }
+      } catch (error) {
+        console.log('❌ Update check failed:', error);
+      }
+    }
+    
+    checkForUpdates();
+  }, []);
   
   if (!loaded) {
     // Async font loading only occurs in development.
