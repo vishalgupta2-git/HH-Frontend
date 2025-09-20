@@ -1,22 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Dimensions,
-  ActivityIndicator,
-  Alert,
-  Image,
-  TextInput,
-  AppState,
-} from 'react-native';
-import { Audio, InterruptionModeIOS, InterruptionModeAndroid } from 'expo-av';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { getEndpointUrl, getAuthHeaders } from '@/constants/ApiConfig';
+import { getAuthHeaders, getEndpointUrl } from '@/constants/ApiConfig';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Audio, InterruptionModeAndroid, InterruptionModeIOS } from 'expo-av';
+import React, { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    AppState,
+    Dimensions,
+    Image,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -51,6 +51,8 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
   const [selectedDeity, setSelectedDeity] = useState<string | null>(null);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(false);
+  const [loadingMusicId, setLoadingMusicId] = useState<string | null>(null);
+  const [playbackProgress, setPlaybackProgress] = useState({ position: 0, duration: 0 });
 
   const translations = {
     title: { en: 'Divine Music', hi: 'भक्ति संगीत' },
@@ -96,6 +98,14 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
     }
   };
 
+  // Format time in milliseconds to MM:SS format
+  const formatTime = (milliseconds: number) => {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   // Extract metadata from music file
   const extractMusicMetadata = (file: MusicFile) => {
     return {
@@ -137,6 +147,10 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
   // Play music file
   const playMusicFile = async (file: MusicFile) => {
     try {
+      console.log('🎵 playMusicFile called for:', file.VideoName);
+      // Set loading state immediately
+      setLoadingMusicId(file.avld);
+      
       // Stop current music if playing
       if (sound) {
         await sound.unloadAsync();
@@ -181,19 +195,70 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
       setSound(newSound);
       setCurrentlyPlaying(file.avld);
       setIsPlaying(true);
+      console.log('🎵 Set currentlyPlaying to:', file.avld, 'for file:', file.VideoName);
 
-      // Set up auto-play next song when current ends
+      // Store the current file for auto-play (in case state gets cleared)
+      const currentFileForAutoPlay = file;
+
+      // Set up auto-play next song when current ends and track progress
       newSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          setIsPlaying(false);
-          setCurrentlyPlaying(null);
-          setSound(null);
+        if (status.isLoaded) {
+          // Update progress
+          if (status.positionMillis !== undefined && status.durationMillis !== undefined) {
+            setPlaybackProgress({
+              position: status.positionMillis,
+              duration: status.durationMillis
+            });
+          }
+          
+          // Handle song completion
+          if (status.didJustFinish) {
+            console.log('🎵 Song finished, currentFileForAutoPlay:', currentFileForAutoPlay);
+            console.log('🎵 filteredMusicFiles length:', filteredMusicFiles.length);
+            
+            setIsPlaying(false);
+            setCurrentlyPlaying(null);
+            setSound(null);
+            setPlaybackProgress({ position: 0, duration: 0 });
+            
+            // Automatically play next song in the current filtered list
+            setTimeout(() => {
+              console.log('🎵 Auto-play: Using stored file:', currentFileForAutoPlay);
+              if (currentFileForAutoPlay) {
+                const currentFilteredList = filteredMusicFiles;
+                console.log('🎵 Auto-play: Filtered list length:', currentFilteredList.length);
+                if (currentFilteredList.length > 0) {
+                  const currentIndex = currentFilteredList.findIndex(file => file.avld === currentFileForAutoPlay.avld);
+                  console.log('🎵 Auto-play: Current index:', currentIndex);
+                  if (currentIndex !== -1) {
+                    const nextIndex = (currentIndex + 1) % currentFilteredList.length;
+                    const nextFile = currentFilteredList[nextIndex];
+                    console.log('🎵 Auto-play: Next file:', nextFile);
+                    playMusicFile(nextFile);
+                  } else {
+                    console.log('🎵 Auto-play: Current index not found, trying fallback');
+                    // Fallback: just play the first song in the list
+                    if (currentFilteredList.length > 0) {
+                      const nextFile = currentFilteredList[0];
+                      console.log('🎵 Auto-play: Fallback to first song:', nextFile);
+                      playMusicFile(nextFile);
+                    }
+                  }
+                }
+              }
+            }, 500); // Small delay to ensure cleanup is complete
+          }
         }
       });
+
+      // Clear loading state on success
+      setLoadingMusicId(null);
 
     } catch (error) {
       console.error('Error playing music:', error);
       Alert.alert('Error', 'Failed to play music file');
+      // Clear loading state on error
+      setLoadingMusicId(null);
     }
   };
 
@@ -207,6 +272,7 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
       setSound(null);
       setCurrentlyPlaying(null);
       setIsPlaying(false);
+      setPlaybackProgress({ position: 0, duration: 0 });
     } catch (error) {
       console.error('Error stopping music:', error);
     }
@@ -739,18 +805,24 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
             filteredMusicFiles.map((file, index) => {
               const metadata = extractMusicMetadata(file);
               const isCurrentlyPlaying = currentlyPlaying === file.avld;
+              const isLoading = loadingMusicId === file.avld;
               
               return (
                 <TouchableOpacity
                   key={file.avld || index}
-                  style={[styles.musicItem, isCurrentlyPlaying && styles.currentlyPlayingItem]}
+                  style={[
+                    styles.musicItem, 
+                    isCurrentlyPlaying && styles.currentlyPlayingItem,
+                    isLoading && { opacity: 0.6 }
+                  ]}
                   onPress={() => {
                     if (isCurrentlyPlaying) {
                       stopCurrentMusic();
-                    } else {
+                    } else if (!isLoading) {
                       playMusicFile(file);
                     }
                   }}
+                  disabled={isLoading}
                 >
                   <View style={styles.musicItemContent}>
                     <Text style={styles.musicItemTitle}>{metadata.title}</Text>
@@ -762,7 +834,9 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
                     </Text>
                   </View>
                   <View style={styles.musicItemActions}>
-                    {isCurrentlyPlaying ? (
+                    {isLoading ? (
+                      <ActivityIndicator size="small" color="#FF6A00" />
+                    ) : isCurrentlyPlaying ? (
                       <MaterialCommunityIcons name="stop" size={24} color="#FF6A00" />
                     ) : (
                       <MaterialCommunityIcons name="play" size={24} color="#FF6A00" />
@@ -785,6 +859,26 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
                 {isPlaying ? 'Playing' : 'Paused'}
               </Text>
             </View>
+            
+            {/* Progress Bar */}
+            {playbackProgress.duration > 0 && (
+              <View style={styles.progressContainer}>
+                <View style={styles.progressBar}>
+                  <View 
+                    style={[
+                      styles.progressFill, 
+                      { width: `${(playbackProgress.position / playbackProgress.duration) * 100}%` }
+                    ]} 
+                  />
+                </View>
+                <View style={styles.progressTimes}>
+                  <Text style={styles.progressTimeText}>
+                    {formatTime(playbackProgress.position)}
+                  </Text>
+                </View>
+              </View>
+            )}
+            
             <TouchableOpacity
               style={styles.stopButton}
               onPress={stopCurrentMusic}
@@ -1018,6 +1112,33 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 106, 0, 0.3)',
     borderWidth: 2,
     borderColor: '#FF6A00',
+  },
+  // Progress Bar Styles
+  progressContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 8,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#FF6A00',
+    borderRadius: 2,
+  },
+  progressTimes: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 5,
+  },
+  progressTimeText: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
   },
 });
 
