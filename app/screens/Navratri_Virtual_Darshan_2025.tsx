@@ -205,7 +205,7 @@ const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) 
 
 export default function NavratriVirtualDarshan2025() {
   const { currentLanguage } = useLanguage();
-  const { showAudioVideoModal } = useAudioVideoModal();
+  const { showAudioVideoModal, pauseMusic, resumeMusic, isMusicPlaying } = useAudioVideoModal();
   const [currentDay, setCurrentDay] = useState(0); // Index in templeData array
 
   // Helper function to get current temple with translated name
@@ -497,28 +497,53 @@ export default function NavratriVirtualDarshan2025() {
 
   const playConch = async () => {
     try {
+      // Check if music is playing and pause it
+      const wasMusicPlaying = isMusicPlaying();
+      if (wasMusicPlaying) {
+        await pauseMusic();
+      }
+
       if (!conchSoundRef.current) {
         await preloadConchSound();
       }
       setIsConchPlaying(true);
       await conchSoundRef.current?.replayAsync();
+      
       // Stop after 4s similar to test temple
       setTimeout(async () => { 
         try { 
           await conchSoundRef.current?.stopAsync(); 
         } catch {} 
         finally { 
-          setIsConchPlaying(false); 
+          setIsConchPlaying(false);
+          
+          // Resume music if it was playing before
+          if (wasMusicPlaying) {
+            // Add small delay to ensure pause has taken effect
+            await new Promise(resolve => setTimeout(resolve, 100));
+            await resumeMusic();
+          }
         } 
       }, 4000);
     } catch (e) {
       console.warn('Conch sound failed', e);
       setIsConchPlaying(false);
+      
+      // Resume music if it was playing before (even if conch failed)
+      if (isMusicPlaying()) {
+        await resumeMusic();
+      }
     }
   };
 
   const triggerBells = async () => {
     try {
+      // Check if music is playing and pause it
+      const wasMusicPlaying = isMusicPlaying();
+      if (wasMusicPlaying) {
+        await pauseMusic();
+      }
+
       const { sound } = await Audio.Sound.createAsync(require('@/assets/sounds/TempleBell.mp3'));
       
       // Start bell swing animation immediately
@@ -532,6 +557,13 @@ export default function NavratriVirtualDarshan2025() {
       
       // Clean up
       await sound.unloadAsync();
+
+      // Resume music if it was playing before
+      if (wasMusicPlaying) {
+        // Add small delay to ensure pause has taken effect
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await resumeMusic();
+      }
     } catch (error) {
       console.log('Error playing bell sound:', error);
     }

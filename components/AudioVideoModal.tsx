@@ -23,6 +23,11 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 interface AudioVideoModalProps {
   visible: boolean;
   onClose: () => void;
+  onMusicControl?: (control: {
+    pauseMusic: () => Promise<void>;
+    resumeMusic: () => Promise<void>;
+    isMusicPlaying: () => boolean;
+  }) => void;
 }
 
 interface MusicFile {
@@ -39,7 +44,7 @@ interface MusicFile {
   famous?: boolean;
 }
 
-const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) => {
+const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose, onMusicControl }) => {
   const { isHindi } = useLanguage();
   const [musicFiles, setMusicFiles] = useState<MusicFile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -53,6 +58,46 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
   const [videoEnabled, setVideoEnabled] = useState(false);
   const [loadingMusicId, setLoadingMusicId] = useState<string | null>(null);
   const [playbackProgress, setPlaybackProgress] = useState({ position: 0, duration: 0 });
+
+  // Music control functions
+  const pauseMusic = async () => {
+    try {
+      if (sound) {
+        // Force pause regardless of isPlaying state
+        await sound.pauseAsync();
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error('Error pausing music:', error);
+    }
+  };
+
+  const resumeMusic = async () => {
+    try {
+      if (sound) {
+        // Force play regardless of isPlaying state
+        await sound.playAsync();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error('Error resuming music:', error);
+    }
+  };
+
+  const isMusicPlaying = () => {
+    return isPlaying;
+  };
+
+  // Expose music control functions to parent
+  useEffect(() => {
+    if (onMusicControl) {
+      onMusicControl({
+        pauseMusic,
+        resumeMusic,
+        isMusicPlaying,
+      });
+    }
+  }, [onMusicControl, sound, isPlaying]);
 
   const translations = {
     title: { en: 'Divine Music', hi: 'भक्ति संगीत' },
@@ -147,7 +192,6 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
   // Play music file
   const playMusicFile = async (file: MusicFile) => {
     try {
-      console.log('🎵 playMusicFile called for:', file.VideoName);
       // Set loading state immediately
       setLoadingMusicId(file.avld);
       
@@ -195,7 +239,6 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
       setSound(newSound);
       setCurrentlyPlaying(file.avld);
       setIsPlaying(true);
-      console.log('🎵 Set currentlyPlaying to:', file.avld, 'for file:', file.VideoName);
 
       // Store the current file for auto-play (in case state gets cleared)
       const currentFileForAutoPlay = file;
@@ -213,8 +256,6 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
           
           // Handle song completion
           if (status.didJustFinish) {
-            console.log('🎵 Song finished, currentFileForAutoPlay:', currentFileForAutoPlay);
-            console.log('🎵 filteredMusicFiles length:', filteredMusicFiles.length);
             
             setIsPlaying(false);
             setCurrentlyPlaying(null);
@@ -223,24 +264,18 @@ const AudioVideoModal: React.FC<AudioVideoModalProps> = ({ visible, onClose }) =
             
             // Automatically play next song in the current filtered list
             setTimeout(() => {
-              console.log('🎵 Auto-play: Using stored file:', currentFileForAutoPlay);
               if (currentFileForAutoPlay) {
                 const currentFilteredList = filteredMusicFiles;
-                console.log('🎵 Auto-play: Filtered list length:', currentFilteredList.length);
                 if (currentFilteredList.length > 0) {
                   const currentIndex = currentFilteredList.findIndex(file => file.avld === currentFileForAutoPlay.avld);
-                  console.log('🎵 Auto-play: Current index:', currentIndex);
                   if (currentIndex !== -1) {
                     const nextIndex = (currentIndex + 1) % currentFilteredList.length;
                     const nextFile = currentFilteredList[nextIndex];
-                    console.log('🎵 Auto-play: Next file:', nextFile);
                     playMusicFile(nextFile);
                   } else {
-                    console.log('🎵 Auto-play: Current index not found, trying fallback');
                     // Fallback: just play the first song in the list
                     if (currentFilteredList.length > 0) {
                       const nextFile = currentFilteredList[0];
-                      console.log('🎵 Auto-play: Fallback to first song:', nextFile);
                       playMusicFile(nextFile);
                     }
                   }

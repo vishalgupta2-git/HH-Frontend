@@ -241,6 +241,29 @@ export default function RootLayout() {
   const [userFirstName, setUserFirstName] = useState<string | null>(null);
   const [appInitialized, setAppInitialized] = useState(false);
   const [dailyPujaShown, setDailyPujaShown] = useState(false);
+
+  // Music control functions for AudioVideoModal
+  const [musicControl, setMusicControl] = useState<{
+    pauseMusic: () => Promise<void>;
+    resumeMusic: () => Promise<void>;
+    isMusicPlaying: () => boolean;
+  } | null>(null);
+
+  const pauseMusic = async () => {
+    if (musicControl) {
+      await musicControl.pauseMusic();
+    }
+  };
+
+  const resumeMusic = async () => {
+    if (musicControl) {
+      await musicControl.resumeMusic();
+    }
+  };
+
+  const isMusicPlaying = () => {
+    return musicControl ? musicControl.isMusicPlaying() : false;
+  };
   
   // Function to handle daily puja modal close
   const handleDailyPujaModalClose = () => {
@@ -404,6 +427,9 @@ export default function RootLayout() {
       <AudioVideoModalProvider
         showModal={() => setShowAudioVideoModal(true)}
         hideModal={() => setShowAudioVideoModal(false)}
+        pauseMusic={pauseMusic}
+        resumeMusic={resumeMusic}
+        isMusicPlaying={isMusicPlaying}
       >
         <GestureHandlerRootView style={{ flex: 1 }}>
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -436,6 +462,7 @@ export default function RootLayout() {
             <AudioVideoModal
               visible={showAudioVideoModal}
               onClose={() => setShowAudioVideoModal(false)}
+              onMusicControl={setMusicControl}
             />
           </ThemeProvider>
         </GestureHandlerRootView>
