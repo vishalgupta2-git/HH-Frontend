@@ -1,14 +1,14 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, Image, TouchableOpacity, Modal, TouchableWithoutFeedback, ScrollView, Animated, PanResponder } from 'react-native';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { PanGestureHandler as RNGestureHandler, State } from 'react-native-gesture-handler';
-import { LinearGradient } from 'expo-linear-gradient';
 import { getNavratriTranslation } from '@/constants/navratriTranslations';
-
-const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
+import { useAudioVideoModal } from '@/contexts/AudioVideoModalContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
-import { useAudioVideoModal } from '@/contexts/AudioVideoModalContext';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Dimensions, Easing, Image, Modal, PanResponder, ScrollView, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { PanGestureHandler as RNGestureHandler, State } from 'react-native-gesture-handler';
+
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -229,6 +229,27 @@ export default function NavratriVirtualDarshan2025() {
   // Audio refs
   const conchSoundRef = useRef<Audio.Sound | null>(null);
   const [isConchPlaying, setIsConchPlaying] = useState(false);
+  
+  // Perform Puja states
+  const [isPujaRitualActive, setIsPujaRitualActive] = useState(false);
+  const [buttonTextColor, setButtonTextColor] = useState('#fff');
+  
+  // Puja animation state
+  const [thaliEllipseAnimation] = useState(new Animated.Value(0));
+  const [pujaFlowers, setPujaFlowers] = useState<Array<{
+    id: string;
+    type: string;
+    x: number;
+    y: Animated.Value;
+    scale: Animated.Value;
+    opacity: Animated.Value;
+    rotation: number;
+    baseY?: number;
+    fadeStart?: number;
+    fadeEnd?: number;
+  }>>([]);
+  const pujaFlowerIdCounter = useRef(0);
+  const flowerIntervalRef = useRef<any>(null);
   
   // Bell swing animation refs
   const leftBellSwing = useRef(new Animated.Value(0)).current;
@@ -497,12 +518,27 @@ export default function NavratriVirtualDarshan2025() {
   const triggerBells = async () => {
     try {
       const { sound } = await Audio.Sound.createAsync(require('@/assets/sounds/TempleBell.mp3'));
-      await sound.playAsync();
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          sound.unloadAsync();
-        }
-      });
+      
+      // Play first 4 seconds twice
+      const playBellSequence = async () => {
+        // First play - 4 seconds
+        await sound.setPositionAsync(0);
+        await sound.playAsync();
+        await new Promise(resolve => setTimeout(resolve, 4000)); // Wait 4 seconds
+        await sound.stopAsync();
+        
+        // Second play - 4 seconds
+        await sound.setPositionAsync(0);
+        await sound.playAsync();
+        await new Promise(resolve => setTimeout(resolve, 4000)); // Wait 4 seconds
+        await sound.stopAsync();
+        
+        // Clean up
+        await sound.unloadAsync();
+      };
+      
+      // Start the sequence
+      playBellSequence();
       
       // Trigger bell swing animation
       swingBells();
@@ -681,6 +717,190 @@ export default function NavratriVirtualDarshan2025() {
     };
   }, []);
 
+  // Text color animation for perform puja button
+  useEffect(() => {
+    const colorInterval = setInterval(() => {
+      setButtonTextColor(prevColor => prevColor === '#fff' ? '#FFD700' : '#fff');
+    }, 2000);
+
+    return () => clearInterval(colorInterval);
+  }, []);
+
+  // Generate unique puja flower ID
+  const generateUniquePujaFlowerId = () => {
+    pujaFlowerIdCounter.current += 1;
+    return `puja_flower_${Date.now()}_${pujaFlowerIdCounter.current}`;
+  };
+
+  // Stop puja animation function
+  const stopPujaAnimation = () => {
+    if (!isPujaRitualActive) return;
+    
+    // Stop thali animation
+    thaliEllipseAnimation.stopAnimation();
+    
+    // Stop flower dropping
+    if (flowerIntervalRef.current) {
+      clearInterval(flowerIntervalRef.current);
+      flowerIntervalRef.current = null;
+    }
+    
+    // Stop all flower animations and clear them
+    setPujaFlowers(prev => {
+      prev.forEach(flower => {
+        flower.y.stopAnimation();
+        flower.opacity.stopAnimation();
+        flower.scale.stopAnimation();
+      });
+      return [];
+    });
+    
+    // End puja ritual
+    setIsPujaRitualActive(false);
+  };
+
+  // Perform Puja Ritual with elliptical thali motion and mixed flowers
+  const performPujaRitual = async () => {
+    if (isPujaRitualActive) return; // Prevent multiple simultaneous rituals
+    
+    setIsPujaRitualActive(true);
+    
+    try {
+      // Reset animation
+      thaliEllipseAnimation.setValue(0);
+      
+      // Clear any existing flowers
+      setPujaFlowers([]);
+      
+      // Clear any existing flower interval
+      if (flowerIntervalRef.current) {
+        clearInterval(flowerIntervalRef.current);
+        flowerIntervalRef.current = null;
+      }
+      
+      // THREAD 1: Thali Elliptical Motion (30 seconds)
+      const startThaliMotion = () => {
+        const animation = Animated.timing(thaliEllipseAnimation, {
+          toValue: 4, // 2 complete orbits (2 * 2 = 4 for proper elliptical motion)
+          duration: 12000, // 12 seconds
+          useNativeDriver: true,
+        });
+        
+        animation.start(async ({ finished }) => {
+          // Stop flower dropping when thali motion completes
+          if (flowerIntervalRef.current) {
+            clearInterval(flowerIntervalRef.current);
+            flowerIntervalRef.current = null;
+          }
+          
+          // Immediately stop all flower animations and clear them
+          setPujaFlowers(prev => {
+            // Stop all running animations for existing flowers
+            prev.forEach(flower => {
+              flower.y.stopAnimation();
+              flower.opacity.stopAnimation();
+              flower.scale.stopAnimation();
+            });
+            return []; // Clear all flowers immediately
+          });
+          
+          // Stop thali animation immediately
+          thaliEllipseAnimation.stopAnimation();
+          
+          // Close modal immediately
+          setIsPujaRitualActive(false);
+        });
+      };
+      
+      // THREAD 2: Continuous Flower Dropping (stops when thali completes)
+      const startFlowerDropping = () => {
+        const flowerTypes = ['hibiscus', 'redRose', 'whiteRose', 'sunflower', 'marigold', 'belPatra', 'jasmine', 'yellowShevanthi', 'whiteShevanthi', 'redShevanthi', 'tulsi', 'rajnigandha', 'parajita', 'datura'];
+        
+        const createFlowerBatch = () => {
+          // Use same effect as mix flower dropping - create staggered rows
+          const rows = 2; // Reduced rows for continuous flow
+          const itemsPerRow = 8; // 8 flowers per row
+          const rowDelayMs = 100; // Faster row delay for continuous flow
+          const edgeClamp = 30; // Keep flowers slightly inside edges
+
+          const makeFlowerAt = (xPos: number) => {
+            const id = generateUniquePujaFlowerId();
+            const baseY = 100 + (Math.random() - 0.5) * 40;
+            const fadeStart = screenHeight * 0.65;
+            const fadeEnd = screenHeight * 0.78;
+            
+            // Randomly select flower type (same as mix flowers)
+            const randomType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+            
+            return {
+              id,
+              type: randomType,
+              x: xPos,
+              y: new Animated.Value(0),
+              opacity: new Animated.Value(1),
+              scale: new Animated.Value(0.6 + Math.random() * 0.3), // Same scale as mix flowers
+              rotation: Math.random() * 360,
+              baseY,
+              fadeStart,
+              fadeEnd,
+            };
+          };
+
+          for (let row = 0; row < rows; row++) {
+            const batchRow: typeof pujaFlowers = [];
+            for (let i = 0; i < itemsPerRow; i++) {
+              const baseX = (screenWidth * i) / (itemsPerRow - 1);
+              const randomOffset = (Math.random() - 0.5) * 60; // ±30px
+              const xPos = Math.max(edgeClamp, Math.min(screenWidth - edgeClamp, baseX + randomOffset));
+              batchRow.push(makeFlowerAt(xPos));
+            }
+            setPujaFlowers(prev => [...prev, ...batchRow]);
+
+            batchRow.forEach((f) => {
+              setTimeout(() => {
+                const duration = 3000 + Math.random() * 1000 + row * 500; // Same timing as mix flowers
+                Animated.parallel([
+                  Animated.timing(f.y, {
+                    toValue: (screenHeight * 0.78) - (f.baseY || 200),
+                    duration: duration,
+                    easing: Easing.out(Easing.cubic), // Same easing as mix flowers
+                    useNativeDriver: true,
+                  }),
+                  // Fade from 65% to 78% of screen height (same as mix flowers)
+                  Animated.timing(f.opacity, {
+                    toValue: 0,
+                    duration: Math.max(200, duration * ((screenHeight * 0.78 - (f.fadeStart || screenHeight * 0.65)) / ((screenHeight * 0.78) - (f.baseY || 200)))) ,
+                    delay: Math.max(0, duration * (((f.fadeStart || screenHeight * 0.65) - (f.baseY || 200)) / ((screenHeight * 0.78) - (f.baseY || 200)))),
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(f.scale, {
+                    toValue: 1,
+                    duration: 1400, // Same scale animation as mix flowers
+                    useNativeDriver: true,
+                  }),
+                ]).start(() => {
+                  setPujaFlowers(prev => prev.filter(x => x.id !== f.id));
+                });
+              }, row * rowDelayMs);
+            });
+          }
+        };
+        
+        // Start continuous flower dropping every 300ms
+        flowerIntervalRef.current = setInterval(createFlowerBatch, 300);
+        
+        return flowerIntervalRef.current;
+      };
+      
+      // Start both threads - flowers will stop when thali completes
+      startThaliMotion();
+      startFlowerDropping();
+      
+    } catch (error) {
+      setIsPujaRitualActive(false);
+    }
+  };
+
   const swingBells = () => {
     // Left bell custom animation: 0s straight, 0.5s angle, 1s straight, 1.5s angle, 2s straight
     Animated.sequence([
@@ -742,7 +962,8 @@ export default function NavratriVirtualDarshan2025() {
   };
 
   return (
-    <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={stopPujaAnimation}>
+      <View style={styles.container}>
       {/* Temple Bells - Z-index 101 */}
       <Animated.View
         style={[
@@ -1174,6 +1395,145 @@ export default function NavratriVirtualDarshan2025() {
         </Animated.View>
       ))}
 
+      {/* Puja Flowers Animation */}
+      {pujaFlowers.map((flower) => (
+        <Animated.View
+          key={flower.id}
+          style={{
+            position: 'absolute',
+            left: flower.x - 15,
+            top: flower.baseY || 100,
+            opacity: flower.opacity,
+            transform: [
+              { translateY: flower.y },
+              { scale: flower.scale },
+              { rotate: `${flower.rotation}deg` }
+            ],
+            zIndex: 100,
+            width: 30,
+            height: 30,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {flower.type === 'redRose' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/rose.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'whiteRose' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/whiterose.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'jasmine' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/jasmine.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'yellowShevanthi' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/YellowShevanthi.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'whiteShevanthi' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/WhiteShevanthi.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'redShevanthi' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/RedShevanthi.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'rajnigandha' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/rajnigandha.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'parajita' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/parajita.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'datura' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/Datura.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'tulsi' ? (
+            <Image 
+              source={require('@/assets/images/icons/own temple/tulsi.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
+          ) : flower.type === 'sunflower' ? (
+            <Text style={{ fontSize: 24 }}>🌻</Text>
+          ) : flower.type === 'marigold' ? (
+            <Text style={{ fontSize: 24 }}>🌼</Text>
+          ) : flower.type === 'belPatra' ? (
+            <Text style={{ fontSize: 24 }}>🍃</Text>
+          ) : (
+            <Text style={{ fontSize: 24 }}>🌺</Text>
+          )}
+        </Animated.View>
+      ))}
+
+      {/* Thali Elliptical Animation */}
+      {isPujaRitualActive && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            left: (screenWidth / 2) - 60,
+            top: screenHeight / 2 - 60,
+            width: 120,
+            height: 120,
+            zIndex: 100,
+            transform: [
+              {
+                translateX: thaliEllipseAnimation.interpolate({
+                  inputRange: [0, 1, 2, 3, 4],
+                  outputRange: [
+                    0, // Start at center
+                    -screenWidth * 0.35, // Right
+                    0, // Center
+                    screenWidth * 0.35, // Left
+                    0, // End at center (2nd orbit complete)
+                  ],
+                }),
+              },
+              {
+                translateY: thaliEllipseAnimation.interpolate({
+                  inputRange: [0, 1, 2, 3, 4],
+                  outputRange: [
+                    screenHeight * 0.1, // Start at bottom
+                    0, // Center
+                    -screenHeight * 0.1, // Top
+                    0, // Center
+                    screenHeight * 0.1, // End at bottom (2nd orbit complete)
+                  ],
+                }),
+              },
+            ],
+          }}
+        >
+          <Image
+            source={require('@/assets/images/icons/own temple/PujaThali1.png')}
+            style={{ width: 120, height: 120 }}
+            resizeMode="contain"
+          />
+        </Animated.View>
+      )}
+
       {/* Flower Selection Modal */}
       <Modal
         visible={showFlowerModal}
@@ -1314,7 +1674,32 @@ export default function NavratriVirtualDarshan2025() {
         </TouchableWithoutFeedback>
       </Modal>
 
+      {/* Perform Puja Button - 78% from top, 100% width */}
+      <TouchableOpacity
+        style={[styles.performPujaButton, {
+          top: screenHeight * 0.78,
+          opacity: isPujaRitualActive ? 0.6 : 1,
+        }]}
+        onPress={performPujaRitual}
+        disabled={isPujaRitualActive}
+      >
+        <LinearGradient
+          colors={['#CC6600', '#CC6600', '#CC6600']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.performPujaButtonGradient}
+        >
+          <Text style={[styles.performPujaButtonText, { color: buttonTextColor }]}>
+            {isPujaRitualActive ? 
+              getNavratriTranslation('performingPuja', currentLanguage) : 
+              getNavratriTranslation('performPuja', currentLanguage)
+            }
+          </Text>
+        </LinearGradient>
+      </TouchableOpacity>
+
     </View>
+    </TouchableWithoutFeedback>
   );
 }
 
@@ -1679,5 +2064,34 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  // Perform Puja Button Styles
+  performPujaButton: {
+    position: 'center',
+    left: (screenWidth / 2) - (screenWidth * 0.5 / 2), // Button X = (screenWidth / 2) - (buttonWidth / 2)
+    width: screenWidth * 0.5, // buttonWidth = 30% of screen width
+    height: screenHeight * 0.042, // Reduced by 30% (0.06 * 0.7 = 0.042)
+    zIndex: 300,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  performPujaButtonGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 0,
+    borderRadius: 4, // Very less rounded corners
+  },
+  performPujaButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 });

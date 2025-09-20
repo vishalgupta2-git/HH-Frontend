@@ -48,6 +48,24 @@ export const navratriTranslations = {
     tamil: 'மணி',
     telugu: 'గంట'
   },
+  performPuja: {
+    english: 'Perform Puja',
+    hindi: 'पूजा करें',
+    bangla: 'পুজো করুন',
+    kannada: 'ಪೂಜೆ ಮಾಡಿ',
+    punjabi: 'ਪੂਜਾ ਕਰੋ',
+    tamil: 'பூஜை செய்யுங்கள்',
+    telugu: 'పూజ చేయండి'
+  },
+  performingPuja: {
+    english: 'Performing Puja...',
+    hindi: 'पूजा हो रही है...',
+    bangla: 'পুজো হচ্ছে...',
+    kannada: 'ಪೂಜೆ ನಡೆಯುತ್ತಿದೆ...',
+    punjabi: 'ਪੂਜਾ ਹੋ ਰਹੀ ਹੈ...',
+    tamil: 'பூஜை நடைபெறுகிறது...',
+    telugu: 'పూజ జరుగుతోంది...'
+  },
   lightsOn: {
     english: 'Lights ON',
     hindi: 'लाइट्स ऑन',
