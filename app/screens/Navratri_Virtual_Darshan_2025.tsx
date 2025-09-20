@@ -232,7 +232,9 @@ export default function NavratriVirtualDarshan2025() {
   
   // Perform Puja states
   const [isPujaRitualActive, setIsPujaRitualActive] = useState(false);
-  const [buttonTextColor, setButtonTextColor] = useState('#fff');
+  
+  // Button pulse animation
+  const pulseAnim = useRef(new Animated.Value(1)).current;
   
   // Puja animation state
   const [thaliEllipseAnimation] = useState(new Animated.Value(0));
@@ -717,14 +719,32 @@ export default function NavratriVirtualDarshan2025() {
     };
   }, []);
 
-  // Text color animation for perform puja button
-  useEffect(() => {
-    const colorInterval = setInterval(() => {
-      setButtonTextColor(prevColor => prevColor === '#fff' ? '#FFD700' : '#fff');
-    }, 2000);
+  // Text color is now static - no animation needed
 
-    return () => clearInterval(colorInterval);
-  }, []);
+  // Button pulse animation
+  useEffect(() => {
+    // Pulse animation (scale up and down)
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    pulseAnimation.start();
+
+    return () => {
+      pulseAnimation.stop();
+    };
+  }, [pulseAnim]);
 
   // Generate unique puja flower ID
   const generateUniquePujaFlowerId = () => {
@@ -1674,29 +1694,26 @@ export default function NavratriVirtualDarshan2025() {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* Perform Puja Button - 78% from top, 100% width */}
-      <TouchableOpacity
-        style={[styles.performPujaButton, {
-          top: screenHeight * 0.78,
-          opacity: isPujaRitualActive ? 0.6 : 1,
-        }]}
-        onPress={performPujaRitual}
-        disabled={isPujaRitualActive}
-      >
-        <LinearGradient
-          colors={['#CC6600', '#CC6600', '#CC6600']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.performPujaButtonGradient}
+      {/* Perform Puja Button - 78% from top, 50% width with pulse animation */}
+      <Animated.View style={[styles.performPujaButtonContainer, { 
+        top: screenHeight * 0.78,
+        transform: [{ scale: pulseAnim }] 
+      }]}>
+        <TouchableOpacity
+          style={[styles.performPujaButton, {
+            opacity: isPujaRitualActive ? 0.6 : 1,
+          }]}
+          onPress={performPujaRitual}
+          disabled={isPujaRitualActive}
         >
-          <Text style={[styles.performPujaButtonText, { color: buttonTextColor }]}>
+          <Text style={styles.performPujaButtonText}>
             {isPujaRitualActive ? 
               getNavratriTranslation('performingPuja', currentLanguage) : 
               getNavratriTranslation('performPuja', currentLanguage)
             }
           </Text>
-        </LinearGradient>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </Animated.View>
 
     </View>
     </TouchableWithoutFeedback>
@@ -2066,32 +2083,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   // Perform Puja Button Styles
-  performPujaButton: {
-    position: 'center',
+  performPujaButtonContainer: {
+    position: 'absolute',
     left: (screenWidth / 2) - (screenWidth * 0.5 / 2), // Button X = (screenWidth / 2) - (buttonWidth / 2)
-    width: screenWidth * 0.5, // buttonWidth = 30% of screen width
+    width: screenWidth * 0.5, // buttonWidth = 50% of screen width
     height: screenHeight * 0.042, // Reduced by 30% (0.06 * 0.7 = 0.042)
     zIndex: 300,
+  },
+  performPujaButton: {
+    flex: 1,
+    backgroundColor: '#FFD4A3', // Light orange background
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 10,
   },
-  performPujaButtonGradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 0,
-    borderRadius: 4, // Very less rounded corners
-  },
   performPujaButtonText: {
-    fontSize: 18,
+    fontSize: 20, // Increased by 2 points (18 + 2 = 20)
     fontWeight: 'bold',
     textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    color: '#E87C00', // Dark orange text
   },
 });
