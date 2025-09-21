@@ -24,6 +24,10 @@ const MAPPING = {
   'yatra': 'route',
   'video': 'ondemand-video',
   'music': 'music-note',
+  'puzzle': 'extension',
+  'sparkles': 'auto-awesome',
+  'calendar': 'event',
+  'xmark': 'close',
 } as IconMapping;
 
 /**

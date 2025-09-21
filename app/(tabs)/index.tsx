@@ -246,6 +246,36 @@ export default function HomeScreen() {
              </LinearGradient>
            </TouchableOpacity>
          </View>
+
+         {/* Jigsaw Puzzle Game Button */}
+         <View style={styles.section}>
+           <TouchableOpacity
+             style={styles.jigsawButton}
+             onPress={() => router.push('/screens/jigsaw-puzzle')}
+             activeOpacity={0.8}
+           >
+             <LinearGradient
+               colors={['#4CAF50', '#66BB6A', '#81C784']}
+               start={{ x: 0, y: 0 }}
+               end={{ x: 1, y: 0 }}
+               style={styles.jigsawButtonGradient}
+             >
+               <View style={styles.jigsawButtonContent}>
+                 <IconSymbol name="puzzle" size={24} color="#fff" />
+                 <Text style={styles.jigsawButtonText}>
+                   {currentLanguage === 'hindi' ? 'मंदिर जिग्सॉ पहेली' : 
+                    currentLanguage === 'bangla' ? 'মন্দির জিগস পাজল' :
+                    currentLanguage === 'kannada' ? 'ದೇವಾಲಯ ಜಿಗ್ಸಾ ಪಜಲ್' :
+                    currentLanguage === 'punjabi' ? 'ਮੰਦਰ ਜਿਗਸਾ ਪਜ਼ਲ' :
+                    currentLanguage === 'tamil' ? 'கோவில் ஜிக்ஸா புதிர்' :
+                    currentLanguage === 'telugu' ? 'దేవాలయ జిగ్సా పజిల్' :
+                    'Temple Jigsaw Puzzle'}
+                 </Text>
+                 <IconSymbol name="chevron.right" size={20} color="#fff" />
+               </View>
+             </LinearGradient>
+           </TouchableOpacity>
+         </View>
          
          {/* Test Temple Button - Hidden */}
          {/* <View style={styles.section}>
@@ -615,6 +645,36 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   navratriButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    flex: 1,
+    marginLeft: 12,
+  },
+  // Jigsaw Puzzle Button styles
+  jigsawButton: {
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: '92%',
+    alignSelf: 'center',
+  },
+  jigsawButtonGradient: {
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
+  jigsawButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  jigsawButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
