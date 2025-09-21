@@ -41,8 +41,8 @@ function GlobalBottomNavigation() {
     if (route === 'puja') {
       return pathname === '/screens/puja';
     }
-    if (route === 'yatra') {
-      return pathname === '/(tabs)/yatra';
+    if (route === 'navratri') {
+      return pathname === '/screens/Navratri_Virtual_Darshan_2025';
     }
     if (route === 'audio-video') {
       return pathname === '/(tabs)/audio-video';
@@ -58,8 +58,8 @@ function GlobalBottomNavigation() {
       router.push('/(tabs)');
     } else if (route === 'puja') {
       router.push('/screens/puja');
-    } else if (route === 'yatra') {
-      router.push('/(tabs)/yatra');
+    } else if (route === 'navratri') {
+      router.push('/screens/Navratri_Virtual_Darshan_2025');
     } else if (route === 'audio-video') {
       showAudioVideoModal();
     } else if (route === 'games') {
@@ -94,11 +94,15 @@ function GlobalBottomNavigation() {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={[styles.tab, isActive('yatra') && styles.activeTab]} 
-          onPress={() => navigateTo('yatra')}
+          style={[styles.tab, isActive('navratri') && styles.activeTab]} 
+          onPress={() => navigateTo('navratri')}
         >
-          <MaterialIcons size={20} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
-          <Text style={[styles.tabText, isActive('yatra') && styles.activeTabText]}>Yatra</Text>
+          <Image 
+            source={require('@/assets/images/icons/home page icons/Navratri_small.png')} 
+            style={[styles.tabIcon, isActive('navratri') && styles.activeTabIcon]} 
+            resizeMode="contain" 
+          />
+          <Text style={[styles.tabText, isActive('navratri') && styles.activeTabText]}>Navratri</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -140,8 +144,8 @@ function BottomNavigationWithLanguage() {
     if (route === 'puja') {
       return pathname === '/screens/puja';
     }
-    if (route === 'yatra') {
-      return pathname === '/(tabs)/yatra';
+    if (route === 'navratri') {
+      return pathname === '/screens/Navratri_Virtual_Darshan_2025';
     }
     if (route === 'audio-video') {
       return pathname === '/(tabs)/audio-video';
@@ -157,8 +161,8 @@ function BottomNavigationWithLanguage() {
       router.push('/(tabs)');
     } else if (route === 'puja') {
       router.push('/screens/puja');
-    } else if (route === 'yatra') {
-      router.push('/(tabs)/yatra');
+    } else if (route === 'navratri') {
+      router.push('/screens/Navratri_Virtual_Darshan_2025');
     } else if (route === 'audio-video') {
       showAudioVideoModal();
     } else if (route === 'games') {
@@ -209,18 +213,22 @@ function BottomNavigationWithLanguage() {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={[styles.tab, isActive('yatra') && styles.activeTab]} 
-          onPress={() => navigateTo('yatra')}
+          style={[styles.tab, isActive('navratri') && styles.activeTab]} 
+          onPress={() => navigateTo('navratri')}
         >
-          <MaterialIcons size={20} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
-          <Text style={[styles.tabText, isActive('yatra') && styles.activeTabText]}>
-            {currentLanguage === 'hindi' ? 'यात्रा' : 
-             currentLanguage === 'bangla' ? 'যাত্রা' :
-             currentLanguage === 'kannada' ? 'ಯಾತ್ರೆ' :
-             currentLanguage === 'punjabi' ? 'ਯਾਤਰਾ' :
-             currentLanguage === 'tamil' ? 'யாத்திரை' :
-             currentLanguage === 'telugu' ? 'యాత్ర' :
-             'Yatra'}
+          <Image 
+            source={require('@/assets/images/icons/home page icons/Navratri_small.png')} 
+            style={[styles.tabIcon, isActive('navratri') && styles.activeTabIcon]} 
+            resizeMode="contain" 
+          />
+          <Text style={[styles.tabText, isActive('navratri') && styles.activeTabText]}>
+            {currentLanguage === 'hindi' ? 'नवरात्रि' : 
+             currentLanguage === 'bangla' ? 'নবরাত্রি' :
+             currentLanguage === 'kannada' ? 'ನವರಾತ್ರಿ' :
+             currentLanguage === 'punjabi' ? 'ਨਵਰਾਤਰੀ' :
+             currentLanguage === 'tamil' ? 'நவராத்திரி' :
+             currentLanguage === 'telugu' ? 'నవరాత్రి' :
+             'Navratri'}
           </Text>
         </TouchableOpacity>
 

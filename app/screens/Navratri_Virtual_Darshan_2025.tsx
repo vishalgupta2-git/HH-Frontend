@@ -235,6 +235,7 @@ export default function NavratriVirtualDarshan2025() {
   
   // Button pulse animation
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0.3)).current;
   
   // Puja animation state
   const [thaliEllipseAnimation] = useState(new Animated.Value(0));
@@ -741,7 +742,7 @@ export default function NavratriVirtualDarshan2025() {
 
   // Text color is now static - no animation needed
 
-  // Button pulse animation
+  // Button pulse animation with glow
   useEffect(() => {
     // Pulse animation (scale up and down)
     const pulseAnimation = Animated.loop(
@@ -759,12 +760,30 @@ export default function NavratriVirtualDarshan2025() {
       ])
     );
 
+    // Glow animation (opacity change)
+    const glowAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnim, {
+          toValue: 0.8,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnim, {
+          toValue: 0.3,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
     pulseAnimation.start();
+    glowAnimation.start();
 
     return () => {
       pulseAnimation.stop();
+      glowAnimation.stop();
     };
-  }, [pulseAnim]);
+  }, [pulseAnim, glowAnim]);
 
   // Generate unique puja flower ID
   const generateUniquePujaFlowerId = () => {
@@ -1714,11 +1733,16 @@ export default function NavratriVirtualDarshan2025() {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* Perform Puja Button - 78% from top, 50% width with pulse animation */}
+      {/* Perform Puja Button - 78% from top, 50% width with pulse animation and glow */}
       <Animated.View style={[styles.performPujaButtonContainer, { 
         top: screenHeight * 0.78,
         transform: [{ scale: pulseAnim }] 
       }]}>
+        {/* Glow effect behind the button */}
+        <Animated.View style={[styles.performPujaButtonGlow, { 
+          opacity: glowAnim 
+        }]} />
+        
         <TouchableOpacity
           style={[styles.performPujaButton, {
             opacity: isPujaRitualActive ? 0.6 : 1,
@@ -2112,7 +2136,7 @@ const styles = StyleSheet.create({
   },
   performPujaButton: {
     flex: 1,
-    backgroundColor: '#FFD4A3', // Light orange background
+    backgroundColor: '#FF6A00', // Orange background
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
@@ -2126,6 +2150,16 @@ const styles = StyleSheet.create({
     fontSize: 20, // Increased by 2 points (18 + 2 = 20)
     fontWeight: 'bold',
     textAlign: 'center',
-    color: '#E87C00', // Dark orange text
+    color: '#FFFFFF', // White text
+  },
+  performPujaButtonGlow: {
+    position: 'absolute',
+    top: -8,
+    left: -8,
+    right: -8,
+    bottom: -8,
+    backgroundColor: '#FF6A00',
+    borderRadius: 12,
+    opacity: 0.3,
   },
 });
