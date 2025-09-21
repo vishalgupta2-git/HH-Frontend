@@ -47,6 +47,9 @@ function GlobalBottomNavigation() {
     if (route === 'audio-video') {
       return pathname === '/(tabs)/audio-video';
     }
+    if (route === 'games') {
+      return pathname === '/screens/jigsaw-puzzle';
+    }
     return false;
   };
 
@@ -59,6 +62,8 @@ function GlobalBottomNavigation() {
       router.push('/(tabs)/yatra');
     } else if (route === 'audio-video') {
       showAudioVideoModal();
+    } else if (route === 'games') {
+      router.push('/screens/jigsaw-puzzle');
     }
   };
 
@@ -94,6 +99,14 @@ function GlobalBottomNavigation() {
         >
           <MaterialIcons size={20} name="route" color={isActive('yatra') ? '#FF6A00' : '#666'} />
           <Text style={[styles.tabText, isActive('yatra') && styles.activeTabText]}>Yatra</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.tab, isActive('games') && styles.activeTab]} 
+          onPress={() => navigateTo('games')}
+        >
+          <IconSymbol size={20} name="puzzle" color={isActive('games') ? '#FF6A00' : '#666'} />
+          <Text style={[styles.tabText, isActive('games') && styles.activeTabText]}>Games</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -133,6 +146,9 @@ function BottomNavigationWithLanguage() {
     if (route === 'audio-video') {
       return pathname === '/(tabs)/audio-video';
     }
+    if (route === 'games') {
+      return pathname === '/screens/jigsaw-puzzle';
+    }
     return false;
   };
 
@@ -145,6 +161,8 @@ function BottomNavigationWithLanguage() {
       router.push('/(tabs)/yatra');
     } else if (route === 'audio-video') {
       showAudioVideoModal();
+    } else if (route === 'games') {
+      router.push('/screens/jigsaw-puzzle');
     }
   };
 
@@ -203,6 +221,22 @@ function BottomNavigationWithLanguage() {
              currentLanguage === 'tamil' ? 'யாத்திரை' :
              currentLanguage === 'telugu' ? 'యాత్ర' :
              'Yatra'}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.tab, isActive('games') && styles.activeTab]} 
+          onPress={() => navigateTo('games')}
+        >
+          <IconSymbol size={20} name="puzzle" color={isActive('games') ? '#FF6A00' : '#666'} />
+          <Text style={[styles.tabText, isActive('games') && styles.activeTabText]}>
+            {currentLanguage === 'hindi' ? 'खेल' : 
+             currentLanguage === 'bangla' ? 'খেলা' :
+             currentLanguage === 'kannada' ? 'ಆಟಗಳು' :
+             currentLanguage === 'punjabi' ? 'ਖੇਡਾਂ' :
+             currentLanguage === 'tamil' ? 'விளையாட்டுகள்' :
+             currentLanguage === 'telugu' ? 'ఆటలు' :
+             'Games'}
           </Text>
         </TouchableOpacity>
 
