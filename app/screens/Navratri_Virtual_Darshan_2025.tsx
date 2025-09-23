@@ -203,10 +203,27 @@ const DraggableThali: React.FC<{ onImageLoad: () => void }> = ({ onImageLoad }) 
   );
 };
 
+// Helper function to get current day based on date
+const getCurrentNavratriDay = () => {
+  const today = new Date();
+  const currentDate = today.getDate();
+  const currentMonth = today.getMonth() + 1; // getMonth() returns 0-11
+  
+  // Navratri 2025 starts on September 22nd
+  if (currentMonth === 9) { // September
+    if (currentDate >= 22 && currentDate <= 30) {
+      return currentDate - 22; // Day 0 = Sep 22, Day 1 = Sep 23, etc.
+    }
+  }
+  
+  // Default to day 0 if not during Navratri
+  return 0;
+};
+
 export default function NavratriVirtualDarshan2025() {
   const { currentLanguage } = useLanguage();
   const { showAudioVideoModal, pauseMusic, resumeMusic, isMusicPlaying } = useAudioVideoModal();
-  const [currentDay, setCurrentDay] = useState(0); // Index in templeData array
+  const [currentDay, setCurrentDay] = useState(getCurrentNavratriDay()); // Set based on current date
 
   // Helper function to get current temple with translated name
   const getCurrentTemple = () => {
